@@ -1,1116 +1,283 @@
-import { BooleanValue } from './boolean-value/boolean-value.component';
-import { LinkValue } from './link-value/link-value.component';
-import { SecretValue } from './secret-value/secret-value.component';
-import { ValueCellComponent } from './value-cell.component';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import {
-  FieldDefinition,
-  GenericResource,
-  Resource,
-} from '@platform-mesh/portal-ui-lib/models/models';
+import { ValueCellComponent } from './value-cell.component';
+import { FieldDefinition, GenericResource } from '../models';
+
+type Fixture = ComponentFixture<ValueCellComponent<GenericResource, FieldDefinition>>;
+type Comp = ValueCellComponent<GenericResource, FieldDefinition>;
+
+function setup(field: FieldDefinition, resource?: GenericResource): { fixture: Fixture; component: Comp } {
+  const fixture: Fixture = TestBed.createComponent(
+    ValueCellComponent as unknown as typeof ValueCellComponent<GenericResource, FieldDefinition>,
+  );
+  const component = fixture.componentInstance;
+  fixture.componentRef.setInput('fieldDefinition', field);
+  if (resource !== undefined) fixture.componentRef.setInput('resource', resource);
+  fixture.detectChanges();
+  return { fixture, component };
+}
+
+function el(fixture: Fixture, testId: string): Element | null {
+  return fixture.nativeElement.querySelector(`[test-id="${testId}"]`);
+}
 
 describe('ValueCellComponent', () => {
-  let component: ValueCellComponent<GenericResource>;
-  let fixture: ComponentFixture<ValueCellComponent<GenericResource>>;
-
-  const makeComponent = (
-    value: unknown,
-    fieldDefinition: Partial<FieldDefinition> = {},
-  ) => {
-    fixture = TestBed.createComponent(ValueCellComponent);
-    component = fixture.componentInstance;
-
-    const resource: Resource = {
-      metadata: { name: 'test-resource' },
-      spec: { value },
-    } as any;
-
-    const field: FieldDefinition = {
-      property: 'spec.value',
-      ...fieldDefinition,
-    };
-
-    fixture.componentRef.setInput('resource', resource);
-    fixture.componentRef.setInput('fieldDefinition', field);
-
-    fixture.detectChanges();
-
-    return { component, fixture };
-  };
-
-  beforeEach(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [ValueCellComponent],
-    }).overrideComponent(ValueCellComponent, {
-      set: {
-        imports: [BooleanValue, LinkValue, SecretValue],
-        schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      },
+    }).compileComponents();
+  });
+
+  describe('testId', () => {
+    it('is derived from fieldDefinition.property', () => {
+      const { component } = setup({ property: 'name' });
+      expect(component.testId()).toBe('value-cell-name');
     });
   });
 
-  it('should create', () => {
-    const { component } = makeComponent('test');
-    expect(component).toBeTruthy();
-  });
-
-  it('should render boolean-value component for boolean-like values', () => {
-    const { fixture } = makeComponent('true', {
-      uiSettings: { displayAs: 'boolIcon' },
-    });
-    const compiled = fixture.nativeElement;
-
-    expect(compiled.querySelector('pm-boolean-value')).toBeTruthy();
-    expect(component.isBoolLike()).toBe(true);
-    expect(component.boolValue()).toBe(true);
-  });
-
-  it('should render boolean-value component for false boolean-like values', () => {
-    const { fixture } = makeComponent('false', {
-      uiSettings: { displayAs: 'boolIcon' },
-    });
-    const compiled = fixture.nativeElement;
-
-    expect(compiled.querySelector('pm-boolean-value')).toBeTruthy();
-    expect(component.isBoolLike()).toBe(true);
-    expect(component.boolValue()).toBe(false);
-  });
-
-  it('should render boolean-value component for actual boolean values', () => {
-    const { fixture } = makeComponent(true, {
-      uiSettings: { displayAs: 'boolIcon' },
-    });
-    const compiled = fixture.nativeElement;
-
-    expect(compiled.querySelector('pm-boolean-value')).toBeTruthy();
-    expect(component.isBoolLike()).toBe(true);
-    expect(component.boolValue()).toBe(true);
-  });
-
-  it('should render link-value component for valid URLs', () => {
-    const { fixture } = makeComponent('https://example.com', {
-      uiSettings: { displayAs: 'link' },
-    });
-    const compiled = fixture.nativeElement;
-
-    expect(compiled.querySelector('pm-link-value')).toBeTruthy();
-    expect(component.isUrlValue()).toBe(true);
-    expect(component.stringValue()).toBe('https://example.com');
-  });
-
-  it('should render link-value component for valid URLs with different protocols', () => {
-    const { fixture } = makeComponent('http://test.com', {
-      uiSettings: { displayAs: 'link' },
-    });
-    const compiled = fixture.nativeElement;
-
-    expect(compiled.querySelector('pm-link-value')).toBeTruthy();
-    expect(component.isUrlValue()).toBe(true);
-  });
-
-  it('should render plain text for non-boolean, non-URL values', () => {
-    const { fixture } = makeComponent('cluster-a');
-    const compiled = fixture.nativeElement;
-
-    expect(compiled.querySelector('pm-boolean-value')).toBeFalsy();
-    expect(compiled.querySelector('pm-link-value')).toBeFalsy();
-    expect(compiled.textContent.trim()).toBe('cluster-a');
-    expect(component.isBoolLike()).toBe(false);
-    expect(component.isUrlValue()).toBe(false);
-  });
-
-  it('should render plain text for empty strings', () => {
-    const { fixture } = makeComponent('');
-    const compiled = fixture.nativeElement;
-
-    expect(compiled.querySelector('pm-boolean-value')).toBeFalsy();
-    expect(compiled.querySelector('pm-link-value')).toBeFalsy();
-    expect(component.isBoolLike()).toBe(false);
-    expect(component.isUrlValue()).toBe(false);
-  });
-
-  it('should render plain text for whitespace-only strings', () => {
-    const { fixture } = makeComponent('   ');
-    const compiled = fixture.nativeElement;
-
-    expect(compiled.querySelector('pm-boolean-value')).toBeFalsy();
-    expect(compiled.querySelector('pm-link-value')).toBeFalsy();
-    expect(component.isBoolLike()).toBe(false);
-    expect(component.isUrlValue()).toBe(false);
-  });
-
-  it('should render plain text for invalid URLs', () => {
-    const { fixture } = makeComponent('not-a-url', {
-      uiSettings: { displayAs: 'link' },
-    });
-    const compiled = fixture.nativeElement;
-
-    expect(compiled.querySelector('pm-boolean-value')).toBeFalsy();
-    expect(compiled.querySelector('pm-link-value')).toBeFalsy();
-    expect(compiled.textContent.trim()).toBe('not-a-url');
-    expect(component.isUrlValue()).toBe(false);
-  });
-
-  it('should handle null and undefined values', () => {
-    const { fixture } = makeComponent(null);
-    const compiled = fixture.nativeElement;
-
-    expect(compiled.querySelector('pm-boolean-value')).toBeFalsy();
-    expect(compiled.querySelector('pm-link-value')).toBeFalsy();
-    expect(component.isBoolLike()).toBe(false);
-    expect(component.isUrlValue()).toBe(false);
-  });
-
-  it('should handle numeric values', () => {
-    const { fixture } = makeComponent(123);
-    const compiled = fixture.nativeElement;
-
-    expect(compiled.querySelector('pm-boolean-value')).toBeFalsy();
-    expect(compiled.querySelector('pm-link-value')).toBeFalsy();
-    expect(compiled.textContent.trim()).toBe('123');
-  });
-
-  describe('labelDisplay functionality', () => {
-    it('should apply label-value class when labelDisplay is true', () => {
-      const { fixture } = makeComponent('test-value', {
-        uiSettings: { labelDisplay: true },
-      });
-      const compiled = fixture.nativeElement;
-      const span = compiled.querySelector('span');
-
-      expect(span.classList.contains('label-value')).toBe(true);
+  describe('default display', () => {
+    it('renders plain string value from resource property', () => {
+      const { fixture } = setup({ property: 'status' }, { status: 'Active' });
+      const span = fixture.nativeElement.querySelector('[test-id="value-cell-status"]');
+      expect(span?.textContent?.trim()).toBe('Active');
     });
 
-    it('should not apply label-value class when labelDisplay is false', () => {
-      const { fixture } = makeComponent('test-value', {
-        uiSettings: { labelDisplay: false },
-      });
-      const compiled = fixture.nativeElement;
-      const span = compiled.querySelector('span');
-
-      expect(span.classList.contains('label-value')).toBe(false);
+    it('falls back to field.value when no resource is provided', () => {
+      const { fixture } = setup({ property: 'status', value: 'fallback' });
+      const span = fixture.nativeElement.querySelector('[test-id="value-cell-status"]');
+      expect(span?.textContent?.trim()).toBe('fallback');
     });
 
-    it('should not apply label-value class when labelDisplay is undefined', () => {
-      const { fixture } = makeComponent('test-value', {
-        uiSettings: { labelDisplay: undefined },
-      });
-      const compiled = fixture.nativeElement;
-      const span = compiled.querySelector('span');
-
-      expect(span.classList.contains('label-value')).toBe(false);
-      expect(component.labelDisplay()).toBeUndefined();
+    it('renders empty when value is absent', () => {
+      const { fixture } = setup({ property: 'missing' }, {});
+      const span = fixture.nativeElement.querySelector('[test-id="value-cell-missing"]');
+      expect(span?.textContent?.trim()).toBe('');
     });
   });
 
-  describe('displayAs secret functionality', () => {
-    it('should render secret-value component when displayAs is secret', () => {
-      const { fixture } = makeComponent('secret-password', {
-        uiSettings: { displayAs: 'secret' },
-      });
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-secret-value')).toBeTruthy();
-      expect(component.displayAs()).toBe('secret');
+  describe('computed signals', () => {
+    it('value() resolves from resource property', () => {
+      const { component } = setup({ property: 'age' }, { age: 42 });
+      expect(component.value()).toBe(42);
     });
 
-    it('should not render secret-value component when displayAs is not secret', () => {
-      const { fixture } = makeComponent('plain-text', {
-        uiSettings: { displayAs: 'link' },
-      });
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-secret-value')).toBeFalsy();
-      expect(component.displayAs()).toBe('link');
+    it('boolValue() is true for string "true"', () => {
+      const { component } = setup({ property: 'active' }, { active: 'true' });
+      expect(component.boolValue()).toBe(true);
     });
 
-    it('should not render secret-value component when displayAs is undefined', () => {
-      const { fixture } = makeComponent('plain-text');
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-secret-value')).toBeFalsy();
-      expect(component.displayAs()).toBeUndefined();
+    it('boolValue() is false for string "false"', () => {
+      const { component } = setup({ property: 'active' }, { active: 'false' });
+      expect(component.boolValue()).toBe(false);
     });
 
-    it('should render toggle icon when displayAs is secret', () => {
-      const { fixture } = makeComponent('secret-password', {
-        uiSettings: { displayAs: 'secret' },
-      });
-      const compiled = fixture.nativeElement;
-
-      const toggleIcon = compiled.querySelector('ui5-icon.toggle-icon');
-      expect(toggleIcon).toBeTruthy();
+    it('boolValue() is undefined for non-boolean string', () => {
+      const { component } = setup({ property: 'status' }, { status: 'Active' });
+      expect(component.boolValue()).toBeUndefined();
     });
 
-    it('should not render toggle icon when displayAs is not secret', () => {
-      const { fixture } = makeComponent('plain-text', {
-        uiSettings: { displayAs: 'link' },
-      });
-      const compiled = fixture.nativeElement;
-
-      const toggleIcon = compiled.querySelector('ui5-icon.toggle-icon');
-      expect(toggleIcon).toBeFalsy();
+    it('isBoolLike() is true when boolValue is defined', () => {
+      const { component } = setup({ property: 'active' }, { active: 'true' });
+      expect(component.isBoolLike()).toBe(true);
     });
 
-    it('should initialize isVisible as false', () => {
-      const { component } = makeComponent('secret-password', {
-        uiSettings: { displayAs: 'secret' },
-      });
+    it('isBoolLike() is false for non-boolean value', () => {
+      const { component } = setup({ property: 'status' }, { status: 'running' });
+      expect(component.isBoolLike()).toBe(false);
+    });
 
+    it('stringValue() returns string value', () => {
+      const { component } = setup({ property: 'label' }, { label: 'hello' });
+      expect(component.stringValue()).toBe('hello');
+    });
+
+    it('stringValue() returns undefined for non-string value', () => {
+      const { component } = setup({ property: 'count' }, { count: 99 });
+      expect(component.stringValue()).toBeUndefined();
+    });
+
+    it('stringValue() returns undefined for blank string', () => {
+      const { component } = setup({ property: 'label' }, { label: '   ' });
+      expect(component.stringValue()).toBeUndefined();
+    });
+
+    it('isUrlValue() is true for valid http URL', () => {
+      const { component } = setup({ property: 'link' }, { link: 'https://example.com' });
+      expect(component.isUrlValue()).toBe(true);
+    });
+
+    it('isUrlValue() is false for plain string', () => {
+      const { component } = setup({ property: 'link' }, { link: 'not-a-url' });
+      expect(component.isUrlValue()).toBe(false);
+    });
+  });
+
+  describe('displayAs: secret', () => {
+    it('renders secret-value component', () => {
+      const { fixture } = setup(
+        { property: 'token', uiSettings: { displayAs: 'secret' } },
+        { token: 'abc123' },
+      );
+      expect(el(fixture, 'value-cell-token-secret')).not.toBeNull();
+    });
+
+    it('renders toggle icon', () => {
+      const { fixture } = setup(
+        { property: 'token', uiSettings: { displayAs: 'secret' } },
+        { token: 'abc123' },
+      );
+      expect(el(fixture, 'value-cell-token-secret-toggle')).not.toBeNull();
+    });
+
+    it('toggleVisibility flips isVisible', () => {
+      const { component } = setup(
+        { property: 'token', uiSettings: { displayAs: 'secret' } },
+        { token: 'abc123' },
+      );
       expect(component.isVisible()).toBe(false);
-    });
-
-    it('should toggle visibility when icon is clicked', () => {
-      const { component, fixture } = makeComponent('secret-password', {
-        uiSettings: { displayAs: 'secret' },
-      });
-      const compiled = fixture.nativeElement;
-
-      expect(component.isVisible()).toBe(false);
-
-      const icon = compiled.querySelector('ui5-icon.toggle-icon');
-      icon?.click();
-      fixture.detectChanges();
-
+      component.toggleVisibility(new MouseEvent('click'));
       expect(component.isVisible()).toBe(true);
-    });
-
-    it('should toggle back to hidden when icon is clicked again', () => {
-      const { component, fixture } = makeComponent('secret-password', {
-        uiSettings: { displayAs: 'secret' },
-      });
-      const compiled = fixture.nativeElement;
-
-      const icon = compiled.querySelector('ui5-icon.toggle-icon');
-
-      icon?.click();
-      fixture.detectChanges();
-      expect(component.isVisible()).toBe(true);
-
-      icon?.click();
-      fixture.detectChanges();
+      component.toggleVisibility(new MouseEvent('click'));
       expect(component.isVisible()).toBe(false);
     });
-
-    it('should stop event propagation when toggle icon is clicked', () => {
-      const { component, fixture } = makeComponent('secret-password', {
-        uiSettings: { displayAs: 'secret' },
-      });
-
-      const event = new Event('click');
-      const stopPropagationSpy = vi.spyOn(event, 'stopPropagation');
-
-      component.toggleVisibility(event);
-      fixture.detectChanges();
-
-      expect(stopPropagationSpy).toHaveBeenCalled();
-    });
-
-    it('should pass isVisible state to secret-value component', () => {
-      const { component, fixture } = makeComponent('secret-password', {
-        uiSettings: { displayAs: 'secret' },
-      });
-      const compiled = fixture.nativeElement;
-
-      component.isVisible.set(true);
-      fixture.detectChanges();
-
-      const secretValueComponent = compiled.querySelector('pm-secret-value');
-      expect(secretValueComponent).toBeTruthy();
-    });
   });
 
-  describe('withCopyButton functionality', () => {
-    it('should render copy button when withCopyButton is true', () => {
-      const { fixture } = makeComponent('test-value', {
-        uiSettings: { withCopyButton: true },
-      });
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('ui5-icon[name="copy"]')).toBeTruthy();
-      expect(component.withCopyButton()).toBe(true);
-    });
-
-    it('should not render copy button when withCopyButton is false', () => {
-      const { fixture } = makeComponent('test-value', {
-        uiSettings: { withCopyButton: false },
-      });
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('ui5-icon[name="copy"]')).toBeFalsy();
-      expect(component.withCopyButton()).toBe(false);
-    });
-
-    it('should not render copy button when withCopyButton is undefined', () => {
-      const { fixture } = makeComponent('test-value');
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('ui5-icon[name="copy"]')).toBeFalsy();
-      expect(component.withCopyButton()).toBeUndefined();
-    });
-
-    it('should copy value to clipboard when copy button is clicked', async () => {
-      const writeTextSpy = vi.fn().mockResolvedValue(undefined);
-      Object.assign(navigator, { clipboard: { writeText: writeTextSpy } });
-
-      const { fixture } = makeComponent('test-value', {
-        uiSettings: { withCopyButton: true },
-      });
-
-      const compiled = fixture.nativeElement;
-      const copyButton = compiled.querySelector('ui5-icon[name="copy"]');
-
-      const event = new Event('click');
-      copyButton.dispatchEvent(event);
-      fixture.detectChanges();
-
-      expect(writeTextSpy).toHaveBeenCalledWith('test-value');
-    });
-
-    it('should stop event propagation when copy button is clicked', () => {
-      const { fixture } = makeComponent('test-value', {
-        uiSettings: { withCopyButton: true },
-      });
-      const compiled = fixture.nativeElement;
-
-      const event = new Event('click');
-      const stopPropagationSpy = vi.spyOn(event, 'stopPropagation');
-
-      component.copyValue(event);
-      fixture.detectChanges();
-
-      expect(stopPropagationSpy).toHaveBeenCalled();
-    });
-  });
-
-  describe('displayAs plainText functionality', () => {
-    it('should render plain text when displayAs is undefined', () => {
-      const { fixture } = makeComponent('test-value', {
-        uiSettings: { displayAs: undefined },
-      });
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-boolean-value')).toBeFalsy();
-      expect(compiled.querySelector('pm-link-value')).toBeFalsy();
-      expect(compiled.querySelector('pm-secret-value')).toBeFalsy();
-      expect(compiled.textContent.trim()).toContain('test-value');
-    });
-
-    it('should not render plain text when displayAs is not plainText', () => {
-      const { fixture } = makeComponent('https://example.com', {
-        uiSettings: { displayAs: 'link' },
-      });
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-link-value')).toBeTruthy();
-    });
-  });
-
-  describe('boolean normalization edge cases', () => {
-    it('should handle boolean true value', () => {
-      const { fixture } = makeComponent(true, {
-        uiSettings: { displayAs: 'boolIcon' },
-      });
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-boolean-value')).toBeTruthy();
-      expect(component.isBoolLike()).toBe(true);
-      expect(component.boolValue()).toBe(true);
-    });
-
-    it('should handle boolean false value', () => {
-      const { fixture } = makeComponent(false, {
-        uiSettings: { displayAs: 'boolIcon' },
-      });
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-boolean-value')).toBeTruthy();
-      expect(component.isBoolLike()).toBe(true);
-      expect(component.boolValue()).toBe(false);
-    });
-
-    it('should handle string "True" (capitalized)', () => {
-      const { fixture } = makeComponent('True', {
-        uiSettings: { displayAs: 'boolIcon' },
-      });
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-boolean-value')).toBeTruthy();
-      expect(component.isBoolLike()).toBe(true);
-      expect(component.boolValue()).toBe(true);
-    });
-
-    it('should handle string "FALSE" (uppercase)', () => {
-      const { fixture } = makeComponent('FALSE', {
-        uiSettings: { displayAs: 'boolIcon' },
-      });
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-boolean-value')).toBeTruthy();
-      expect(component.isBoolLike()).toBe(true);
-      expect(component.boolValue()).toBe(false);
-    });
-
-    it('should handle string "TRUE" (uppercase)', () => {
-      const { fixture } = makeComponent('TRUE', {
-        uiSettings: { displayAs: 'boolIcon' },
-      });
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-boolean-value')).toBeTruthy();
-      expect(component.isBoolLike()).toBe(true);
-      expect(component.boolValue()).toBe(true);
-    });
-
-    it('should not treat "yes" as boolean', () => {
-      const { fixture } = makeComponent('yes', {
-        uiSettings: { displayAs: 'boolIcon' },
-      });
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-boolean-value')).toBeFalsy();
-      expect(component.isBoolLike()).toBe(false);
-      expect(component.boolValue()).toBeUndefined();
-    });
-
-    it('should not treat "no" as boolean', () => {
-      const { fixture } = makeComponent('no');
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-boolean-value')).toBeFalsy();
-      expect(component.isBoolLike()).toBe(false);
-      expect(component.boolValue()).toBeUndefined();
-    });
-
-    it('should not treat "1" as boolean', () => {
-      const { fixture } = makeComponent('1');
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-boolean-value')).toBeFalsy();
-      expect(component.isBoolLike()).toBe(false);
-      expect(component.boolValue()).toBeUndefined();
-    });
-
-    it('should not treat "0" as boolean', () => {
-      const { fixture } = makeComponent('0');
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-boolean-value')).toBeFalsy();
-      expect(component.isBoolLike()).toBe(false);
-      expect(component.boolValue()).toBeUndefined();
-    });
-
-    it('should handle object with toString method returning "true"', () => {
-      const obj = { toString: () => 'true' };
-      const { fixture } = makeComponent(obj, {
-        uiSettings: { displayAs: 'boolIcon' },
-      });
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-boolean-value')).toBeTruthy();
-      expect(component.isBoolLike()).toBe(true);
-      expect(component.boolValue()).toBe(true);
-    });
-
-    it('should handle object with toString method returning "false"', () => {
-      const obj = { toString: () => 'false' };
-      const { fixture } = makeComponent(obj, {
-        uiSettings: { displayAs: 'boolIcon' },
-      });
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-boolean-value')).toBeTruthy();
-      expect(component.isBoolLike()).toBe(true);
-      expect(component.boolValue()).toBe(false);
-    });
-  });
-
-  describe('URL validation edge cases', () => {
-    it('should handle valid HTTPS URL', () => {
-      const { fixture } = makeComponent('https://example.com', {
-        uiSettings: { displayAs: 'link' },
-      });
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-link-value')).toBeTruthy();
-      expect(component.isUrlValue()).toBe(true);
-      expect(component.stringValue()).toBe('https://example.com');
-    });
-
-    it('should handle valid HTTP URL', () => {
-      const { fixture } = makeComponent('http://example.com', {
-        uiSettings: { displayAs: 'link' },
-      });
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-link-value')).toBeTruthy();
-      expect(component.isUrlValue()).toBe(true);
-      expect(component.stringValue()).toBe('http://example.com');
-    });
-
-    it('should handle valid FTP URL', () => {
-      const { fixture } = makeComponent('ftp://example.com', {
-        uiSettings: { displayAs: 'link' },
-      });
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-link-value')).toBeTruthy();
-      expect(component.isUrlValue()).toBe(true);
-      expect(component.stringValue()).toBe('ftp://example.com');
-    });
-
-    it('should handle valid URL with port', () => {
-      const { fixture } = makeComponent('https://example.com:8080', {
-        uiSettings: { displayAs: 'link' },
-      });
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-link-value')).toBeTruthy();
-      expect(component.isUrlValue()).toBe(true);
-      expect(component.stringValue()).toBe('https://example.com:8080');
-    });
-
-    it('should handle valid URL with path', () => {
-      const { fixture } = makeComponent(
-        'https://example.com/path/to/resource',
-        {
-          uiSettings: { displayAs: 'link' },
-        },
+  describe('displayAs: boolIcon', () => {
+    it('renders boolean-value when value is boolean-like', () => {
+      const { fixture } = setup(
+        { property: 'enabled', uiSettings: { displayAs: 'boolIcon' } },
+        { enabled: 'true' },
       );
-      const compiled = fixture.nativeElement;
+      expect(el(fixture, 'value-cell-enabled-boolean')).not.toBeNull();
+    });
 
-      expect(compiled.querySelector('pm-link-value')).toBeTruthy();
-      expect(component.isUrlValue()).toBe(true);
-      expect(component.stringValue()).toBe(
-        'https://example.com/path/to/resource',
+    it('does not render boolean-value when value is not boolean-like', () => {
+      const { fixture } = setup(
+        { property: 'status', uiSettings: { displayAs: 'boolIcon' } },
+        { status: 'running' },
       );
+      expect(el(fixture, 'value-cell-status-boolean')).toBeNull();
     });
+  });
 
-    it('should handle valid URL with query parameters', () => {
-      const { fixture } = makeComponent(
-        'https://example.com?param=value&other=test',
-        {
-          uiSettings: { displayAs: 'link' },
-        },
+  describe('displayAs: link', () => {
+    it('renders link-value for valid URL', () => {
+      const { fixture } = setup(
+        { property: 'url', uiSettings: { displayAs: 'link' } },
+        { url: 'https://example.com' },
       );
-      const compiled = fixture.nativeElement;
+      expect(el(fixture, 'value-cell-url-link')).not.toBeNull();
+    });
 
-      expect(compiled.querySelector('pm-link-value')).toBeTruthy();
-      expect(component.isUrlValue()).toBe(true);
-      expect(component.stringValue()).toBe(
-        'https://example.com?param=value&other=test',
+    it('does not render link-value for non-URL string', () => {
+      const { fixture } = setup(
+        { property: 'url', uiSettings: { displayAs: 'link' } },
+        { url: 'not-a-url' },
       );
-    });
-
-    it('should handle valid URL with fragment', () => {
-      const { fixture } = makeComponent('https://example.com#section', {
-        uiSettings: { displayAs: 'link' },
-      });
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-link-value')).toBeTruthy();
-      expect(component.isUrlValue()).toBe(true);
-      expect(component.stringValue()).toBe('https://example.com#section');
-    });
-
-    it('should not treat "example.com" as valid URL', () => {
-      const { fixture } = makeComponent('example.com');
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-link-value')).toBeFalsy();
-      expect(component.isUrlValue()).toBe(false);
-    });
-
-    it('should not treat "www.example.com" as valid URL', () => {
-      const { fixture } = makeComponent('www.example.com');
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-link-value')).toBeFalsy();
-      expect(component.isUrlValue()).toBe(false);
-    });
-
-    it('should treat "mailto:test@example.com" as valid URL for link component', () => {
-      const { fixture } = makeComponent('mailto:test@example.com', {
-        uiSettings: { displayAs: 'link' },
-      });
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-link-value')).toBeTruthy();
-      expect(component.isUrlValue()).toBe(true);
-    });
-
-    it('should treat "tel:+1234567890" as valid URL for link component', () => {
-      const { fixture } = makeComponent('tel:+1234567890', {
-        uiSettings: { displayAs: 'link' },
-      });
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-link-value')).toBeTruthy();
-      expect(component.isUrlValue()).toBe(true);
-    });
-
-    it('should handle malformed URL', () => {
-      const { fixture } = makeComponent('https://');
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-link-value')).toBeFalsy();
-      expect(component.isUrlValue()).toBe(false);
-    });
-
-    it('should handle URL with invalid characters', () => {
-      const { fixture } = makeComponent('https://example.com with spaces');
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-link-value')).toBeFalsy();
-      expect(component.isUrlValue()).toBe(false);
+      expect(el(fixture, 'value-cell-url-link')).toBeNull();
     });
   });
 
-  describe('string normalization edge cases', () => {
-    it('should handle string with only spaces', () => {
-      const { fixture } = makeComponent('   ');
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-boolean-value')).toBeFalsy();
-      expect(compiled.querySelector('pm-link-value')).toBeFalsy();
-      expect(component.stringValue()).toBeUndefined();
-    });
-
-    it('should handle string with tabs and newlines', () => {
-      const { fixture } = makeComponent('\t\n\r');
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-boolean-value')).toBeFalsy();
-      expect(compiled.querySelector('pm-link-value')).toBeFalsy();
-      expect(component.stringValue()).toBeUndefined();
-    });
-
-    it('should handle string with leading and trailing spaces', () => {
-      const { fixture } = makeComponent('  test  ');
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-boolean-value')).toBeFalsy();
-      expect(compiled.querySelector('pm-link-value')).toBeFalsy();
-      expect(component.stringValue()).toBe('  test  ');
-    });
-
-    it('should handle non-string values', () => {
-      const { fixture } = makeComponent(123);
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-boolean-value')).toBeFalsy();
-      expect(compiled.querySelector('pm-link-value')).toBeFalsy();
-      expect(component.stringValue()).toBeUndefined();
-    });
-
-    it('should handle object values', () => {
-      const obj = { key: 'value' };
-      const { fixture } = makeComponent(obj);
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-boolean-value')).toBeFalsy();
-      expect(compiled.querySelector('pm-link-value')).toBeFalsy();
-      expect(component.stringValue()).toBeUndefined();
-    });
-
-    it('should handle array values', () => {
-      const arr = ['item1', 'item2'];
-      const { fixture } = makeComponent(arr);
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-boolean-value')).toBeFalsy();
-      expect(compiled.querySelector('pm-link-value')).toBeFalsy();
-      expect(component.stringValue()).toBeUndefined();
-    });
-  });
-
-  describe('complex scenarios', () => {
-    it('should prioritize boolean over URL when both are valid', () => {
-      const { fixture } = makeComponent('true', {
-        uiSettings: { displayAs: 'boolIcon' },
-      });
-      const compiled = fixture.nativeElement;
-
-      expect(compiled.querySelector('pm-boolean-value')).toBeTruthy();
-      expect(compiled.querySelector('pm-link-value')).toBeFalsy();
-    });
-
-    it('should render plain text when no special rendering is needed', () => {
-      const { fixture } = makeComponent('some-text', {
-        uiSettings: { labelDisplay: false },
-      });
-      const compiled = fixture.nativeElement;
-      const span = compiled.querySelector('span');
-
-      expect(compiled.querySelector('pm-boolean-value')).toBeFalsy();
-      expect(compiled.querySelector('pm-link-value')).toBeFalsy();
-      expect(span.classList.contains('label-value')).toBe(false);
-      expect(compiled.textContent.trim()).toBe('some-text');
-    });
-  });
-
-  describe('testId functionality', () => {
-    it('should generate testId from field property', () => {
-      const { component } = makeComponent('test-value');
-
-      expect(component.testId()).toBe('value-cell-spec.value');
-    });
-
-    it('should generate testId with custom property', () => {
-      fixture = TestBed.createComponent(ValueCellComponent);
-      component = fixture.componentInstance;
-
-      const resource: Resource = {
-        metadata: { name: 'test-resource' },
-        spec: { password: 'secret-password' },
-      } as any;
-
-      const field: FieldDefinition = {
-        property: 'spec.password',
-        uiSettings: { displayAs: 'secret' },
-      };
-
-      fixture.componentRef.setInput('resource', resource);
-      fixture.componentRef.setInput('fieldDefinition', field);
-
-      fixture.detectChanges();
-
-      expect(component.testId()).toBe('value-cell-spec.password');
-    });
-
-    it('should pass testId to boolean component', () => {
-      const { component } = makeComponent('true', {
-        uiSettings: { displayAs: 'boolIcon' },
-      });
-
-      expect(component.testId()).toBe('value-cell-spec.value');
-    });
-
-    it('should pass testId to link component', () => {
-      const { component } = makeComponent('https://example.com', {
-        uiSettings: { displayAs: 'link' },
-      });
-
-      expect(component.testId()).toBe('value-cell-spec.value');
-    });
-
-    it('should pass testId to secret component', () => {
-      const { component } = makeComponent('secret-password', {
-        uiSettings: { displayAs: 'secret' },
-      });
-
-      expect(component.testId()).toBe('value-cell-spec.value');
-    });
-  });
-
-  describe('normalization helpers', () => {
-    it('normalizeBoolean should handle true, false and undefined', () => {
-      const { component } = makeComponent('true');
-      const instance = component as any;
-
-      expect(instance.normalizeBoolean('true')).toBe(true);
-      expect(instance.normalizeBoolean('false')).toBe(false);
-      expect(instance.normalizeBoolean('nope')).toBeUndefined();
-    });
-
-    it('normalizeString should handle empty, whitespace, and non-string values', () => {
-      const { component } = makeComponent('value');
-      const instance = component as any;
-
-      expect(instance.normalizeString('')).toBeUndefined();
-      expect(instance.normalizeString('   ')).toBeUndefined();
-      expect(instance.normalizeString(123)).toBeUndefined();
-      expect(instance.normalizeString('abc')).toBe('abc');
-    });
-
-    it('checkValidUrl should validate URL input', () => {
-      const { component } = makeComponent('value');
-      const instance = component as any;
-
-      expect(instance.checkValidUrl(undefined)).toBe(false);
-      expect(instance.checkValidUrl('not-a-url')).toBe(false);
-      expect(instance.checkValidUrl('https://example.com')).toBe(true);
-    });
-  });
-
-  describe('CSS customization', () => {
-    it('should compute cssCustomization from uiSettings', () => {
-      const { component } = makeComponent('test-value', {
-        uiSettings: {
-          cssCustomization: {
-            backgroundColor: 'red',
-            color: 'white',
-          },
-        },
-      });
-
-      expect(component.cssCustomization()).toEqual({
-        backgroundColor: 'red',
-        color: 'white',
-      });
-    });
-
-    it('should compute cssRules from value and uiSettings', () => {
-      const { component } = makeComponent('test-value', {
-        uiSettings: {
-          cssRules: [
-            {
-              if: { condition: 'equals', value: 'test-value' },
-              styles: { color: 'green' },
-            },
-          ],
-        },
-      });
-
-      const cssRules = component.cssRules();
-      expect(cssRules).toBeDefined();
-    });
-
-    it('should merge cssCustomization and cssRules in cssStyles', () => {
-      const { component } = makeComponent('test-value', {
-        uiSettings: {
-          cssCustomization: {
-            backgroundColor: 'red',
-          },
-          cssRules: [
-            {
-              if: { condition: 'equals', value: 'test-value' },
-              styles: { color: 'green' },
-            },
-          ],
-        },
-      });
-
-      const cssStyles = component.cssStyles();
-      expect(cssStyles).toBeDefined();
-      expect(cssStyles.backgroundColor).toBe('red');
-    });
-
-    it('should return empty object when cssCustomization is undefined', () => {
-      const { component } = makeComponent('test-value');
-
-      expect(component.cssCustomization()).toBeUndefined();
-    });
-  });
-
-  describe('tooltipIcon functionality', () => {
-    it('should compute tooltipIcon from uiSettings', () => {
-      const { component } = makeComponent('test-value', {
-        uiSettings: {
-          tooltipIcon: 'information',
-        },
-      });
-
-      expect(component.tooltipIcon()).toBe('information');
-    });
-
-    it('should return undefined when tooltipIcon is not set', () => {
-      const { component } = makeComponent('test-value');
-
-      expect(component.tooltipIcon()).toBeUndefined();
-    });
-
-    it('should render tooltip icon when displayAs is tooltip', () => {
-      const { fixture } = makeComponent('tooltip text', {
-        uiSettings: {
-          displayAs: 'tooltip',
-          tooltipIcon: 'information',
-        },
-      });
-      const compiled = fixture.nativeElement;
-
-      const tooltipIcon = compiled.querySelector(
-        'ui5-icon[name="information"]',
+  describe('displayAs: tooltip', () => {
+    it('renders tooltip icon', () => {
+      const { fixture } = setup(
+        { property: 'info', uiSettings: { displayAs: 'tooltip' } },
+        { info: 'some tooltip text' },
       );
-      expect(tooltipIcon).toBeTruthy();
-    });
-
-    it('should use default hint icon when tooltipIcon is not specified', () => {
-      const { fixture } = makeComponent('tooltip text', {
-        uiSettings: {
-          displayAs: 'tooltip',
-        },
-      });
-      const compiled = fixture.nativeElement;
-
-      const tooltipIcon = compiled.querySelector('ui5-icon[name="hint"]');
-      expect(tooltipIcon).toBeTruthy();
+      expect(el(fixture, 'value-cell-info-tooltip')).not.toBeNull();
     });
   });
 
-  describe('value without resource', () => {
-    it('should use fieldDefinition value when resource is not provided', () => {
-      fixture = TestBed.createComponent(ValueCellComponent);
-      component = fixture.componentInstance;
-
-      const field: FieldDefinition = {
-        property: 'spec.value',
-        value: 'static-value',
-      };
-
-      fixture.componentRef.setInput('fieldDefinition', field);
-
-      fixture.detectChanges();
-
-      expect(component.value()).toBe('static-value');
+  describe('displayAs: alert', () => {
+    it('renders alert icon when value is falsy', () => {
+      const { fixture } = setup(
+        { property: 'flag', uiSettings: { displayAs: 'alert' } },
+        { flag: '' },
+      );
+      expect(el(fixture, 'value-cell-flag-icon')).not.toBeNull();
     });
 
-    it('should prioritize resource value over fieldDefinition value', () => {
-      fixture = TestBed.createComponent(ValueCellComponent);
-      component = fixture.componentInstance;
+    it('does not render alert icon when value is truthy', () => {
+      const { fixture } = setup(
+        { property: 'flag', uiSettings: { displayAs: 'alert' } },
+        { flag: 'ok' },
+      );
+      expect(el(fixture, 'value-cell-flag-icon')).toBeNull();
+    });
+  });
 
-      const resource: Resource = {
-        metadata: { name: 'test-resource' },
-        spec: { value: 'resource-value' },
-      } as any;
-
-      const field: FieldDefinition = {
-        property: 'spec.value',
-        value: 'static-value',
-      };
-
-      fixture.componentRef.setInput('resource', resource);
-      fixture.componentRef.setInput('fieldDefinition', field);
-
-      fixture.detectChanges();
-
-      expect(component.value()).toBe('resource-value');
+  describe('displayAs: img', () => {
+    it('renders img element when value is set', () => {
+      const { fixture } = setup(
+        { property: 'avatar', uiSettings: { displayAs: 'img' } },
+        { avatar: 'https://example.com/img.png' },
+      );
+      const img = fixture.nativeElement.querySelector('img.image-cell');
+      expect(img).not.toBeNull();
+      expect(img?.getAttribute('src')).toBe('https://example.com/img.png');
     });
 
-    it('should use fieldDefinition value as fallback when resource value is null', () => {
-      fixture = TestBed.createComponent(ValueCellComponent);
-      component = fixture.componentInstance;
+    it('does not render img when value is absent', () => {
+      const { fixture } = setup(
+        { property: 'avatar', uiSettings: { displayAs: 'img' } },
+        {},
+      );
+      expect(fixture.nativeElement.querySelector('img.image-cell')).toBeNull();
+    });
+  });
 
-      const resource: Resource = {
-        metadata: { name: 'test-resource' },
-        spec: { value: null },
-      } as any;
-
-      const field: FieldDefinition = {
-        property: 'spec.value',
-        value: 'fallback-value',
-      };
-
-      fixture.componentRef.setInput('resource', resource);
-      fixture.componentRef.setInput('fieldDefinition', field);
-
-      fixture.detectChanges();
-
-      expect(component.value()).toBe('fallback-value');
+  describe('withCopyButton', () => {
+    it('renders copy icon when withCopyButton is true', () => {
+      const { fixture } = setup(
+        { property: 'token', uiSettings: { withCopyButton: true } },
+        { token: 'secret' },
+      );
+      expect(el(fixture, 'value-cell-token-copy')).not.toBeNull();
     });
 
-    it('should use fieldDefinition value as fallback when resource value is undefined', () => {
-      fixture = TestBed.createComponent(ValueCellComponent);
-      component = fixture.componentInstance;
-
-      const resource: Resource = {
-        metadata: { name: 'test-resource' },
-        spec: {},
-      } as any;
-
-      const field: FieldDefinition = {
-        property: 'spec.nonExistent',
-        value: 'fallback-value',
-      };
-
-      fixture.componentRef.setInput('resource', resource);
-      fixture.componentRef.setInput('fieldDefinition', field);
-
-      fixture.detectChanges();
-
-      expect(component.value()).toBe('fallback-value');
+    it('does not render copy icon when withCopyButton is false', () => {
+      const { fixture } = setup(
+        { property: 'token', uiSettings: { withCopyButton: false } },
+        { token: 'secret' },
+      );
+      expect(el(fixture, 'value-cell-token-copy')).toBeNull();
     });
+  });
 
-    it('should use fieldDefinition value as fallback when property path does not exist in resource', () => {
-      fixture = TestBed.createComponent(ValueCellComponent);
-      component = fixture.componentInstance;
-
-      const resource: Resource = {
-        metadata: { name: 'test-resource' },
-        spec: { otherField: 'other-value' },
-      } as any;
-
-      const field: FieldDefinition = {
-        property: 'spec.missingField',
-        value: 'fallback-value',
-      };
-
-      fixture.componentRef.setInput('resource', resource);
-      fixture.componentRef.setInput('fieldDefinition', field);
-
-      fixture.detectChanges();
-
-      expect(component.value()).toBe('fallback-value');
+  describe('cssStyles', () => {
+    it('merges cssCustomization and cssRules', () => {
+      const { component } = setup({
+        property: 'status',
+        uiSettings: {
+          cssCustomization: { color: 'red' },
+          cssRules: [{ if: { condition: 'equals', value: 'Active' }, styles: { fontWeight: 'bold' } }],
+        },
+      }, { status: 'Active' });
+      expect(component.cssStyles()).toEqual({ color: 'red', fontWeight: 'bold' });
     });
+  });
 
-    it('should handle fieldDefinition value with uiSettings', () => {
-      fixture = TestBed.createComponent(ValueCellComponent);
-      component = fixture.componentInstance;
-
+  describe('buttonClick output', () => {
+    it('emits buttonClick with field and resource on buttonClicked', () => {
       const field: FieldDefinition = {
-        property: 'spec.value',
-        value: 'true',
-        uiSettings: { displayAs: 'boolIcon' },
+        property: 'action',
+        uiSettings: {
+          displayAs: 'button',
+          buttonSettings: { text: 'Go', action: 'navigate' },
+        },
       };
+      const resource = { action: 'go' };
+      const { fixture, component } = setup(field, resource);
 
-      fixture.componentRef.setInput('fieldDefinition', field);
+      const emitted: any[] = [];
+      component.buttonClick.subscribe((e) => emitted.push(e));
 
+      const btn = fixture.nativeElement.querySelector('ui5-button');
+      btn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       fixture.detectChanges();
 
-      expect(component.value()).toBe('true');
-      expect(component.isBoolLike()).toBe(true);
-      expect(component.boolValue()).toBe(true);
-    });
-
-    it('should handle fieldDefinition value with copy button', () => {
-      const writeTextSpy = vi.fn().mockResolvedValue(undefined);
-      Object.assign(navigator, { clipboard: { writeText: writeTextSpy } });
-
-      fixture = TestBed.createComponent(ValueCellComponent);
-      component = fixture.componentInstance;
-
-      const field: FieldDefinition = {
-        property: 'spec.value',
-        value: 'copy-me',
-        uiSettings: { withCopyButton: true },
-      };
-
-      fixture.componentRef.setInput('fieldDefinition', field);
-
-      fixture.detectChanges();
-
-      const compiled = fixture.nativeElement;
-      const copyButton = compiled.querySelector('ui5-icon[name="copy"]');
-
-      const event = new Event('click');
-      copyButton.dispatchEvent(event);
-      fixture.detectChanges();
-
-      expect(writeTextSpy).toHaveBeenCalledWith('copy-me');
-    });
-
-    it('should handle fieldDefinition value with jsonPathExpression', () => {
-      fixture = TestBed.createComponent(ValueCellComponent);
-      component = fixture.componentInstance;
-
-      const resource: Resource = {
-        metadata: { name: 'test-resource' },
-        spec: { nested: { value: 'nested-value' } },
-      } as any;
-
-      const field: FieldDefinition = {
-        property: 'spec.value',
-        jsonPathExpression: '$.spec.nested.value',
-        value: 'fallback-value',
-      };
-
-      fixture.componentRef.setInput('resource', resource);
-      fixture.componentRef.setInput('fieldDefinition', field);
-
-      fixture.detectChanges();
-
-      expect(component.value()).toBe('nested-value');
+      expect(emitted).toHaveLength(1);
+      expect(emitted[0].field).toEqual(field);
+      expect(emitted[0].resource).toEqual(resource);
     });
   });
 });

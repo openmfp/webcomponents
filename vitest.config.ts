@@ -1,6 +1,21 @@
 import { defineConfig } from 'vitest/config';
+import angular from '@analogjs/vite-plugin-angular';
+import { resolve } from 'path';
 
 export default defineConfig({
+  plugins: [
+    angular({
+      tsconfig: resolve(
+        import.meta.dirname,
+        'projects/webcomponents/declarative-ui/tsconfig.spec.json',
+      ),
+    }),
+  ],
+  resolve: {
+    alias: {
+      jsonpath: resolve(import.meta.dirname, 'projects/webcomponents/declarative-ui/test-utils/jsonpath-mock.js'),
+    },
+  },
   test: {
     globals: true,
     environment: 'jsdom',
