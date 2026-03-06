@@ -25,6 +25,7 @@
     "strictTemplates": true
   },
   "files": [],
+  "exclude": ["vitest.config.ts"],
   "references": [
     {
       "path": "./projects/webcomponents/declarative-ui/tsconfig.lib.json"
