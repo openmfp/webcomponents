@@ -1,0 +1,36 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "ES2022",
+    "module": "preserve",
+    "strictPropertyInitialization": false,
+    "paths": {
+      "@openmfp/webcomponents/declarative-ui": [
+        "./projects/webcomponents/declarative-ui/public-api.ts"
+      ]
+    }
+  },
+  "angularCompilerOptions": {
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "strictTemplates": true
+  },
+  "files": [],
+  "references": [
+    {
+      "path": "./projects/webcomponents/declarative-ui/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/webcomponents/declarative-ui/tsconfig.spec.json"
+    }
+  ]
+}
