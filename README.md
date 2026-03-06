@@ -7,10 +7,9 @@ A modern Angular 21 web components library featuring declarative UI components b
 ## ✨ Features
 
 - **Angular 21** - Built with the latest Angular features and signal-based APIs
-- **Standalone Components** - No NgModules, fully modern architecture
 - **Web Components Ready** - Exportable as native web components via Angular Elements
-- **Declarative UI** - Intuitive table component with sorting, filtering, and selection
-- **Vitest Testing** - Fast, modern testing framework (no Jest)
+- **Declarative UI** - Intuitive generic ui component
+- **Vitest Testing** - Fast, modern testing framework
 - **TypeScript** - Full type safety with strict mode
 - **Tree-Shakeable** - Optimized bundle size with ES modules
 
@@ -74,93 +73,6 @@ npm run format
 # Check code formatting
 npm run check-format
 ```
-
-## 📖 Components
-
-### Table Component
-
-A feature-rich table component with:
-- ✅ Signal-based reactive state
-- ✅ Sortable columns
-- ✅ Filterable columns
-- ✅ Row selection
-- ✅ Custom cell formatting
-- ✅ Declarative or programmatic column definitions
-- ✅ Responsive design
-
-See [projects/webcomponents/README.md](projects/webcomponents/README.md) for detailed documentation.
-
-## 💡 Usage Examples
-
-### As Angular Components
-
-```typescript
-import { TableComponent, TableColumn } from '@openmfp/webcomponents';
-
-@Component({
-  standalone: true,
-  imports: [TableComponent],
-  template: `
-    <omfp-table
-      [data]="users"
-      [columns]="columns"
-      [sortable]="true"
-      [filterable]="true">
-    </omfp-table>
-  `
-})
-export class MyComponent {
-  users = [
-    { name: 'John', email: 'john@example.com', age: 30 }
-  ];
-
-  columns: TableColumn[] = [
-    { key: 'name', header: 'Name', sortable: true },
-    { key: 'email', header: 'Email' },
-    { key: 'age', header: 'Age', sortable: true }
-  ];
-}
-```
-
-### As Web Components
-
-```html
-<script type="module">
-  import { registerWebComponents } from '@openmfp/webcomponents';
-  registerWebComponents();
-</script>
-
-<omfp-table
-  data='[{"name":"John","age":30}]'
-  columns='[{"key":"name","header":"Name"}]'
-  sortable="true">
-</omfp-table>
-```
-
-See [examples/](examples/) directory for complete examples.
-
-## 🏗️ Architecture
-
-### Modern Angular 21 APIs
-
-This library uses the latest Angular 21 features:
-
-- `input()` - Type-safe reactive inputs (replaces `@Input`)
-- `output()` - Event emitters (replaces `@Output`)
-- `signal()` - Reactive state management
-- `computed()` - Derived reactive values
-- `effect()` - Side effects and lifecycle
-- `contentChildren()` - Query projected content
-
-**No deprecated APIs:**
-- ❌ No NgModules
-- ❌ No `@Input/@Output` decorators
-- ❌ No lifecycle hooks (ngOnInit, ngOnDestroy)
-- ❌ No `ChangeDetectionStrategy.OnPush`
-
-### Standalone Everything
-
-All components are standalone and can be imported directly without NgModules.
 
 ### Web Components Support
 
