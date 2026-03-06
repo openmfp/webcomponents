@@ -1,0 +1,57 @@
+{
+  "name": "@openmfp/webcomponents",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "ng build",
+    "build:watch": "ng build --watch",
+    "build:watch:yalc": "rimraf dist && concurrently -k -n \"build,yalc\" -c \"blue,magenta\" \"npm run build:watch\" \"npm run yalc:watch\"",
+    "yalc:watch": "wait-on --delay 10000 dist/declarative-ui/package.json && nodemon --delay 3 --watch './dist' --exec 'cd dist/declarative-ui && yalc publish --push --sig'",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:cov": "vitest run --coverage",
+    "lint": "ng lint",
+    "lint:fix": "ng lint --fix",
+    "format": "prettier . --write --list-different",
+    "check-format": "prettier . --check"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "dependencies": {
+    "@angular/animations": "21.2.1",
+    "@angular/common": "21.2.1",
+    "@angular/compiler": "21.2.1",
+    "@angular/core": "21.2.1",
+    "@angular/elements": "21.2.1",
+    "@angular/forms": "21.2.1",
+    "@angular/platform-browser": "21.2.1",
+    "rxjs": "^7.8.2",
+    "tslib": "2.8.1"
+  },
+  "prettier": "@openmfp/config-prettier",
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^21.2.1",
+    "@angular-eslint/builder": "^21.2.0",
+    "@angular/build": "^21.2.1",
+    "@angular/cli": "21.2.1",
+    "@angular/compiler-cli": "21.2.1",
+    "@openmfp/config-prettier": "0.9.2",
+    "@openmfp/eslint-config-typescript": "0.7.11",
+    "@types/node": "22.13.8",
+    "@vitest/coverage-v8": "4.0.18",
+    "concurrently": "9.2.1",
+    "eslint": "9.39.2",
+    "jsdom": "28.1.0",
+    "ng-packagr": "^21.1.0",
+    "nodemon": "3.1.14",
+    "prettier": "3.8.1",
+    "rimraf": "6.0.1",
+    "typescript": "5.9.3",
+    "typescript-eslint": "^8.33.0",
+    "vitest": "4.0.18",
+    "wait-on": "8.0.5"
+  }
+}
