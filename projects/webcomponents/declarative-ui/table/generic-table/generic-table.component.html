@@ -1,0 +1,120 @@
+<ui5-table test-id="generic-table">
+  <ui5-table-header-row slot="headerRow">
+    @for (column of viewColumns(); track columnTrackBy(column, $index)) {
+      @if (column.group) {
+        <ui5-table-header-cell [attr.test-id]="'generic-table-header-' + column.property">{{
+          column.group.label ?? column.group.name
+        }}</ui5-table-header-cell>
+      } @else {
+        <ui5-table-header-cell
+          [width]="column.uiSettings?.displayAs === 'alert' ? '30px' : 'auto'"
+          [attr.test-id]="'generic-table-header-' + column.property"
+          >{{ column.label }}</ui5-table-header-cell
+        >
+      }
+    }
+  </ui5-table-header-row>
+
+  @if (resources().length === 0) {
+    <ui5-illustrated-message test-id="generic-table-view-nodata" slot="noData" name="NoData">
+      <span slot="title">No Resources</span>
+      <span slot="subtitle">There are currently no items to show.</span>
+    </ui5-illustrated-message>
+  }
+
+  @for (item of resources(); let i = $index; track trackBy()(item)) {
+    <ui5-table-row
+      [attr.test-id]="'generic-table-row-' + i"
+      [interactive]="item.isAvailable ?? true"
+      [class.disabled]="!(item.isAvailable ?? true)"
+      (click)="tableRowClicked.emit(item)"
+    >
+      @for (column of viewColumns(); track columnTrackBy(column, $index)) {
+        @if (column.group) {
+          <ui5-table-cell
+            [attr.test-id]="'generic-table-cell-' + i + '-' + column.property"
+            [class.multiline]="column.group.multiline ?? true"
+          >
+            @for (
+              field of column.group.fields;
+              let last = $last;
+              track columnTrackBy(field, $index)
+            ) {
+              <span
+                class="group-value"
+                [attr.test-id]="
+                  'generic-table-cell-' + i + '-' + column.property + '-' + field.property
+                "
+              >
+                @if (field.label) {
+                  <span>{{ field.label }}: </span>
+                }
+                <mfp-value-cell
+                  [fieldDefinition]="field"
+                  [resource]="item"
+                  (buttonClick)="buttonClick.emit($event)"
+                />
+              </span>
+              @if (!last && column.group.delimiter) {
+                <span>{{ column.group.delimiter }}</span>
+              }
+            }
+          </ui5-table-cell>
+        } @else {
+          <ui5-table-cell [attr.test-id]="'generic-table-cell-' + i + '-' + column.property">
+            <mfp-value-cell
+              [fieldDefinition]="column"
+              [resource]="item"
+              (buttonClick)="buttonClick.emit($event)"
+            />
+          </ui5-table-cell>
+        }
+      }
+    </ui5-table-row>
+  }
+
+  @if (hasMore()) {
+    <ui5-table-growing
+      id="growing"
+      mode="Button"
+      slot="features"
+      [text]="'Load more'"
+      (ui5LoadMore)="loadMoreResources.emit()"
+    />
+  }
+</ui5-table>
+
+<!-- Pagination Control -->
+<div
+  class="pagination-footer"
+  style="
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-top: 1px solid var(--sapList_BorderColor);
+  "
+>
+  <div style="display: flex; align-items: center; gap: 1.5rem">
+    <div style="display: flex; align-items: center; gap: 0.5rem">
+      <span style="color: var(--sapTextColor); font-size: var(--sapFontSmallSize)"
+        >Items per load:</span
+      >
+      <ui5-select
+        [value]="paginationLimit().toString()"
+        (change)="paginationLimitChanged.emit(+$any($event)?.target?.value)"
+        style="width: 5rem"
+      >
+        <ui5-option value="5">5</ui5-option>
+        <ui5-option value="10">10</ui5-option>
+        <ui5-option value="50">50</ui5-option>
+        <ui5-option value="100">100</ui5-option>
+      </ui5-select>
+    </div>
+
+    <span style="color: var(--sapTextColor); font-size: var(--sapFontSmallSize)">
+      Items loaded:
+      <b>{{ `${resources().length} / ${totalItemsCount()}` }}</b>
+    </span>
+  </div>
+</div>
