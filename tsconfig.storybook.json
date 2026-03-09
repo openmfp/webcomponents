@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "emitDecoratorMetadata": true
+  },
+  "include": [
+    "projects/ngx/**/*.ts",
+    ".storybook/preview.ts"
+  ],
+  "exclude": [
+    "projects/**/*.spec.ts"
+  ]
+}

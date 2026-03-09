@@ -13,6 +13,7 @@ import {
   output,
 } from '@angular/core';
 import { IllustratedMessage } from '@fundamental-ngx/ui5-webcomponents-fiori';
+import '@ui5/webcomponents-fiori/dist/illustrations/NoData.js';
 import { Option } from '@fundamental-ngx/ui5-webcomponents/option';
 import { Select } from '@fundamental-ngx/ui5-webcomponents/select';
 import { Table } from '@fundamental-ngx/ui5-webcomponents/table';

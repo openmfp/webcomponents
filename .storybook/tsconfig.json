@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true
+  },
+  "exclude": ["../**/*.spec.ts"],
+  "include": ["../projects/ngx/**/*.ts", "./preview.ts"],
+  "files": ["main.ts"]
+}

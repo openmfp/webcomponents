@@ -1,3 +1,8 @@
+import {
+  FieldDefinition,
+  GenericResource,
+  ValueCellButtonClickEvent,
+} from '../models';
 import { evaluateCssRules } from '../utils/cssRules.engine';
 import { getFieldValue } from '../utils/field-definition.utils';
 import { BooleanValue } from './boolean-value/boolean-value.component';
@@ -7,6 +12,7 @@ import {
   CUSTOM_ELEMENTS_SCHEMA,
   ChangeDetectionStrategy,
   Component,
+  ViewEncapsulation,
   computed,
   input,
   output,
@@ -14,7 +20,7 @@ import {
 } from '@angular/core';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 import { Icon } from '@fundamental-ngx/ui5-webcomponents/icon';
-import { FieldDefinition, GenericResource, ValueCellButtonClickEvent } from '../models';
+import '@ui5/webcomponents-icons/dist/AllIcons.js';
 
 @Component({
   selector: 'mfp-value-cell',
@@ -23,13 +29,19 @@ import { FieldDefinition, GenericResource, ValueCellButtonClickEvent } from '../
   templateUrl: './value-cell.component.html',
   styleUrls: ['./value-cell.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.ShadowDom,
 })
-export class ValueCellComponent<T extends GenericResource, F extends FieldDefinition> {
+export class ValueCellComponent<
+  T extends GenericResource,
+  F extends FieldDefinition,
+> {
   fieldDefinition = input.required<F>();
   resource = input<T>();
   buttonClick = output<ValueCellButtonClickEvent<T>>();
 
-  value = computed(() => getFieldValue(this.fieldDefinition(), this.resource()));
+  value = computed(() =>
+    getFieldValue(this.fieldDefinition(), this.resource()),
+  );
 
   uiSettings = computed(() => this.fieldDefinition().uiSettings);
   displayAs = computed(() => this.uiSettings()?.displayAs);
@@ -37,7 +49,9 @@ export class ValueCellComponent<T extends GenericResource, F extends FieldDefini
   labelDisplay = computed(() => this.uiSettings()?.labelDisplay);
   cssCustomization = computed(() => this.uiSettings()?.cssCustomization);
   tooltipIcon = computed(() => this.uiSettings()?.tooltipIcon);
-  cssRules = computed(() => evaluateCssRules(this.value(), this.uiSettings()?.cssRules));
+  cssRules = computed(() =>
+    evaluateCssRules(this.value(), this.uiSettings()?.cssRules),
+  );
   cssStyles = computed(() => ({
     ...this.cssCustomization(),
     ...this.cssRules(),

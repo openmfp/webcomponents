@@ -114,7 +114,7 @@
 
     <span style="color: var(--sapTextColor); font-size: var(--sapFontSmallSize)">
       Items loaded:
-      <b>{{ `${resources().length} / ${totalItemsCount()}` }}</b>
+      <b>{{ totalItemsCount() !== undefined ? resources().length + ' / ' + totalItemsCount() : resources().length }}</b>
     </span>
   </div>
 </div>

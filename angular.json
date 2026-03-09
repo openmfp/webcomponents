@@ -35,6 +35,32 @@
             ],
             "eslintConfig": "eslint.config.js"
           }
+        },
+        "storybook": {
+          "builder": "@storybook/angular:start-storybook",
+          "options": {
+            "configDir": ".storybook",
+            "browserTarget": "ngx:build",
+            "tsConfig": "tsconfig.storybook.json",
+            "styles": [
+              "node_modules/@sap-theming/theming-base-content/content/Base/baseLib/sap_horizon/css_variables.css",
+              "node_modules/fundamental-styles/dist/theming/sap_horizon.css"
+            ],
+            "port": 6006
+          }
+        },
+        "build-storybook": {
+          "builder": "@storybook/angular:build-storybook",
+          "options": {
+            "configDir": ".storybook",
+            "browserTarget": "ngx:build",
+            "tsConfig": "tsconfig.storybook.json",
+            "styles": [
+              "node_modules/@sap-theming/theming-base-content/content/Base/baseLib/sap_horizon/css_variables.css",
+              "node_modules/fundamental-styles/dist/theming/sap_horizon.css"
+            ],
+            "outputDir": "dist/storybook"
+          }
         }
       }
     },
