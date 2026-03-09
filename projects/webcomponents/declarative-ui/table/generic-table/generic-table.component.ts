@@ -40,7 +40,7 @@ import { TableRow } from '@fundamental-ngx/ui5-webcomponents/table-row';
     TableGrowing,
   ],
 })
-export class GenericTable<T extends GenericResource> {
+export class DeclarativeTable<T extends GenericResource> {
   columns = input.required<TableFieldDefinition[]>();
   resources = input.required<T[]>();
   trackBy = input.required<(item: T) => string | number>();
