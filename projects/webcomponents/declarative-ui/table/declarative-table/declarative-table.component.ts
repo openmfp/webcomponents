@@ -23,9 +23,9 @@ import { TableHeaderRow } from '@fundamental-ngx/ui5-webcomponents/table-header-
 import { TableRow } from '@fundamental-ngx/ui5-webcomponents/table-row';
 
 @Component({
-  selector: 'mfp-generic-table',
-  templateUrl: './generic-table.component.html',
-  styleUrls: ['./generic-table.component.scss'],
+  selector: 'mfp-declarative-table',
+  templateUrl: './declarative-table.component.html',
+  styleUrls: ['./declarative-table.component.scss'],
   encapsulation: ViewEncapsulation.ShadowDom,
   imports: [
     IllustratedMessage,

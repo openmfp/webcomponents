@@ -1,2 +1,2 @@
-export * from './generic-table';
+export * from './declarative-table';
 export * from './models';

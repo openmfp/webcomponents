@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { GenericTable } from './generic-table.component';
+import { DeclarativeTable } from './declarative-table.component';
 import { GenericResource, TableFieldDefinition, ValueCellButtonClickEvent } from '../models';
 
-type Fixture = ComponentFixture<GenericTable<GenericResource>>;
-type Comp = GenericTable<GenericResource>;
+type Fixture = ComponentFixture<DeclarativeTable<GenericResource>>;
+type Comp = DeclarativeTable<GenericResource>;
 
 function setup(opts: {
   columns: TableFieldDefinition[];
@@ -14,7 +14,7 @@ function setup(opts: {
   hasMore?: boolean;
 }): { fixture: Fixture; component: Comp } {
   const fixture: Fixture = TestBed.createComponent(
-    GenericTable as unknown as typeof GenericTable<GenericResource>,
+    DeclarativeTable as unknown as typeof DeclarativeTable<GenericResource>,
   );
   const component = fixture.componentInstance;
   fixture.componentRef.setInput('columns', opts.columns);
@@ -35,10 +35,10 @@ function el(fixture: Fixture, testId: string): Element | null {
   return root(fixture).querySelector(`[test-id="${testId}"]`);
 }
 
-describe('GenericTable', () => {
+describe('DeclarativeTable', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [GenericTable as unknown as typeof GenericTable<GenericResource>],
+      imports: [DeclarativeTable as unknown as typeof DeclarativeTable<GenericResource>],
     }).compileComponents();
   });
 
