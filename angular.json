@@ -3,25 +3,25 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "declarative-ui": {
+    "ngx": {
       "projectType": "library",
       "schematics": {
         "@schematics/angular:component": {
           "style": "scss"
         }
       },
-      "root": "projects/webcomponents/declarative-ui",
-      "sourceRoot": "projects/webcomponents/declarative-ui",
+      "root": "projects/ngx/declarative-ui",
+      "sourceRoot": "projects/ngx/declarative-ui",
       "prefix": "mfp",
       "architect": {
         "build": {
           "builder": "@angular/build:ng-packagr",
           "configurations": {
             "production": {
-              "tsConfig": "projects/webcomponents/declarative-ui/tsconfig.lib.prod.json"
+              "tsConfig": "projects/ngx/declarative-ui/tsconfig.lib.prod.json"
             },
             "development": {
-              "tsConfig": "projects/webcomponents/declarative-ui/tsconfig.lib.json"
+              "tsConfig": "projects/ngx/declarative-ui/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
@@ -30,11 +30,42 @@
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": [
-              "projects/webcomponents/declarative-ui/**/*.ts",
-              "projects/webcomponents/declarative-ui/**/*.html"
+              "projects/ngx/declarative-ui/**/*.ts",
+              "projects/ngx/declarative-ui/**/*.html"
             ],
             "eslintConfig": "eslint.config.js"
           }
+        }
+      }
+    },
+    "webcomponents": {
+      "projectType": "application",
+      "root": "projects/webcomponents",
+      "sourceRoot": "projects/webcomponents",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": {
+              "base": "dist/webcomponents",
+              "browser": ""
+            },
+            "browser": "projects/webcomponents/main.ts",
+            "tsConfig": "projects/webcomponents/tsconfig.app.json",
+            "index": false,
+            "outputHashing": "none",
+            "inlineStyleLanguage": "scss"
+          },
+          "configurations": {
+            "production": {
+              "optimization": true
+            },
+            "development": {
+              "optimization": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
         }
       }
     }

@@ -4,8 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "ng build",
-    "build:watch": "mkdirp dist && nodemon --ignore dist --ignore dist-wc --ext js,yml,yaml,ts,html,css,scss,json,md --exec \"rimraf dist && npm run build && cd dist/declarative-ui && yalc publish --push --sig\"",
+    "build:ngx": "ng build ngx",
+    "build:wc": "ng build webcomponents && node scripts/bundle-wc.mjs",
+    "build": "npm run build:ngx && npm run build:wc",
+    "build:watch": "mkdirp dist && nodemon --ignore dist --ext js,yml,yaml,ts,html,css,scss,json,md --exec \"rimraf dist && npm run build && cd dist/ngx && yalc publish --push --sig\"",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:cov": "vitest run --coverage",

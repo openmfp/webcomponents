@@ -48,7 +48,6 @@ describe('LinkValueComponent', () => {
 
   it('should call stopPropagation when link is clicked', () => {
     const { component, fixture } = makeComponent('https://example.com');
-    const compiled = fixture.nativeElement;
 
     const mockEvent = {
       stopPropagation: vi.fn(),

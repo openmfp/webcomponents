@@ -7,19 +7,19 @@ export default defineConfig({
     angular({
       tsconfig: resolve(
         import.meta.dirname,
-        'projects/webcomponents/declarative-ui/tsconfig.spec.json',
+        'projects/ngx/declarative-ui/tsconfig.spec.json',
       ),
     }),
   ],
   resolve: {
     alias: {
-      jsonpath: resolve(import.meta.dirname, 'projects/webcomponents/declarative-ui/test-utils/jsonpath-mock.js'),
+      jsonpath: resolve(import.meta.dirname, 'projects/ngx/declarative-ui/test-utils/jsonpath-mock.js'),
     },
   },
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: ['./projects/webcomponents/declarative-ui/test-setup.ts'],
+    setupFiles: ['./projects/ngx/declarative-ui/test-setup.ts'],
     include: ['projects/**/*.spec.ts'],
     coverage: {
       provider: 'v8',

@@ -15,7 +15,7 @@
     "strictPropertyInitialization": false,
     "paths": {
       "@openmfp/webcomponents/declarative-ui": [
-        "./projects/webcomponents/declarative-ui/public-api.ts"
+        "./projects/ngx/declarative-ui/public-api.ts"
       ]
     }
   },
@@ -28,10 +28,10 @@
   "exclude": ["vitest.config.ts"],
   "references": [
     {
-      "path": "./projects/webcomponents/declarative-ui/tsconfig.lib.json"
+      "path": "./projects/ngx/declarative-ui/tsconfig.lib.json"
     },
     {
-      "path": "./projects/webcomponents/declarative-ui/tsconfig.spec.json"
+      "path": "./projects/ngx/declarative-ui/tsconfig.spec.json"
     }
   ]
 }
