@@ -40,7 +40,7 @@
           "builder": "@angular/build:unit-test",
           "options": {
             "runnerConfig": "vitest.config.ts",
-            "tsConfig": "projects/ngx/declarative-ui/tsconfig.spec.json"
+            "tsConfig": "./tsconfig.spec.json"
           }
         },
         "storybook": {
