@@ -1,5 +1,6 @@
 import { processGroupFields } from './proccess-fields';
-import { FieldDefinition } from '@platform-mesh/portal-ui-lib/models';
+
+interface FieldDefinition {}
 
 describe('proccess-fields', () => {
   describe('processFields', () => {

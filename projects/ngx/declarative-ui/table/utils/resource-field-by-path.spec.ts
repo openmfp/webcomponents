@@ -1,4 +1,4 @@
-import type { PropertyField, Resource } from '@platform-mesh/portal-ui-lib/models';
+import { GenericResource, PropertyField } from '../models';
 
 vi.mock('jsonpath', () => {
   const query = vi.fn();
@@ -8,6 +8,8 @@ vi.mock('jsonpath', () => {
     query,
   };
 });
+
+interface Resource extends GenericResource {}
 
 describe('getResourceValueByJsonPath', () => {
   const mockResource: Resource = {

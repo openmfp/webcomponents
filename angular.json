@@ -36,6 +36,13 @@
             "eslintConfig": "eslint.config.js"
           }
         },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "runnerConfig": "vitest.config.ts",
+            "tsConfig": "projects/ngx/declarative-ui/tsconfig.spec.json"
+          }
+        },
         "storybook": {
           "builder": "@storybook/angular:start-storybook",
           "options": {

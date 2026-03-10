@@ -19,7 +19,6 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: ['./projects/ngx/declarative-ui/test-setup.ts'],
     include: ['projects/**/*.spec.ts'],
     coverage: {
       provider: 'v8',

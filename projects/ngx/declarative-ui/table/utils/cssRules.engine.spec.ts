@@ -1,9 +1,9 @@
+import { CssRule } from '../models';
 import {
   cssRuleResolver,
   evaluateCssRules,
   parseStringValue,
 } from './cssRules.engine';
-import { CssRule } from '@platform-mesh/portal-ui-lib/models/models';
 
 describe('cssRules.engine', () => {
   describe('parseStringValue', () => {
