@@ -20,6 +20,13 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     include: ['projects/**/*.spec.ts'],
+    onUnhandledError(error) {
+      // Suppress circular JSON serialization errors from ui5-select's
+      // requestAnimationFrame callback in jsdom — a known fundamental-ngx
+      // issue that does not affect test results.
+      if (error instanceof TypeError && error.message.includes('circular structure')) return;
+      throw error;
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov', 'html'],
