@@ -101,14 +101,13 @@
         >Items per load:</span
       >
       <ui5-select
-        [value]="paginationLimit().toString()"
         (change)="paginationLimitChanged.emit(+$any($event)?.target?.value)"
         style="width: 5rem"
       >
-        <ui5-option value="5">5</ui5-option>
-        <ui5-option value="10">10</ui5-option>
-        <ui5-option value="50">50</ui5-option>
-        <ui5-option value="100">100</ui5-option>
+        <ui5-option value="5"  [selected]="paginationLimit() === 5">5</ui5-option>
+        <ui5-option value="10" [selected]="paginationLimit() === 10">10</ui5-option>
+        <ui5-option value="50" [selected]="paginationLimit() === 50">50</ui5-option>
+        <ui5-option value="100" [selected]="paginationLimit() === 100">100</ui5-option>
       </ui5-select>
     </div>
 
