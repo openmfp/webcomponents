@@ -17,7 +17,11 @@ function setup(field: FieldDefinition, resource?: GenericResource): { fixture: F
 }
 
 function el(fixture: Fixture, testId: string): Element | null {
-  return fixture.nativeElement.querySelector(`[test-id="${testId}"]`);
+  return (fixture.nativeElement.shadowRoot ?? fixture.nativeElement).querySelector(`[test-id="${testId}"]`);
+}
+
+function q(fixture: Fixture, selector: string): Element | null {
+  return (fixture.nativeElement.shadowRoot ?? fixture.nativeElement).querySelector(selector);
 }
 
 describe('ValueCellComponent', () => {
@@ -37,19 +41,19 @@ describe('ValueCellComponent', () => {
   describe('default display', () => {
     it('renders plain string value from resource property', () => {
       const { fixture } = setup({ property: 'status' }, { status: 'Active' });
-      const span = fixture.nativeElement.querySelector('[test-id="value-cell-status"]');
+      const span = q(fixture, '[test-id="value-cell-status"]');
       expect(span?.textContent?.trim()).toBe('Active');
     });
 
     it('falls back to field.value when no resource is provided', () => {
       const { fixture } = setup({ property: 'status', value: 'fallback' });
-      const span = fixture.nativeElement.querySelector('[test-id="value-cell-status"]');
+      const span = q(fixture, '[test-id="value-cell-status"]');
       expect(span?.textContent?.trim()).toBe('fallback');
     });
 
     it('renders empty when value is absent', () => {
       const { fixture } = setup({ property: 'missing' }, {});
-      const span = fixture.nativeElement.querySelector('[test-id="value-cell-missing"]');
+      const span = q(fixture, '[test-id="value-cell-missing"]');
       expect(span?.textContent?.trim()).toBe('');
     });
   });
@@ -211,7 +215,7 @@ describe('ValueCellComponent', () => {
         { property: 'avatar', uiSettings: { displayAs: 'img' } },
         { avatar: 'https://example.com/img.png' },
       );
-      const img = fixture.nativeElement.querySelector('img.image-cell');
+      const img = q(fixture, 'img.image-cell');
       expect(img).not.toBeNull();
       expect(img?.getAttribute('src')).toBe('https://example.com/img.png');
     });
@@ -221,7 +225,7 @@ describe('ValueCellComponent', () => {
         { property: 'avatar', uiSettings: { displayAs: 'img' } },
         {},
       );
-      expect(fixture.nativeElement.querySelector('img.image-cell')).toBeNull();
+      expect(q(fixture, 'img.image-cell')).toBeNull();
     });
   });
 
@@ -271,7 +275,7 @@ describe('ValueCellComponent', () => {
       const emitted: any[] = [];
       component.buttonClick.subscribe((e) => emitted.push(e));
 
-      const btn = fixture.nativeElement.querySelector('ui5-button');
+      const btn = q(fixture, 'ui5-button');
       btn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       fixture.detectChanges();
 

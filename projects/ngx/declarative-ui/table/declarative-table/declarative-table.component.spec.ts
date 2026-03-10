@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { DeclarativeTable } from './declarative-table.component';
 import { GenericResource, TableFieldDefinition, ValueCellButtonClickEvent } from '../models';
+import { ValueCellComponent } from '../value-cell/value-cell.component';
 
 type Fixture = ComponentFixture<DeclarativeTable<GenericResource>>;
 type Comp = DeclarativeTable<GenericResource>;
@@ -202,8 +204,12 @@ describe('DeclarativeTable', () => {
       const emitted: ValueCellButtonClickEvent<GenericResource>[] = [];
       component.buttonClick.subscribe((e) => emitted.push(e));
 
-      const btn = root(fixture).querySelector('ui5-button');
-      btn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      // The button lives inside value-cell's shadow root, unreachable via DOM
+      // querySelector in jsdom. Get the ValueCellComponent instance directly
+      // and invoke its buttonClicked method to test the event chain.
+      const valueCellDe = fixture.debugElement.query(By.directive(ValueCellComponent));
+      const valueCellComp: ValueCellComponent<GenericResource, TableFieldDefinition> = valueCellDe.componentInstance;
+      (valueCellComp as any).buttonClicked(new MouseEvent('click'));
       fixture.detectChanges();
 
       expect(emitted).toHaveLength(1);
