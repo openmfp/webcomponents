@@ -39,9 +39,14 @@ function el(fixture: Fixture, testId: string): Element | null {
 
 describe('DeclarativeTable', () => {
   beforeEach(async () => {
+    vi.useFakeTimers();
     await TestBed.configureTestingModule({
       imports: [DeclarativeTable as unknown as typeof DeclarativeTable<GenericResource>],
     }).compileComponents();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   describe('column headers', () => {
@@ -107,7 +112,7 @@ describe('DeclarativeTable', () => {
     it('renders a row for each resource', () => {
       const { fixture } = setup({
         columns: [{ property: 'name' }],
-        resources: [{ name: 'Alice' }, { name: 'Bob' }],
+        resources: [{ id: '1', name: 'Alice' }, { id: '2', name: 'Bob' }],
       });
       expect(el(fixture, 'generic-table-row-0')).not.toBeNull();
       expect(el(fixture, 'generic-table-row-1')).not.toBeNull();
@@ -252,7 +257,7 @@ describe('DeclarativeTable', () => {
     it('displays loaded count vs total', () => {
       const { fixture } = setup({
         columns: [{ property: 'name' }],
-        resources: [{ name: 'Alice' }, { name: 'Bob' }],
+        resources: [{ id: '1', name: 'Alice' }, { id: '2', name: 'Bob' }],
         totalItemsCount: 10,
       });
       const text = root(fixture).textContent;
