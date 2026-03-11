@@ -1,55 +1,18 @@
 import { GenericResource, PropertyField } from '../models';
-
-vi.mock('jsonpath', () => {
-  const query = vi.fn();
-  return {
-    __esModule: true,
-    default: { query },
-    query,
-  };
-});
+import {
+  decodeBase64,
+  encodeBase64,
+  getResourceValueByJsonPath,
+} from './resource-field-by-path';
 
 interface Resource extends GenericResource {}
 
+const mockResource: Resource = {
+  metadata: { name: 'test-resource' },
+  spec: { value: 'test-value', nested: { field: 'nested-value' } },
+} as any;
+
 describe('getResourceValueByJsonPath', () => {
-  const mockResource: Resource = {
-    metadata: { name: 'test-resource' },
-    spec: { value: 'test-value', nested: { field: 'nested-value' } },
-  } as any;
-
-  let getResourceValueByJsonPath: (
-    resource: Resource,
-    field: {
-      jsonPathExpression?: string;
-      property?: string | string[];
-      propertyField?: PropertyField;
-    },
-  ) => any;
-
-  let encodeBase64: (s: string) => string;
-  let decodeBase64: (s: string) => string;
-
-  let jsonpath: any;
-
-  beforeEach(async () => {
-    vi.resetModules();
-
-    const jp = await import('jsonpath');
-    jsonpath = (jp as any).default ?? jp;
-
-    const mod = await import('./resource-field-by-path');
-    getResourceValueByJsonPath = mod.getResourceValueByJsonPath;
-    encodeBase64 = mod.encodeBase64;
-    decodeBase64 = mod.decodeBase64;
-
-    vi.clearAllMocks();
-  });
-
-  afterEach(() => {
-    vi.clearAllMocks();
-    vi.restoreAllMocks();
-  });
-
   it('should return undefined when no property or jsonPathExpression is provided', () => {
     const result = getResourceValueByJsonPath(mockResource, {});
     expect(result).toBeUndefined();
@@ -69,44 +32,30 @@ describe('getResourceValueByJsonPath', () => {
   });
 
   it('should query resource using jsonPathExpression', () => {
-    vi.mocked(jsonpath.query).mockReturnValue(['test-result']);
-
     const result = getResourceValueByJsonPath(mockResource, {
       jsonPathExpression: 'spec.value',
     });
 
-    expect(jsonpath.query).toHaveBeenCalledWith(mockResource, '$.spec.value');
-    expect(result).toBe('test-result');
+    expect(result).toBe('test-value');
   });
 
   it('should query resource using jsonPathExpression when "$." is already provided', () => {
-    vi.mocked(jsonpath.query).mockReturnValue(['test-result']);
-
     const result = getResourceValueByJsonPath(mockResource, {
       jsonPathExpression: '$.spec.value',
     });
 
-    expect(jsonpath.query).toHaveBeenCalledWith(mockResource, '$.spec.value');
-    expect(result).toBe('test-result');
+    expect(result).toBe('test-value');
   });
 
   it('should query resource using property', () => {
-    vi.mocked(jsonpath.query).mockReturnValue(['property-result']);
-
     const result = getResourceValueByJsonPath(mockResource, {
       property: 'metadata.name',
     });
 
-    expect(jsonpath.query).toHaveBeenCalledWith(
-      mockResource,
-      '$.metadata.name',
-    );
-    expect(result).toBe('property-result');
+    expect(result).toBe('test-resource');
   });
 
   it('should return undefined when query result is empty', () => {
-    vi.mocked(jsonpath.query).mockReturnValue([]);
-
     const result = getResourceValueByJsonPath(mockResource, {
       property: 'nonexistent',
     });
@@ -115,15 +64,14 @@ describe('getResourceValueByJsonPath', () => {
   });
 
   it('should apply propertyField transform when provided', () => {
-    const mockValue = { key1: 'value1', key2: 'value2' };
-    vi.mocked(jsonpath.query).mockReturnValue([mockValue]);
+    const resource = { spec: { data: { key1: 'value1', key2: 'value2' } } } as any;
 
     const propertyField: PropertyField = {
       key: 'key1',
       transform: ['uppercase'],
     };
 
-    const result = getResourceValueByJsonPath(mockResource, {
+    const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
       propertyField,
     });
@@ -132,10 +80,9 @@ describe('getResourceValueByJsonPath', () => {
   });
 
   it('should handle none existing transform', () => {
-    const mockValue = { text: 'hello world' };
-    vi.mocked(jsonpath.query).mockReturnValue([mockValue]);
+    const resource = { spec: { data: { text: 'hello world' } } } as any;
 
-    const result = getResourceValueByJsonPath(mockResource, {
+    const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
       propertyField: { key: 'text', transform: ['notknown' as any] },
     });
@@ -144,10 +91,9 @@ describe('getResourceValueByJsonPath', () => {
   });
 
   it('should handle uppercase transform', () => {
-    const mockValue = { text: 'hello world' };
-    vi.mocked(jsonpath.query).mockReturnValue([mockValue]);
+    const resource = { spec: { data: { text: 'hello world' } } } as any;
 
-    const result = getResourceValueByJsonPath(mockResource, {
+    const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
       propertyField: { key: 'text', transform: ['uppercase'] },
     });
@@ -156,10 +102,9 @@ describe('getResourceValueByJsonPath', () => {
   });
 
   it('should handle lowercase transform', () => {
-    const mockValue = { text: 'HELLO WORLD' };
-    vi.mocked(jsonpath.query).mockReturnValue([mockValue]);
+    const resource = { spec: { data: { text: 'HELLO WORLD' } } } as any;
 
-    const result = getResourceValueByJsonPath(mockResource, {
+    const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
       propertyField: { key: 'text', transform: ['lowercase'] },
     });
@@ -168,10 +113,9 @@ describe('getResourceValueByJsonPath', () => {
   });
 
   it('should handle capitalize transform', () => {
-    const mockValue = { text: 'hello' };
-    vi.mocked(jsonpath.query).mockReturnValue([mockValue]);
+    const resource = { spec: { data: { text: 'hello' } } } as any;
 
-    const result = getResourceValueByJsonPath(mockResource, {
+    const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
       propertyField: { key: 'text', transform: ['capitalize'] },
     });
@@ -180,10 +124,9 @@ describe('getResourceValueByJsonPath', () => {
   });
 
   it('should handle multiple transforms', () => {
-    const mockValue = { text: 'HELLO WORLD' };
-    vi.mocked(jsonpath.query).mockReturnValue([mockValue]);
+    const resource = { spec: { data: { text: 'HELLO WORLD' } } } as any;
 
-    const result = getResourceValueByJsonPath(mockResource, {
+    const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
       propertyField: { key: 'text', transform: ['lowercase', 'capitalize'] },
     });
@@ -192,10 +135,9 @@ describe('getResourceValueByJsonPath', () => {
   });
 
   it('should handle encode transform', () => {
-    const mockValue = { text: 'test' };
-    vi.mocked(jsonpath.query).mockReturnValue([mockValue]);
+    const resource = { spec: { data: { text: 'test' } } } as any;
 
-    const result = getResourceValueByJsonPath(mockResource, {
+    const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
       propertyField: { key: 'text', transform: ['encode'] },
     });
@@ -209,23 +151,22 @@ describe('getResourceValueByJsonPath', () => {
     });
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    const mockValue = { text: 'test-value' };
-    vi.mocked(jsonpath.query).mockReturnValue([mockValue]);
+    const resource = { spec: { data: { text: 'test-value' } } } as any;
 
-    const result = getResourceValueByJsonPath(mockResource, {
+    const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
       propertyField: { key: 'text', transform: ['encode'] },
     });
 
     expect(result).toBe('test-value');
+    vi.restoreAllMocks();
   });
 
   it('should handle decode transform', () => {
     const encoded = encodeBase64('test');
-    const mockValue = { text: encoded };
-    vi.mocked(jsonpath.query).mockReturnValue([mockValue]);
+    const resource = { spec: { data: { text: encoded } } } as any;
 
-    const result = getResourceValueByJsonPath(mockResource, {
+    const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
       propertyField: { key: 'text', transform: ['decode'] },
     });
@@ -234,10 +175,9 @@ describe('getResourceValueByJsonPath', () => {
   });
 
   it('should return original value when transform fails', () => {
-    const mockValue = { text: 'invalid-base64!!!' };
-    vi.mocked(jsonpath.query).mockReturnValue([mockValue]);
+    const resource = { spec: { data: { text: 'invalid-base64!!!' } } } as any;
 
-    const result = getResourceValueByJsonPath(mockResource, {
+    const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
       propertyField: { key: 'text', transform: ['decode'] },
     });
@@ -246,10 +186,9 @@ describe('getResourceValueByJsonPath', () => {
   });
 
   it('should handle null value in transform', () => {
-    const mockValue = { text: null };
-    vi.mocked(jsonpath.query).mockReturnValue([mockValue]);
+    const resource = { spec: { data: { text: null } } } as any;
 
-    const result = getResourceValueByJsonPath(mockResource, {
+    const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
       propertyField: { key: 'text', transform: ['uppercase'] },
     });
@@ -258,10 +197,9 @@ describe('getResourceValueByJsonPath', () => {
   });
 
   it('should handle undefined value in transform', () => {
-    const mockValue = { text: undefined };
-    vi.mocked(jsonpath.query).mockReturnValue([mockValue]);
+    const resource = { spec: { data: { text: undefined } } } as any;
 
-    const result = getResourceValueByJsonPath(mockResource, {
+    const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
       propertyField: { key: 'text', transform: ['uppercase'] },
     });
@@ -270,10 +208,9 @@ describe('getResourceValueByJsonPath', () => {
   });
 
   it('should return value when no transform is provided', () => {
-    const mockValue = { text: 'no-transform' };
-    vi.mocked(jsonpath.query).mockReturnValue([mockValue]);
+    const resource = { spec: { data: { text: 'no-transform' } } } as any;
 
-    const result = getResourceValueByJsonPath(mockResource, {
+    const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
       propertyField: { key: 'text' },
     });
@@ -282,10 +219,9 @@ describe('getResourceValueByJsonPath', () => {
   });
 
   it('should return value when transform is empty array', () => {
-    const mockValue = { text: 'empty-transform' };
-    vi.mocked(jsonpath.query).mockReturnValue([mockValue]);
+    const resource = { spec: { data: { text: 'empty-transform' } } } as any;
 
-    const result = getResourceValueByJsonPath(mockResource, {
+    const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
       propertyField: { key: 'text', transform: [] },
     });
@@ -295,21 +231,6 @@ describe('getResourceValueByJsonPath', () => {
 });
 
 describe('encodeBase64', () => {
-  let encodeBase64: (s: string) => string;
-  let decodeBase64: (s: string) => string;
-
-  beforeEach(async () => {
-    vi.resetModules();
-    const mod = await import('./resource-field-by-path');
-    encodeBase64 = mod.encodeBase64;
-    decodeBase64 = mod.decodeBase64;
-    vi.clearAllMocks();
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
   it('should encode simple ASCII string', () => {
     const result = encodeBase64('hello');
     expect(result).toBe('aGVsbG8=');
@@ -338,6 +259,7 @@ describe('encodeBase64', () => {
     expect(() => encodeBase64('test')).toThrow(
       'Failed to encode string to Base64',
     );
+    vi.restoreAllMocks();
   });
 
   it('should log error when encoding fails', () => {
@@ -354,25 +276,11 @@ describe('encodeBase64', () => {
       'Base64 encoding failed:',
       expect.any(Error),
     );
+    vi.restoreAllMocks();
   });
 });
 
 describe('decodeBase64', () => {
-  let encodeBase64: (s: string) => string;
-  let decodeBase64: (s: string) => string;
-
-  beforeEach(async () => {
-    vi.resetModules();
-    const mod = await import('./resource-field-by-path');
-    encodeBase64 = mod.encodeBase64;
-    decodeBase64 = mod.decodeBase64;
-    vi.clearAllMocks();
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
   it('should decode simple ASCII string', () => {
     const result = decodeBase64('aGVsbG8=');
     expect(result).toBe('hello');
