@@ -78,6 +78,12 @@ npm run check-format
 
 Components can be exported as native web components using Angular Elements, making them framework-agnostic.
 
+## Components
+
+| Component | Documentation |
+|---|---|
+| `<mfp-declarative-table>` | [docs/declarative-table.md](docs/declarative-table.md) |
+
 ## Contributing
 
 Please refer to the [CONTRIBUTING.md](CONTRIBUTING.md) file in this repository for instructions on how to contribute to platform-mesh.

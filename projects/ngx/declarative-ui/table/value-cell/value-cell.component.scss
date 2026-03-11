@@ -1,0 +1,28 @@
+.label-value {
+  background-color: #01B4FF;
+  color: #ffffff;
+  border-radius: 1.4rem;
+  padding-inline: 0.4375rem;
+  letter-spacing: -0.00875rem;
+  display: inline-block;
+  border: 0;
+  font-size: 0.875rem;
+  line-height: 1.4rem;
+  margin: 3px 3px;
+}
+
+.secret-value-container {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.toggle-icon {
+  cursor: pointer;
+  transition: color 0.2s ease;
+  padding: 0.25rem;
+
+  &:hover {
+    color: var(--sapButton_Hover_TextColor, #0854a0);
+  }
+}

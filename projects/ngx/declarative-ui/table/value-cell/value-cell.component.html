@@ -1,0 +1,59 @@
+@let displayType = displayAs();
+<span [attr.test-id]="testId()" [class.label-value]="labelDisplay()" [style]="cssStyles()">
+  @if (displayType === 'secret') {
+    <span class="secret-value-container">
+      <secret-value [testId]="testId() + '-secret'" [value]="value()" [isVisible]="isVisible()" />
+      <ui5-icon
+        [attr.test-id]="testId() + '-secret-toggle'"
+        class="toggle-icon"
+        [name]="isVisible() ? 'hide' : 'show'"
+        (click)="toggleVisibility($event)"
+      />
+    </span>
+  } @else if (displayType === 'boolIcon' && isBoolLike()) {
+    <boolean-value [testId]="testId() + '-boolean'" [boolValue]="boolValue()!" />
+  } @else if (displayType === 'link' && isUrlValue()) {
+    <link-value [testId]="testId() + '-link'" [urlValue]="stringValue()!" />
+  } @else if (displayType === 'tooltip') {
+    <ui5-icon
+      [name]="tooltipIcon() ?? 'hint'"
+      [showTooltip]="true"
+      [accessibleName]="stringValue()!"
+      [attr.test-id]="testId() + '-tooltip'"
+    />
+  } @else if (displayType === 'alert') {
+    @if (!value()) {
+      <ui5-icon
+        name="alert"
+        design="Critical"
+        [attr.test-id]="testId() + '-icon'"
+        [showTooltip]="true"
+        accessibleName="{{ resource()?.accessibleName ?? '' }}"
+        (click)="$event.stopPropagation()"
+      />
+    }
+  } @else if (displayType === 'img' && value()) {
+    <img class="image-cell" [src]="value()" alt="Resource image" />
+  } @else if (displayType === 'button') {
+    @let buttonSettings = uiSettings()?.buttonSettings;
+    <ui5-button
+      [icon]="buttonSettings?.icon"
+      [endIcon]="buttonSettings?.endIcon"
+      [design]="buttonSettings?.design"
+      [tooltip]="buttonSettings?.tooltip"
+      (click)="buttonClicked($event)"
+      >{{ buttonSettings?.text }}</ui5-button
+    >&nbsp;
+  } @else {
+    {{ value() }}
+  }
+</span>
+
+@if (withCopyButton()) {
+  <ui5-icon
+    [attr.test-id]="testId() + '-copy'"
+    class="toggle-icon"
+    (click)="copyValue($event)"
+    name="copy"
+  />
+}

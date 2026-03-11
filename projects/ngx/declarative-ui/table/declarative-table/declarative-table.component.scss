@@ -1,0 +1,21 @@
+.multiline {
+  display: block;
+}
+
+.disabled {
+  filter: brightness(0.92);
+  pointer-events: none;
+
+  ui5-table-cell:not(:first-child) {
+    color: var(--sapContent_DisabledTextColor, #6a6d70);
+
+    ui5-icon {
+      color: var(--sapContent_DisabledTextColor, #6a6d70);
+    }
+  }
+}
+
+.group-value {
+  display: flex;
+  align-items: center;
+}
