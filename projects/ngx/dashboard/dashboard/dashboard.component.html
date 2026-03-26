@@ -1,10 +1,43 @@
 <div class="dashboard"
   [style.--cols]="config().columns ?? 12"
   [style.--row-height]="config().rowHeight ?? '120px'">
-  @for (section of config().sections; track section.id) {
+
+  <div class="dashboard__toolbar">
+    <ui5-button id="add-section-btn" design="Emphasized" (click)="openPanel()">+ Add Section</ui5-button>
+
+    <ui5-popover
+      opener="add-section-btn"
+      [open]="panelOpen()"
+      placement="Bottom"
+      horizontal-align="End"
+      header-text="Add Section"
+      (ui5BeforeClose)="closePanel()">
+      <div class="add-panel">
+        <div class="add-panel__row">
+          <ui5-label for="add-title" show-colon>Title</ui5-label>
+          <ui5-input id="add-title" placeholder="Optional" [value]="formTitle" (input)="formTitle = $any($event.target).value"></ui5-input>
+        </div>
+        <div class="add-panel__row">
+          <ui5-label for="add-cols" show-colon>Columns</ui5-label>
+          <ui5-input id="add-cols" type="Number" [value]="formCols" (input)="formCols = +$any($event.target).value" class="add-panel__input--number"></ui5-input>
+        </div>
+        <div class="add-panel__row">
+          <ui5-label for="add-rows" show-colon>Rows</ui5-label>
+          <ui5-input id="add-rows" type="Number" [value]="formRows" (input)="formRows = +$any($event.target).value" class="add-panel__input--number"></ui5-input>
+        </div>
+        <div class="add-panel__actions">
+          <ui5-button design="Transparent" (click)="closePanel()">Cancel</ui5-button>
+          <ui5-button design="Emphasized" (click)="confirmAdd()">Add</ui5-button>
+        </div>
+      </div>
+    </ui5-popover>
+  </div>
+
+  @for (section of sections(); track section.id) {
     <mfp-dashboard-section
       [section]="section"
       [columns]="config().columns ?? 12"
+      (removeSection)="sections.update(list => list.filter(s => s.id !== section.id))"
     />
   }
 </div>
