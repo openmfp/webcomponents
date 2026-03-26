@@ -4,9 +4,8 @@ import type { Meta, StoryObj } from '@storybook/angular';
 
 const SAMPLE_CONFIG: DashboardConfig = {
   title: 'System Overview',
-  description: 'Monitor your platform metrics, traffic and service health in real time.',
-  columns: 12,
-  rowHeight: '120px',
+  description:
+    'Monitor your platform metrics, traffic and service health in real time.',
   sections: [
     {
       id: 'overview',
@@ -58,8 +57,7 @@ export const Default: Story = {};
 export const SingleSection: Story = {
   args: {
     config: {
-      columns: 12,
-      rowHeight: '140px',
+      title: 'Single Section',
       sections: [
         {
           id: 'main',

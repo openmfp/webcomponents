@@ -22,7 +22,15 @@ document.body.classList.add('ui5-content-density-compact');
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
   encapsulation: ViewEncapsulation.ShadowDom,
-  imports: [DashboardSectionComponent, Button, Input, Label, Popover, Title, Text],
+  imports: [
+    DashboardSectionComponent,
+    Button,
+    Input,
+    Label,
+    Popover,
+    Title,
+    Text,
+  ],
 })
 export class DashboardComponent {
   config = input.required<DashboardConfig>();
@@ -43,7 +51,7 @@ export class DashboardComponent {
 
   openPanel(): void {
     this.formTitle = '';
-    this.formCols = this.config().columns ?? 12;
+    this.formCols = 12;
     this.formRows = 1;
     this.panelOpen.set(true);
   }

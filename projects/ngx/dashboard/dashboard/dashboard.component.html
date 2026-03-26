@@ -1,8 +1,4 @@
-<div
-  class="dashboard"
-  [style.--cols]="config().columns ?? 12"
-  [style.--row-height]="config().rowHeight ?? '120px'"
->
+<div class="dashboard">
   <div class="dashboard__topbar">
     <div class="dashboard__header">
       @if (config().title) {
@@ -25,7 +21,7 @@
   @for (section of sections(); track section.id) {
     <mfp-dashboard-section
       [section]="section"
-      [columns]="config().columns ?? 12"
+      [columns]="12"
       (removeSection)="removeSection(section.id)"
     />
   }
