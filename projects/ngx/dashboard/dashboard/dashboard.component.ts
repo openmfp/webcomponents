@@ -1,5 +1,5 @@
-import { CardConfig, DashboardConfig, SectionConfig } from '../models';
 import { DashboardCardComponent } from '../card/dashboard-card.component';
+import { CardConfig, DashboardConfig, SectionConfig } from '../models';
 import { DashboardSectionComponent } from '../section/dashboard-section.component';
 import {
   Component,
@@ -45,7 +45,6 @@ export class DashboardComponent {
   cardAdded = output<CardConfig>();
 
   editMode = signal(false);
-
   sections = signal<SectionConfig[]>([]);
   cards = signal<CardConfig[]>([]);
 
@@ -123,8 +122,10 @@ export class DashboardComponent {
   removeSectionCard(sectionId: string, cardId: string): void {
     this.sections.update((list) =>
       list.map((s) =>
-        s.id === sectionId ? { ...s, cards: s.cards.filter((c) => c.id !== cardId) } : s
-      )
+        s.id === sectionId
+          ? { ...s, cards: s.cards.filter((c) => c.id !== cardId) }
+          : s,
+      ),
     );
   }
 
@@ -151,8 +152,10 @@ export class DashboardComponent {
     if (this.cardFormSectionId()) {
       this.sections.update((list) =>
         list.map((s) =>
-          s.id === this.cardFormSectionId() ? { ...s, cards: [...s.cards, card] } : s
-        )
+          s.id === this.cardFormSectionId()
+            ? { ...s, cards: [...s.cards, card] }
+            : s,
+        ),
       );
     } else {
       this.cards.update((c) => [...c, card]);

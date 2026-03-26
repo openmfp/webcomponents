@@ -52,10 +52,10 @@
 
   @if (editMode()) {
     <div class="dashboard__edit-bar">
+      <ui5-button design="Emphasized" (click)="saveEdit()">Save</ui5-button>
       <ui5-button design="Transparent" (click)="cancelEdit()"
         >Cancel</ui5-button
       >
-      <ui5-button design="Emphasized" (click)="saveEdit()">Save</ui5-button>
     </div>
   }
 </div>
