@@ -28,6 +28,10 @@ const SAMPLE_CONFIG: DashboardConfig = {
       ],
     },
   ],
+  cards: [
+    { id: 'loose-1', title: 'Quick Stats', colSpan: 4, rowSpan: 1 },
+    { id: 'loose-2', title: 'Alerts', colSpan: 8, rowSpan: 1 },
+  ],
 };
 
 const meta: Meta<DashboardComponent> = {
@@ -54,10 +58,27 @@ type Story = StoryObj<DashboardComponent>;
 
 export const Default: Story = {};
 
-export const SingleSection: Story = {
+export const CardsOnly: Story = {
   args: {
     config: {
-      title: 'Single Section',
+      title: 'Cards Only',
+      description: 'Top-level cards without sections.',
+      cards: [
+        { id: 'a', title: 'Revenue', colSpan: 3, rowSpan: 1 },
+        { id: 'b', title: 'Users', colSpan: 3, rowSpan: 1 },
+        { id: 'c', title: 'Conversion', colSpan: 3, rowSpan: 1 },
+        { id: 'd', title: 'Churn', colSpan: 3, rowSpan: 1 },
+        { id: 'e', title: 'Wide Chart', colSpan: 8, rowSpan: 2 },
+        { id: 'f', title: 'Summary', colSpan: 4, rowSpan: 2 },
+      ],
+    },
+  },
+};
+
+export const SectionsOnly: Story = {
+  args: {
+    config: {
+      title: 'Sections Only',
       sections: [
         {
           id: 'main',
@@ -75,7 +96,7 @@ export const SingleSection: Story = {
   },
 };
 
-export const TwoSections: Story = {
+export const Mixed: Story = {
   args: {
     config: SAMPLE_CONFIG,
   },

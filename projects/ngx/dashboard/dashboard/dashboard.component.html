@@ -12,9 +12,8 @@
     </div>
 
     <div class="dashboard__toolbar">
-      <ui5-button id="add-section-btn" design="Emphasized" (click)="openPanel()"
-        >+ Add Section</ui5-button
-      >
+      <ui5-button id="add-card-btn" design="Default" (click)="openCardPanel()">+ Add Card</ui5-button>
+      <ui5-button id="add-section-btn" design="Emphasized" (click)="openPanel()">+ Add Section</ui5-button>
     </div>
   </div>
 
@@ -25,11 +24,15 @@
       (removeSection)="removeSection(section.id)"
     />
   }
+
+  @for (card of cards(); track card.id) {
+    <mfp-dashboard-card [card]="card" />
+  }
 </div>
 
 <ui5-popover
   opener="add-section-btn"
-  [open]="panelOpen()"
+  [open]="sectionPanelOpen()"
   placement="Bottom"
   horizontal-align="End"
   header-text="Add Section"
@@ -66,10 +69,53 @@
       ></ui5-input>
     </div>
     <div class="add-panel__actions">
-      <ui5-button design="Transparent" (click)="closePanel()"
-        >Cancel</ui5-button
-      >
+      <ui5-button design="Transparent" (click)="closePanel()">Cancel</ui5-button>
       <ui5-button design="Emphasized" (click)="confirmAdd()">Add</ui5-button>
+    </div>
+  </div>
+</ui5-popover>
+
+<ui5-popover
+  opener="add-card-btn"
+  [open]="cardPanelOpen()"
+  placement="Bottom"
+  horizontal-align="End"
+  header-text="Add Card"
+  (ui5BeforeClose)="closeCardPanel()"
+>
+  <div class="add-panel">
+    <div class="add-panel__row">
+      <ui5-label for="card-title" show-colon>Title</ui5-label>
+      <ui5-input
+        id="card-title"
+        placeholder="Optional"
+        [value]="cardFormTitle"
+        (input)="cardFormTitle = $any($event.target).value"
+      ></ui5-input>
+    </div>
+    <div class="add-panel__row">
+      <ui5-label for="card-cols" show-colon>Columns</ui5-label>
+      <ui5-input
+        id="card-cols"
+        type="Number"
+        [value]="cardFormCols"
+        (input)="cardFormCols = +$any($event.target).value"
+        class="add-panel__input--number"
+      ></ui5-input>
+    </div>
+    <div class="add-panel__row">
+      <ui5-label for="card-rows" show-colon>Rows</ui5-label>
+      <ui5-input
+        id="card-rows"
+        type="Number"
+        [value]="cardFormRows"
+        (input)="cardFormRows = +$any($event.target).value"
+        class="add-panel__input--number"
+      ></ui5-input>
+    </div>
+    <div class="add-panel__actions">
+      <ui5-button design="Transparent" (click)="closeCardPanel()">Cancel</ui5-button>
+      <ui5-button design="Emphasized" (click)="confirmAddCard()">Add</ui5-button>
     </div>
   </div>
 </ui5-popover>

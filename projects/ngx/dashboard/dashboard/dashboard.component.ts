@@ -1,4 +1,5 @@
-import { DashboardConfig, SectionConfig } from '../models';
+import { CardConfig, DashboardConfig, SectionConfig } from '../models';
+import { DashboardCardComponent } from '../card/dashboard-card.component';
 import { DashboardSectionComponent } from '../section/dashboard-section.component';
 import {
   Component,
@@ -24,6 +25,7 @@ document.body.classList.add('ui5-content-density-compact');
   encapsulation: ViewEncapsulation.ShadowDom,
   imports: [
     DashboardSectionComponent,
+    DashboardCardComponent,
     Button,
     Input,
     Label,
@@ -36,16 +38,25 @@ export class DashboardComponent {
   config = input.required<DashboardConfig>();
 
   sectionAdded = output<SectionConfig>();
+  cardAdded = output<CardConfig>();
 
   sections = signal<SectionConfig[]>([]);
-  panelOpen = signal(false);
+  cards = signal<CardConfig[]>([]);
+
+  sectionPanelOpen = signal(false);
   formTitle = '';
   formCols = 12;
   formRows = 1;
 
+  cardPanelOpen = signal(false);
+  cardFormTitle = '';
+  cardFormCols = 3;
+  cardFormRows = 1;
+
   constructor() {
     effect(() => {
-      this.sections.set(this.config().sections);
+      this.sections.set(this.config().sections ?? []);
+      this.cards.set(this.config().cards ?? []);
     });
   }
 
@@ -53,11 +64,11 @@ export class DashboardComponent {
     this.formTitle = '';
     this.formCols = 12;
     this.formRows = 1;
-    this.panelOpen.set(true);
+    this.sectionPanelOpen.set(true);
   }
 
   closePanel(): void {
-    this.panelOpen.set(false);
+    this.sectionPanelOpen.set(false);
   }
 
   confirmAdd(): void {
@@ -75,5 +86,28 @@ export class DashboardComponent {
 
   removeSection(id: string): void {
     this.sections.update((list) => list.filter((s) => s.id !== id));
+  }
+
+  openCardPanel(): void {
+    this.cardFormTitle = '';
+    this.cardFormCols = 3;
+    this.cardFormRows = 1;
+    this.cardPanelOpen.set(true);
+  }
+
+  closeCardPanel(): void {
+    this.cardPanelOpen.set(false);
+  }
+
+  confirmAddCard(): void {
+    const card: CardConfig = {
+      id: `card-${Date.now()}`,
+      title: this.cardFormTitle || undefined,
+      colSpan: this.cardFormCols,
+      rowSpan: this.cardFormRows,
+    };
+    this.cards.update((c) => [...c, card]);
+    this.cardAdded.emit(card);
+    this.closeCardPanel();
   }
 }
