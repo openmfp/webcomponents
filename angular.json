@@ -71,6 +71,48 @@
         }
       }
     },
+    "dashboard": {
+      "projectType": "library",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "projects/ngx/dashboard",
+      "sourceRoot": "projects/ngx/dashboard",
+      "prefix": "mfp",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/ngx/dashboard/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/ngx/dashboard/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/ngx/dashboard/**/*.ts",
+              "projects/ngx/dashboard/**/*.html"
+            ],
+            "eslintConfig": "eslint.config.js"
+          }
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "runnerConfig": "vitest.config.ts",
+            "tsConfig": "./tsconfig.spec.json"
+          }
+        }
+      }
+    },
     "webcomponents": {
       "projectType": "application",
       "root": "projects/webcomponents",
