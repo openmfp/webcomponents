@@ -44,8 +44,13 @@ export class DashboardComponent {
   sectionAdded = output<SectionConfig>();
   cardAdded = output<CardConfig>();
 
+  editMode = signal(false);
+
   sections = signal<SectionConfig[]>([]);
   cards = signal<CardConfig[]>([]);
+
+  private sectionsSnapshot: SectionConfig[] = [];
+  private cardsSnapshot: CardConfig[] = [];
 
   sectionPanelOpen = signal(false);
   formTitle = '';
@@ -63,6 +68,24 @@ export class DashboardComponent {
       this.sections.set(this.config().sections ?? []);
       this.cards.set(this.config().cards ?? []);
     });
+  }
+
+  enterEditMode(): void {
+    this.sectionsSnapshot = structuredClone(this.sections());
+    this.cardsSnapshot = structuredClone(this.cards());
+    this.editMode.set(true);
+  }
+
+  saveEdit(): void {
+    this.editMode.set(false);
+  }
+
+  cancelEdit(): void {
+    this.sections.set(this.sectionsSnapshot);
+    this.cards.set(this.cardsSnapshot);
+    this.sectionPanelOpen.set(false);
+    this.cardPanelOpen.set(false);
+    this.editMode.set(false);
   }
 
   openPanel(): void {

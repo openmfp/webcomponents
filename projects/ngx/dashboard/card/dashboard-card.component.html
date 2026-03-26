@@ -1,10 +1,12 @@
 <div class="card">
-  <ui5-button
-    class="card__remove"
-    design="Default"
-    icon="decline"
-    (click)="removeCard.emit()">
-  </ui5-button>
+  @if (editMode()) {
+    <ui5-button
+      class="card__remove"
+      design="Default"
+      icon="decline"
+      (click)="removeCard.emit()">
+    </ui5-button>
+  }
   @if (card().title) {
     <div class="card__header">{{ card().title }}</div>
   }

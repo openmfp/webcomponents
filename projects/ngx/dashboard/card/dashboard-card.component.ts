@@ -15,5 +15,6 @@ import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 })
 export class DashboardCardComponent {
   card = input.required<CardConfig>();
+  editMode = input<boolean>(false);
   removeCard = output<void>();
 }

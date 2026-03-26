@@ -17,6 +17,7 @@ import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 export class DashboardSectionComponent {
   section = input.required<SectionConfig>();
   columns = input<number>(12);
+  editMode = input<boolean>(false);
   removeSection = output<void>();
   removeCard = output<string>();
 }

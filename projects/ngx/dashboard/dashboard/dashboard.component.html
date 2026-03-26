@@ -1,5 +1,10 @@
-<div class="dashboard"
-  [style.background-image]="config().backgroundImageUrl ? 'url(' + config().backgroundImageUrl + ')' : null"
+<div
+  class="dashboard"
+  [style.background-image]="
+    config().backgroundImageUrl
+      ? 'url(' + config().backgroundImageUrl + ')'
+      : null
+  "
 >
   <div class="dashboard__topbar">
     <div class="dashboard__header">
@@ -14,8 +19,16 @@
     </div>
 
     <div class="dashboard__toolbar">
-      <ui5-button id="add-card-btn" design="Default" (click)="openCardPanel()">+ Add Card</ui5-button>
-      <ui5-button id="add-section-btn" design="Emphasized" (click)="openPanel()">+ Add Section</ui5-button>
+      @if (editMode()) {
+        <ui5-button id="add-card-btn" design="Default" (click)="openCardPanel()"
+          >+ Add Card</ui5-button
+        >
+        <ui5-button id="add-section-btn" design="Default" (click)="openPanel()"
+          >+ Add Section</ui5-button
+        >
+      } @else {
+        <ui5-button design="Default" (click)="enterEditMode()">Edit</ui5-button>
+      }
     </div>
   </div>
 
@@ -23,13 +36,27 @@
     <mfp-dashboard-section
       [section]="section"
       [columns]="12"
+      [editMode]="editMode()"
       (removeSection)="removeSection(section.id)"
       (removeCard)="removeSectionCard(section.id, $event)"
     />
   }
 
   @for (card of cards(); track card.id) {
-    <mfp-dashboard-card [card]="card" (removeCard)="removeCard(card.id)" />
+    <mfp-dashboard-card
+      [card]="card"
+      [editMode]="editMode()"
+      (removeCard)="removeCard(card.id)"
+    />
+  }
+
+  @if (editMode()) {
+    <div class="dashboard__edit-bar">
+      <ui5-button design="Transparent" (click)="cancelEdit()"
+        >Cancel</ui5-button
+      >
+      <ui5-button design="Emphasized" (click)="saveEdit()">Save</ui5-button>
+    </div>
   }
 </div>
 
@@ -72,7 +99,9 @@
       ></ui5-input>
     </div>
     <div class="add-panel__actions">
-      <ui5-button design="Transparent" (click)="closePanel()">Cancel</ui5-button>
+      <ui5-button design="Transparent" (click)="closePanel()"
+        >Cancel</ui5-button
+      >
       <ui5-button design="Emphasized" (click)="confirmAdd()">Add</ui5-button>
     </div>
   </div>
@@ -119,7 +148,14 @@
     @if (sections().length > 0 && cardPanelOpen()) {
       <div class="add-panel__row">
         <ui5-label for="card-section" show-colon>Section</ui5-label>
-        <ui5-select id="card-section" (ui5Change)="cardFormSectionId.set($any($event.detail.selectedOption).dataset['id'])">
+        <ui5-select
+          id="card-section"
+          (ui5Change)="
+            cardFormSectionId.set(
+              $any($event.detail.selectedOption).dataset['id']
+            )
+          "
+        >
           <ui5-option data-id="" selected>— Page (no section) —</ui5-option>
           @for (section of sections(); track section.id) {
             <ui5-option [attr.data-id]="section.id">
@@ -130,8 +166,12 @@
       </div>
     }
     <div class="add-panel__actions">
-      <ui5-button design="Transparent" (click)="closeCardPanel()">Cancel</ui5-button>
-      <ui5-button design="Emphasized" (click)="confirmAddCard()">Add</ui5-button>
+      <ui5-button design="Transparent" (click)="closeCardPanel()"
+        >Cancel</ui5-button
+      >
+      <ui5-button design="Emphasized" (click)="confirmAddCard()"
+        >Add</ui5-button
+      >
     </div>
   </div>
 </ui5-popover>
