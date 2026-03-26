@@ -88,6 +88,18 @@ export class DashboardComponent {
     this.sections.update((list) => list.filter((s) => s.id !== id));
   }
 
+  removeCard(id: string): void {
+    this.cards.update((list) => list.filter((c) => c.id !== id));
+  }
+
+  removeSectionCard(sectionId: string, cardId: string): void {
+    this.sections.update((list) =>
+      list.map((s) =>
+        s.id === sectionId ? { ...s, cards: s.cards.filter((c) => c.id !== cardId) } : s
+      )
+    );
+  }
+
   openCardPanel(): void {
     this.cardFormTitle = '';
     this.cardFormCols = 3;

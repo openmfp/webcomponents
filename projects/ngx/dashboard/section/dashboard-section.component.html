@@ -13,7 +13,7 @@
   }
   <div class="section__grid" [style.--cols]="columns()">
     @for (card of section().cards; track card.id) {
-      <mfp-dashboard-card [card]="card" />
+      <mfp-dashboard-card [card]="card" (removeCard)="removeCard.emit(card.id)" />
     }
   </div>
 </div>

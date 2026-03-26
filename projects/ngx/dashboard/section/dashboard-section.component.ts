@@ -18,4 +18,5 @@ export class DashboardSectionComponent {
   section = input.required<SectionConfig>();
   columns = input<number>(12);
   removeSection = output<void>();
+  removeCard = output<string>();
 }
