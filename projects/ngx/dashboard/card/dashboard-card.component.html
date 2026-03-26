@@ -1,0 +1,8 @@
+<div class="card">
+  @if (card().title) {
+    <div class="card__header">{{ card().title }}</div>
+  }
+  <div class="card__body">
+    <ng-content />
+  </div>
+</div>

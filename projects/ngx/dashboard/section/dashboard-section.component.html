@@ -1,0 +1,10 @@
+<div class="section">
+  @if (section().title) {
+    <div class="section__title">{{ section().title }}</div>
+  }
+  <div class="section__grid" [style.--cols]="columns()">
+    @for (card of section().cards; track card.id) {
+      <mfp-dashboard-card [card]="card" />
+    }
+  </div>
+</div>

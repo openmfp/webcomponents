@@ -1,1 +1,10 @@
-<p>Hello World</p>
+<div class="dashboard"
+  [style.--cols]="config().columns ?? 12"
+  [style.--row-height]="config().rowHeight ?? '120px'">
+  @for (section of config().sections; track section.id) {
+    <mfp-dashboard-section
+      [section]="section"
+      [columns]="config().columns ?? 12"
+    />
+  }
+</div>
