@@ -12,7 +12,9 @@ import {
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 import { Input } from '@fundamental-ngx/ui5-webcomponents/input';
 import { Label } from '@fundamental-ngx/ui5-webcomponents/label';
+import { Option } from '@fundamental-ngx/ui5-webcomponents/option';
 import { Popover } from '@fundamental-ngx/ui5-webcomponents/popover';
+import { Select } from '@fundamental-ngx/ui5-webcomponents/select';
 import { Text } from '@fundamental-ngx/ui5-webcomponents/text';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 
@@ -29,7 +31,9 @@ document.body.classList.add('ui5-content-density-compact');
     Button,
     Input,
     Label,
+    Option,
     Popover,
+    Select,
     Title,
     Text,
   ],
@@ -52,6 +56,7 @@ export class DashboardComponent {
   cardFormTitle = '';
   cardFormCols = 3;
   cardFormRows = 1;
+  cardFormSectionId = signal('');
 
   constructor() {
     effect(() => {
@@ -104,11 +109,13 @@ export class DashboardComponent {
     this.cardFormTitle = '';
     this.cardFormCols = 3;
     this.cardFormRows = 1;
+    this.cardFormSectionId.set('');
     this.cardPanelOpen.set(true);
   }
 
   closeCardPanel(): void {
     this.cardPanelOpen.set(false);
+    this.cardFormSectionId.set('');
   }
 
   confirmAddCard(): void {
@@ -118,7 +125,15 @@ export class DashboardComponent {
       colSpan: this.cardFormCols,
       rowSpan: this.cardFormRows,
     };
-    this.cards.update((c) => [...c, card]);
+    if (this.cardFormSectionId()) {
+      this.sections.update((list) =>
+        list.map((s) =>
+          s.id === this.cardFormSectionId() ? { ...s, cards: [...s.cards, card] } : s
+        )
+      );
+    } else {
+      this.cards.update((c) => [...c, card]);
+    }
     this.cardAdded.emit(card);
     this.closeCardPanel();
   }
