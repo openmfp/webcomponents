@@ -6,13 +6,31 @@
 .section {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  border: 1px solid var(--sapGroup_ContentBorderColor, #d9d9d9);
+  border-radius: 0.5rem;
+  padding: 0 0.75rem 0.75rem;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: -0.65em;
+    margin-bottom: 0.75rem;
+
+    &::before,
+    &::after {
+      content: '';
+      flex: 0 0 0.75rem;
+    }
+  }
 
   &__title {
-    font-size: 1rem;
+    font-size: 0.875rem;
     font-weight: 600;
     color: var(--sapTextColor, #32363a);
-    padding: 0.25rem 0;
+    background: var(--sapShellColor, #354a5e);
+    padding: 0 0.5rem;
+    white-space: nowrap;
   }
 
   &__grid {
