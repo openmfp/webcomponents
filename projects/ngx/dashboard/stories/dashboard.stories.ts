@@ -3,6 +3,8 @@ import type { DashboardConfig } from '../models';
 import type { Meta, StoryObj } from '@storybook/angular';
 
 const SAMPLE_CONFIG: DashboardConfig = {
+  title: 'System Overview',
+  description: 'Monitor your platform metrics, traffic and service health in real time.',
   columns: 12,
   rowHeight: '120px',
   sections: [

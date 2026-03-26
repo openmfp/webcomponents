@@ -20,6 +20,8 @@ export interface SectionConfig {
 }
 
 export interface DashboardConfig {
+  title?: string;
+  description?: string;
   columns?: number;
   rowHeight?: string;
   sections: SectionConfig[];
