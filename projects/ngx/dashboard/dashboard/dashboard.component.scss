@@ -9,6 +9,9 @@
   gap: 1rem;
   padding: 2rem;
   background: var(--sapShellColor, #354a5e);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   min-height: 100%;
 }
 

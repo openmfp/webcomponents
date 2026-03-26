@@ -22,6 +22,7 @@ export interface SectionConfig {
 export interface DashboardConfig {
   title: string;
   description?: string;
+  backgroundImageUrl?: string;
   cards?: CardConfig[];
   sections?: SectionConfig[];
 }

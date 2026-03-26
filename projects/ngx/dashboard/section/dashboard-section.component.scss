@@ -8,8 +8,9 @@
   display: flex;
   flex-direction: column;
   border: 1px solid var(--sapGroup_ContentBorderColor, #d9d9d9);
-  border-radius: 0.5rem;
-  padding: 0 0.75rem 0.75rem;
+  border-top: none;
+  border-radius: 0 0 0.5rem 0.5rem;
+  padding: 1.25rem 0.75rem 0.75rem;
 
   &__remove {
     position: absolute;
@@ -24,14 +25,25 @@
   }
 
   &__header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    margin-top: -0.65em;
-    margin-bottom: 0.75rem;
+    pointer-events: none;
+
+    &::before,
+    &::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--sapGroup_ContentBorderColor, #d9d9d9);
+    }
 
     &::before {
-      content: '';
+      max-width: 0.75rem;
       flex: 0 0 0.75rem;
     }
   }
@@ -39,10 +51,10 @@
   &__title {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--sapTextColor, #32363a);
-    background: var(--sapShellColor, #354a5e);
+    color: var(--sapTextColor, #fff);
     padding: 0 0.5rem;
     white-space: nowrap;
+    pointer-events: all;
   }
 
   &__grid {

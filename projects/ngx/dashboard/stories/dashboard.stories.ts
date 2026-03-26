@@ -6,6 +6,8 @@ const SAMPLE_CONFIG: DashboardConfig = {
   title: 'System Overview',
   description:
     'Monitor your platform metrics, traffic and service health in real time.',
+  backgroundImageUrl:
+    'https://fastly.picsum.photos/id/302/1728/1080.jpg?hmac=HlMkTqLQIirH_eozQ6CaQzdfukIGHfvGqh0uxc6CSKQ',
   sections: [
     {
       id: 'overview',
@@ -99,5 +101,15 @@ export const SectionsOnly: Story = {
 export const Mixed: Story = {
   args: {
     config: SAMPLE_CONFIG,
+  },
+};
+
+export const WithBackground: Story = {
+  args: {
+    config: {
+      ...SAMPLE_CONFIG,
+      backgroundImageUrl:
+        'https://fastly.picsum.photos/id/100/2500/1656.jpg?hmac=gWyN-7ZB32rkAjMhKXQgdHOIBRHyTSgzuOK6U0vXb1w',
+    },
   },
 };
