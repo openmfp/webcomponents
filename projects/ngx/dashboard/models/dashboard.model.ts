@@ -4,6 +4,7 @@ export interface CardConfig {
   rowSpan?: number;
   title?: string;
   content?: CardContent;
+  sectionId?: string;
 }
 
 export interface CardContent {
@@ -16,7 +17,6 @@ export interface SectionConfig {
   colSpan?: number;
   rowSpan?: number;
   title?: string;
-  cards: CardConfig[];
   editable?: boolean;
 }
 
@@ -24,6 +24,4 @@ export interface DashboardConfig {
   title: string;
   description?: string;
   backgroundImageUrl?: string;
-  cards?: CardConfig[];
-  sections?: SectionConfig[];
 }

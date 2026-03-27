@@ -4,9 +4,9 @@ import { DashboardSectionComponent } from '../section/dashboard-section.componen
 import {
   Component,
   ViewEncapsulation,
-  effect,
+  computed,
   input,
-  output,
+  model,
   signal,
 } from '@angular/core';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
@@ -40,13 +40,10 @@ document.body.classList.add('ui5-content-density-compact');
 })
 export class Dashboard {
   config = input.required<DashboardConfig>();
-
-  sectionAdded = output<SectionConfig>();
-  cardAdded = output<CardConfig>();
+  sections = model<SectionConfig[]>([]);
+  cards = model<CardConfig[]>([]);
 
   editMode = signal(false);
-  sections = signal<SectionConfig[]>([]);
-  cards = signal<CardConfig[]>([]);
 
   private sectionsSnapshot: SectionConfig[] = [];
   private cardsSnapshot: CardConfig[] = [];
@@ -62,12 +59,12 @@ export class Dashboard {
   cardFormRows = 1;
   cardFormSectionId = signal('');
 
-  constructor() {
-    effect(() => {
-      this.sections.set(this.config().sections ?? []);
-      this.cards.set(this.config().cards ?? []);
-    });
-  }
+  sectionCards = computed(() => {
+    const all = this.cards();
+    return (sectionId: string) => all.filter((c) => c.sectionId === sectionId);
+  });
+
+  looseCards = computed(() => this.cards().filter((c) => !c.sectionId));
 
   enterEditMode(): void {
     this.sectionsSnapshot = structuredClone(this.sections());
@@ -99,34 +96,25 @@ export class Dashboard {
   }
 
   confirmAdd(): void {
-    const section: SectionConfig = {
-      id: `section-${Date.now()}`,
-      title: this.formTitle || undefined,
-      colSpan: this.formCols,
-      rowSpan: this.formRows,
-      cards: [],
-    };
-    this.sections.update((s) => [...s, section]);
-    this.sectionAdded.emit(section);
+    this.sections.update((s) => [
+      ...s,
+      {
+        id: `section-${Date.now()}`,
+        title: this.formTitle || undefined,
+        colSpan: this.formCols,
+        rowSpan: this.formRows,
+      },
+    ]);
     this.closePanel();
   }
 
   removeSection(id: string): void {
     this.sections.update((list) => list.filter((s) => s.id !== id));
+    this.cards.update((list) => list.filter((c) => c.sectionId !== id));
   }
 
   removeCard(id: string): void {
     this.cards.update((list) => list.filter((c) => c.id !== id));
-  }
-
-  removeSectionCard(sectionId: string, cardId: string): void {
-    this.sections.update((list) =>
-      list.map((s) =>
-        s.id === sectionId
-          ? { ...s, cards: s.cards.filter((c) => c.id !== cardId) }
-          : s,
-      ),
-    );
   }
 
   openCardPanel(): void {
@@ -143,24 +131,17 @@ export class Dashboard {
   }
 
   confirmAddCard(): void {
-    const card: CardConfig = {
-      id: `card-${Date.now()}`,
-      title: this.cardFormTitle || undefined,
-      colSpan: this.cardFormCols,
-      rowSpan: this.cardFormRows,
-    };
-    if (this.cardFormSectionId()) {
-      this.sections.update((list) =>
-        list.map((s) =>
-          s.id === this.cardFormSectionId()
-            ? { ...s, cards: [...s.cards, card] }
-            : s,
-        ),
-      );
-    } else {
-      this.cards.update((c) => [...c, card]);
-    }
-    this.cardAdded.emit(card);
+    this.cards.update((list) => [
+      ...list,
+      {
+        id: `card-${Date.now()}`,
+        title: this.cardFormTitle || undefined,
+        colSpan: this.cardFormCols,
+        rowSpan: this.cardFormRows,
+        sectionId: this.cardFormSectionId() || undefined,
+      },
+    ]);
     this.closeCardPanel();
   }
 }
+

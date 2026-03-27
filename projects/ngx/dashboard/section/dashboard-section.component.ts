@@ -1,5 +1,5 @@
 import { DashboardCardComponent } from '../card/dashboard-card.component';
-import { SectionConfig } from '../models';
+import { CardConfig, SectionConfig } from '../models';
 import { Component, ViewEncapsulation, input, output } from '@angular/core';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 
@@ -16,6 +16,7 @@ import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 })
 export class DashboardSectionComponent {
   section = input.required<SectionConfig>();
+  cards = input<CardConfig[]>([]);
   columns = input<number>(12);
   editMode = input<boolean>(false);
   removeSection = output<void>();

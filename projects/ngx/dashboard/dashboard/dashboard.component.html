@@ -35,14 +35,15 @@
   @for (section of sections(); track section.id) {
     <mfp-dashboard-section
       [section]="section"
+      [cards]="sectionCards()(section.id)"
       [columns]="12"
       [editMode]="editMode()"
       (removeSection)="removeSection(section.id)"
-      (removeCard)="removeSectionCard(section.id, $event)"
+      (removeCard)="removeCard($event)"
     />
   }
 
-  @for (card of cards(); track card.id) {
+  @for (card of looseCards(); track card.id) {
     <mfp-dashboard-card
       [card]="card"
       [editMode]="editMode()"
