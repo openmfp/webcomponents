@@ -54,7 +54,6 @@ export class Dashboard {
   formRows = 1;
 
   cardPanelOpen = signal(false);
-  cardFormTitle = '';
   cardFormCols = 3;
   cardFormRows = 1;
   cardFormSectionId = signal('');
@@ -118,7 +117,6 @@ export class Dashboard {
   }
 
   openCardPanel(): void {
-    this.cardFormTitle = '';
     this.cardFormCols = 3;
     this.cardFormRows = 1;
     this.cardFormSectionId.set('');
@@ -135,7 +133,6 @@ export class Dashboard {
       ...list,
       {
         id: `card-${Date.now()}`,
-        title: this.cardFormTitle || undefined,
         colSpan: this.cardFormCols,
         rowSpan: this.cardFormRows,
         sectionId: this.cardFormSectionId() || undefined,

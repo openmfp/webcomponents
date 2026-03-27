@@ -4,13 +4,12 @@
       class="card__remove"
       design="Default"
       icon="decline"
-      (click)="removeCard.emit()">
-    </ui5-button>
-  }
-  @if (card().title) {
-    <div class="card__header">{{ card().title }}</div>
+      (click)="removeCard.emit()"
+    />
   }
   <div class="card__body">
-    <ng-content />
+    @if (card().component) {
+      <div #componentHost />
+    }
   </div>
 </div>
