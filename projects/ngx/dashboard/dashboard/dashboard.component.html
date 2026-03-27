@@ -146,25 +146,28 @@
         class="add-panel__input--number"
       ></ui5-input>
     </div>
-    @if (sections().length > 0 && cardPanelOpen()) {
-      <div class="add-panel__row">
-        <ui5-label for="card-section" show-colon>Section</ui5-label>
-        <ui5-select
-          id="card-section"
-          (ui5Change)="
-            cardFormSectionId.set(
-              $any($event.detail.selectedOption).dataset['id']
-            )
-          "
-        >
-          <ui5-option data-id="" selected>— Page (no section) —</ui5-option>
-          @for (section of sections(); track section.id) {
-            <ui5-option [attr.data-id]="section.id">
-              {{ section.title || section.id }}
-            </ui5-option>
-          }
-        </ui5-select>
-      </div>
+    @if (cardPanelOpen()) {
+      @let editableSections = sections().filter(s => s.editable !== false);
+      @if (editableSections.length > 0) {
+        <div class="add-panel__row">
+          <ui5-label for="card-section" show-colon>Section</ui5-label>
+          <ui5-select
+            id="card-section"
+            (ui5Change)="
+              cardFormSectionId.set(
+                $any($event.detail.selectedOption).dataset['id']
+              )
+            "
+          >
+            <ui5-option data-id="" selected>— Page (no section) —</ui5-option>
+            @for (section of editableSections; track section.id) {
+              <ui5-option [attr.data-id]="section.id">
+                {{ section.title || section.id }}
+              </ui5-option>
+            }
+          </ui5-select>
+        </div>
+      }
     }
     <div class="add-panel__actions">
       <ui5-button design="Transparent" (click)="closeCardPanel()"
