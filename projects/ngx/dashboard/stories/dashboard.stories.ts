@@ -1,4 +1,4 @@
-import { DashboardComponent } from '../dashboard/dashboard.component';
+import { Dashboard } from '../dashboard/dashboard.component';
 import type { DashboardConfig } from '../models';
 import type { Meta, StoryObj } from '@storybook/angular';
 
@@ -36,9 +36,9 @@ const SAMPLE_CONFIG: DashboardConfig = {
   ],
 };
 
-const meta: Meta<DashboardComponent> = {
+const meta: Meta<Dashboard> = {
   title: 'Dashboard / Dashboard',
-  component: DashboardComponent,
+  component: Dashboard,
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',
@@ -56,7 +56,7 @@ const meta: Meta<DashboardComponent> = {
 };
 
 export default meta;
-type Story = StoryObj<DashboardComponent>;
+type Story = StoryObj<Dashboard>;
 
 export const Default: Story = {};
 

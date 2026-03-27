@@ -38,7 +38,7 @@ document.body.classList.add('ui5-content-density-compact');
     Text,
   ],
 })
-export class DashboardComponent {
+export class Dashboard {
   config = input.required<DashboardConfig>();
 
   sectionAdded = output<SectionConfig>();

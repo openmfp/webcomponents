@@ -83,7 +83,7 @@
       <ui5-input
         id="add-cols"
         type="Number"
-        [value]="formCols"
+        [value]="formCols.toString()"
         (input)="formCols = +$any($event.target).value"
         class="add-panel__input--number"
       ></ui5-input>
@@ -93,7 +93,7 @@
       <ui5-input
         id="add-rows"
         type="Number"
-        [value]="formRows"
+        [value]="formRows.toString()"
         (input)="formRows = +$any($event.target).value"
         class="add-panel__input--number"
       ></ui5-input>
@@ -130,7 +130,7 @@
       <ui5-input
         id="card-cols"
         type="Number"
-        [value]="cardFormCols"
+        [value]="cardFormCols.toString()"
         (input)="cardFormCols = +$any($event.target).value"
         class="add-panel__input--number"
       ></ui5-input>
@@ -140,7 +140,7 @@
       <ui5-input
         id="card-rows"
         type="Number"
-        [value]="cardFormRows"
+        [value]="cardFormRows.toString()"
         (input)="cardFormRows = +$any($event.target).value"
         class="add-panel__input--number"
       ></ui5-input>

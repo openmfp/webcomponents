@@ -7,7 +7,7 @@
     "build:ngx": "ng build ngx",
     "build:wc": "ng build webcomponents && node scripts/bundle-wc.mjs",
     "build": "npm run build:ngx && npm run build:wc",
-    "build:watch": "mkdirp dist && nodemon --ignore dist --ext js,yml,yaml,ts,html,css,scss,json,md --exec \"rimraf dist && npm run build && cd dist/ngx && yalc publish --push --sig\"",
+    "build:watch": "mkdirp dist && nodemon --ignore dist --ext js,yml,yaml,ts,html,css,scss,json,md --exec \"rimraf dist && npm run build && yalc publish dist/ngx --push --sig\"",
     "test": "ng test ngx --watch=false",
     "test:watch": "ng test ngx",
     "test:cov": "ng test ngx --watch=false --coverage",
@@ -23,18 +23,20 @@
     "npm": ">=10.0.0"
   },
   "dependencies": {
-    "@angular/animations": "21.2.1",
-    "@angular/common": "21.2.1",
-    "@angular/compiler": "21.2.1",
-    "@angular/core": "21.2.1",
-    "@angular/elements": "21.2.1",
-    "@angular/forms": "21.2.1",
-    "@angular/platform-browser": "21.2.1",
-    "@fundamental-ngx/ui5-webcomponents": "0.61.0",
-    "@fundamental-ngx/ui5-webcomponents-fiori": "0.61.0",
-    "jsonpath": "^1.1.1",
-    "rxjs": "^7.8.2",
     "tslib": "2.8.1"
+  },
+  "peerDependencies": {
+    "@angular/animations": "^21.2.1",
+    "@angular/common": "^21.2.1",
+    "@angular/compiler": "^21.2.1",
+    "@angular/core": "^21.2.1",
+    "@angular/elements": "^21.2.1",
+    "@angular/forms": "^21.2.1",
+    "@angular/platform-browser": "^21.2.1",
+    "@fundamental-ngx/ui5-webcomponents": "^0.61.0",
+    "@fundamental-ngx/ui5-webcomponents-fiori": "^0.61.0",
+    "jsonpath": "^1.1.1",
+    "rxjs": "^7.8.2"
   },
   "prettier": "@openmfp/config-prettier",
   "devDependencies": {

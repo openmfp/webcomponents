@@ -1,6 +1,6 @@
-import { createApplication } from '@angular/platform-browser';
-import { createCustomElement } from '@angular/elements';
 import { DeclarativeTable } from '../ngx/declarative-ui/table/declarative-table/declarative-table.component';
+import { createCustomElement } from '@angular/elements';
+import { createApplication } from '@angular/platform-browser';
 
 (async () => {
   const app = await createApplication();
