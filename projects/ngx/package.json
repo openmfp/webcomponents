@@ -1,5 +1,5 @@
 {
-  "name": "@openmfp/webcomponents",
+  "name": "@openmfp/ngx",
   "version": "0.1.0",
   "peerDependencies": {
     "@angular/animations": "^21.2.1",
