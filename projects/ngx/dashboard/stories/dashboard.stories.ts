@@ -113,3 +113,34 @@ export const WithBackground: Story = {
     },
   },
 };
+
+export const NonEditableSection: Story = {
+  args: {
+    config: {
+      title: 'Mixed Editability',
+      description: 'One section is locked, the other is editable.',
+      sections: [
+        {
+          id: 'locked',
+          title: 'Locked Section',
+          colSpan: 12,
+          editable: false,
+          cards: [
+            { id: 'l-1', title: 'Fixed Card A', colSpan: 4, rowSpan: 1 },
+            { id: 'l-2', title: 'Fixed Card B', colSpan: 4, rowSpan: 1 },
+            { id: 'l-3', title: 'Fixed Card C', colSpan: 4, rowSpan: 1 },
+          ],
+        },
+        {
+          id: 'editable',
+          title: 'Editable Section',
+          colSpan: 12,
+          cards: [
+            { id: 'e-1', title: 'Removable Card A', colSpan: 6, rowSpan: 1 },
+            { id: 'e-2', title: 'Removable Card B', colSpan: 6, rowSpan: 1 },
+          ],
+        },
+      ],
+    },
+  },
+};

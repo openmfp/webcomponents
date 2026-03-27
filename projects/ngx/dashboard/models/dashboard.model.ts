@@ -17,6 +17,7 @@ export interface SectionConfig {
   rowSpan?: number;
   title?: string;
   cards: CardConfig[];
+  editable?: boolean;
 }
 
 export interface DashboardConfig {
