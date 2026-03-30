@@ -182,7 +182,7 @@ describe('DeclarativeTable', () => {
         resources: [resource],
       });
 
-      const emitted: any[] = [];
+      const emitted: unknown[] = [];
       component.tableRowClicked.subscribe((e) => emitted.push(e));
 
       const row = el(fixture, 'generic-table-row-0') as HTMLElement;
@@ -214,6 +214,7 @@ describe('DeclarativeTable', () => {
       // and invoke its buttonClicked method to test the event chain.
       const valueCellDe = fixture.debugElement.query(By.directive(ValueCellComponent));
       const valueCellComp: ValueCellComponent<GenericResource, TableFieldDefinition> = valueCellDe.componentInstance;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- accessing protected method for testing
       (valueCellComp as any).buttonClicked(new MouseEvent('click'));
       fixture.detectChanges();
 

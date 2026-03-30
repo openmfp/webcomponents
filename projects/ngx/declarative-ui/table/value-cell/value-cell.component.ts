@@ -25,11 +25,11 @@ import '@ui5/webcomponents-icons/dist/AllIcons.js';
 @Component({
   selector: 'mfp-value-cell',
   imports: [Icon, BooleanValue, LinkValue, SecretValue, Button],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './value-cell.component.html',
-  styleUrls: ['./value-cell.component.scss'],
+  styleUrl: './value-cell.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.ShadowDom,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class ValueCellComponent<
   T extends GenericResource,
@@ -37,7 +37,7 @@ export class ValueCellComponent<
 > {
   fieldDefinition = input.required<F>();
   resource = input<T>();
-  buttonClick = output<ValueCellButtonClickEvent<T>>();
+  readonly buttonClick = output<ValueCellButtonClickEvent<T>>();
 
   value = computed(() =>
     getFieldValue(this.fieldDefinition(), this.resource()),

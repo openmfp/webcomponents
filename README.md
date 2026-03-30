@@ -2,7 +2,7 @@
 
 A modern Angular 21 web components library featuring declarative UI components built with the latest signal-based APIs.
 
-![Build Status](https://github.com/platform-mesh/portal-ui-lib/actions/workflows/pipeline.yaml/badge.svg)
+![Build Status](https://github.com/openmfp/webcomponents/actions/workflows/pipeline.yaml/badge.svg)
 
 ## ✨ Features
 
@@ -84,13 +84,8 @@ Components can be exported as native web components using Angular Elements, maki
 |---|---|
 | `<mfp-declarative-table>` | [docs/declarative-table.md](docs/declarative-table.md) |
 
-## Contributing
+## NeoNephos Foundation
 
-Please refer to the [CONTRIBUTING.md](CONTRIBUTING.md) file in this repository for instructions on how to contribute to platform-mesh.
+This project is part of the [NeoNephos Foundation](https://neonephos.org), a Linux Foundation Europe initiative.
 
-## Code of Conduct
-
-Please refer to our [Code of Conduct](https://github.com/openmfp/.github/blob/main/CODE_OF_CONDUCT.md)
-for information on the expected conduct for contributing to openMFP.
-
-
+<p align="center"><img alt="Bundesministerium für Wirtschaft und Energie (BMWE)-EU funding logo" src="https://apeirora.eu/assets/img/BMWK-EU.png" width="400"/></p>

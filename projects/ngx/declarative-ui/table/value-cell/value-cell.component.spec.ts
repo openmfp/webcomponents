@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ValueCellComponent } from './value-cell.component';
-import { FieldDefinition, GenericResource } from '../models';
+import { FieldDefinition, GenericResource, ValueCellButtonClickEvent } from '../models';
 
 type Fixture = ComponentFixture<ValueCellComponent<GenericResource, FieldDefinition>>;
 type Comp = ValueCellComponent<GenericResource, FieldDefinition>;
@@ -272,7 +272,7 @@ describe('ValueCellComponent', () => {
       const resource = { action: 'go' };
       const { fixture, component } = setup(field, resource);
 
-      const emitted: any[] = [];
+      const emitted: ValueCellButtonClickEvent<GenericResource>[] = [];
       component.buttonClick.subscribe((e) => emitted.push(e));
 
       const btn = q(fixture, 'ui5-button');
