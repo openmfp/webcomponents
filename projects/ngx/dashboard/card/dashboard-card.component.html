@@ -1,15 +1,17 @@
-<div class="card">
-  @if (editMode()) {
-    <ui5-button
-      class="card__remove"
-      design="Default"
-      icon="decline"
-      (click)="removeCard.emit()"
-    />
-  }
-  <div class="card__body">
-    @if (card().component) {
-      <div #componentHost></div>
+@if (card().component) {
+  <div #componentHost></div>
+} @else {
+  <div class="card">
+    @if (editMode()) {
+      <ui5-button
+        class="card__remove"
+        design="Default"
+        icon="decline"
+        (click)="removeCard.emit()"
+      />
     }
+    <div class="card__body">
+      <ng-content />
+    </div>
   </div>
-</div>
+}

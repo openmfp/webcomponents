@@ -11,7 +11,6 @@
     "@angular/platform-browser": "^21.2.1",
     "@fundamental-ngx/ui5-webcomponents": "^0.61.0",
     "@fundamental-ngx/ui5-webcomponents-fiori": "^0.61.0",
-    "@luigi-project/client": "^2.22.0",
     "jsonpath": "^1.1.1",
     "rxjs": "^7.8.2"
   },

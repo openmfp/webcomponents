@@ -1,9 +1,8 @@
-import { Component, ViewEncapsulation, input } from '@angular/core';
+import { Component, ViewEncapsulation, input, output } from '@angular/core';
 import { Card } from '@fundamental-ngx/ui5-webcomponents/card';
 import { CardHeader } from '@fundamental-ngx/ui5-webcomponents/card-header';
 import { Icon } from '@fundamental-ngx/ui5-webcomponents/icon';
 import '@ui5/webcomponents-icons/dist/AllIcons.js';
-import * as LuigiClient from '@luigi-project/client';
 
 @Component({
   selector: 'mfp-visited-service-card',
@@ -19,7 +18,5 @@ export class VisitedServiceCard {
   serviceIcon = input.required<string>();
   path = input.required<string>();
 
-  navigate(): void {
-    LuigiClient.linkManager().navigate(this.path());
-  }
+  click = output<string>();
 }
