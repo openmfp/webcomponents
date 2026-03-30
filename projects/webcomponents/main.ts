@@ -1,11 +1,18 @@
 import { DeclarativeTable } from '../ngx/declarative-ui/table/declarative-table/declarative-table.component';
+import { VisitedServiceCard } from '../ngx/visited-service-card/visited-service-card.component';
 import { createCustomElement } from '@angular/elements';
 import { createApplication } from '@angular/platform-browser';
 
 (async () => {
   const app = await createApplication();
+
   const DeclarativeTableElement = createCustomElement(DeclarativeTable, {
     injector: app.injector,
   });
   customElements.define('mfp-declarative-table', DeclarativeTableElement);
+
+  const VisitedServiceCardElement = createCustomElement(VisitedServiceCard, {
+    injector: app.injector,
+  });
+  customElements.define('mfp-visited-service-card', VisitedServiceCardElement);
 })();

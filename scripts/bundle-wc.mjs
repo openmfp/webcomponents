@@ -5,7 +5,7 @@ import { join, resolve } from 'path';
 const dist = resolve('dist/webcomponents');
 // Angular application builder outputs the entry as main.js
 const entry = join(dist, 'main.js');
-const out = join(dist, 'declarative-table.js');
+const out = join(dist, 'mfp-webcomponents.js');
 
 await build({
   entryPoints: [entry],
@@ -16,7 +16,7 @@ await build({
   logLevel: 'warning',
 });
 
-// Remove the original main.js — replaced by the bundled declarative-table.js
+// Remove the original main.js — replaced by the bundled mfp-webcomponents.js
 unlinkSync(entry);
 
 // Remove leftover chunk files and build artifacts
@@ -30,6 +30,4 @@ for (const file of readdirSync(dist)) {
   }
 }
 
-console.log(
-  'Single-file bundle written to dist/webcomponents/declarative-table.js',
-);
+console.log('Single-file bundle written to dist/webcomponents/mfp-webcomponents.js');
