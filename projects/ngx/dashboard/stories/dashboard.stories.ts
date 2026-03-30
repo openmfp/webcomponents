@@ -6,8 +6,7 @@ const SAMPLE_CONFIG: DashboardConfig = {
   title: 'System Overview',
   description:
     'Monitor your platform metrics, traffic and service health in real time.',
-  backgroundImageUrl:
-    'https://fastly.picsum.photos/id/302/1728/1080.jpg?hmac=HlMkTqLQIirH_eozQ6CaQzdfukIGHfvGqh0uxc6CSKQ',
+  backgroundImageUrl: '/background-lightblue.png',
 };
 
 const SAMPLE_SECTIONS: SectionConfig[] = [

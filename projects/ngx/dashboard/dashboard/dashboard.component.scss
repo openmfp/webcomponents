@@ -1,11 +1,8 @@
-:host {
-  display: block;
-}
-
 .dashboard {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   grid-auto-rows: auto;
+  align-content: start;
   gap: 1rem;
   padding: 2rem;
   background: var(--sapShellColor, #354a5e);
@@ -13,15 +10,17 @@
   background-position: center;
   background-repeat: no-repeat;
   min-height: 100%;
+  height: 92vh;
 }
 
 .dashboard__topbar {
   grid-column: 1 / -1;
+  align-self: start;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  padding-bottom: 2rem;
+  padding-bottom: 3rem;
 }
 
 .dashboard__header {
