@@ -7,6 +7,7 @@ import {
   computed,
   input,
   model,
+  output,
   signal,
 } from '@angular/core';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
@@ -43,6 +44,8 @@ export class Dashboard {
   sections = model<SectionConfig[]>([]);
   cards = model<CardConfig[]>([]);
 
+  saved = output<{ sections: SectionConfig[]; cards: CardConfig[] }>();
+
   editMode = signal(false);
 
   private sectionsSnapshot: SectionConfig[] = [];
@@ -75,6 +78,7 @@ export class Dashboard {
   }
 
   saveEdit(): void {
+    this.saved.emit({ sections: this.sections(), cards: this.cards() });
     this.editMode.set(false);
   }
 
