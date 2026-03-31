@@ -31,10 +31,9 @@ const AVAILABLE_CARDS: CardConfig[] = [
   },
   {
     label: "What's New",
-    colSpan: 3,
+    colSpan: 6,
     rowSpan: 3,
     component: 'mfp-whats-new',
-    componentInputs: {},
   },
 ];
 
