@@ -54,7 +54,7 @@ const RAS_CARD_TEMPLATES = [
 export const CARDS: CardConfig[] = [
   ...RAS_CARD_TEMPLATES.map((t, i) => ({
     id: `ras-card-${i}`,
-    colSpan: 6,
+    colSpan: 4,
     rowSpan: 1,
     sectionId: 'ras',
     component: 'mfp-visited-service-card',

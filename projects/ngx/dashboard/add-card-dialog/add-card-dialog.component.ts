@@ -10,13 +10,14 @@ import {
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 import { CheckBox } from '@fundamental-ngx/ui5-webcomponents/check-box';
 import { Dialog } from '@fundamental-ngx/ui5-webcomponents/dialog';
+import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 
 @Component({
   selector: 'mfp-add-card-dialog',
   templateUrl: './add-card-dialog.component.html',
   styleUrls: ['./add-card-dialog.component.scss'],
   encapsulation: ViewEncapsulation.ShadowDom,
-  imports: [Button, CheckBox, Dialog],
+  imports: [Button, CheckBox, Dialog, Title],
 })
 export class AddCardDialog {
   availableCards = input<CardConfig[]>([]);
