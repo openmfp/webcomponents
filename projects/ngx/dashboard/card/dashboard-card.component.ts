@@ -37,13 +37,15 @@ export class DashboardCardComponent {
       const cfg = this.card();
       if (!host || !cfg.component) return;
 
+      host.nativeElement.innerHTML = '';
+
       const el = this.renderer.createElement(cfg.component);
       for (const [key, value] of Object.entries(cfg.componentInputs ?? {})) {
         this.renderer.setProperty(el, key, value);
       }
       this.renderer.appendChild(host.nativeElement, el);
 
-      return () => this.renderer.removeChild(host.nativeElement, el);
+      return () => { host.nativeElement.innerHTML = ''; };
     });
   }
 }
