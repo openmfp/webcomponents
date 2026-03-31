@@ -16,16 +16,6 @@ You are welcome to contribute with your pull requests. These steps explain the c
 4. Make sure the tests pass. Our GitHub actions pipeline is running the unit tests for your PR and will indicate any issues.
 5. Sign your commits with the Developer Certificate of Origin (DCO) — see below.
 
-## Developer Certificate of Origin (DCO)
-
-Contributors must sign off on their commits to certify they have the right to submit the code under the project's license. Add a `Signed-off-by` trailer to your commit messages:
-
-```bash
-git commit -s -m "Your commit message"
-```
-
-We use [the standard DCO text of the Linux Foundation](https://developercertificate.org/).
-
 ## Building
 
 Run `npm run build` to build the project.
