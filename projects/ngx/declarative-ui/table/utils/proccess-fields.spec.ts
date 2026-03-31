@@ -1,6 +1,5 @@
 import { processGroupFields } from './proccess-fields';
-
-interface FieldDefinition {}
+import { TableFieldDefinition } from '../models';
 
 describe('proccess-fields', () => {
   describe('processFields', () => {
@@ -10,7 +9,7 @@ describe('proccess-fields', () => {
     });
 
     it('should return fields without groups unchanged', () => {
-      const fields: FieldDefinition[] = [
+      const fields: TableFieldDefinition[] = [
         {
           property: 'name',
           label: 'Name',
@@ -26,7 +25,7 @@ describe('proccess-fields', () => {
     });
 
     it('should combine fields with the same group name', () => {
-      const fields: FieldDefinition[] = [
+      const fields: TableFieldDefinition[] = [
         {
           property: 'firstName',
           label: 'First Name',
@@ -72,7 +71,7 @@ describe('proccess-fields', () => {
     });
 
     it('should handle multiple different groups', () => {
-      const fields: FieldDefinition[] = [
+      const fields: TableFieldDefinition[] = [
         {
           property: 'firstName',
           label: 'First Name',
@@ -144,7 +143,7 @@ describe('proccess-fields', () => {
     });
 
     it('should handle mixed fields with and without groups', () => {
-      const fields: FieldDefinition[] = [
+      const fields: TableFieldDefinition[] = [
         {
           property: 'id',
           label: 'ID',
@@ -206,7 +205,7 @@ describe('proccess-fields', () => {
     });
 
     it('should use jsonPathExpression when available instead of property', () => {
-      const fields: FieldDefinition[] = [
+      const fields: TableFieldDefinition[] = [
         {
           property: 'firstName',
           label: 'First Name',
@@ -254,7 +253,7 @@ describe('proccess-fields', () => {
     });
 
     it('should handle array properties', () => {
-      const fields: FieldDefinition[] = [
+      const fields: TableFieldDefinition[] = [
         {
           property: ['firstName', 'first_name'],
           label: 'First Name',
@@ -283,7 +282,7 @@ describe('proccess-fields', () => {
     });
 
     it('should handle fields with group but no name', () => {
-      const fields: FieldDefinition[] = [
+      const fields: TableFieldDefinition[] = [
         {
           property: 'firstName',
           label: 'First Name',
@@ -325,7 +324,7 @@ describe('proccess-fields', () => {
     });
 
     it('should handle fields with undefined group', () => {
-      const fields: FieldDefinition[] = [
+      const fields: TableFieldDefinition[] = [
         {
           property: 'firstName',
           label: 'First Name',
@@ -361,7 +360,7 @@ describe('proccess-fields', () => {
     });
 
     it('should preserve all original field properties in the result', () => {
-      const fields: FieldDefinition[] = [
+      const fields = [
         {
           property: 'firstName',
           label: 'First Name',
@@ -389,7 +388,7 @@ describe('proccess-fields', () => {
             delimiter: ' | ',
           },
         },
-      ];
+      ] as unknown as TableFieldDefinition[];
 
       const result = processGroupFields(fields);
 
@@ -433,7 +432,7 @@ describe('proccess-fields', () => {
     });
 
     it('should handle complex nested group scenarios', () => {
-      const fields: FieldDefinition[] = [
+      const fields: TableFieldDefinition[] = [
         {
           property: 'id',
           label: 'ID',

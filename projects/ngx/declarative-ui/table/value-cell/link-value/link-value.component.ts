@@ -2,12 +2,12 @@ import { CUSTOM_ELEMENTS_SCHEMA, ChangeDetectionStrategy, Component, input } fro
 import { Link } from '@fundamental-ngx/ui5-webcomponents/link';
 
 @Component({
-  selector: 'link-value',
+  selector: 'mfp-link-value',
   imports: [Link],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './link-value.component.html',
   styleUrl: './link-value.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class LinkValue {
   urlValue = input.required<string>();

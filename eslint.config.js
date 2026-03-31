@@ -8,7 +8,23 @@ export default tsEslint.config(
   },
   ...angularConfig,
   {
+    // Disable jest rules — this project uses Vitest, not Jest
+    files: ['**/*.spec.ts'],
+    rules: {
+      'jest/no-deprecated-functions': 'off',
+      'jest/expect-expect': 'off',
+      'jest/valid-title': 'off',
+      'jest/no-conditional-expect': 'off',
+    },
+  },
+  {
     files: ['**/*.ts'],
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
     rules: {
       // Override shared config defaults for this library
       '@angular-eslint/prefer-on-push-component-change-detection': 'off',
