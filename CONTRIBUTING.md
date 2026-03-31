@@ -54,5 +54,5 @@ clear and includes enough instructions to reproduce the issue.
 
 ## License
 
-By contributing to openMFP, you agree that your contributions will be licensed
+By contributing to this project, you agree that your contributions will be licensed
 under its [Apache-2.0 license](LICENSE).
