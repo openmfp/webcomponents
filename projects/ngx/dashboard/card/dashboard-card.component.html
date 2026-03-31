@@ -1,7 +1,5 @@
 @if (card().component) {
-  <div #componentHost></div>
-} @else {
-  <div class="card">
+  <div class="component-card">
     @if (editMode()) {
       <ui5-button
         class="card__remove"
@@ -10,6 +8,10 @@
         (click)="removeCard.emit()"
       />
     }
+    <div #componentHost></div>
+  </div>
+} @else {
+  <div class="card">
     <div class="card__body">
       <ng-content />
     </div>

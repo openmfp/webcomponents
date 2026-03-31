@@ -5,6 +5,26 @@
   overflow: visible;
 }
 
+.card__remove {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
+  z-index: 10;
+  border-radius: 50% !important;
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+  min-width: unset !important;
+  padding: 0 !important;
+  font-size: 0.625rem !important;
+}
+
+.component-card {
+  position: relative;
+  height: 100%;
+  overflow: visible;
+  isolation: isolate;
+}
+
 .card {
   position: relative;
   display: flex;
@@ -14,18 +34,6 @@
   border-radius: 0.5rem;
   background: var(--sapBackgroundColor, #fff);
   overflow: visible;
-
-  &__remove {
-    position: absolute;
-    top: -0.5rem;
-    right: -0.5rem;
-    border-radius: 50% !important;
-    width: 1.25rem !important;
-    height: 1.25rem !important;
-    min-width: unset !important;
-    padding: 0 !important;
-    font-size: 0.625rem !important;
-  }
 
   &__header {
     padding: 0.75rem 1rem;
