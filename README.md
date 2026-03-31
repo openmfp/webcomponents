@@ -51,9 +51,6 @@ npm test
 # Run tests in watch mode
 npm run test:watch
 
-# Run tests with UI
-npm run test:ui
-
 # Generate coverage report
 npm run test:cov
 ```
