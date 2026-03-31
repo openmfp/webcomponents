@@ -1,4 +1,6 @@
 # Default code owners
 * @openmfp/frame @openmfp/ui-approvers @openmfp/tsc
-package.json @openmfp/frame @openmfp/ui-approvers @openmfp/tsc
-package-lock.json @openmfp/frame @openmfp/ui-approvers @openmfp/tsc
+
+# Excluded from CODEOWNERS to allow Renovate updates
+package.json
+package-lock.json
