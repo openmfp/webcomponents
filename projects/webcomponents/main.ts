@@ -1,5 +1,6 @@
 import { DeclarativeTable } from '../ngx/declarative-ui/table/declarative-table/declarative-table.component';
 import { VisitedServiceCard } from '../ngx/visited-service-card/visited-service-card.component';
+import { WhatsNew } from '../ngx/whats-new/whats-new.component';
 import { createCustomElement } from '@angular/elements';
 import { createApplication } from '@angular/platform-browser';
 
@@ -15,4 +16,9 @@ import { createApplication } from '@angular/platform-browser';
     injector: app.injector,
   });
   customElements.define('mfp-visited-service-card', VisitedServiceCardElement);
+
+  const WhatsNewElement = createCustomElement(WhatsNew, {
+    injector: app.injector,
+  });
+  customElements.define('mfp-whats-new', WhatsNewElement);
 })();

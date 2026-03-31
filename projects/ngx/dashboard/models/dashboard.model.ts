@@ -1,10 +1,11 @@
 export interface CardConfig {
-  id: string;
+  id?: string;
   colSpan?: number;
   rowSpan?: number;
   sectionId?: string;
-  component?: string;
+  component: string;
   componentInputs?: Record<string, unknown>;
+  label?: string;
 }
 
 export interface SectionConfig {

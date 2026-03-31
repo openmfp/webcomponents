@@ -1,3 +1,4 @@
+import { AddCardDialog } from '../add-card-dialog/add-card-dialog.component';
 import { DashboardCardComponent } from '../card/dashboard-card.component';
 import { CardConfig, DashboardConfig, SectionConfig } from '../models';
 import { DashboardSectionComponent } from '../section/dashboard-section.component';
@@ -13,9 +14,7 @@ import {
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 import { Input } from '@fundamental-ngx/ui5-webcomponents/input';
 import { Label } from '@fundamental-ngx/ui5-webcomponents/label';
-import { Option } from '@fundamental-ngx/ui5-webcomponents/option';
 import { Popover } from '@fundamental-ngx/ui5-webcomponents/popover';
-import { Select } from '@fundamental-ngx/ui5-webcomponents/select';
 import { Text } from '@fundamental-ngx/ui5-webcomponents/text';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 
@@ -27,25 +26,26 @@ document.body.classList.add('ui5-content-density-compact');
   styleUrls: ['./dashboard.component.scss'],
   encapsulation: ViewEncapsulation.ShadowDom,
   imports: [
+    AddCardDialog,
     DashboardSectionComponent,
     DashboardCardComponent,
     Button,
     Input,
     Label,
-    Option,
     Popover,
-    Select,
     Title,
     Text,
   ],
   host: {
-    '[style.background-image]': 'config().backgroundImageUrl ? "url(" + config().backgroundImageUrl + ")" : null',
+    '[style.background-image]':
+      'config().backgroundImageUrl ? "url(" + config().backgroundImageUrl + ")" : null',
   },
 })
 export class Dashboard {
   config = input.required<DashboardConfig>();
   sections = model<SectionConfig[]>([]);
   cards = model<CardConfig[]>([]);
+  availableCards = input<CardConfig[]>([]);
 
   saved = output<{ sections: SectionConfig[]; cards: CardConfig[] }>();
 
@@ -59,10 +59,16 @@ export class Dashboard {
   formCols = 12;
   formRows = 1;
 
-  cardPanelOpen = signal(false);
-  cardFormCols = 3;
-  cardFormRows = 1;
-  cardFormSectionId = signal('');
+  cardDialogOpen = signal(false);
+
+  addedComponents = computed(
+    () =>
+      new Set(
+        this.cards()
+          .map((c) => c.component)
+          .filter(Boolean) as string[],
+      ),
+  );
 
   sectionCards = computed(() => {
     const all = this.cards();
@@ -89,7 +95,7 @@ export class Dashboard {
     this.sections.set(this.sectionsSnapshot);
     this.cards.set(this.cardsSnapshot);
     this.sectionPanelOpen.set(false);
-    this.cardPanelOpen.set(false);
+    this.cardDialogOpen.set(false);
     this.editMode.set(false);
   }
 
@@ -127,28 +133,24 @@ export class Dashboard {
   }
 
   openCardPanel(): void {
-    this.cardFormCols = 3;
-    this.cardFormRows = 1;
-    this.cardFormSectionId.set('');
-    this.cardPanelOpen.set(true);
+    this.cardDialogOpen.set(true);
   }
 
   closeCardPanel(): void {
-    this.cardPanelOpen.set(false);
-    this.cardFormSectionId.set('');
+    this.cardDialogOpen.set(false);
   }
 
-  confirmAddCard(): void {
-    this.cards.update((list) => [
-      ...list,
-      {
-        id: `card-${Date.now()}`,
-        colSpan: this.cardFormCols,
-        rowSpan: this.cardFormRows,
-        sectionId: this.cardFormSectionId() || undefined,
-      },
-    ]);
+  onCardsAdded(cards: CardConfig[]): void {
+    if (cards.length > 0) {
+      this.cards.update((list) => [
+        ...list,
+        ...cards.map((ac) => ({
+          ...ac,
+          id: `card-${ac.component}-${Date.now()}`,
+          sectionId: undefined,
+        })),
+      ]);
+    }
     this.closeCardPanel();
   }
 }
-

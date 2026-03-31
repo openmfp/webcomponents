@@ -36,11 +36,11 @@
     />
   }
 
-  @for (card of looseCards(); track card.id) {
+  @for (card of looseCards(); track card.id ?? card.component) {
     <mfp-dashboard-card
       [card]="card"
       [editMode]="editMode()"
-      (removeCard)="removeCard(card.id)"
+      (removeCard)="removeCard($any(card.id))"
     />
   }
 
@@ -101,65 +101,10 @@
   </div>
 </ui5-popover>
 
-<ui5-popover
-  opener="add-card-btn"
-  [open]="cardPanelOpen()"
-  placement="Bottom"
-  horizontal-align="End"
-  header-text="Add Card"
-  (ui5BeforeClose)="closeCardPanel()"
->
-  <div class="add-panel">
-    <div class="add-panel__row">
-      <ui5-label for="card-cols" show-colon>Columns</ui5-label>
-      <ui5-input
-        id="card-cols"
-        type="Number"
-        [value]="cardFormCols.toString()"
-        (input)="cardFormCols = +$any($event.target).value"
-        class="add-panel__input--number"
-      ></ui5-input>
-    </div>
-    <div class="add-panel__row">
-      <ui5-label for="card-rows" show-colon>Rows</ui5-label>
-      <ui5-input
-        id="card-rows"
-        type="Number"
-        [value]="cardFormRows.toString()"
-        (input)="cardFormRows = +$any($event.target).value"
-        class="add-panel__input--number"
-      ></ui5-input>
-    </div>
-    @if (cardPanelOpen()) {
-      @let editableSections = sections().filter(s => s.editable !== false);
-      @if (editableSections.length > 0) {
-        <div class="add-panel__row">
-          <ui5-label for="card-section" show-colon>Section</ui5-label>
-          <ui5-select
-            id="card-section"
-            (ui5Change)="
-              cardFormSectionId.set(
-                $any($event.detail.selectedOption).dataset['id']
-              )
-            "
-          >
-            <ui5-option data-id="" selected>— Page (no section) —</ui5-option>
-            @for (section of editableSections; track section.id) {
-              <ui5-option [attr.data-id]="section.id">
-                {{ section.title || section.id }}
-              </ui5-option>
-            }
-          </ui5-select>
-        </div>
-      }
-    }
-    <div class="add-panel__actions">
-      <ui5-button design="Transparent" (click)="closeCardPanel()"
-        >Cancel</ui5-button
-      >
-      <ui5-button design="Emphasized" (click)="confirmAddCard()"
-        >Add</ui5-button
-      >
-    </div>
-  </div>
-</ui5-popover>
+<mfp-add-card-dialog
+  [open]="cardDialogOpen()"
+  [availableCards]="availableCards()"
+  [addedComponents]="addedComponents()"
+  (confirm)="onCardsAdded($event)"
+  (cancel)="closeCardPanel()"
+/>

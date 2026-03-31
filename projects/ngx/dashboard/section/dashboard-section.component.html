@@ -14,8 +14,8 @@
     </div>
   }
   <div class="section__grid" [style.--cols]="columns()">
-    @for (card of cards(); track card.id) {
-      <mfp-dashboard-card [card]="card" [editMode]="editMode() && section().editable !== false" (removeCard)="removeCard.emit(card.id)" />
+    @for (card of cards(); track card.id ?? card.component) {
+      <mfp-dashboard-card [card]="card" [editMode]="editMode() && section().editable !== false" (removeCard)="removeCard.emit($any(card.id))" />
     }
   </div>
 </div>
