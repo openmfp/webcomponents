@@ -67,7 +67,10 @@ export class Dashboard {
 
   enterEditMode(): void {
     this.sectionsSnapshot = structuredClone(this.sections());
-    this.cardsSnapshot = structuredClone(this.cards());
+    this.cardsSnapshot = this.cards().map((c) => ({
+      ...c,
+      componentInputs: c.componentInputs ? { ...c.componentInputs } : undefined,
+    }));
     this.editMode.set(true);
   }
 

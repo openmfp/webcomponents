@@ -1,6 +1,11 @@
 import { Dashboard } from '../dashboard/dashboard.component';
-import type { CardConfig, DashboardConfig, SectionConfig } from '../models';
+import type { DashboardConfig } from '../models';
 import type { Meta, StoryObj } from '@storybook/angular';
+import { CARDS, SECTIONS } from './dashboard.cards';
+
+// ---------------------------------------------------------------------------
+// Shared config
+// ---------------------------------------------------------------------------
 
 const SAMPLE_CONFIG: DashboardConfig = {
   title: 'System Overview',
@@ -9,21 +14,9 @@ const SAMPLE_CONFIG: DashboardConfig = {
   backgroundImageUrl: '/background-lightblue.png',
 };
 
-const SAMPLE_SECTIONS: SectionConfig[] = [
-  { id: 'overview', title: 'Overview', colSpan: 12 },
-  { id: 'traffic', title: 'Traffic', colSpan: 12 },
-];
-
-const SAMPLE_CARDS: CardConfig[] = [
-  { id: 'card-1', colSpan: 3, rowSpan: 1, sectionId: 'overview' },
-  { id: 'card-2', colSpan: 3, rowSpan: 1, sectionId: 'overview' },
-  { id: 'card-3', colSpan: 3, rowSpan: 1, sectionId: 'overview' },
-  { id: 'card-4', colSpan: 3, rowSpan: 1, sectionId: 'overview' },
-  { id: 'card-5', colSpan: 8, rowSpan: 2, sectionId: 'traffic' },
-  { id: 'card-6', colSpan: 4, rowSpan: 2, sectionId: 'traffic' },
-  { id: 'loose-1', colSpan: 4, rowSpan: 1 },
-  { id: 'loose-2', colSpan: 8, rowSpan: 1 },
-];
+// ---------------------------------------------------------------------------
+// Meta
+// ---------------------------------------------------------------------------
 
 const meta: Meta<Dashboard> = {
   title: 'Dashboard / Dashboard',
@@ -39,8 +32,8 @@ const meta: Meta<Dashboard> = {
   },
   args: {
     config: SAMPLE_CONFIG,
-    sections: SAMPLE_SECTIONS,
-    cards: SAMPLE_CARDS,
+    sections: SECTIONS,
+    cards: CARDS,
   },
   render: (args) => ({
     props: args,
@@ -50,6 +43,10 @@ const meta: Meta<Dashboard> = {
 
 export default meta;
 type Story = StoryObj<Dashboard>;
+
+// ---------------------------------------------------------------------------
+// Stories
+// ---------------------------------------------------------------------------
 
 export const Default: Story = {};
 
