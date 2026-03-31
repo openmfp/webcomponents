@@ -38,6 +38,9 @@ document.body.classList.add('ui5-content-density-compact');
     Title,
     Text,
   ],
+  host: {
+    '[style.background-image]': 'config().backgroundImageUrl ? "url(" + config().backgroundImageUrl + ")" : null',
+  },
 })
 export class Dashboard {
   config = input.required<DashboardConfig>();
