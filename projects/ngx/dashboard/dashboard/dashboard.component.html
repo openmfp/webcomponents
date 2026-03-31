@@ -16,9 +16,6 @@
         <ui5-button id="add-card-btn" design="Default" (click)="openCardPanel()"
           >+ Add Card</ui5-button
         >
-        <ui5-button id="add-section-btn" design="Default" (click)="openPanel()"
-          >+ Add Section</ui5-button
-        >
       } @else {
         <ui5-button design="Default" (click)="enterEditMode()">Edit</ui5-button>
       }
@@ -53,53 +50,6 @@
     </div>
   }
 </div>
-
-<ui5-popover
-  opener="add-section-btn"
-  [open]="sectionPanelOpen()"
-  placement="Bottom"
-  horizontal-align="End"
-  header-text="Add Section"
-  (ui5BeforeClose)="closePanel()"
->
-  <div class="add-panel">
-    <div class="add-panel__row">
-      <ui5-label for="add-title" show-colon>Title</ui5-label>
-      <ui5-input
-        id="add-title"
-        placeholder="Optional"
-        [value]="formTitle"
-        (input)="formTitle = $any($event.target).value"
-      ></ui5-input>
-    </div>
-    <div class="add-panel__row">
-      <ui5-label for="add-cols" show-colon>Columns</ui5-label>
-      <ui5-input
-        id="add-cols"
-        type="Number"
-        [value]="formCols.toString()"
-        (input)="formCols = +$any($event.target).value"
-        class="add-panel__input--number"
-      ></ui5-input>
-    </div>
-    <div class="add-panel__row">
-      <ui5-label for="add-rows" show-colon>Rows</ui5-label>
-      <ui5-input
-        id="add-rows"
-        type="Number"
-        [value]="formRows.toString()"
-        (input)="formRows = +$any($event.target).value"
-        class="add-panel__input--number"
-      ></ui5-input>
-    </div>
-    <div class="add-panel__actions">
-      <ui5-button design="Transparent" (click)="closePanel()"
-        >Cancel</ui5-button
-      >
-      <ui5-button design="Emphasized" (click)="confirmAdd()">Add</ui5-button>
-    </div>
-  </div>
-</ui5-popover>
 
 <mfp-add-card-dialog
   [open]="cardDialogOpen()"

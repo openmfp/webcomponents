@@ -12,9 +12,6 @@ import {
   signal,
 } from '@angular/core';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
-import { Input } from '@fundamental-ngx/ui5-webcomponents/input';
-import { Label } from '@fundamental-ngx/ui5-webcomponents/label';
-import { Popover } from '@fundamental-ngx/ui5-webcomponents/popover';
 import { Text } from '@fundamental-ngx/ui5-webcomponents/text';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 
@@ -30,9 +27,6 @@ document.body.classList.add('ui5-content-density-compact');
     DashboardSectionComponent,
     DashboardCardComponent,
     Button,
-    Input,
-    Label,
-    Popover,
     Title,
     Text,
   ],
@@ -53,11 +47,6 @@ export class Dashboard {
 
   private sectionsSnapshot: SectionConfig[] = [];
   private cardsSnapshot: CardConfig[] = [];
-
-  sectionPanelOpen = signal(false);
-  formTitle = '';
-  formCols = 12;
-  formRows = 1;
 
   cardDialogOpen = signal(false);
 
@@ -94,33 +83,8 @@ export class Dashboard {
   cancelEdit(): void {
     this.sections.set(this.sectionsSnapshot);
     this.cards.set(this.cardsSnapshot);
-    this.sectionPanelOpen.set(false);
     this.cardDialogOpen.set(false);
     this.editMode.set(false);
-  }
-
-  openPanel(): void {
-    this.formTitle = '';
-    this.formCols = 12;
-    this.formRows = 1;
-    this.sectionPanelOpen.set(true);
-  }
-
-  closePanel(): void {
-    this.sectionPanelOpen.set(false);
-  }
-
-  confirmAdd(): void {
-    this.sections.update((s) => [
-      ...s,
-      {
-        id: `section-${Date.now()}`,
-        title: this.formTitle || undefined,
-        colSpan: this.formCols,
-        rowSpan: this.formRows,
-      },
-    ]);
-    this.closePanel();
   }
 
   removeSection(id: string): void {
