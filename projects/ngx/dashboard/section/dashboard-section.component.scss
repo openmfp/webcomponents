@@ -7,10 +7,14 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--sapGroup_ContentBorderColor, #d9d9d9);
+  border: 1px solid transparent;
   border-top: none;
   border-radius: 0 0 0.5rem 0.5rem;
   padding: 1.25rem 0.75rem 0.75rem;
+
+  &--edit {
+    border-color: var(--sapGroup_ContentBorderColor, #d9d9d9);
+  }
 
   &__remove {
     position: absolute;
@@ -39,12 +43,19 @@
       content: '';
       flex: 1;
       height: 1px;
-      background: var(--sapGroup_ContentBorderColor, #d9d9d9);
+      background: transparent;
     }
 
     &::before {
       max-width: 0.75rem;
       flex: 0 0 0.75rem;
+    }
+  }
+
+  &--edit &__header {
+    &::before,
+    &::after {
+      background: var(--sapGroup_ContentBorderColor, #d9d9d9);
     }
   }
 

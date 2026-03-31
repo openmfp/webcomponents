@@ -1,4 +1,4 @@
-<div class="section">
+<div class="section" [class.section--edit]="editMode()">
   @if (editMode() && section().editable !== false) {
     <ui5-button
       class="section__remove"
