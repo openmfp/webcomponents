@@ -3,7 +3,6 @@ import { TABLE_COLUMNS, TABLE_RESOURCES } from './pods-table.config';
 
 export const SECTIONS: SectionConfig[] = [
   { id: 'ras', title: 'Recently accessed services', editable: false },
-  { id: 'pods', title: 'Pods', colSpan: 12 },
 ];
 
 const RAS_CARD_TEMPLATES = [
@@ -64,7 +63,6 @@ export const CARDS: CardConfig[] = [
     id: 'table-pods',
     colSpan: 12,
     rowSpan: 4,
-    sectionId: 'pods',
     component: 'mfp-declarative-table',
     componentInputs: {
       columns: TABLE_COLUMNS,
