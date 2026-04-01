@@ -1,5 +1,6 @@
 import { DeclarativeTable } from '../ngx/declarative-ui/table/declarative-table/declarative-table.component';
 import { Favorites } from '../ngx/favorites/favorites.component';
+import { ServiceStatusCard } from '../ngx/service-status/service-status-card.component';
 import { VisitedServiceCard } from '../ngx/visited-service-card/visited-service-card.component';
 import { WhatsNew } from '../ngx/whats-new/whats-new.component';
 import { createCustomElement } from '@angular/elements';
@@ -19,4 +20,7 @@ import { createApplication } from '@angular/platform-browser';
 
   const FavoritesElement = createCustomElement(Favorites, { injector: app.injector });
   customElements.define('mfp-favorites', FavoritesElement);
+
+  const ServiceStatusCardElement = createCustomElement(ServiceStatusCard, { injector: app.injector });
+  customElements.define('mfp-service-status-card', ServiceStatusCardElement);
 })();

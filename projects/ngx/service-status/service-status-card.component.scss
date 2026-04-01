@@ -1,0 +1,87 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.service-status {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--sapTile_Background, #fff);
+  border-radius: var(--_ui5_card_border-radius, 0.5rem);
+  border: var(--_ui5_card_border, 1px solid var(--sapTile_BorderColor, #e5e5e5));
+  box-shadow: var(--_ui5_card_box_shadow, var(--sapContent_Shadow0));
+  overflow: hidden;
+
+  &__title {
+    padding: 1rem 1rem 0.5rem;
+    flex-shrink: 0;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--sapList_BorderColor, #e5e5e5);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    color: var(--sapHighlightColor, #0070f2);
+  }
+
+  &__name {
+    flex: 1;
+    font-size: var(--sapFontSize, 0.875rem);
+    color: var(--sapTextColor, #32363a);
+  }
+
+  &__status {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 0.75rem;
+    padding: 0.125rem 0.5rem;
+
+    &--operational {
+      color: var(--sapPositiveColor, #256f3a);
+      background: var(--sapPositiveBackground, #f1fdf6);
+    }
+
+    &--degraded {
+      color: var(--sapCriticalColor, #e76500);
+      background: var(--sapCriticalBackground, #fef7f1);
+    }
+
+    &--outage {
+      color: var(--sapNegativeColor, #aa0808);
+      background: var(--sapNegativeBackground, #fff1f1);
+    }
+
+    &--maintenance {
+      color: var(--sapNeutralColor, #5b738b);
+      background: var(--sapNeutralBackground, #f5f6f7);
+    }
+  }
+
+  &__status-icon {
+    font-size: 0.75rem;
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+}

@@ -41,6 +41,12 @@ const AVAILABLE_CARDS: CardConfig[] = [
     rowSpan: 2,
     component: 'mfp-favorites',
   },
+  {
+    label: 'Service Status',
+    colSpan: 4,
+    rowSpan: 1,
+    component: 'mfp-service-status-card',
+  },
 ];
 
 // ---------------------------------------------------------------------------
