@@ -35,6 +35,12 @@ const AVAILABLE_CARDS: CardConfig[] = [
     rowSpan: 3,
     component: 'mfp-whats-new',
   },
+  {
+    label: 'Favorites',
+    colSpan: 5,
+    rowSpan: 2,
+    component: 'mfp-favorites',
+  },
 ];
 
 // ---------------------------------------------------------------------------

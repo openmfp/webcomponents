@@ -72,4 +72,10 @@ export const CARDS: CardConfig[] = [
       paginationLimit: 5,
     },
   },
+  {
+    id: 'mfp-favorites',
+    colSpan: 5,
+    rowSpan: 2,
+    component: 'mfp-favorites',
+  },
 ];
