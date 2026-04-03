@@ -1,0 +1,25 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.whats-new {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--sapTile_Background, #fff);
+  border-radius: var(--_ui5_card_border-radius, 0.5rem);
+  border: var(--_ui5_card_border, 1px solid var(--sapTile_BorderColor, #e5e5e5));
+  box-shadow: var(--_ui5_card_box_shadow, var(--sapContent_Shadow0));
+  overflow: hidden;
+
+  &__title {
+    padding: 1rem 1rem 0.5rem;
+    flex-shrink: 0;
+  }
+
+  &__list {
+    flex: 1;
+    overflow-y: auto;
+  }
+}

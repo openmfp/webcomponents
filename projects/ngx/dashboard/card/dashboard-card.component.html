@@ -1,0 +1,19 @@
+@if (card().component) {
+  <div class="component-card">
+    @if (editMode()) {
+      <ui5-button
+        class="card__remove"
+        design="Default"
+        icon="decline"
+        (click)="removeCard.emit()"
+      />
+    }
+    <div #componentHost></div>
+  </div>
+} @else {
+  <div class="card">
+    <div class="card__body">
+      <ng-content />
+    </div>
+  </div>
+}

@@ -1,0 +1,21 @@
+<div class="section" [class.section--edit]="editMode() && section().editable !== false">
+  @if (editMode() && section().editable !== false) {
+    <ui5-button
+      class="section__remove"
+      design="Default"
+      icon="decline"
+      (click)="removeSection.emit()"
+    >
+    </ui5-button>
+  }
+  @if (section().title) {
+    <div class="section__header">
+      <span class="section__title">{{ section().title }}</span>
+    </div>
+  }
+  <div class="section__grid" [style.--cols]="columns()">
+    @for (card of cards(); track card.id ?? card.component) {
+      <mfp-dashboard-card [card]="card" [editMode]="editMode() && section().editable !== false" (removeCard)="removeCard.emit($any(card.id))" />
+    }
+  </div>
+</div>

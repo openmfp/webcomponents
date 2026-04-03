@@ -1,0 +1,50 @@
+:host {
+  display: block;
+  min-width: 0;
+  min-height: 0;
+  overflow: visible;
+}
+
+.card__remove {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
+  z-index: 10;
+  border-radius: 50% !important;
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+  min-width: unset !important;
+  padding: 0 !important;
+  font-size: 0.625rem !important;
+}
+
+.component-card {
+  position: relative;
+  height: 100%;
+  overflow: visible;
+  isolation: isolate;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid var(--sapGroup_ContentBorderColor, #d9d9d9);
+  border-radius: 0.5rem;
+  background: var(--sapBackgroundColor, #fff);
+  overflow: visible;
+
+  &__header {
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    border-bottom: 1px solid var(--sapGroup_ContentBorderColor, #d9d9d9);
+    background: var(--sapGroup_TitleBackground, #f5f5f5);
+  }
+
+  &__body {
+    flex: 1;
+    padding: 1rem;
+    overflow: auto;
+  }
+}
