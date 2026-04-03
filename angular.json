@@ -10,18 +10,21 @@
           "style": "scss"
         }
       },
-      "root": "projects/ngx/declarative-ui",
-      "sourceRoot": "projects/ngx/declarative-ui",
+      "root": "projects/ngx",
+      "sourceRoot": "projects/ngx",
       "prefix": "mfp",
       "architect": {
         "build": {
           "builder": "@angular/build:ng-packagr",
+          "options": {
+            "project": "projects/ngx/ng-package.json"
+          },
           "configurations": {
             "production": {
-              "tsConfig": "projects/ngx/declarative-ui/tsconfig.lib.prod.json"
+              "tsConfig": "projects/ngx/tsconfig.lib.prod.json"
             },
             "development": {
-              "tsConfig": "projects/ngx/declarative-ui/tsconfig.lib.json"
+              "tsConfig": "projects/ngx/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
@@ -30,8 +33,8 @@
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": [
-              "projects/ngx/declarative-ui/**/*.ts",
-              "projects/ngx/declarative-ui/**/*.html"
+              "projects/ngx/**/*.ts",
+              "projects/ngx/**/*.html"
             ],
             "eslintConfig": "eslint.config.js"
           }

@@ -1,0 +1,50 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.favorites {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--sapTile_Background, #fff);
+  border-radius: var(--_ui5_card_border-radius, 0.5rem);
+  border: var(--_ui5_card_border, 1px solid var(--sapTile_BorderColor, #e5e5e5));
+  box-shadow: var(--_ui5_card_box_shadow, var(--sapContent_Shadow0));
+  overflow: hidden;
+
+  &__title {
+    padding: 1rem 1rem 0.5rem;
+    flex-shrink: 0;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--sapList_BorderColor, #e5e5e5);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    color: var(--sapHighlightColor, #0070f2);
+  }
+
+  &__label {
+    flex: 1;
+    font-size: var(--sapFontSize, 0.875rem);
+    color: var(--sapTextColor, #32363a);
+  }
+}

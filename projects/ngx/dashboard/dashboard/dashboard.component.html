@@ -1,0 +1,60 @@
+<div class="dashboard">
+  <div class="dashboard__topbar">
+    <div class="dashboard__header">
+      @if (config().title) {
+        <ui5-title level="H2" size="H2" wrapping-type="Normal">{{
+          config().title
+        }}</ui5-title>
+      }
+      @if (config().description) {
+        <ui5-text>{{ config().description }}</ui5-text>
+      }
+    </div>
+
+    <div class="dashboard__toolbar">
+      @if (editMode()) {
+        <ui5-button id="add-card-btn" design="Default" (click)="openCardPanel()"
+          >+ Add Card</ui5-button
+        >
+      } @else {
+        <ui5-button design="Default" (click)="enterEditMode()">Edit</ui5-button>
+      }
+    </div>
+  </div>
+
+  @for (section of sections(); track section.id) {
+    <mfp-dashboard-section
+      [section]="section"
+      [cards]="sectionCards()(section.id)"
+      [columns]="12"
+      [editMode]="editMode()"
+      (removeSection)="removeSection(section.id)"
+      (removeCard)="removeCard($event)"
+    />
+  }
+
+  @for (card of looseCards(); track card.id ?? card.component) {
+    <mfp-dashboard-card
+      [card]="card"
+      [editMode]="editMode()"
+      (removeCard)="removeCard($any(card.id))"
+    />
+  }
+
+  @if (editMode()) {
+    <div class="dashboard__edit-bar">
+      <ui5-button design="Emphasized" (click)="saveEdit()">Save</ui5-button>
+      <ui5-button design="Transparent" (click)="cancelEdit()"
+        >Cancel</ui5-button
+      >
+    </div>
+  }
+</div>
+
+<mfp-add-card-dialog
+  [open]="cardDialogOpen()"
+  [availableCards]="availableCards()"
+  [addedComponents]="addedComponents()"
+  (confirm)="onCardsAdded($event)"
+  (cancel)="closeCardPanel()"
+/>
