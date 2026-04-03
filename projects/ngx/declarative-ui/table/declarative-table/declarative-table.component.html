@@ -2,9 +2,10 @@
   <ui5-table-header-row slot="headerRow">
     @for (column of viewColumns(); track columnTrackBy(column, $index)) {
       @if (column.group) {
-        <ui5-table-header-cell [attr.test-id]="'generic-table-header-' + column.property">{{
-          column.group.label ?? column.group.name
-        }}</ui5-table-header-cell>
+        <ui5-table-header-cell
+          [attr.test-id]="'generic-table-header-' + column.property"
+          >{{ column.group.label ?? column.group.name }}</ui5-table-header-cell
+        >
       } @else {
         <ui5-table-header-cell
           [width]="column.uiSettings?.displayAs === 'alert' ? '30px' : 'auto'"
@@ -16,13 +17,17 @@
   </ui5-table-header-row>
 
   @if (resources().length === 0) {
-    <ui5-illustrated-message test-id="generic-table-view-nodata" slot="noData" name="NoData">
+    <ui5-illustrated-message
+      test-id="generic-table-view-nodata"
+      slot="noData"
+      name="NoData"
+    >
       <span slot="title">No Resources</span>
       <span slot="subtitle">There are currently no items to show.</span>
     </ui5-illustrated-message>
   }
 
-  @for (item of resources(); let i = $index; track trackBy()(item)) {
+  @for (item of resources(); let i = $index; track item.id) {
     <ui5-table-row
       [attr.test-id]="'generic-table-row-' + i"
       [interactive]="item.isAvailable ?? true"
@@ -43,7 +48,12 @@
               <span
                 class="group-value"
                 [attr.test-id]="
-                  'generic-table-cell-' + i + '-' + column.property + '-' + field.property
+                  'generic-table-cell-' +
+                  i +
+                  '-' +
+                  column.property +
+                  '-' +
+                  field.property
                 "
               >
                 @if (field.label) {
@@ -61,7 +71,9 @@
             }
           </ui5-table-cell>
         } @else {
-          <ui5-table-cell [attr.test-id]="'generic-table-cell-' + i + '-' + column.property">
+          <ui5-table-cell
+            [attr.test-id]="'generic-table-cell-' + i + '-' + column.property"
+          >
             <mfp-value-cell
               [fieldDefinition]="column"
               [resource]="item"
@@ -97,23 +109,38 @@
 >
   <div style="display: flex; align-items: center; gap: 1.5rem">
     <div style="display: flex; align-items: center; gap: 0.5rem">
-      <span style="color: var(--sapTextColor); font-size: var(--sapFontSmallSize)"
+      <span
+        style="color: var(--sapTextColor); font-size: var(--sapFontSmallSize)"
         >Items per load:</span
       >
       <ui5-select
         (change)="paginationLimitChanged.emit(+$any($event)?.target?.value)"
         style="width: 5rem"
       >
-        <ui5-option value="5"  [selected]="paginationLimit() === 5">5</ui5-option>
-        <ui5-option value="10" [selected]="paginationLimit() === 10">10</ui5-option>
-        <ui5-option value="50" [selected]="paginationLimit() === 50">50</ui5-option>
-        <ui5-option value="100" [selected]="paginationLimit() === 100">100</ui5-option>
+        <ui5-option value="5" [selected]="paginationLimit() === 5"
+          >5</ui5-option
+        >
+        <ui5-option value="10" [selected]="paginationLimit() === 10"
+          >10</ui5-option
+        >
+        <ui5-option value="50" [selected]="paginationLimit() === 50"
+          >50</ui5-option
+        >
+        <ui5-option value="100" [selected]="paginationLimit() === 100"
+          >100</ui5-option
+        >
       </ui5-select>
     </div>
 
-    <span style="color: var(--sapTextColor); font-size: var(--sapFontSmallSize)">
+    <span
+      style="color: var(--sapTextColor); font-size: var(--sapFontSmallSize)"
+    >
       Items loaded:
-      <b>{{ totalItemsCount() !== undefined ? resources().length + ' / ' + totalItemsCount() : resources().length }}</b>
+      <b>{{
+        totalItemsCount() !== undefined
+          ? resources().length + ' / ' + totalItemsCount()
+          : resources().length
+      }}</b>
     </span>
   </div>
 </div>

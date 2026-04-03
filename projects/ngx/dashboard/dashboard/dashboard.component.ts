@@ -111,7 +111,6 @@ export class Dashboard {
         ...cards.map((ac) => ({
           ...ac,
           id: `card-${ac.component}-${Date.now()}`,
-          sectionId: undefined,
         })),
       ]);
     }

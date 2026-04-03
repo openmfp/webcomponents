@@ -13,7 +13,6 @@ import {
   output,
 } from '@angular/core';
 import { IllustratedMessage } from '@fundamental-ngx/ui5-webcomponents-fiori';
-import '@ui5/webcomponents-fiori/dist/illustrations/NoData.js';
 import { Option } from '@fundamental-ngx/ui5-webcomponents/option';
 import { Select } from '@fundamental-ngx/ui5-webcomponents/select';
 import { Table } from '@fundamental-ngx/ui5-webcomponents/table';
@@ -22,6 +21,7 @@ import { TableGrowing } from '@fundamental-ngx/ui5-webcomponents/table-growing';
 import { TableHeaderCell } from '@fundamental-ngx/ui5-webcomponents/table-header-cell';
 import { TableHeaderRow } from '@fundamental-ngx/ui5-webcomponents/table-header-row';
 import { TableRow } from '@fundamental-ngx/ui5-webcomponents/table-row';
+import '@ui5/webcomponents-fiori/dist/illustrations/NoData.js';
 
 @Component({
   selector: 'mfp-declarative-table',
@@ -44,7 +44,6 @@ import { TableRow } from '@fundamental-ngx/ui5-webcomponents/table-row';
 export class DeclarativeTable<T extends GenericResource> {
   columns = input.required<TableFieldDefinition[]>();
   resources = input.required<T[]>();
-  trackBy = input.required<(item: T) => string | number>();
 
   totalItemsCount = input<number>();
   paginationLimit = input<number>(5);
