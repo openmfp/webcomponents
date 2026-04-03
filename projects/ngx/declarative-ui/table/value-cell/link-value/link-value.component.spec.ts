@@ -47,13 +47,13 @@ describe('LinkValueComponent', () => {
   });
 
   it('should call stopPropagation when link is clicked', () => {
-    const { component, fixture } = makeComponent('https://example.com');
+    const { component } = makeComponent('https://example.com');
 
     const mockEvent = {
       stopPropagation: vi.fn(),
-    };
+    } as unknown as Event;
 
-    component.stopPropagation(mockEvent as any);
+    component.stopPropagation(mockEvent);
 
     expect(mockEvent.stopPropagation).toHaveBeenCalled();
   });

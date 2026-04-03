@@ -25,9 +25,6 @@ import '@ui5/webcomponents-fiori/dist/illustrations/NoData.js';
 
 @Component({
   selector: 'mfp-declarative-table',
-  templateUrl: './declarative-table.component.html',
-  styleUrls: ['./declarative-table.component.scss'],
-  encapsulation: ViewEncapsulation.ShadowDom,
   imports: [
     IllustratedMessage,
     Table,
@@ -40,6 +37,9 @@ import '@ui5/webcomponents-fiori/dist/illustrations/NoData.js';
     Option,
     TableGrowing,
   ],
+  templateUrl: './declarative-table.component.html',
+  styleUrl: './declarative-table.component.scss',
+  encapsulation: ViewEncapsulation.ShadowDom
 })
 export class DeclarativeTable<T extends GenericResource> {
   columns = input.required<TableFieldDefinition[]>();
@@ -49,10 +49,10 @@ export class DeclarativeTable<T extends GenericResource> {
   paginationLimit = input<number>(5);
   hasMore = input<boolean>(false);
 
-  buttonClick = output<ValueCellButtonClickEvent<T>>();
-  tableRowClicked = output<any>();
-  loadMoreResources = output<void>();
-  paginationLimitChanged = output<number>();
+  readonly buttonClick = output<ValueCellButtonClickEvent<T>>();
+  readonly tableRowClicked = output<T>();
+  readonly loadMoreResources = output<void>();
+  readonly paginationLimitChanged = output<number>();
 
   columnTrackBy = (column: TableFieldDefinition, index: number) =>
     column.property ?? column.value ?? index;

@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
 @Component({
-  selector: 'secret-value',
+  selector: 'mfp-secret-value',
   imports: [],
-  schemas: [],
   templateUrl: './secret-value.component.html',
   styleUrl: './secret-value.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  schemas: []
 })
 export class SecretValue {
   value = input.required<string>();

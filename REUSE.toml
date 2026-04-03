@@ -1,0 +1,9 @@
+version = 1
+SPDX-PackageName = "webcomponents"
+SPDX-PackageDownloadLocation = "https://github.com/openmfp/webcomponents"
+
+[[annotations]]
+path = "**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 openMFP contributors"
+SPDX-License-Identifier = "Apache-2.0"
