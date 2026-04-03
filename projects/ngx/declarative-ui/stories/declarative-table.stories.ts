@@ -75,7 +75,15 @@ const trackBy = (item: Pod) => item.metadata.uid;
 // Meta
 // ---------------------------------------------------------------------------
 
-const meta: Meta<DeclarativeTable<Pod>> = {
+interface DeclarativeTableArgs {
+  columns: TableFieldDefinition[];
+  resources: Pod[];
+  hasMore: boolean;
+  paginationLimit: number;
+  totalItemsCount?: number;
+}
+
+const meta: Meta<DeclarativeTableArgs> = {
   title: 'Declarative UI / DeclarativeTable',
   component: DeclarativeTable,
   tags: ['autodocs'],
@@ -88,11 +96,6 @@ const meta: Meta<DeclarativeTable<Pod>> = {
     hasMore: { control: 'boolean' },
     paginationLimit: { control: 'number' },
     totalItemsCount: { control: 'number' },
-    trackBy: { control: false },
-    buttonClick: { control: false },
-    tableRowClicked: { control: false },
-    loadMoreResources: { control: false },
-    paginationLimitChanged: { control: false },
   },
   // Global defaults merged into every story's args
   args: {
@@ -114,7 +117,7 @@ const meta: Meta<DeclarativeTable<Pod>> = {
 };
 
 export default meta;
-type Story = StoryObj<DeclarativeTable<Pod>>;
+type Story = StoryObj<DeclarativeTableArgs>;
 
 // ---------------------------------------------------------------------------
 // Stories

@@ -2,11 +2,17 @@ import { DeclarativeForm } from '../form/declarative-form/declarative-form.compo
 import type { FormFieldDefinition, SelectOption } from '../form/models';
 import type { Meta, StoryObj } from '@storybook/angular';
 
+interface DeclarativeFormArgs {
+  fields: FormFieldDefinition[];
+  initialValues: Record<string, unknown>;
+  editMode: boolean;
+}
+
 // ---------------------------------------------------------------------------
 // Meta
 // ---------------------------------------------------------------------------
 
-const meta: Meta<DeclarativeForm> = {
+const meta: Meta<DeclarativeFormArgs> = {
   title: 'Declarative UI / DeclarativeForm',
   component: DeclarativeForm,
   tags: ['autodocs'],
@@ -17,8 +23,6 @@ const meta: Meta<DeclarativeForm> = {
     fields: { control: 'object' },
     initialValues: { control: 'object' },
     editMode: { control: 'boolean' },
-    formValue: { control: false },
-    formValidChange: { control: false },
   },
   args: {
     fields: [],
@@ -36,7 +40,7 @@ const meta: Meta<DeclarativeForm> = {
 };
 
 export default meta;
-type Story = StoryObj<DeclarativeForm>;
+type Story = StoryObj<DeclarativeFormArgs>;
 
 // ---------------------------------------------------------------------------
 // Stories
@@ -96,11 +100,11 @@ export const DynamicSelect: Story = {
           new Promise((resolve) =>
             setTimeout(
               () =>
-                resolve([
+                { resolve([
                   { value: 'default', label: 'default' },
                   { value: 'kube-system', label: 'kube-system' },
                   { value: 'production', label: 'production' },
-                ]),
+                ]); },
               400,
             ),
           ),
