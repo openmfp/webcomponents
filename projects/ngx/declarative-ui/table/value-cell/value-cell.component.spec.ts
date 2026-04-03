@@ -5,13 +5,13 @@ import { FieldDefinition, GenericResource, ValueCellButtonClickEvent } from '../
 type Fixture = ComponentFixture<ValueCellComponent<GenericResource, FieldDefinition>>;
 type Comp = ValueCellComponent<GenericResource, FieldDefinition>;
 
-function setup(field: FieldDefinition, resource?: GenericResource): { fixture: Fixture; component: Comp } {
+function setup(field: FieldDefinition, resource?: Partial<GenericResource>): { fixture: Fixture; component: Comp } {
   const fixture: Fixture = TestBed.createComponent(
     ValueCellComponent as unknown as typeof ValueCellComponent<GenericResource, FieldDefinition>,
   );
   const component = fixture.componentInstance;
   fixture.componentRef.setInput('fieldDefinition', field);
-  if (resource !== undefined) fixture.componentRef.setInput('resource', resource);
+  if (resource !== undefined) fixture.componentRef.setInput('resource', resource as GenericResource);
   fixture.detectChanges();
   return { fixture, component };
 }

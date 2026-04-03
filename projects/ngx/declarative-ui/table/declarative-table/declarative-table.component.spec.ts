@@ -200,7 +200,7 @@ describe('DeclarativeTable', () => {
         property: 'action',
         uiSettings: { displayAs: 'button', buttonSettings: { text: 'Go', action: 'navigate' } },
       };
-      const resource = { action: 'go' };
+      const resource = { id: '1', action: 'go' };
       const { fixture, component } = setup({
         columns: [field],
         resources: [resource],
