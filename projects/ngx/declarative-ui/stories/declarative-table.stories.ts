@@ -1,5 +1,5 @@
-import { DeclarativeTable } from '../table/declarative-table/declarative-table.component';
 import type { GenericResource, TableFieldDefinition } from '../table/models';
+import { Component, Input } from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
 
 // ---------------------------------------------------------------------------
@@ -7,6 +7,7 @@ import type { Meta, StoryObj } from '@storybook/angular';
 // ---------------------------------------------------------------------------
 
 interface Pod extends GenericResource {
+  id: string;
   metadata: { name: string; namespace: string; uid: string };
   status: { phase: string; ready: boolean; restarts: number; message?: string };
   spec: { nodeName: string; image: string };
@@ -14,12 +15,14 @@ interface Pod extends GenericResource {
 
 const PODS: Pod[] = [
   {
+    id: 'abc-001',
     metadata: { name: 'api-server-7d9f', namespace: 'default', uid: 'abc-001' },
     status: { phase: 'Running', ready: true, restarts: 0, message: undefined },
     spec: { nodeName: 'node-1', image: 'nginx:1.25' },
     isAvailable: true,
   },
   {
+    id: 'abc-002',
     metadata: { name: 'worker-5bc8', namespace: 'default', uid: 'abc-002' },
     status: {
       phase: 'Pending',
@@ -32,21 +35,15 @@ const PODS: Pod[] = [
     accessibleName: 'Pod unavailable: ImagePullBackOff',
   },
   {
-    metadata: {
-      name: 'cache-redis-0',
-      namespace: 'kube-system',
-      uid: 'abc-003',
-    },
+    id: 'abc-003',
+    metadata: { name: 'cache-redis-0', namespace: 'kube-system', uid: 'abc-003' },
     status: { phase: 'Running', ready: true, restarts: 1, message: undefined },
     spec: { nodeName: 'node-1', image: 'redis:7' },
     isAvailable: true,
   },
   {
-    metadata: {
-      name: 'db-postgres-0',
-      namespace: 'production',
-      uid: 'abc-004',
-    },
+    id: 'abc-004',
+    metadata: { name: 'db-postgres-0', namespace: 'production', uid: 'abc-004' },
     status: {
       phase: 'Failed',
       ready: false,
@@ -58,26 +55,47 @@ const PODS: Pod[] = [
     accessibleName: 'Pod unavailable: CrashLoopBackOff',
   },
   {
-    metadata: {
-      name: 'ingress-ctrl-xkp',
-      namespace: 'default',
-      uid: 'abc-005',
-    },
+    id: 'abc-005',
+    metadata: { name: 'ingress-ctrl-xkp', namespace: 'default', uid: 'abc-005' },
     status: { phase: 'Running', ready: true, restarts: 0, message: undefined },
     spec: { nodeName: 'node-2', image: 'nginx-ingress:1.9' },
     isAvailable: true,
   },
 ];
 
-const trackBy = (item: Pod) => item.metadata.uid;
+// ---------------------------------------------------------------------------
+// Wrapper component (avoids attachShadow conflict)
+// ---------------------------------------------------------------------------
+
+@Component({
+  selector: 'declarative-table-story',
+  template: `
+    <mfp-declarative-table
+      [columns]="columns"
+      [resources]="resources"
+      [trackByProperty]="trackByProperty"
+      [hasMore]="hasMore"
+      [paginationLimit]="paginationLimit"
+      [totalItemsCount]="totalItemsCount"
+    />
+  `,
+})
+class DeclarativeTableStory {
+  @Input() columns: TableFieldDefinition[] = [];
+  @Input() resources: GenericResource[] = PODS;
+  @Input() trackByProperty = 'metadata.uid';
+  @Input() hasMore = false;
+  @Input() paginationLimit = 5;
+  @Input() totalItemsCount?: number;
+}
 
 // ---------------------------------------------------------------------------
 // Meta
 // ---------------------------------------------------------------------------
 
-const meta: Meta<DeclarativeTable<Pod>> = {
+const meta: Meta<DeclarativeTableStory> = {
   title: 'Declarative UI / DeclarativeTable',
-  component: DeclarativeTable,
+  component: DeclarativeTableStory,
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',
@@ -85,36 +103,21 @@ const meta: Meta<DeclarativeTable<Pod>> = {
   argTypes: {
     columns: { control: 'object' },
     resources: { control: 'object' },
+    trackByProperty: { control: 'text' },
     hasMore: { control: 'boolean' },
     paginationLimit: { control: 'number' },
     totalItemsCount: { control: 'number' },
-    trackBy: { control: false },
-    buttonClick: { control: false },
-    tableRowClicked: { control: false },
-    loadMoreResources: { control: false },
-    paginationLimitChanged: { control: false },
   },
-  // Global defaults merged into every story's args
   args: {
     resources: PODS,
+    trackByProperty: 'metadata.uid',
     hasMore: false,
     paginationLimit: 5,
   },
-  render: (args) => ({
-    props: { ...args, trackBy },
-    template: `<mfp-declarative-table
-      [columns]="columns"
-      [resources]="resources"
-      [trackBy]="trackBy"
-      [hasMore]="hasMore"
-      [paginationLimit]="paginationLimit"
-      [totalItemsCount]="totalItemsCount"
-    />`,
-  }),
 };
 
 export default meta;
-type Story = StoryObj<DeclarativeTable<Pod>>;
+type Story = StoryObj<DeclarativeTableStory>;
 
 // ---------------------------------------------------------------------------
 // Stories
@@ -136,41 +139,20 @@ export const CellDisplayModes: Story = {
   args: {
     columns: [
       { label: 'Name', property: 'metadata.name' },
-      {
-        label: 'Ready',
-        property: 'status.ready',
-        uiSettings: { displayAs: 'boolIcon' },
-      },
+      { label: 'Ready', property: 'status.ready', uiSettings: { displayAs: 'boolIcon' } },
       {
         label: 'Phase',
         property: 'status.phase',
         uiSettings: {
           cssRules: [
-            {
-              if: { condition: 'equals', value: 'Running' },
-              styles: { color: 'green' },
-            },
-            {
-              if: { condition: 'equals', value: 'Pending' },
-              styles: { color: 'darkorange' },
-            },
-            {
-              if: { condition: 'equals', value: 'Failed' },
-              styles: { color: 'red', fontWeight: 'bold' },
-            },
+            { if: { condition: 'equals', value: 'Running' }, styles: { color: 'green' } },
+            { if: { condition: 'equals', value: 'Pending' }, styles: { color: 'darkorange' } },
+            { if: { condition: 'equals', value: 'Failed' }, styles: { color: 'red', fontWeight: 'bold' } },
           ],
         },
       },
-      {
-        label: 'UID',
-        property: 'metadata.uid',
-        uiSettings: { displayAs: 'secret', withCopyButton: true },
-      },
-      {
-        label: 'Image',
-        property: 'spec.image',
-        uiSettings: { displayAs: 'tooltip', tooltipIcon: 'information' },
-      },
+      { label: 'UID', property: 'metadata.uid', uiSettings: { displayAs: 'secret', withCopyButton: true } },
+      { label: 'Image', property: 'spec.image', uiSettings: { displayAs: 'tooltip', tooltipIcon: 'information' } },
     ] satisfies TableFieldDefinition[],
   },
 };
@@ -179,16 +161,8 @@ export const CellDisplayModes: Story = {
 export const GroupedColumns: Story = {
   args: {
     columns: [
-      {
-        label: 'Name',
-        property: 'metadata.name',
-        group: { name: 'identity', label: 'Identity', delimiter: ' / ' },
-      },
-      {
-        label: 'Namespace',
-        property: 'metadata.namespace',
-        group: { name: 'identity' },
-      },
+      { label: 'Name', property: 'metadata.name', group: { name: 'identity', label: 'Identity', delimiter: ' / ' } },
+      { label: 'Namespace', property: 'metadata.namespace', group: { name: 'identity' } },
       { label: 'Phase', property: 'status.phase' },
       { label: 'Node', property: 'spec.nodeName' },
     ] satisfies TableFieldDefinition[],
@@ -207,23 +181,10 @@ export const GroupedWithLabelsAndAlert: Story = {
       {
         property: 'spec.nodeName',
         uiSettings: { labelDisplay: true },
-        group: {
-          name: 'placement',
-          label: 'Placement',
-          delimiter: ' ',
-          multiline: false,
-        },
+        group: { name: 'placement', label: 'Placement', delimiter: ' ', multiline: false },
       },
-      {
-        property: 'spec.image',
-        uiSettings: { labelDisplay: true },
-        group: { name: 'placement' },
-      },
-      {
-        label: 'OK',
-        property: 'status.message',
-        uiSettings: { displayAs: 'alert' },
-      },
+      { property: 'spec.image', uiSettings: { labelDisplay: true }, group: { name: 'placement' } },
+      { label: 'OK', property: 'status.message', uiSettings: { displayAs: 'alert' } },
       { label: 'Message', property: 'status.message', value: '—' },
     ] satisfies TableFieldDefinition[],
   },
@@ -276,12 +237,7 @@ export const ButtonCell: Story = {
         property: 'metadata.name',
         uiSettings: {
           displayAs: 'button',
-          buttonSettings: {
-            text: 'Inspect',
-            icon: 'inspect',
-            design: 'Emphasized',
-            action: 'navigate',
-          },
+          buttonSettings: { text: 'Inspect', icon: 'inspect', design: 'Emphasized', action: 'navigate' },
         },
       },
     ] satisfies TableFieldDefinition[],
@@ -309,11 +265,7 @@ export const RowAvailability: Story = {
       { label: 'Name', property: 'metadata.name' },
       { label: 'Phase', property: 'status.phase' },
       { label: 'Node', property: 'spec.nodeName' },
-      {
-        label: 'Status',
-        property: 'isAvailable',
-        uiSettings: { displayAs: 'alert' },
-      },
+      { label: 'Status', property: 'isAvailable', uiSettings: { displayAs: 'alert' } },
     ] satisfies TableFieldDefinition[],
   },
 };

@@ -1,7 +1,7 @@
 <ui5-link
-  [attr.test-id]="testId()"
-  (click)="stopPropagation($event)"
   target="_blank"
-  [tooltip]="urlValue()"
+  [attr.test-id]="testId()"
   [href]="urlValue()"
+  [tooltip]="urlValue()"
+  (click)="stopPropagation($event)"
 >Link</ui5-link>

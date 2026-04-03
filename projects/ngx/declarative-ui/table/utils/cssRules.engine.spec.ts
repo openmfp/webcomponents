@@ -1,4 +1,4 @@
-import { CssRule } from '../models';
+import { CssRule, CssRuleCondition } from '../models';
 import {
   cssRuleResolver,
   evaluateCssRules,
@@ -92,7 +92,7 @@ describe('cssRules.engine', () => {
 
     it('returns false for unsupported conditions', () => {
       const rule: CssRule = {
-        if: { condition: 'unknown' as any, value: 'x' },
+        if: { condition: 'unknown' as CssRuleCondition, value: 'x' },
         styles: {},
       };
 

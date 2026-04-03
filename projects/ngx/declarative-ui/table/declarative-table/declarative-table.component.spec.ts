@@ -10,7 +10,7 @@ type Comp = DeclarativeTable<GenericResource>;
 function setup(opts: {
   columns: TableFieldDefinition[];
   resources?: GenericResource[];
-  trackBy?: (item: GenericResource) => string | number;
+  trackByProperty?: string;
   totalItemsCount?: number;
   paginationLimit?: number;
   hasMore?: boolean;
@@ -21,7 +21,7 @@ function setup(opts: {
   const component = fixture.componentInstance;
   fixture.componentRef.setInput('columns', opts.columns);
   fixture.componentRef.setInput('resources', opts.resources ?? []);
-  fixture.componentRef.setInput('trackBy', opts.trackBy ?? ((item: GenericResource) => item['id'] ?? 0));
+  if (opts.trackByProperty !== undefined) fixture.componentRef.setInput('trackByProperty', opts.trackByProperty);
   if (opts.totalItemsCount !== undefined) fixture.componentRef.setInput('totalItemsCount', opts.totalItemsCount);
   if (opts.paginationLimit !== undefined) fixture.componentRef.setInput('paginationLimit', opts.paginationLimit);
   if (opts.hasMore !== undefined) fixture.componentRef.setInput('hasMore', opts.hasMore);
@@ -102,7 +102,7 @@ describe('DeclarativeTable', () => {
     it('does not render no-data message when resources exist', () => {
       const { fixture } = setup({
         columns: [{ property: 'name' }],
-        resources: [{ name: 'Alice' }],
+        resources: [{ id: '1', name: 'Alice' }],
       });
       expect(el(fixture, 'generic-table-view-nodata')).toBeNull();
     });
@@ -121,7 +121,7 @@ describe('DeclarativeTable', () => {
     it('renders cells with correct test-ids', () => {
       const { fixture } = setup({
         columns: [{ property: 'name' }, { property: 'status' }],
-        resources: [{ name: 'Alice', status: 'Active' }],
+        resources: [{ id: '1', name: 'Alice', status: 'Active' }],
       });
       expect(el(fixture, 'generic-table-cell-0-name')).not.toBeNull();
       expect(el(fixture, 'generic-table-cell-0-status')).not.toBeNull();
@@ -130,7 +130,7 @@ describe('DeclarativeTable', () => {
     it('marks row as disabled when isAvailable is false', () => {
       const { fixture } = setup({
         columns: [{ property: 'name' }],
-        resources: [{ name: 'Alice', isAvailable: false }],
+        resources: [{ id: '1', name: 'Alice', isAvailable: false }],
       });
       const row = el(fixture, 'generic-table-row-0');
       expect(row?.classList.contains('disabled')).toBe(true);
@@ -139,7 +139,7 @@ describe('DeclarativeTable', () => {
     it('does not mark row as disabled when isAvailable is true', () => {
       const { fixture } = setup({
         columns: [{ property: 'name' }],
-        resources: [{ name: 'Alice', isAvailable: true }],
+        resources: [{ id: '1', name: 'Alice', isAvailable: true }],
       });
       const row = el(fixture, 'generic-table-row-0');
       expect(row?.classList.contains('disabled')).toBe(false);
@@ -156,7 +156,7 @@ describe('DeclarativeTable', () => {
           { property: 'city', group: { name: 'location' } },
           { property: 'country', group: { name: 'location' } },
         ],
-        resources: [{ city: 'Berlin', country: 'Germany' }],
+        resources: [{ id: '1', city: 'Berlin', country: 'Germany' }],
       });
       expect(el(fixture, 'generic-table-cell-0-city-city')).not.toBeNull();
       expect(el(fixture, 'generic-table-cell-0-city-country')).not.toBeNull();
@@ -167,7 +167,7 @@ describe('DeclarativeTable', () => {
         columns: [
           { property: 'city', label: 'City', group: { name: 'location' } },
         ],
-        resources: [{ city: 'Berlin' }],
+        resources: [{ id: '1', city: 'Berlin' }],
       });
       const cell = el(fixture, 'generic-table-cell-0-city-city');
       expect(cell?.textContent).toContain('City:');
@@ -176,13 +176,13 @@ describe('DeclarativeTable', () => {
 
   describe('tableRowClicked output', () => {
     it('emits tableRowClicked with resource on row click', () => {
-      const resource = { name: 'Alice' };
+      const resource = { id: '1', name: 'Alice' };
       const { fixture, component } = setup({
         columns: [{ property: 'name' }],
         resources: [resource],
       });
 
-      const emitted: any[] = [];
+      const emitted: unknown[] = [];
       component.tableRowClicked.subscribe((e) => emitted.push(e));
 
       const row = el(fixture, 'generic-table-row-0') as HTMLElement;
@@ -214,6 +214,7 @@ describe('DeclarativeTable', () => {
       // and invoke its buttonClicked method to test the event chain.
       const valueCellDe = fixture.debugElement.query(By.directive(ValueCellComponent));
       const valueCellComp: ValueCellComponent<GenericResource, TableFieldDefinition> = valueCellDe.componentInstance;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- accessing protected method for testing
       (valueCellComp as any).buttonClicked(new MouseEvent('click'));
       fixture.detectChanges();
 
@@ -227,7 +228,7 @@ describe('DeclarativeTable', () => {
     it('renders ui5-table-growing when hasMore is true', () => {
       const { fixture } = setup({
         columns: [{ property: 'name' }],
-        resources: [{ name: 'Alice' }],
+        resources: [{ id: '1', name: 'Alice' }],
         hasMore: true,
       });
       expect(root(fixture).querySelector('ui5-table-growing')).not.toBeNull();
@@ -236,7 +237,7 @@ describe('DeclarativeTable', () => {
     it('does not render ui5-table-growing when hasMore is false', () => {
       const { fixture } = setup({
         columns: [{ property: 'name' }],
-        resources: [{ name: 'Alice' }],
+        resources: [{ id: '1', name: 'Alice' }],
         hasMore: false,
       });
       expect(root(fixture).querySelector('ui5-table-growing')).toBeNull();

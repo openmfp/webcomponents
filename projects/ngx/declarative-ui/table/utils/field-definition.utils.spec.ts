@@ -45,13 +45,13 @@ describe('field-definition.utils', () => {
 
     it('returns complex object as field.value', () => {
       const complexValue = { nested: { data: 'value' } };
-      const field: FieldDefinition = { property: 'spec.config', value: complexValue as any };
+      const field: FieldDefinition = { property: 'spec.config', value: complexValue as unknown as string };
       expect(getFieldValue(field, undefined)).toEqual(complexValue);
     });
 
     it('returns array as field.value', () => {
       const arrayValue = ['item1', 'item2'];
-      const field: FieldDefinition = { property: 'spec.items', value: arrayValue as any };
+      const field: FieldDefinition = { property: 'spec.items', value: arrayValue as unknown as string };
       expect(getFieldValue(field, undefined)).toEqual(arrayValue);
     });
   });

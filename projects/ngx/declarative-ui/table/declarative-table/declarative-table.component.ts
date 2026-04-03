@@ -13,7 +13,6 @@ import {
   output,
 } from '@angular/core';
 import { IllustratedMessage } from '@fundamental-ngx/ui5-webcomponents-fiori';
-import '@ui5/webcomponents-fiori/dist/illustrations/NoData.js';
 import { Option } from '@fundamental-ngx/ui5-webcomponents/option';
 import { Select } from '@fundamental-ngx/ui5-webcomponents/select';
 import { Table } from '@fundamental-ngx/ui5-webcomponents/table';
@@ -22,12 +21,10 @@ import { TableGrowing } from '@fundamental-ngx/ui5-webcomponents/table-growing';
 import { TableHeaderCell } from '@fundamental-ngx/ui5-webcomponents/table-header-cell';
 import { TableHeaderRow } from '@fundamental-ngx/ui5-webcomponents/table-header-row';
 import { TableRow } from '@fundamental-ngx/ui5-webcomponents/table-row';
+import '@ui5/webcomponents-fiori/dist/illustrations/NoData.js';
 
 @Component({
   selector: 'mfp-declarative-table',
-  templateUrl: './declarative-table.component.html',
-  styleUrls: ['./declarative-table.component.scss'],
-  encapsulation: ViewEncapsulation.ShadowDom,
   imports: [
     IllustratedMessage,
     Table,
@@ -40,20 +37,22 @@ import { TableRow } from '@fundamental-ngx/ui5-webcomponents/table-row';
     Option,
     TableGrowing,
   ],
+  templateUrl: './declarative-table.component.html',
+  styleUrl: './declarative-table.component.scss',
+  encapsulation: ViewEncapsulation.ShadowDom
 })
 export class DeclarativeTable<T extends GenericResource> {
   columns = input.required<TableFieldDefinition[]>();
   resources = input.required<T[]>();
-  trackBy = input.required<(item: T) => string | number>();
 
   totalItemsCount = input<number>();
   paginationLimit = input<number>(5);
   hasMore = input<boolean>(false);
 
-  buttonClick = output<ValueCellButtonClickEvent<T>>();
-  tableRowClicked = output<any>();
-  loadMoreResources = output<void>();
-  paginationLimitChanged = output<number>();
+  readonly buttonClick = output<ValueCellButtonClickEvent<T>>();
+  readonly tableRowClicked = output<T>();
+  readonly loadMoreResources = output<void>();
+  readonly paginationLimitChanged = output<number>();
 
   columnTrackBy = (column: TableFieldDefinition, index: number) =>
     column.property ?? column.value ?? index;

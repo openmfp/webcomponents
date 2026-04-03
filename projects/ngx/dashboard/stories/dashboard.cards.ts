@@ -67,7 +67,7 @@ export const CARDS: CardConfig[] = [
     componentInputs: {
       columns: TABLE_COLUMNS,
       resources: TABLE_RESOURCES,
-      trackBy: (item: any) => item.metadata.uid,
+      trackByProperty: 'metadata.uid',
       hasMore: false,
       paginationLimit: 5,
     },
