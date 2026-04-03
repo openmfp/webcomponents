@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build:ngx": "ng build ngx",
-    "build:wc": "ng build webcomponents && node scripts/bundle-wc.mjs && node -e \"require('fs').copyFileSync('dist/webcomponents/mfp-webcomponents.js', 'public/mfp-webcomponents.js')\"",
+    "build:wc": "ng build webcomponents && node scripts/bundle-wc.mjs",
     "build": "npm run build:ngx && npm run build:wc",
     "build:watch": "mkdirp dist && nodemon --ignore dist --ignore public --ext js,yml,yaml,ts,html,css,scss,json,md --exec \"rimraf dist && npm run build && yalc publish dist/ngx --push --sig\"",
     "test": "ng test ngx --watch=false",

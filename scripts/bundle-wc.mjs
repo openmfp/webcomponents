@@ -1,5 +1,5 @@
 import { build } from 'esbuild';
-import { readdirSync, unlinkSync } from 'fs';
+import { readdirSync, unlinkSync, mkdirSync, copyFileSync } from 'fs';
 import { join, resolve } from 'path';
 
 const dist = resolve('dist/webcomponents');
@@ -31,3 +31,9 @@ for (const file of readdirSync(dist)) {
 }
 
 console.log('Single-file bundle written to dist/webcomponents/mfp-webcomponents.js');
+
+// Copy to public/ for local dev serving (create dir if needed)
+const publicDir = resolve('public');
+mkdirSync(publicDir, { recursive: true });
+copyFileSync(out, join(publicDir, 'mfp-webcomponents.js'));
+console.log('Copied to public/mfp-webcomponents.js');
