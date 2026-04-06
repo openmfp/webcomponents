@@ -41,7 +41,7 @@
   },
   "prettier": "@openmfp/config-prettier",
   "devDependencies": {
-    "@analogjs/vite-plugin-angular": "^2.3.1",
+    "@analogjs/vite-plugin-angular": "^2.4.0",
     "@angular-devkit/build-angular": "^21.2.1",
     "@angular-eslint/builder": "^21.2.0",
     "@angular/build": "^21.2.1",
