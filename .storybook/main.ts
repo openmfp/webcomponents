@@ -1,5 +1,5 @@
-import path from 'path';
 import type { StorybookConfig } from '@storybook/angular';
+import path from 'path';
 
 const config: StorybookConfig = {
   stories: [
@@ -11,7 +11,7 @@ const config: StorybookConfig = {
     name: '@storybook/angular',
     options: {},
   },
-  staticDirs: ['../projects/ngx/dashboard/stories'],
+  staticDirs: ['../projects/ngx/dashboard/stories', '../public'],
   features: {
     angularFilterNonInputControls: true,
   },
@@ -23,7 +23,9 @@ const config: StorybookConfig = {
     // _currentInjector variable, so injection context set in one is invisible to the other.
     config.resolve.modules = [
       path.resolve('./node_modules'),
-      ...(Array.isArray(config.resolve.modules) ? config.resolve.modules : ['node_modules']),
+      ...(Array.isArray(config.resolve.modules)
+        ? config.resolve.modules
+        : ['node_modules']),
     ];
     return config;
   },

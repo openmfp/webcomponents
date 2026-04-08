@@ -1,11 +1,9 @@
-import { FormFieldDefinition } from '../models';
 import { DeclarativeDynamicSelect } from '../dynamic-select';
+import { FormFieldDefinition } from '../models';
 import { setPropertyByPath } from '../utils/set-property-by-path';
 import {
-  ChangeDetectionStrategy,
   Component,
   DestroyRef,
-  OnInit,
   ViewEncapsulation,
   effect,
   inject,
@@ -28,7 +26,6 @@ import { Select } from '@fundamental-ngx/ui5-webcomponents/select';
 
 @Component({
   selector: 'mfp-declarative-form',
-  standalone: true,
   imports: [
     ReactiveFormsModule,
     Input,
@@ -39,11 +36,10 @@ import { Select } from '@fundamental-ngx/ui5-webcomponents/select';
   ],
   templateUrl: './declarative-form.component.html',
   styleUrl: './declarative-form.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.ShadowDom,
 })
-export class DeclarativeForm implements OnInit {
-  readonly fields = input<FormFieldDefinition[]>([]);
+export class DeclarativeForm {
+  readonly fields = input.required<FormFieldDefinition[]>();
   readonly initialValues = input<Record<string, any>>({});
   readonly editMode = input<boolean>(false);
 
@@ -57,13 +53,13 @@ export class DeclarativeForm implements OnInit {
 
   constructor() {
     effect(() => {
+      this.form = this.fb.group(this.createControls());
+      this.subscribeToFormChanges();
+    });
+
+    effect(() => {
       this.setInitialValues();
     });
-  }
-
-  ngOnInit(): void {
-    this.form = this.fb.group(this.createControls());
-    this.subscribeToFormChanges();
   }
 
   setFormControlValue($event: any, name: string): void {
@@ -91,7 +87,10 @@ export class DeclarativeForm implements OnInit {
           ...(field.required ? [Validators.required] : []),
           ...(field.validators ?? []),
         ];
-        acc[field.name] = new FormControl(values[field.name] ?? '', validators);
+        acc[field.name] = new FormControl(
+          values?.[field.name] ?? '',
+          validators,
+        );
         return acc;
       },
       {} as Record<string, FormControl>,
@@ -118,11 +117,12 @@ export class DeclarativeForm implements OnInit {
   }
 
   private setInitialValues(): void {
-    if (!this.form) {
+    const initialValues = this.initialValues();
+
+    if (!this.form || !initialValues) {
       return;
     }
 
-    const initialValues = this.initialValues();
     this.form.patchValue(initialValues, { emitEvent: false });
   }
 }

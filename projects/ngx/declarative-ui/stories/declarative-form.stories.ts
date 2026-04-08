@@ -1,20 +1,31 @@
-import { DeclarativeForm } from '../form/declarative-form/declarative-form.component';
 import type { FormFieldDefinition, SelectOption } from '../form/models';
+import { CUSTOM_ELEMENTS_SCHEMA, Component, Input } from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
 
-interface DeclarativeFormArgs {
-  fields: FormFieldDefinition[];
-  initialValues: Record<string, unknown>;
-  editMode: boolean;
+@Component({
+  selector: 'declarative-form-story',
+  template: `
+    <mfp-declarative-form
+      [editMode]="editMode"
+      [fields]="fields"
+      [initialValues]="initialValues"
+    />
+  `,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+})
+class DeclarativeFormStory {
+  @Input() fields: FormFieldDefinition[] = [];
+  @Input() initialValues: Record<string, unknown> = {};
+  @Input() editMode = false;
 }
 
 // ---------------------------------------------------------------------------
 // Meta
 // ---------------------------------------------------------------------------
 
-const meta: Meta<DeclarativeFormArgs> = {
+const meta: Meta<DeclarativeFormStory> = {
   title: 'Declarative UI / DeclarativeForm',
-  component: DeclarativeForm,
+  component: DeclarativeFormStory,
   tags: ['autodocs'],
   parameters: {
     layout: 'centered',
@@ -25,22 +36,17 @@ const meta: Meta<DeclarativeFormArgs> = {
     editMode: { control: 'boolean' },
   },
   args: {
-    fields: [],
+    fields: [
+      { name: 'metadata_name', label: 'Name' },
+      { name: 'metadata_namespace', label: 'Namespace' },
+    ],
     initialValues: {},
     editMode: false,
   },
-  render: (args) => ({
-    props: args,
-    template: `<mfp-declarative-form
-      [fields]="fields"
-      [initialValues]="initialValues"
-      [editMode]="editMode"
-    />`,
-  }),
 };
 
 export default meta;
-type Story = StoryObj<DeclarativeFormArgs>;
+type Story = StoryObj<DeclarativeFormStory>;
 
 // ---------------------------------------------------------------------------
 // Stories
@@ -98,15 +104,13 @@ export const DynamicSelect: Story = {
         required: true,
         loadValues: (): Promise<SelectOption[]> =>
           new Promise((resolve) =>
-            setTimeout(
-              () =>
-                { resolve([
-                  { value: 'default', label: 'default' },
-                  { value: 'kube-system', label: 'kube-system' },
-                  { value: 'production', label: 'production' },
-                ]); },
-              400,
-            ),
+            setTimeout(() => {
+              resolve([
+                { value: 'default', label: 'default' },
+                { value: 'kube-system', label: 'kube-system' },
+                { value: 'production', label: 'production' },
+              ]);
+            }, 400),
           ),
       },
     ] satisfies FormFieldDefinition[],
