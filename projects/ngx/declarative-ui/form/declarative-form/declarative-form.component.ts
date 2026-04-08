@@ -40,89 +40,123 @@ import { Select } from '@fundamental-ngx/ui5-webcomponents/select';
 })
 export class DeclarativeForm {
   readonly fields = input.required<FormFieldDefinition[]>();
-  readonly initialValues = input<Record<string, any>>({});
+  readonly initialValues = input<Record<string, unknown>>({});
   readonly editMode = input<boolean>(false);
 
-  readonly formValue = output<Record<string, any>>();
+  readonly formValue = output<Record<string, unknown>>();
   readonly formValidChange = output<boolean>();
 
-  form!: FormGroup;
+  readonly form: FormGroup;
 
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
 
   constructor() {
+    this.form = this.fb.group({});
+
+    this.subscribeToFormChanges();
+
     effect(() => {
-      this.form = this.fb.group(this.createControls());
-      this.subscribeToFormChanges();
+      this.rebuildControls(this.fields());
     });
 
     effect(() => {
-      this.setInitialValues();
+      this.setInitialValues(this.initialValues());
     });
   }
 
-  setFormControlValue($event: any, name: string): void {
-    this.form.controls[name].setValue($event.target.value);
-    this.form.controls[name].markAsTouched();
-    this.form.controls[name].markAsDirty();
+  setFormControlValue($event: Event, name: string): void {
+    const target = $event.target as
+      | HTMLInputElement
+      | HTMLTextAreaElement
+      | HTMLSelectElement;
+    this.form.controls[name]?.setValue(target.value);
+    this.form.controls[name]?.markAsTouched();
+    this.form.controls[name]?.markAsDirty();
   }
 
   getValueState(
     name: string,
   ): 'None' | 'Positive' | 'Critical' | 'Negative' | 'Information' {
     const control = this.form.controls[name];
-    return control.invalid && control.touched ? 'Negative' : ('None' as const);
+    return control?.invalid && control?.touched ? 'Negative' : 'None';
   }
 
   onFieldBlur(name: string): void {
-    this.form.controls[name].markAsTouched();
+    this.form.controls[name]?.markAsTouched();
   }
 
-  private createControls(): Record<string, FormControl> {
-    const values = this.initialValues();
-    return this.fields().reduce(
-      (acc, field) => {
-        const validators: ValidatorFn[] = [
-          ...(field.required ? [Validators.required] : []),
-          ...(field.validators ?? []),
-        ];
-        acc[field.name] = new FormControl(
-          values?.[field.name] ?? '',
-          validators,
-        );
-        return acc;
-      },
-      {} as Record<string, FormControl>,
-    );
+  private rebuildControls(fields: FormFieldDefinition[]): void {
+    const existingControls = this.form.controls;
+    const nextFieldNames = new Set(fields.map((field) => field.name));
+
+    for (const field of fields) {
+      const validators: ValidatorFn[] = [
+        ...(field.required ? [Validators.required] : []),
+        ...(field.validators ?? []),
+      ];
+
+      const existingControl = existingControls[field.name];
+
+      if (existingControl) {
+        existingControl.setValidators(validators);
+        existingControl.updateValueAndValidity({ emitEvent: false });
+        continue;
+      }
+
+      this.form.addControl(field.name, new FormControl('', validators));
+    }
+
+    for (const controlName of Object.keys(existingControls)) {
+      if (!nextFieldNames.has(controlName)) {
+        this.form.removeControl(controlName);
+      }
+    }
+
+    this.form.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private setInitialValues(
+    initialValues: Record<string, unknown> | null | undefined,
+  ): void {
+    if (!initialValues) {
+      return;
+    }
+
+    this.form.patchValue(initialValues, { emitEvent: false });
+    this.form.updateValueAndValidity({ emitEvent: false });
+
+    this.formValidChange.emit(this.form.valid);
+
+    if (this.form.valid) {
+      this.formValue.emit(this.buildOutputValue());
+    }
   }
 
   private subscribeToFormChanges(): void {
-    this.form.statusChanges
+    this.form.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         this.formValidChange.emit(this.form.valid);
+
         if (this.form.valid) {
           this.formValue.emit(this.buildOutputValue());
         }
       });
   }
 
-  private buildOutputValue(): Record<string, any> {
-    const result = {} as Record<string, any>;
-    for (const key in this.form.value) {
-      setPropertyByPath(result, key.replaceAll('_', '.'), this.form.value[key]);
+  private buildOutputValue(): Record<string, unknown> {
+    const result: Record<string, unknown> = {};
+
+    for (const key of Object.keys(this.form.controls)) {
+      const path = this.controlNameToPath(key);
+      setPropertyByPath(result, path, this.form.controls[key].value);
     }
+
     return result;
   }
 
-  private setInitialValues(): void {
-    const initialValues = this.initialValues();
-
-    if (!this.form || !initialValues) {
-      return;
-    }
-
-    this.form.patchValue(initialValues, { emitEvent: false });
+  private controlNameToPath(controlName: string): string {
+    return controlName.replaceAll('_', '.');
   }
 }

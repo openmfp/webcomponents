@@ -1,7 +1,55 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ReactiveFormsModule, Validators } from '@angular/forms';
 import { FormFieldDefinition } from '../models';
 import { DeclarativeForm } from './declarative-form.component';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ReactiveFormsModule, Validators } from '@angular/forms';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 describe('DeclarativeForm', () => {
   let component: DeclarativeForm;
@@ -51,15 +99,19 @@ describe('DeclarativeForm', () => {
         metadata_name: 'my-resource',
         metadata_namespace: 'default',
       });
-      component.ngOnInit();
 
-      expect(component.form.controls['metadata_name'].value).toBe('my-resource');
-      expect(component.form.controls['metadata_namespace'].value).toBe('default');
+      fixture.detectChanges();
+
+      expect(component.form.controls['metadata_name'].value).toBe(
+        'my-resource',
+      );
+      expect(component.form.controls['metadata_namespace'].value).toBe(
+        'default',
+      );
     });
 
     it('should default missing initialValues keys to empty string', () => {
       fixture.componentRef.setInput('initialValues', {});
-      component.ngOnInit();
       expect(component.form.controls['metadata_name'].value).toBe('');
     });
 
@@ -68,7 +120,8 @@ describe('DeclarativeForm', () => {
         { name: 'email', required: false, validators: [Validators.email] },
       ];
       fixture.componentRef.setInput('fields', emailField);
-      component.ngOnInit();
+
+      fixture.detectChanges();
 
       component.form.controls['email'].setValue('not-an-email');
       expect(component.form.controls['email'].valid).toBeFalsy();
@@ -112,7 +165,9 @@ describe('DeclarativeForm', () => {
       const spy = vi.spyOn(component.formValue, 'emit');
       component.form.controls['metadata_name'].setValue('my-app');
       expect(spy).toHaveBeenCalledWith(
-        expect.objectContaining({ metadata: expect.objectContaining({ name: 'my-app' }) }),
+        expect.objectContaining({
+          metadata: expect.objectContaining({ name: 'my-app' }),
+        }),
       );
     });
 
@@ -120,7 +175,8 @@ describe('DeclarativeForm', () => {
       fixture.componentRef.setInput('fields', [
         { name: 'spec_replicas', required: true },
       ]);
-      component.ngOnInit();
+
+      fixture.detectChanges();
 
       const spy = vi.spyOn(component.formValue, 'emit');
       component.form.controls['spec_replicas'].setValue('3');
@@ -140,7 +196,7 @@ describe('DeclarativeForm', () => {
       vi.spyOn(ctrl, 'markAsTouched');
       vi.spyOn(ctrl, 'markAsDirty');
 
-      component.setFormControlValue(event, 'metadata_name');
+      component.setFormControlValue(event as unknown as Event, 'metadata_name');
 
       expect(ctrl.setValue).toHaveBeenCalledWith('new-value');
       expect(ctrl.markAsTouched).toHaveBeenCalled();
