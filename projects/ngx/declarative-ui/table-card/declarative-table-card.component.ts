@@ -1,29 +1,34 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  CUSTOM_ELEMENTS_SCHEMA,
-  ViewEncapsulation,
-  computed,
-  input,
-  output,
-  signal,
-} from '@angular/core';
-import { DeclarativeTable } from '../table/declarative-table/declarative-table.component';
 import { DeclarativeForm } from '../form/declarative-form/declarative-form.component';
+import { FormFieldDefinition } from '../form/models';
+import { DeclarativeTable } from '../table/declarative-table/declarative-table.component';
 import {
   ButtonSettings,
   GenericResource,
   TableFieldDefinition,
   ValueCellButtonClickEvent,
 } from '../table/models';
-import { FormFieldDefinition } from '../form/models';
+import {
+  CUSTOM_ELEMENTS_SCHEMA,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  ViewEncapsulation,
+  computed,
+  input,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 import { Dialog } from '@fundamental-ngx/ui5-webcomponents/dialog';
 import { Icon } from '@fundamental-ngx/ui5-webcomponents/icon';
 import { Input } from '@fundamental-ngx/ui5-webcomponents/input';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
+import { debounceTime } from 'rxjs';
 
-export interface TableCardCreateEditConfig {
+export interface TableCardCreateEditConfig<T = Record<string, unknown>> {
   fields: FormFieldDefinition[];
   title?: string;
   confirmLabel?: string;
@@ -31,17 +36,29 @@ export interface TableCardCreateEditConfig {
   createOnlyFields?: string[];
   editButtonSettings?: Partial<ButtonSettings>;
   deleteButtonSettings?: Partial<ButtonSettings>;
+  /** Extracts flat initial values from a resource for the edit form. */
+  initialValuesExtractor?: (resource: T) => Record<string, unknown>;
 }
 
 export interface TableCardDeleteConfig {
   title?: string;
+  message?: string;
   confirmLabel?: string;
   cancelLabel?: string;
 }
 
 @Component({
   selector: 'mfp-declarative-table-card',
-  imports: [DeclarativeTable, DeclarativeForm, Dialog, Title, Button, Icon, Input],
+  imports: [
+    DeclarativeTable,
+    DeclarativeForm,
+    ReactiveFormsModule,
+    Dialog,
+    Title,
+    Button,
+    Icon,
+    Input,
+  ],
   templateUrl: './declarative-table-card.component.html',
   styleUrl: './declarative-table-card.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -58,8 +75,8 @@ export class DeclarativeTableCardComponent<T extends GenericResource> {
 
   // Card-specific inputs
   header = input<string>();
-  createConfig = input<TableCardCreateEditConfig>();
-  editDeleteConfig = input<TableCardCreateEditConfig>();
+  createConfig = input<TableCardCreateEditConfig<T>>();
+  editDeleteConfig = input<TableCardCreateEditConfig<T>>();
   deleteConfig = input<TableCardDeleteConfig>();
 
   // Table pass-through outputs (only non-intercepted buttonClick forwarded)
@@ -71,18 +88,30 @@ export class DeclarativeTableCardComponent<T extends GenericResource> {
   // Card-specific outputs
   readonly searchChanged = output<string>();
   readonly createConfirmed = output<Record<string, unknown>>();
-  readonly editConfirmed = output<{ resource: T; formValue: Record<string, unknown> }>();
+  readonly editConfirmed = output<{
+    resource: T;
+    formValue: Record<string, unknown>;
+  }>();
   readonly deleteConfirmed = output<T>();
 
   // Internal signals
   protected searchExpanded = signal(false);
-  protected searchValue = signal('');
+  protected searchCollapsing = signal(false);
+  protected searchControl = new FormControl('');
   protected createDialogOpen = signal(false);
   protected editDialogOpen = signal(false);
   protected deleteDialogOpen = signal(false);
   protected pendingResource = signal<T | null>(null);
   protected pendingFormValue = signal<Record<string, unknown> | null>(null);
   protected formValid = signal(false);
+
+  constructor() {
+    this.searchControl.valueChanges
+      .pipe(debounceTime(300), takeUntilDestroyed())
+      .subscribe((value) => {
+        this.searchChanged.emit(value ?? '');
+      });
+  }
 
   // Computed: inject Actions column when edit/delete configs provided
   protected effectiveColumns = computed<TableFieldDefinition[]>(() => {
@@ -98,11 +127,13 @@ export class DeclarativeTableCardComponent<T extends GenericResource> {
             displayAs: 'button',
             buttonSettings: {
               icon: this.editDeleteConfig()!.editButtonSettings?.icon ?? 'edit',
-              design: (this.editDeleteConfig()!.editButtonSettings?.design as ButtonSettings['design']) ?? 'Transparent',
+              design:
+                (this.editDeleteConfig()!.editButtonSettings
+                  ?.design as ButtonSettings['design']) ?? 'Transparent',
               action: 'edit',
             },
           },
-          group: { name: 'actions', label: 'Actions' },
+          group: { name: 'actions', label: 'Actions', multiline: false },
         }
       : undefined;
 
@@ -112,8 +143,11 @@ export class DeclarativeTableCardComponent<T extends GenericResource> {
           uiSettings: {
             displayAs: 'button',
             buttonSettings: {
-              icon: this.editDeleteConfig()?.deleteButtonSettings?.icon ?? 'delete',
-              design: (this.editDeleteConfig()?.deleteButtonSettings?.design as ButtonSettings['design']) ?? 'Negative',
+              icon:
+                this.editDeleteConfig()?.deleteButtonSettings?.icon ?? 'delete',
+              design:
+                (this.editDeleteConfig()?.deleteButtonSettings
+                  ?.design as ButtonSettings['design']) ?? 'Negative',
               action: 'delete',
             },
           },
@@ -121,27 +155,59 @@ export class DeclarativeTableCardComponent<T extends GenericResource> {
         }
       : undefined;
 
-    return [...cols, ...[editCol, deleteCol].filter(Boolean) as TableFieldDefinition[]];
+    return [
+      ...cols,
+      ...([editCol, deleteCol].filter(Boolean) as TableFieldDefinition[]),
+    ];
   });
 
   // Computed: edit fields with createOnlyFields disabled
   protected editFields = computed<FormFieldDefinition[]>(() => {
     const cfg = this.editDeleteConfig();
     if (!cfg) return [];
-    return cfg.fields.map(f => ({
+    return cfg.fields.map((f) => ({
       ...f,
-      disabled: cfg.createOnlyFields?.includes(f.name) ? true : (f.disabled ?? false),
+      disabled: cfg.createOnlyFields?.includes(f.name)
+        ? true
+        : (f.disabled ?? false),
     }));
   });
 
+  // Computed: initial values for the edit form extracted from the pending resource
+  protected editInitialValues = computed<Record<string, unknown>>(() => {
+    const resource = this.pendingResource();
+    const cfg = this.editDeleteConfig();
+    if (!resource || !cfg) return {};
+    if (cfg.initialValuesExtractor) {
+      return cfg.initialValuesExtractor(resource);
+    }
+    return resource as unknown as Record<string, unknown>;
+  });
+
   toggleSearch(): void {
-    this.searchExpanded.update(v => !v);
+    if (this.searchExpanded() && !this.searchCollapsing()) {
+      this.collapseSearch();
+    } else if (!this.searchExpanded()) {
+      this.searchExpanded.set(true);
+    }
   }
 
-  onSearchInput(value: string): void {
-    this.searchValue.set(value);
-    this.searchChanged.emit(value);
-    if (!value) this.searchExpanded.set(false);
+  onSearchBlur(): void {
+    if (!this.searchControl.value) {
+      this.collapseSearch();
+    }
+  }
+
+  onSearchAnimationEnd(): void {
+    if (this.searchCollapsing()) {
+      this.searchCollapsing.set(false);
+      this.searchExpanded.set(false);
+      this.searchControl.setValue('', { emitEvent: false });
+    }
+  }
+
+  private collapseSearch(): void {
+    this.searchCollapsing.set(true);
   }
 
   onButtonClick(event: ValueCellButtonClickEvent<T>): void {

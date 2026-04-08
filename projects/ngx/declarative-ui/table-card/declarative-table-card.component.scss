@@ -2,6 +2,28 @@
   display: block;
 }
 
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes slide-out {
+  from {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  to {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+}
+
 .card {
   display: flex;
   flex-direction: column;
@@ -13,7 +35,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.75rem 1rem;
+    min-height: 3rem;
+    padding: 0 1rem;
     border-bottom: 1px solid var(--sapGroup_ContentBorderColor, #d9d9d9);
     background: var(--sapGroup_TitleBackground, #f5f5f5);
   }
@@ -28,8 +51,60 @@
     gap: 0.5rem;
   }
 
+  &__search-icon {
+    cursor: pointer;
+    color: var(--sapButton_IconColor, #0070f2);
+  }
+
+  &__search-input {
+    transform-origin: right center;
+
+    &--enter {
+      animation: slide-in 0.2s ease-out both;
+    }
+
+    &--leave {
+      animation: slide-out 0.2s ease-in both;
+    }
+  }
+
+  &__create-btn {
+    color: var(--sapButton_IconColor, #0070f2);
+  }
+
   &__body {
     flex: 1;
     overflow: auto;
+  }
+}
+
+.dialog {
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    padding: 0.75rem 1rem;
+  }
+
+  &__body {
+    margin: -1rem;
+    min-width: 320px;
+    padding: 1rem;
+  }
+
+  &__message {
+    padding: 1rem;
+    margin: 0;
+    font-size: 0.875rem;
+    max-width: 320px;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    margin: 0 -1rem;
+    width: 100%;
   }
 }

@@ -4,17 +4,26 @@
       <span class="card__title">{{ header() }}</span>
     }
     <div class="card__actions">
-      <ui5-icon name="search" (click)="toggleSearch()" />
       @if (searchExpanded()) {
         <ui5-input
-          [value]="searchValue()"
-          (input)="onSearchInput($any($event.target).value)"
+        [class]="'card__search-input card__search-input--' + (searchCollapsing() ? 'leave' : 'enter')"
+        [formControl]="searchControl"
+        (blur)="onSearchBlur()"
+        (animationend)="onSearchAnimationEnd()"
         />
       }
+      <ui5-icon
+        class="card__search-icon"
+        name="search"
+        (click)="toggleSearch()"
+      />
       @if (createConfig()) {
-        <ui5-button icon="add" (click)="createDialogOpen.set(true)">
-          {{ createConfig()!.confirmLabel ?? 'Create' }}
-        </ui5-button>
+        <ui5-button
+          class="card__create-btn"
+          icon="add"
+          design="Transparent"
+          (click)="createDialogOpen.set(true)"
+        />
       }
     </div>
   </div>
@@ -36,15 +45,17 @@
 
 @if (createConfig()) {
   <ui5-dialog [open]="createDialogOpen()" (ui5BeforeClose)="createDialogOpen.set(false)">
-    <div slot="header">
-      <ui5-title>{{ createConfig()!.title ?? 'Create' }}</ui5-title>
+    <div slot="header" class="dialog__header">
+      <ui5-title level="H5">{{ createConfig()!.title ?? 'Create' }}</ui5-title>
     </div>
-    <mfp-declarative-form
-      [fields]="createConfig()!.fields"
-      (formValue)="pendingFormValue.set($event)"
-      (formValidChange)="formValid.set($event)"
-    />
-    <div slot="footer">
+    <div class="dialog__body">
+      <mfp-declarative-form
+        [fields]="createConfig()!.fields"
+        (formValue)="pendingFormValue.set($event)"
+        (formValidChange)="formValid.set($event)"
+      />
+    </div>
+    <div slot="footer" class="dialog__footer">
       <ui5-button design="Emphasized" [disabled]="!formValid()" (click)="onCreateConfirm()">
         {{ createConfig()!.confirmLabel ?? 'Save' }}
       </ui5-button>
@@ -57,17 +68,19 @@
 
 @if (editDeleteConfig()) {
   <ui5-dialog [open]="editDialogOpen()" (ui5BeforeClose)="editDialogOpen.set(false)">
-    <div slot="header">
-      <ui5-title>{{ editDeleteConfig()!.title ?? 'Edit' }}</ui5-title>
+    <div slot="header" class="dialog__header">
+      <ui5-title level="H5">{{ editDeleteConfig()!.title ?? 'Edit' }}</ui5-title>
     </div>
-    <mfp-declarative-form
-      [fields]="editFields()"
-      [editMode]="true"
-      [initialValues]="$any(pendingResource())"
-      (formValue)="pendingFormValue.set($event)"
-      (formValidChange)="formValid.set($event)"
-    />
-    <div slot="footer">
+    <div class="dialog__body">
+      <mfp-declarative-form
+        [fields]="editFields()"
+        [editMode]="true"
+        [initialValues]="editInitialValues()"
+        (formValue)="pendingFormValue.set($event)"
+        (formValidChange)="formValid.set($event)"
+      />
+    </div>
+    <div slot="footer" class="dialog__footer">
       <ui5-button design="Emphasized" [disabled]="!formValid()" (click)="onEditConfirm()">
         {{ editDeleteConfig()!.confirmLabel ?? 'Save' }}
       </ui5-button>
@@ -80,10 +93,15 @@
 
 @if (deleteConfig()) {
   <ui5-dialog [open]="deleteDialogOpen()" (ui5BeforeClose)="deleteDialogOpen.set(false)">
-    <div slot="header">
-      <ui5-title>{{ deleteConfig()!.title ?? 'Confirm Delete' }}</ui5-title>
+    <div slot="header" class="dialog__header">
+      <ui5-title level="H5">{{ deleteConfig()!.title ?? 'Confirm Delete' }}</ui5-title>
     </div>
-    <div slot="footer">
+    @if (deleteConfig()!.message) {
+      <div class="dialog__body">
+        <p class="dialog__message">{{ deleteConfig()!.message }}</p>
+      </div>
+    }
+    <div slot="footer" class="dialog__footer">
       <ui5-button design="Negative" (click)="onDeleteConfirm()">
         {{ deleteConfig()!.confirmLabel ?? 'Delete' }}
       </ui5-button>
