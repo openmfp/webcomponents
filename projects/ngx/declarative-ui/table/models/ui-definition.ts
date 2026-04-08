@@ -9,7 +9,14 @@ export interface PropertyField {
 
 export interface UiSettings {
   labelDisplay?: boolean;
-  displayAs?: 'secret' | 'boolIcon' | 'link' | 'tooltip' | 'alert' | 'img' | 'button';
+  displayAs?:
+    | 'secret'
+    | 'boolIcon'
+    | 'link'
+    | 'tooltip'
+    | 'alert'
+    | 'img'
+    | 'button';
   buttonSettings?: ButtonSettings;
   tooltipIcon?: string;
   withCopyButton?: boolean;
@@ -17,13 +24,22 @@ export interface UiSettings {
   cssRules?: CssRule[];
 }
 
+type KnownButtonActions = 'openInModal' | 'navigate' | 'edit' | 'delete';
+type ButtonActions = KnownButtonActions | (string & {});
+
 export interface ButtonSettings {
   text?: string;
   icon?: string;
   endIcon?: string;
-  design?: 'Default' | 'Positive' | 'Negative' | 'Transparent' | 'Emphasized' | 'Attention';
+  design?:
+    | 'Default'
+    | 'Positive'
+    | 'Negative'
+    | 'Transparent'
+    | 'Emphasized'
+    | 'Attention';
   tooltip?: string;
-  action: 'openInModal' | 'navigate';
+  action: ButtonActions;
   modalSettings?: ModalSettings;
 }
 

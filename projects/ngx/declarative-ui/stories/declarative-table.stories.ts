@@ -80,7 +80,7 @@ const PODS: Pod[] = [
 // ---------------------------------------------------------------------------
 
 @Component({
-  selector: 'declarative-table-story',
+  selector: 'mfp-declarative-table-story',
   template: `
     <mfp-declarative-table
       [columns]="columns"
