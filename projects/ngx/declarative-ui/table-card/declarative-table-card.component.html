@@ -1,1 +1,95 @@
-<p>declarative-table-card works!</p>
+<div class="card">
+  <div class="card__header">
+    @if (header()) {
+      <span class="card__title">{{ header() }}</span>
+    }
+    <div class="card__actions">
+      <ui5-icon name="search" (click)="toggleSearch()" />
+      @if (searchExpanded()) {
+        <ui5-input
+          [value]="searchValue()"
+          (input)="onSearchInput($any($event.target).value)"
+        />
+      }
+      @if (createConfig()) {
+        <ui5-button icon="add" (click)="createDialogOpen.set(true)">
+          {{ createConfig()!.confirmLabel ?? 'Create' }}
+        </ui5-button>
+      }
+    </div>
+  </div>
+
+  <div class="card__body">
+    <mfp-declarative-table
+      [columns]="effectiveColumns()"
+      [resources]="resources()"
+      [totalItemsCount]="totalItemsCount()"
+      [paginationLimit]="paginationLimit()"
+      [hasMore]="hasMore()"
+      (buttonClick)="onButtonClick($event)"
+      (tableRowClicked)="tableRowClicked.emit($event)"
+      (loadMoreResources)="loadMoreResources.emit()"
+      (paginationLimitChanged)="paginationLimitChanged.emit($event)"
+    />
+  </div>
+</div>
+
+@if (createConfig()) {
+  <ui5-dialog [open]="createDialogOpen()" (ui5BeforeClose)="createDialogOpen.set(false)">
+    <div slot="header">
+      <ui5-title>{{ createConfig()!.title ?? 'Create' }}</ui5-title>
+    </div>
+    <mfp-declarative-form
+      [fields]="createConfig()!.fields"
+      (formValue)="pendingFormValue.set($event)"
+      (formValidChange)="formValid.set($event)"
+    />
+    <div slot="footer">
+      <ui5-button design="Emphasized" [disabled]="!formValid()" (click)="onCreateConfirm()">
+        {{ createConfig()!.confirmLabel ?? 'Save' }}
+      </ui5-button>
+      <ui5-button design="Transparent" (click)="createDialogOpen.set(false)">
+        {{ createConfig()!.cancelLabel ?? 'Cancel' }}
+      </ui5-button>
+    </div>
+  </ui5-dialog>
+}
+
+@if (editDeleteConfig()) {
+  <ui5-dialog [open]="editDialogOpen()" (ui5BeforeClose)="editDialogOpen.set(false)">
+    <div slot="header">
+      <ui5-title>{{ editDeleteConfig()!.title ?? 'Edit' }}</ui5-title>
+    </div>
+    <mfp-declarative-form
+      [fields]="editFields()"
+      [editMode]="true"
+      [initialValues]="$any(pendingResource())"
+      (formValue)="pendingFormValue.set($event)"
+      (formValidChange)="formValid.set($event)"
+    />
+    <div slot="footer">
+      <ui5-button design="Emphasized" [disabled]="!formValid()" (click)="onEditConfirm()">
+        {{ editDeleteConfig()!.confirmLabel ?? 'Save' }}
+      </ui5-button>
+      <ui5-button design="Transparent" (click)="editDialogOpen.set(false)">
+        {{ editDeleteConfig()!.cancelLabel ?? 'Cancel' }}
+      </ui5-button>
+    </div>
+  </ui5-dialog>
+}
+
+@if (deleteConfig()) {
+  <ui5-dialog [open]="deleteDialogOpen()" (ui5BeforeClose)="deleteDialogOpen.set(false)">
+    <div slot="header">
+      <ui5-title>{{ deleteConfig()!.title ?? 'Confirm Delete' }}</ui5-title>
+    </div>
+    <div slot="footer">
+      <ui5-button design="Negative" (click)="onDeleteConfirm()">
+        {{ deleteConfig()!.confirmLabel ?? 'Delete' }}
+      </ui5-button>
+      <ui5-button design="Transparent" (click)="deleteDialogOpen.set(false)">
+        {{ deleteConfig()!.cancelLabel ?? 'Cancel' }}
+      </ui5-button>
+    </div>
+  </ui5-dialog>
+}

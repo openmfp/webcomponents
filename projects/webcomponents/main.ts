@@ -1,4 +1,5 @@
 import { DeclarativeForm } from '../ngx/declarative-ui/form/declarative-form/declarative-form.component';
+import { DeclarativeTableCardComponent } from '../ngx/declarative-ui/table-card/declarative-table-card.component';
 import { DeclarativeTable } from '../ngx/declarative-ui/table/declarative-table/declarative-table.component';
 import { Favorites } from '../ngx/favorites/favorites.component';
 import { ServiceStatusCard } from '../ngx/service-status/service-status-card.component';
@@ -19,6 +20,17 @@ import { createApplication } from '@angular/platform-browser';
     injector: app.injector,
   });
   customElements.define('mfp-declarative-form', DeclarativeFormElement);
+
+  const DeclarativeTableCardElement = createCustomElement(
+    DeclarativeTableCardComponent,
+    {
+      injector: app.injector,
+    },
+  );
+  customElements.define(
+    'mfp-declarative-table-card',
+    DeclarativeTableCardElement,
+  );
 
   const VisitedServiceCardElement = createCustomElement(VisitedServiceCard, {
     injector: app.injector,
