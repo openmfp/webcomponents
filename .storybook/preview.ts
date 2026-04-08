@@ -1,3 +1,4 @@
+import { applicationConfig } from '@storybook/angular';
 import type { Preview } from '@storybook/angular';
 import '@ui5/webcomponents-icons/dist/AllIcons.js';
 
@@ -9,6 +10,7 @@ document.head.appendChild(script);
 
 const preview: Preview = {
   decorators: [
+    applicationConfig({ providers: [] }),
     (story) => ({
       template: `<div style="background-color: #f5f5f5; padding: 30px">${story().template ?? '<ng-content />'}</div>`,
       props: story().props,

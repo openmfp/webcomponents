@@ -1,5 +1,5 @@
 import type { GenericResource, TableFieldDefinition } from '../table/models';
-import { Component, Input } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, Component, Input } from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
 
 // ---------------------------------------------------------------------------
@@ -36,14 +36,22 @@ const PODS: Pod[] = [
   },
   {
     id: 'abc-003',
-    metadata: { name: 'cache-redis-0', namespace: 'kube-system', uid: 'abc-003' },
+    metadata: {
+      name: 'cache-redis-0',
+      namespace: 'kube-system',
+      uid: 'abc-003',
+    },
     status: { phase: 'Running', ready: true, restarts: 1, message: undefined },
     spec: { nodeName: 'node-1', image: 'redis:7' },
     isAvailable: true,
   },
   {
     id: 'abc-004',
-    metadata: { name: 'db-postgres-0', namespace: 'production', uid: 'abc-004' },
+    metadata: {
+      name: 'db-postgres-0',
+      namespace: 'production',
+      uid: 'abc-004',
+    },
     status: {
       phase: 'Failed',
       ready: false,
@@ -56,7 +64,11 @@ const PODS: Pod[] = [
   },
   {
     id: 'abc-005',
-    metadata: { name: 'ingress-ctrl-xkp', namespace: 'default', uid: 'abc-005' },
+    metadata: {
+      name: 'ingress-ctrl-xkp',
+      namespace: 'default',
+      uid: 'abc-005',
+    },
     status: { phase: 'Running', ready: true, restarts: 0, message: undefined },
     spec: { nodeName: 'node-2', image: 'nginx-ingress:1.9' },
     isAvailable: true,
@@ -72,13 +84,14 @@ const PODS: Pod[] = [
   template: `
     <mfp-declarative-table
       [columns]="columns"
-      [resources]="resources"
-      [trackByProperty]="trackByProperty"
       [hasMore]="hasMore"
       [paginationLimit]="paginationLimit"
+      [resources]="resources"
       [totalItemsCount]="totalItemsCount"
+      [trackByProperty]="trackByProperty"
     />
   `,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 class DeclarativeTableStory {
   @Input() columns: TableFieldDefinition[] = [];
@@ -139,20 +152,41 @@ export const CellDisplayModes: Story = {
   args: {
     columns: [
       { label: 'Name', property: 'metadata.name' },
-      { label: 'Ready', property: 'status.ready', uiSettings: { displayAs: 'boolIcon' } },
+      {
+        label: 'Ready',
+        property: 'status.ready',
+        uiSettings: { displayAs: 'boolIcon' },
+      },
       {
         label: 'Phase',
         property: 'status.phase',
         uiSettings: {
           cssRules: [
-            { if: { condition: 'equals', value: 'Running' }, styles: { color: 'green' } },
-            { if: { condition: 'equals', value: 'Pending' }, styles: { color: 'darkorange' } },
-            { if: { condition: 'equals', value: 'Failed' }, styles: { color: 'red', fontWeight: 'bold' } },
+            {
+              if: { condition: 'equals', value: 'Running' },
+              styles: { color: 'green' },
+            },
+            {
+              if: { condition: 'equals', value: 'Pending' },
+              styles: { color: 'darkorange' },
+            },
+            {
+              if: { condition: 'equals', value: 'Failed' },
+              styles: { color: 'red', fontWeight: 'bold' },
+            },
           ],
         },
       },
-      { label: 'UID', property: 'metadata.uid', uiSettings: { displayAs: 'secret', withCopyButton: true } },
-      { label: 'Image', property: 'spec.image', uiSettings: { displayAs: 'tooltip', tooltipIcon: 'information' } },
+      {
+        label: 'UID',
+        property: 'metadata.uid',
+        uiSettings: { displayAs: 'secret', withCopyButton: true },
+      },
+      {
+        label: 'Image',
+        property: 'spec.image',
+        uiSettings: { displayAs: 'tooltip', tooltipIcon: 'information' },
+      },
     ] satisfies TableFieldDefinition[],
   },
 };
@@ -161,8 +195,16 @@ export const CellDisplayModes: Story = {
 export const GroupedColumns: Story = {
   args: {
     columns: [
-      { label: 'Name', property: 'metadata.name', group: { name: 'identity', label: 'Identity', delimiter: ' / ' } },
-      { label: 'Namespace', property: 'metadata.namespace', group: { name: 'identity' } },
+      {
+        label: 'Name',
+        property: 'metadata.name',
+        group: { name: 'identity', label: 'Identity', delimiter: ' / ' },
+      },
+      {
+        label: 'Namespace',
+        property: 'metadata.namespace',
+        group: { name: 'identity' },
+      },
       { label: 'Phase', property: 'status.phase' },
       { label: 'Node', property: 'spec.nodeName' },
     ] satisfies TableFieldDefinition[],
@@ -181,10 +223,23 @@ export const GroupedWithLabelsAndAlert: Story = {
       {
         property: 'spec.nodeName',
         uiSettings: { labelDisplay: true },
-        group: { name: 'placement', label: 'Placement', delimiter: ' ', multiline: false },
+        group: {
+          name: 'placement',
+          label: 'Placement',
+          delimiter: ' ',
+          multiline: false,
+        },
       },
-      { property: 'spec.image', uiSettings: { labelDisplay: true }, group: { name: 'placement' } },
-      { label: 'OK', property: 'status.message', uiSettings: { displayAs: 'alert' } },
+      {
+        property: 'spec.image',
+        uiSettings: { labelDisplay: true },
+        group: { name: 'placement' },
+      },
+      {
+        label: 'OK',
+        property: 'status.message',
+        uiSettings: { displayAs: 'alert' },
+      },
       { label: 'Message', property: 'status.message', value: '—' },
     ] satisfies TableFieldDefinition[],
   },
@@ -237,7 +292,12 @@ export const ButtonCell: Story = {
         property: 'metadata.name',
         uiSettings: {
           displayAs: 'button',
-          buttonSettings: { text: 'Inspect', icon: 'inspect', design: 'Emphasized', action: 'navigate' },
+          buttonSettings: {
+            text: 'Inspect',
+            icon: 'inspect',
+            design: 'Emphasized',
+            action: 'navigate',
+          },
         },
       },
     ] satisfies TableFieldDefinition[],
@@ -265,7 +325,11 @@ export const RowAvailability: Story = {
       { label: 'Name', property: 'metadata.name' },
       { label: 'Phase', property: 'status.phase' },
       { label: 'Node', property: 'spec.nodeName' },
-      { label: 'Status', property: 'isAvailable', uiSettings: { displayAs: 'alert' } },
+      {
+        label: 'Status',
+        property: 'isAvailable',
+        uiSettings: { displayAs: 'alert' },
+      },
     ] satisfies TableFieldDefinition[],
   },
 };
