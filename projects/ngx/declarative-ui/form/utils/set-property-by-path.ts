@@ -1,4 +1,4 @@
-export function setPropertyByPath<T extends Record<string, any>>(
+export function setPropertyByPath<T extends Record<string, unknown>>(
   object: T,
   path: string,
   value: unknown,
@@ -8,7 +8,7 @@ export function setPropertyByPath<T extends Record<string, any>>(
     return object;
   }
 
-  let current: Record<string, any> = object;
+  let current: Record<string, unknown> = object;
 
   for (let i = 0; i < segments.length; i += 1) {
     const key = segments[i];
@@ -23,7 +23,7 @@ export function setPropertyByPath<T extends Record<string, any>>(
       current[key] = {};
     }
 
-    current = current[key];
+    current = current[key] as Record<string, unknown>;
   }
 
   return object;

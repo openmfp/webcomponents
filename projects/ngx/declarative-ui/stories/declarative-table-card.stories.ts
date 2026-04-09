@@ -1,14 +1,16 @@
 import type { FormFieldDefinition } from '../form/models';
-import type {
-  TableCardCreateEditConfig,
+import { DeclarativeTableCardComponent } from '../table-card/declarative-table-card.component';
+import {
+  TableCardCreateConfig,
   TableCardDeleteConfig,
-} from '../table-card/declarative-table-card.component';
+  TableCardEditConfig,
+  TableCardReadConfig,
+} from '../table-card/models/configs';
 import type { GenericResource, TableFieldDefinition } from '../table/models';
-import { CUSTOM_ELEMENTS_SCHEMA, Component, Input } from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
 
 // ---------------------------------------------------------------------------
-// Sample data (same PODS array used in declarative-table.stories.ts)
+// Sample data
 // ---------------------------------------------------------------------------
 
 interface Pod extends GenericResource {
@@ -22,7 +24,7 @@ const PODS: Pod[] = [
   {
     id: 'abc-001',
     metadata: { name: 'api-server-7d9f', namespace: 'default', uid: 'abc-001' },
-    status: { phase: 'Running', ready: true, restarts: 0, message: undefined },
+    status: { phase: 'Running', ready: true, restarts: 0 },
     spec: { nodeName: 'node-1', image: 'nginx:1.25' },
     isAvailable: true,
   },
@@ -46,7 +48,7 @@ const PODS: Pod[] = [
       namespace: 'kube-system',
       uid: 'abc-003',
     },
-    status: { phase: 'Running', ready: true, restarts: 1, message: undefined },
+    status: { phase: 'Running', ready: true, restarts: 1 },
     spec: { nodeName: 'node-1', image: 'redis:7' },
     isAvailable: true,
   },
@@ -74,14 +76,14 @@ const PODS: Pod[] = [
       namespace: 'default',
       uid: 'abc-005',
     },
-    status: { phase: 'Running', ready: true, restarts: 0, message: undefined },
+    status: { phase: 'Running', ready: true, restarts: 0 },
     spec: { nodeName: 'node-2', image: 'nginx-ingress:1.9' },
     isAvailable: true,
   },
 ];
 
 // ---------------------------------------------------------------------------
-// Shared column definitions
+// Shared definitions
 // ---------------------------------------------------------------------------
 
 const BASE_COLUMNS: TableFieldDefinition[] = [
@@ -91,169 +93,160 @@ const BASE_COLUMNS: TableFieldDefinition[] = [
   { label: 'Node', property: 'spec.nodeName' },
 ];
 
-// ---------------------------------------------------------------------------
-// Shared form field definitions
-// ---------------------------------------------------------------------------
-
 const POD_FORM_FIELDS: FormFieldDefinition[] = [
-  { name: 'name', label: 'Name', required: true },
-  { name: 'namespace', label: 'Namespace', required: true },
+  { name: 'metadata.name', label: 'Name', required: true },
+  {
+    name: 'metadata.namespace',
+    label: 'Namespace',
+    required: true,
+    loadValues: async () => [
+      { value: 'default', label: 'Default' },
+      { value: 'kube-system', label: 'Kube-system' },
+      { value: 'production', label: 'Production' },
+    ],
+  },
 ];
 
-// ---------------------------------------------------------------------------
-// Wrapper component (avoids attachShadow conflict in Storybook)
-// ---------------------------------------------------------------------------
+const POD_EDIT_FORM_FIELDS: FormFieldDefinition[] = [
+  { name: 'metadata.name', label: 'Name', required: true, disabled: true },
+  {
+    name: 'metadata.namespace',
+    label: 'Namespace',
+    required: true,
+    loadValues: async () => [
+      { value: 'default', label: 'default' },
+      { value: 'kube-system', label: 'kube-system' },
+      { value: 'production', label: 'production' },
+    ],
+  },
+];
 
-@Component({
-  selector: 'mfp-declarative-table-card-story',
-  template: `
-    <mfp-declarative-table-card
-      [columns]="columns"
-      [createConfig]="createConfig"
-      [deleteConfig]="deleteConfig"
-      [editDeleteConfig]="editDeleteConfig"
-      [hasMore]="hasMore"
-      [header]="header"
-      [paginationLimit]="paginationLimit"
-      [resources]="resources"
-      [totalItemsCount]="totalItemsCount"
-    />
-  `,
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
-})
-class DeclarativeTableCardStory {
-  @Input() columns: TableFieldDefinition[] = BASE_COLUMNS;
-  @Input() resources: GenericResource[] = PODS;
-  @Input() header?: string;
-  @Input() createConfig?: TableCardCreateEditConfig;
-  @Input() editDeleteConfig?: TableCardCreateEditConfig;
-  @Input() deleteConfig?: TableCardDeleteConfig;
-  @Input() hasMore = false;
-  @Input() paginationLimit = 5;
-  @Input() totalItemsCount?: number;
-}
+const BASE_READ_CONFIG: TableCardReadConfig = {
+  fields: BASE_COLUMNS,
+  paginationLimit: 5,
+  hasMore: false,
+};
 
 // ---------------------------------------------------------------------------
 // Meta
 // ---------------------------------------------------------------------------
 
-const meta: Meta<DeclarativeTableCardStory> = {
+const meta: Meta<DeclarativeTableCardComponent<GenericResource>> = {
   title: 'Declarative UI / DeclarativeTableCard',
-  component: DeclarativeTableCardStory,
+  component: DeclarativeTableCardComponent,
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',
   },
   argTypes: {
-    columns: { control: 'object' },
-    resources: { control: 'object' },
+    readConfig: { control: 'object' },
     header: { control: 'text' },
+    headerTooltip: { control: 'text' },
     createConfig: { control: 'object' },
-    editDeleteConfig: { control: 'object' },
+    editConfig: { control: 'object' },
     deleteConfig: { control: 'object' },
-    hasMore: { control: 'boolean' },
-    paginationLimit: { control: 'number' },
-    totalItemsCount: { control: 'number' },
   },
   args: {
-    columns: BASE_COLUMNS,
+    header: 'Pods',
+    readConfig: BASE_READ_CONFIG,
     resources: PODS,
-    hasMore: false,
-    paginationLimit: 5,
   },
 };
 
 export default meta;
-type Story = StoryObj<DeclarativeTableCardStory>;
+type Story = StoryObj<DeclarativeTableCardComponent<GenericResource>>;
 
 // ---------------------------------------------------------------------------
 // Stories
 // ---------------------------------------------------------------------------
 
-/**
- * Minimal card: header, columns, and resources. No dialogs or action buttons.
- */
-export const Basic: Story = {
+/** Minimal card: header, columns, and resources. No dialogs or action buttons. */
+export const Basic: Story = {};
+
+/** Header with an info icon that shows a tooltip on hover. */
+export const WithHeaderTooltip: Story = {
   args: {
-    header: 'Pods',
-    columns: BASE_COLUMNS,
-    resources: PODS,
+    headerTooltip: 'This table lists all pods running in the cluster.',
   },
 };
 
-/**
- * Adds a Create button. Clicking it opens a dialog with name + namespace fields.
- */
+/** Adds a Create button that opens a dialog with name + namespace fields. */
 export const WithCreate: Story = {
   args: {
-    header: 'Pods',
-    columns: BASE_COLUMNS,
-    resources: PODS,
     createConfig: {
       fields: POD_FORM_FIELDS,
       title: 'Create Pod',
       confirmLabel: 'Create',
       cancelLabel: 'Cancel',
-    } satisfies TableCardCreateEditConfig,
+    } satisfies TableCardCreateConfig,
   },
 };
 
-/**
- * Adds edit row-action buttons. The "name" field is disabled in the edit dialog
- * because it is listed as a createOnlyField.
- */
-export const WithEditDelete: Story = {
+/** Adds Edit row-action button. Clicking it opens a pre-filled dialog. */
+export const WithEdit: Story = {
   args: {
-    header: 'Pods',
-    columns: BASE_COLUMNS,
-    resources: PODS,
-    editDeleteConfig: {
-      fields: POD_FORM_FIELDS,
+    editConfig: {
+      fields: POD_EDIT_FORM_FIELDS,
       title: 'Edit Pod',
       confirmLabel: 'Save',
       cancelLabel: 'Cancel',
-      createOnlyFields: ['name'],
-    } satisfies TableCardCreateEditConfig,
+    } satisfies TableCardEditConfig,
   },
 };
 
-/**
- * Full action suite: Create button, Edit row button, Delete row button.
- * Opening the delete dialog shows a confirmation prompt.
- */
-export const WithAllActions: Story = {
+/** Adds Delete row-action button with a confirmation dialog. */
+export const WithDelete: Story = {
   args: {
-    header: 'Pods',
-    columns: BASE_COLUMNS,
-    resources: PODS,
-    createConfig: {
-      fields: POD_FORM_FIELDS,
-      title: 'Create Pod',
-      confirmLabel: 'Create',
-      cancelLabel: 'Cancel',
-    } satisfies TableCardCreateEditConfig,
-    editDeleteConfig: {
-      fields: POD_FORM_FIELDS,
-      title: 'Edit Pod',
-      confirmLabel: 'Save',
-      cancelLabel: 'Cancel',
-      createOnlyFields: ['name'],
-    } satisfies TableCardCreateEditConfig,
     deleteConfig: {
       title: 'Delete Pod?',
+      message:
+        'This action cannot be undone. The pod will be permanently removed.',
       confirmLabel: 'Delete',
       cancelLabel: 'Cancel',
     } satisfies TableCardDeleteConfig,
   },
 };
 
-/**
- * Empty resources array triggers the illustrated empty-state message inside the table.
- */
+/** Full action suite: Create button, Edit row button, Delete row button. */
+export const WithAllActions: Story = {
+  args: {
+    createConfig: {
+      fields: POD_FORM_FIELDS,
+      title: 'Create Pod',
+      confirmLabel: 'Create',
+      cancelLabel: 'Cancel',
+    } satisfies TableCardCreateConfig,
+    editConfig: {
+      fields: POD_EDIT_FORM_FIELDS,
+      title: 'Edit Pod',
+      confirmLabel: 'Save',
+      cancelLabel: 'Cancel',
+    } satisfies TableCardEditConfig,
+    deleteConfig: {
+      title: 'Delete Pod?',
+      message:
+        'This action cannot be undone. The pod will be permanently removed.',
+      confirmLabel: 'Delete',
+      cancelLabel: 'Cancel',
+    } satisfies TableCardDeleteConfig,
+  },
+};
+
+/** Empty resources array triggers the illustrated empty-state message inside the table. */
 export const EmptyState: Story = {
   args: {
-    header: 'Pods',
-    columns: BASE_COLUMNS,
     resources: [],
+  },
+};
+
+/** Shows pagination controls when hasMore is true. */
+export const WithPagination: Story = {
+  args: {
+    readConfig: {
+      ...BASE_READ_CONFIG,
+      totalItemsCount: 42,
+      paginationLimit: 5,
+      hasMore: true,
+    },
   },
 };

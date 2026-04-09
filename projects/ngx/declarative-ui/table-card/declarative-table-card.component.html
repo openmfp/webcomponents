@@ -1,11 +1,21 @@
 <div class="card">
   <div class="card__header">
-    @if (header()) {
-      <span class="card__title">{{ header() }}</span>
+    @if (header(); as header) {
+      <div class="card__title">{{ header }}
+        @if (headerTooltip(); as tooltip) {
+          <ui5-icon
+            class="card__info-icon"
+            name="hint"
+            [showTooltip]="true"
+            [accessibleName]="tooltip"
+          />
+        }
+      </div>
     }
     <div class="card__actions">
       @if (searchExpanded()) {
         <ui5-input
+        #searchInput
         [class]="'card__search-input card__search-input--' + (searchCollapsing() ? 'leave' : 'enter')"
         [formControl]="searchControl"
         (blur)="onSearchBlur()"
@@ -29,34 +39,36 @@
   </div>
 
   <div class="card__body">
-    <mfp-declarative-table
-      [columns]="effectiveColumns()"
-      [resources]="resources()"
-      [totalItemsCount]="totalItemsCount()"
-      [paginationLimit]="paginationLimit()"
-      [hasMore]="hasMore()"
-      (buttonClick)="onButtonClick($event)"
-      (tableRowClicked)="tableRowClicked.emit($event)"
-      (loadMoreResources)="loadMoreResources.emit()"
-      (paginationLimitChanged)="paginationLimitChanged.emit($event)"
-    />
+    @if(readConfig(); as config) {
+      <mfp-declarative-table
+        [columns]="effectiveColumns()"
+        [resources]="resources()"
+        [totalItemsCount]="config.totalItemsCount"
+        [paginationLimit]="config.paginationLimit ?? 5"
+        [hasMore]="config.hasMore ?? false"
+        (buttonClick)="onButtonClick($event)"
+        (tableRowClicked)="tableRowClicked.emit($event)"
+        (loadMoreResources)="loadMoreResources.emit()"
+        (paginationLimitChanged)="paginationLimitChanged.emit($event)"
+      />
+    }
   </div>
 </div>
 
-@if (createConfig()) {
+@if (createConfig(); as config) {
   <ui5-dialog [open]="createDialogOpen()" (ui5BeforeClose)="createDialogOpen.set(false)">
     <div slot="header" class="dialog__header">
-      <ui5-title level="H5">{{ createConfig()!.title ?? 'Create' }}</ui5-title>
+      <ui5-title level="H5">{{ config.title ?? 'Create' }}</ui5-title>
     </div>
     <div class="dialog__body">
       <mfp-declarative-form
-        [fields]="createConfig()!.fields"
+        #createForm
+        [fields]="config.fields"
         (formValue)="pendingFormValue.set($event)"
-        (formValidChange)="formValid.set($event)"
       />
     </div>
     <div slot="footer" class="dialog__footer">
-      <ui5-button design="Emphasized" [disabled]="!formValid()" (click)="onCreateConfirm()">
+      <ui5-button design="Emphasized" [disabled]="createForm.form.invalid" (click)="onCreateConfirm()">
         {{ createConfig()!.confirmLabel ?? 'Save' }}
       </ui5-button>
       <ui5-button design="Transparent" (click)="createDialogOpen.set(false)">
@@ -66,47 +78,47 @@
   </ui5-dialog>
 }
 
-@if (editDeleteConfig()) {
+@if (editConfig(); as config) {
   <ui5-dialog [open]="editDialogOpen()" (ui5BeforeClose)="editDialogOpen.set(false)">
     <div slot="header" class="dialog__header">
-      <ui5-title level="H5">{{ editDeleteConfig()!.title ?? 'Edit' }}</ui5-title>
+      <ui5-title level="H5">{{ config.title ?? 'Edit' }}</ui5-title>
     </div>
     <div class="dialog__body">
       <mfp-declarative-form
-        [fields]="editFields()"
+        #editForm
+        [fields]="config.fields"
         [editMode]="true"
-        [initialValues]="editInitialValues()"
+        [initialValues]="editInitialValue()"
         (formValue)="pendingFormValue.set($event)"
-        (formValidChange)="formValid.set($event)"
       />
     </div>
     <div slot="footer" class="dialog__footer">
-      <ui5-button design="Emphasized" [disabled]="!formValid()" (click)="onEditConfirm()">
-        {{ editDeleteConfig()!.confirmLabel ?? 'Save' }}
+      <ui5-button design="Emphasized" [disabled]="editForm.form.invalid" (click)="onEditConfirm()">
+        {{ config.confirmLabel ?? 'Edit' }}
       </ui5-button>
       <ui5-button design="Transparent" (click)="editDialogOpen.set(false)">
-        {{ editDeleteConfig()!.cancelLabel ?? 'Cancel' }}
+        {{ config.cancelLabel ?? 'Cancel' }}
       </ui5-button>
     </div>
   </ui5-dialog>
 }
 
-@if (deleteConfig()) {
+@if (deleteConfig(); as config) {
   <ui5-dialog [open]="deleteDialogOpen()" (ui5BeforeClose)="deleteDialogOpen.set(false)">
     <div slot="header" class="dialog__header">
-      <ui5-title level="H5">{{ deleteConfig()!.title ?? 'Confirm Delete' }}</ui5-title>
+      <ui5-title level="H5">{{ config.title ?? 'Confirm Delete' }}</ui5-title>
     </div>
-    @if (deleteConfig()!.message) {
+    @if (config.message) {
       <div class="dialog__body">
-        <p class="dialog__message">{{ deleteConfig()!.message }}</p>
+        <p class="dialog__message">{{ config.message }}</p>
       </div>
     }
     <div slot="footer" class="dialog__footer">
       <ui5-button design="Negative" (click)="onDeleteConfirm()">
-        {{ deleteConfig()!.confirmLabel ?? 'Delete' }}
+        {{ config.confirmLabel ?? 'Delete' }}
       </ui5-button>
       <ui5-button design="Transparent" (click)="deleteDialogOpen.set(false)">
-        {{ deleteConfig()!.cancelLabel ?? 'Cancel' }}
+        {{ config.cancelLabel ?? 'Cancel' }}
       </ui5-button>
     </div>
   </ui5-dialog>

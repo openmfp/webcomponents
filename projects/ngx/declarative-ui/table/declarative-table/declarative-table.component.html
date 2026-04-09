@@ -99,7 +99,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem;
+    padding: 0.25rem 0.5rem;
     border-top: 1px solid var(--sapList_BorderColor);
   "
 >
@@ -112,19 +112,12 @@
       <ui5-select
         style="width: 5rem"
         (change)="paginationLimitChanged.emit(+$any($event)?.target?.value)"
+        [value]="paginationLimit().toString()"
       >
-        <ui5-option value="5" [selected]="paginationLimit() === 5"
-          >5</ui5-option
-        >
-        <ui5-option value="10" [selected]="paginationLimit() === 10"
-          >10</ui5-option
-        >
-        <ui5-option value="50" [selected]="paginationLimit() === 50"
-          >50</ui5-option
-        >
-        <ui5-option value="100" [selected]="paginationLimit() === 100"
-          >100</ui5-option
-        >
+        <ui5-option value="5">5</ui5-option>
+        <ui5-option value="10">10</ui5-option>
+        <ui5-option value="50">50</ui5-option>
+        <ui5-option value="100">100</ui5-option>
       </ui5-select>
     </div>
 

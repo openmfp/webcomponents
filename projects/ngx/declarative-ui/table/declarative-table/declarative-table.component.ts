@@ -9,6 +9,7 @@ import {
   Component,
   ViewEncapsulation,
   computed,
+  effect,
   input,
   output,
 } from '@angular/core';
@@ -39,7 +40,7 @@ import '@ui5/webcomponents-fiori/dist/illustrations/NoData.js';
   ],
   templateUrl: './declarative-table.component.html',
   styleUrl: './declarative-table.component.scss',
-  encapsulation: ViewEncapsulation.ShadowDom
+  encapsulation: ViewEncapsulation.ShadowDom,
 })
 export class DeclarativeTable<T extends GenericResource> {
   columns = input.required<TableFieldDefinition[]>();
@@ -53,6 +54,10 @@ export class DeclarativeTable<T extends GenericResource> {
   readonly tableRowClicked = output<T>();
   readonly loadMoreResources = output<void>();
   readonly paginationLimitChanged = output<number>();
+
+  public test = effect(() => {
+    console.log(this.paginationLimit());
+  });
 
   columnTrackBy = (column: TableFieldDefinition, index: number) =>
     column.property ?? column.value ?? index;

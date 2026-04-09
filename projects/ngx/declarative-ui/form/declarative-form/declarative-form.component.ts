@@ -149,14 +149,10 @@ export class DeclarativeForm {
     const result: Record<string, unknown> = {};
 
     for (const key of Object.keys(this.form.controls)) {
-      const path = this.controlNameToPath(key);
-      setPropertyByPath(result, path, this.form.controls[key].value);
+      setPropertyByPath(result, key, this.form.controls[key].value);
     }
 
+    console.log(result, 'result');
     return result;
-  }
-
-  private controlNameToPath(controlName: string): string {
-    return controlName.replaceAll('_', '.');
   }
 }
