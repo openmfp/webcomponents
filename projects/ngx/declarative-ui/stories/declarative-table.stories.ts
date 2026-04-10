@@ -147,7 +147,10 @@ export const Basic: Story = {
   },
 };
 
-/** Boolean icons, secret cell, copy button, and conditional colour rules. */
+/**
+ * Boolean icons, secret cell with inline copy button, and conditional colour
+ * rules. The copy icon appears next to the masked value on the same line.
+ */
 export const CellDisplayModes: Story = {
   args: {
     columns: [
@@ -241,6 +244,30 @@ export const GroupedWithLabelsAndAlert: Story = {
         uiSettings: { displayAs: 'alert' },
       },
       { label: 'Message', property: 'status.message', value: '—' },
+    ] satisfies TableFieldDefinition[],
+  },
+};
+
+/**
+ * `uiSettings.columnWidth` sets the width of the header cell (and thus the
+ * whole column). Useful for icon-only columns like `alert` or `boolIcon` where
+ * the default `auto` width is wider than necessary.
+ */
+export const ColumnWidth: Story = {
+  args: {
+    columns: [
+      { label: 'Name', property: 'metadata.name' },
+      {
+        label: 'Alert',
+        property: 'status.message',
+        uiSettings: { displayAs: 'alert', columnWidth: '60px' },
+      },
+      {
+        label: 'Ready',
+        property: 'status.ready',
+        uiSettings: { displayAs: 'boolIcon', columnWidth: '60px' },
+      },
+      { label: 'Phase', property: 'status.phase' },
     ] satisfies TableFieldDefinition[],
   },
 };
