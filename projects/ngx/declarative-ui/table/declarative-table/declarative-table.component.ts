@@ -9,7 +9,6 @@ import {
   Component,
   ViewEncapsulation,
   computed,
-  effect,
   input,
   output,
 } from '@angular/core';
@@ -54,10 +53,6 @@ export class DeclarativeTable<T extends GenericResource> {
   readonly tableRowClicked = output<T>();
   readonly loadMoreResources = output<void>();
   readonly paginationLimitChanged = output<number>();
-
-  public test = effect(() => {
-    console.log(this.paginationLimit());
-  });
 
   columnTrackBy = (column: TableFieldDefinition, index: number) =>
     column.property ?? column.value ?? index;

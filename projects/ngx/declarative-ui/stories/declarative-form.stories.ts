@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/angular';
 @Component({
   selector: 'mfp-declarative-form-story',
   template: `
-    <mfp-declarative-form
+    <mfp-wc-declarative-form
       [editMode]="editMode"
       [fields]="fields"
       [initialValues]="initialValues"

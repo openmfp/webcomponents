@@ -1,9 +1,14 @@
 import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DeclarativeTableCardComponent } from './declarative-table-card.component';
+import {
+  TableCardCreateConfig,
+  TableCardDeleteConfig,
+  TableCardEditConfig,
+  TableCardReadConfig,
+} from './models/configs';
 import { TableFieldDefinition, ValueCellButtonClickEvent, GenericResource } from '../table/models';
 import { FormFieldDefinition } from '../form/models';
-import { TableCardCreateEditConfig, TableCardDeleteConfig } from './declarative-table-card.component';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -17,33 +22,40 @@ const COLUMNS: TableFieldDefinition[] = [
   { label: 'Namespace', property: 'metadata.namespace' },
 ];
 
+const READ_CONFIG: TableCardReadConfig = {
+  fields: COLUMNS,
+};
+
 const RESOURCES: GenericResource[] = [
   { id: '1', metadata: { name: 'pod-alpha', namespace: 'default' } },
   { id: '2', metadata: { name: 'pod-beta', namespace: 'kube-system' } },
 ];
 
 const FORM_FIELDS: FormFieldDefinition[] = [
-  { name: 'name', label: 'Name', required: true },
-  { name: 'namespace', label: 'Namespace' },
+  { name: 'metadata.name', label: 'Name', required: true },
+  { name: 'metadata.namespace', label: 'Namespace' },
 ];
 
-const CREATE_CONFIG: TableCardCreateEditConfig = {
+const CREATE_CONFIG: TableCardCreateConfig = {
   fields: FORM_FIELDS,
   title: 'Create Resource',
   confirmLabel: 'Create',
   cancelLabel: 'Cancel',
 };
 
-const EDIT_DELETE_CONFIG: TableCardCreateEditConfig = {
-  fields: FORM_FIELDS,
+const EDIT_CONFIG: TableCardEditConfig = {
+  fields: [
+    { name: 'metadata.name', label: 'Name', required: true, disabled: true },
+    { name: 'metadata.namespace', label: 'Namespace' },
+  ],
   title: 'Edit Resource',
   confirmLabel: 'Save',
   cancelLabel: 'Cancel',
-  createOnlyFields: ['name'],
 };
 
 const DELETE_CONFIG: TableCardDeleteConfig = {
   title: 'Confirm Delete',
+  message: 'This action cannot be undone.',
   confirmLabel: 'Delete',
   cancelLabel: 'Cancel',
 };
@@ -60,11 +72,11 @@ function makeEvent(action: string, resource?: GenericResource): ValueCellButtonC
 }
 
 function setup(opts: {
-  columns?: TableFieldDefinition[];
+  readConfig?: TableCardReadConfig;
   resources?: GenericResource[];
   header?: string;
-  createConfig?: TableCardCreateEditConfig;
-  editDeleteConfig?: TableCardCreateEditConfig;
+  createConfig?: TableCardCreateConfig;
+  editConfig?: TableCardEditConfig;
   deleteConfig?: TableCardDeleteConfig;
 } = {}): { fixture: Fixture; component: Comp } {
   const fixture: Fixture = TestBed.createComponent(
@@ -72,11 +84,11 @@ function setup(opts: {
   );
   const component = fixture.componentInstance as Comp;
 
-  fixture.componentRef.setInput('columns', opts.columns ?? COLUMNS);
+  fixture.componentRef.setInput('readConfig', opts.readConfig ?? READ_CONFIG);
   fixture.componentRef.setInput('resources', opts.resources ?? RESOURCES);
-  if (opts.header !== undefined) fixture.componentRef.setInput('header', opts.header);
+  fixture.componentRef.setInput('header', opts.header ?? 'Test Header');
   if (opts.createConfig !== undefined) fixture.componentRef.setInput('createConfig', opts.createConfig);
-  if (opts.editDeleteConfig !== undefined) fixture.componentRef.setInput('editDeleteConfig', opts.editDeleteConfig);
+  if (opts.editConfig !== undefined) fixture.componentRef.setInput('editConfig', opts.editConfig);
   if (opts.deleteConfig !== undefined) fixture.componentRef.setInput('deleteConfig', opts.deleteConfig);
 
   fixture.detectChanges();
@@ -128,83 +140,110 @@ describe('DeclarativeTableCardComponent', () => {
       expect(title).not.toBeNull();
       expect(title?.textContent?.trim()).toBe('My Pods');
     });
+  });
 
-    it('does not render the header title element when header is not set', () => {
+  // -------------------------------------------------------------------------
+  // 4. headerTooltip input
+  // -------------------------------------------------------------------------
+
+  describe('headerTooltip input', () => {
+    it('renders info icon when headerTooltip is provided', () => {
+      const { fixture } = setup();
+      fixture.componentRef.setInput('headerTooltip', 'Some tooltip');
+      fixture.detectChanges();
+      const root: ShadowRoot | HTMLElement = fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+      const icon = root.querySelector('ui5-icon[name="hint"]');
+      expect(icon).not.toBeNull();
+      expect(icon?.getAttribute('accessible-name')).toBe('Some tooltip');
+    });
+
+    it('does not render info icon when headerTooltip is not provided', () => {
       const { fixture } = setup();
       const root: ShadowRoot | HTMLElement = fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
-      expect(root.querySelector('.card__title')).toBeNull();
+      expect(root.querySelector('ui5-icon[name="hint"]')).toBeNull();
     });
   });
 
   // -------------------------------------------------------------------------
-  // 4. Search behaviour
+  // 5. Search behaviour
   // -------------------------------------------------------------------------
 
   describe('search', () => {
     it('searchExpanded starts as false', () => {
       const { component } = setup();
-      // Access protected signal for unit testing
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((component as any).searchExpanded()).toBe(false);
     });
 
-    it('toggleSearch() flips searchExpanded to true', () => {
+    it('toggleSearch() sets searchExpanded to true on first call', () => {
       const { component } = setup();
       component.toggleSearch();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((component as any).searchExpanded()).toBe(true);
     });
 
-    it('toggleSearch() flips searchExpanded back to false on second call', () => {
+    it('toggleSearch() starts collapsing on second call when already expanded', () => {
+      const { component } = setup();
+      component.toggleSearch(); // expand
+      component.toggleSearch(); // collapse
+      // searchCollapsing should be set; searchExpanded still true until animation ends
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).searchCollapsing()).toBe(true);
+    });
+
+    it('onSearchBlur() collapses search when value is empty', () => {
       const { component } = setup();
       component.toggleSearch();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (component as any).searchControl.setValue('');
+      component.onSearchBlur();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).searchCollapsing()).toBe(true);
+    });
+
+    it('onSearchBlur() does not collapse when value is non-empty', () => {
+      const { component } = setup();
       component.toggleSearch();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (component as any).searchControl.setValue('abc');
+      component.onSearchBlur();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).searchCollapsing()).toBe(false);
+    });
+
+    it('onSearchAnimationEnd() resets search state after collapse animation', () => {
+      const { component } = setup();
+      component.toggleSearch(); // expand
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (component as any).searchControl.setValue('query');
+      component.toggleSearch(); // start collapsing
+      component.onSearchAnimationEnd();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).searchCollapsing()).toBe(false);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((component as any).searchExpanded()).toBe(false);
-    });
-
-    it('onSearchInput() emits searchChanged with the provided value', () => {
-      const { component } = setup();
-      const emitted: string[] = [];
-      component.searchChanged.subscribe(v => emitted.push(v));
-
-      component.onSearchInput('my-query');
-      expect(emitted).toEqual(['my-query']);
-    });
-
-    it('onSearchInput() updates the internal searchValue signal', () => {
-      const { component } = setup();
-      component.onSearchInput('hello');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).searchValue()).toBe('hello');
+      expect((component as any).searchControl.value).toBe('');
     });
 
-    it('onSearchInput() collapses search when value is cleared', () => {
-      const { component } = setup();
-      component.toggleSearch(); // expand first
-      component.onSearchInput(''); // clear
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).searchExpanded()).toBe(false);
-    });
-
-    it('onSearchInput() does not collapse search when value is non-empty', () => {
+    it('onSearchAnimationEnd() does nothing when not collapsing', () => {
       const { component } = setup();
       component.toggleSearch();
-      component.onSearchInput('abc');
+      // Not in collapsing state — should be a no-op
+      component.onSearchAnimationEnd();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((component as any).searchExpanded()).toBe(true);
     });
   });
 
   // -------------------------------------------------------------------------
-  // 5. Create button visibility
+  // 6. Create button visibility
   // -------------------------------------------------------------------------
 
   describe('create button', () => {
     it('create button is absent when createConfig is not provided', () => {
       const { fixture } = setup();
       const root: ShadowRoot | HTMLElement = fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
-      // The button contains the text "Create" and an add icon
       const buttons = Array.from(root.querySelectorAll('ui5-button'));
       const createButton = buttons.find(b => b.getAttribute('icon') === 'add');
       expect(createButton).toBeUndefined();
@@ -220,11 +259,11 @@ describe('DeclarativeTableCardComponent', () => {
   });
 
   // -------------------------------------------------------------------------
-  // 6. effectiveColumns() computed
+  // 7. effectiveColumns() computed
   // -------------------------------------------------------------------------
 
   describe('effectiveColumns()', () => {
-    it('returns the original columns when neither editDeleteConfig nor deleteConfig is set', () => {
+    it('returns only readConfig.fields when no edit or delete config is set', () => {
       const { component } = setup();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cols = (component as any).effectiveColumns();
@@ -232,8 +271,8 @@ describe('DeclarativeTableCardComponent', () => {
       expect(cols).toEqual(COLUMNS);
     });
 
-    it('adds an edit action column when editDeleteConfig is provided', () => {
-      const { component } = setup({ editDeleteConfig: EDIT_DELETE_CONFIG });
+    it('adds an edit action column when editConfig is provided', () => {
+      const { component } = setup({ editConfig: EDIT_CONFIG });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cols = (component as any).effectiveColumns();
       expect(cols).toHaveLength(COLUMNS.length + 1);
@@ -244,20 +283,7 @@ describe('DeclarativeTableCardComponent', () => {
       expect(editCol.uiSettings.buttonSettings.icon).toBe('edit');
     });
 
-    it('adds a delete action column when deleteConfig is provided alongside editDeleteConfig', () => {
-      const { component } = setup({ editDeleteConfig: EDIT_DELETE_CONFIG, deleteConfig: DELETE_CONFIG });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cols = (component as any).effectiveColumns();
-      // original + edit col + delete col
-      expect(cols).toHaveLength(COLUMNS.length + 2);
-      const deleteCol = cols.find(
-        (c: TableFieldDefinition) => c.uiSettings?.buttonSettings?.action === 'delete',
-      );
-      expect(deleteCol).toBeDefined();
-      expect(deleteCol.uiSettings.buttonSettings.icon).toBe('delete');
-    });
-
-    it('adds only a delete column (no edit column) when only deleteConfig is provided', () => {
+    it('adds a delete action column when deleteConfig is provided', () => {
       const { component } = setup({ deleteConfig: DELETE_CONFIG });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cols = (component as any).effectiveColumns();
@@ -266,18 +292,39 @@ describe('DeclarativeTableCardComponent', () => {
         (c: TableFieldDefinition) => c.uiSettings?.buttonSettings?.action === 'delete',
       );
       expect(deleteCol).toBeDefined();
+    });
+
+    it('adds both edit and delete columns when both configs are provided', () => {
+      const { component } = setup({ editConfig: EDIT_CONFIG, deleteConfig: DELETE_CONFIG });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const cols = (component as any).effectiveColumns();
+      expect(cols).toHaveLength(COLUMNS.length + 2);
       const editCol = cols.find(
         (c: TableFieldDefinition) => c.uiSettings?.buttonSettings?.action === 'edit',
       );
-      expect(editCol).toBeUndefined();
+      const deleteCol = cols.find(
+        (c: TableFieldDefinition) => c.uiSettings?.buttonSettings?.action === 'delete',
+      );
+      expect(editCol).toBeDefined();
+      expect(deleteCol).toBeDefined();
     });
 
-    it('respects custom icon from editButtonSettings', () => {
-      const customConfig: TableCardCreateEditConfig = {
-        ...EDIT_DELETE_CONFIG,
+    it('delete column uses "decline" icon by default', () => {
+      const { component } = setup({ deleteConfig: DELETE_CONFIG });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const cols = (component as any).effectiveColumns();
+      const deleteCol = cols.find(
+        (c: TableFieldDefinition) => c.uiSettings?.buttonSettings?.action === 'delete',
+      );
+      expect(deleteCol.uiSettings.buttonSettings.icon).toBe('decline');
+    });
+
+    it('respects custom icon from editConfig.editButtonSettings', () => {
+      const customEditConfig: TableCardEditConfig = {
+        ...EDIT_CONFIG,
         editButtonSettings: { icon: 'pen-tool' },
       };
-      const { component } = setup({ editDeleteConfig: customConfig });
+      const { component } = setup({ editConfig: customEditConfig });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cols = (component as any).effectiveColumns();
       const editCol = cols.find(
@@ -286,12 +333,12 @@ describe('DeclarativeTableCardComponent', () => {
       expect(editCol.uiSettings.buttonSettings.icon).toBe('pen-tool');
     });
 
-    it('respects custom icon from deleteButtonSettings', () => {
-      const customConfig: TableCardCreateEditConfig = {
-        ...EDIT_DELETE_CONFIG,
+    it('respects custom icon from deleteConfig.deleteButtonSettings', () => {
+      const customDeleteConfig: TableCardDeleteConfig = {
+        ...DELETE_CONFIG,
         deleteButtonSettings: { icon: 'trash' },
       };
-      const { component } = setup({ editDeleteConfig: customConfig, deleteConfig: DELETE_CONFIG });
+      const { component } = setup({ deleteConfig: customDeleteConfig });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cols = (component as any).effectiveColumns();
       const deleteCol = cols.find(
@@ -302,61 +349,42 @@ describe('DeclarativeTableCardComponent', () => {
   });
 
   // -------------------------------------------------------------------------
-  // 7. editFields() computed
+  // 8. editInitialValue() computed
   // -------------------------------------------------------------------------
 
-  describe('editFields()', () => {
-    it('returns empty array when editDeleteConfig is not set', () => {
+  describe('editInitialValue()', () => {
+    it('returns empty object when pendingResource is null', () => {
+      const { component } = setup({ editConfig: EDIT_CONFIG });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).editInitialValue()).toEqual({});
+    });
+
+    it('returns empty object when editConfig is not set', () => {
       const { component } = setup();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).editFields()).toEqual([]);
+      expect((component as any).editInitialValue()).toEqual({});
     });
 
-    it('disables fields listed in createOnlyFields', () => {
-      const { component } = setup({ editDeleteConfig: EDIT_DELETE_CONFIG });
+    it('builds initial values from pendingResource fields when editConfig is set', () => {
+      const { component } = setup({ editConfig: EDIT_CONFIG });
+      const resource = RESOURCES[0];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const fields: FormFieldDefinition[] = (component as any).editFields();
-      const nameField = fields.find(f => f.name === 'name');
-      expect(nameField?.disabled).toBe(true);
-    });
+      (component as any).pendingResource.set(resource);
 
-    it('does not disable fields not listed in createOnlyFields', () => {
-      const { component } = setup({ editDeleteConfig: EDIT_DELETE_CONFIG });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const fields: FormFieldDefinition[] = (component as any).editFields();
-      const namespaceField = fields.find(f => f.name === 'namespace');
-      expect(namespaceField?.disabled).toBe(false);
-    });
-
-    it('preserves existing disabled=true on non-createOnly fields', () => {
-      const configWithDisabled: TableCardCreateEditConfig = {
-        fields: [
-          { name: 'name', label: 'Name' },
-          { name: 'namespace', label: 'Namespace', disabled: true },
-        ],
-        createOnlyFields: ['name'],
-      };
-      const { component } = setup({ editDeleteConfig: configWithDisabled });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const fields: FormFieldDefinition[] = (component as any).editFields();
-      const namespaceField = fields.find(f => f.name === 'namespace');
-      expect(namespaceField?.disabled).toBe(true);
-    });
-
-    it('returns all fields with correct count', () => {
-      const { component } = setup({ editDeleteConfig: EDIT_DELETE_CONFIG });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).editFields()).toHaveLength(FORM_FIELDS.length);
+      const values = (component as any).editInitialValue();
+      expect(values['metadata.name']).toBe('pod-alpha');
+      expect(values['metadata.namespace']).toBe('default');
     });
   });
 
   // -------------------------------------------------------------------------
-  // 8. onButtonClick()
+  // 9. onButtonClick()
   // -------------------------------------------------------------------------
 
   describe('onButtonClick()', () => {
     it('intercepts action="edit": sets pendingResource and opens editDialogOpen', () => {
-      const { component } = setup({ editDeleteConfig: EDIT_DELETE_CONFIG });
+      const { component } = setup({ editConfig: EDIT_CONFIG });
       const resource = RESOURCES[0];
       component.onButtonClick(makeEvent('edit', resource));
 
@@ -366,26 +394,19 @@ describe('DeclarativeTableCardComponent', () => {
       expect((component as any).editDialogOpen()).toBe(true);
     });
 
-    it('intercepts action="edit": resets pendingFormValue and formValid', () => {
-      const { component } = setup({ editDeleteConfig: EDIT_DELETE_CONFIG });
-      // Pre-set values to verify they are cleared
+    it('intercepts action="edit": clears pendingFormValue', () => {
+      const { component } = setup({ editConfig: EDIT_CONFIG });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).pendingFormValue.set({ name: 'stale' });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).formValid.set(true);
-
+      (component as any).pendingFormValue.set({ 'metadata.name': 'stale' });
       component.onButtonClick(makeEvent('edit', RESOURCES[0]));
-
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((component as any).pendingFormValue()).toBeNull();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).formValid()).toBe(false);
     });
 
-    it('intercepts action="edit": does not emit buttonClick', () => {
-      const { component } = setup({ editDeleteConfig: EDIT_DELETE_CONFIG });
+    it('intercepts action="edit": does not emit actionButtonClick', () => {
+      const { component } = setup({ editConfig: EDIT_CONFIG });
       const emitted: unknown[] = [];
-      component.buttonClick.subscribe(e => emitted.push(e));
+      component.actionButtonClick.subscribe(e => emitted.push(e));
       component.onButtonClick(makeEvent('edit', RESOURCES[0]));
       expect(emitted).toHaveLength(0);
     });
@@ -401,18 +422,18 @@ describe('DeclarativeTableCardComponent', () => {
       expect((component as any).deleteDialogOpen()).toBe(true);
     });
 
-    it('intercepts action="delete": does not emit buttonClick', () => {
+    it('intercepts action="delete": does not emit actionButtonClick', () => {
       const { component } = setup({ deleteConfig: DELETE_CONFIG });
       const emitted: unknown[] = [];
-      component.buttonClick.subscribe(e => emitted.push(e));
+      component.actionButtonClick.subscribe(e => emitted.push(e));
       component.onButtonClick(makeEvent('delete', RESOURCES[0]));
       expect(emitted).toHaveLength(0);
     });
 
-    it('forwards other actions via buttonClick output', () => {
+    it('forwards other actions via actionButtonClick output', () => {
       const { component } = setup();
       const emitted: ValueCellButtonClickEvent<GenericResource>[] = [];
-      component.buttonClick.subscribe(e => emitted.push(e));
+      component.actionButtonClick.subscribe(e => emitted.push(e));
 
       const event = makeEvent('navigate', RESOURCES[0]);
       component.onButtonClick(event);
@@ -421,32 +442,31 @@ describe('DeclarativeTableCardComponent', () => {
       expect(emitted[0]).toBe(event);
     });
 
-    it('forwards action="edit" without a resource via buttonClick (no pending interception)', () => {
-      // When resource is undefined the edit guard is not entered
+    it('forwards action="edit" without a resource via actionButtonClick', () => {
       const { component } = setup();
       const emitted: unknown[] = [];
-      component.buttonClick.subscribe(e => emitted.push(e));
+      component.actionButtonClick.subscribe(e => emitted.push(e));
       component.onButtonClick(makeEvent('edit', undefined));
       expect(emitted).toHaveLength(1);
     });
 
-    it('forwards action="delete" without a resource via buttonClick', () => {
+    it('forwards action="delete" without a resource via actionButtonClick', () => {
       const { component } = setup();
       const emitted: unknown[] = [];
-      component.buttonClick.subscribe(e => emitted.push(e));
+      component.actionButtonClick.subscribe(e => emitted.push(e));
       component.onButtonClick(makeEvent('delete', undefined));
       expect(emitted).toHaveLength(1);
     });
   });
 
   // -------------------------------------------------------------------------
-  // 9. onCreateConfirm()
+  // 10. onCreateConfirm()
   // -------------------------------------------------------------------------
 
   describe('onCreateConfirm()', () => {
     it('emits createConfirmed with pendingFormValue when it is set', () => {
       const { component } = setup({ createConfig: CREATE_CONFIG });
-      const formValue = { name: 'new-pod', namespace: 'default' };
+      const formValue = { 'metadata.name': 'new-pod', 'metadata.namespace': 'default' };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (component as any).pendingFormValue.set(formValue);
 
@@ -474,7 +494,7 @@ describe('DeclarativeTableCardComponent', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (component as any).createDialogOpen.set(true);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).pendingFormValue.set({ name: 'x' });
+      (component as any).pendingFormValue.set({ 'metadata.name': 'x' });
 
       component.onCreateConfirm();
 
@@ -482,7 +502,7 @@ describe('DeclarativeTableCardComponent', () => {
       expect((component as any).createDialogOpen()).toBe(false);
     });
 
-    it('closes the create dialog even when pendingFormValue is null (cancel path)', () => {
+    it('closes the create dialog even when pendingFormValue is null', () => {
       const { component } = setup({ createConfig: CREATE_CONFIG });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (component as any).createDialogOpen.set(true);
@@ -495,14 +515,14 @@ describe('DeclarativeTableCardComponent', () => {
   });
 
   // -------------------------------------------------------------------------
-  // 10. onEditConfirm()
+  // 11. onEditConfirm()
   // -------------------------------------------------------------------------
 
   describe('onEditConfirm()', () => {
     it('emits editConfirmed with resource and formValue when both are set', () => {
-      const { component } = setup({ editDeleteConfig: EDIT_DELETE_CONFIG });
+      const { component } = setup({ editConfig: EDIT_CONFIG });
       const resource = RESOURCES[0];
-      const formValue = { name: 'pod-alpha', namespace: 'staging' };
+      const formValue = { 'metadata.name': 'pod-alpha', 'metadata.namespace': 'staging' };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (component as any).pendingResource.set(resource);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -519,9 +539,9 @@ describe('DeclarativeTableCardComponent', () => {
     });
 
     it('does not emit editConfirmed when pendingResource is null', () => {
-      const { component } = setup({ editDeleteConfig: EDIT_DELETE_CONFIG });
+      const { component } = setup({ editConfig: EDIT_CONFIG });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).pendingFormValue.set({ name: 'x' });
+      (component as any).pendingFormValue.set({ 'metadata.name': 'x' });
 
       const emitted: unknown[] = [];
       component.editConfirmed.subscribe(v => emitted.push(v));
@@ -532,7 +552,7 @@ describe('DeclarativeTableCardComponent', () => {
     });
 
     it('does not emit editConfirmed when pendingFormValue is null', () => {
-      const { component } = setup({ editDeleteConfig: EDIT_DELETE_CONFIG });
+      const { component } = setup({ editConfig: EDIT_CONFIG });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (component as any).pendingResource.set(RESOURCES[0]);
 
@@ -545,13 +565,13 @@ describe('DeclarativeTableCardComponent', () => {
     });
 
     it('closes the edit dialog after confirming', () => {
-      const { component } = setup({ editDeleteConfig: EDIT_DELETE_CONFIG });
+      const { component } = setup({ editConfig: EDIT_CONFIG });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (component as any).editDialogOpen.set(true);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (component as any).pendingResource.set(RESOURCES[0]);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).pendingFormValue.set({ name: 'x' });
+      (component as any).pendingFormValue.set({ 'metadata.name': 'x' });
 
       component.onEditConfirm();
 
@@ -560,10 +580,9 @@ describe('DeclarativeTableCardComponent', () => {
     });
 
     it('closes the edit dialog even when confirm condition is not met', () => {
-      const { component } = setup({ editDeleteConfig: EDIT_DELETE_CONFIG });
+      const { component } = setup({ editConfig: EDIT_CONFIG });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (component as any).editDialogOpen.set(true);
-      // Both null — no emit, but dialog should still close
       component.onEditConfirm();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((component as any).editDialogOpen()).toBe(false);
@@ -571,7 +590,7 @@ describe('DeclarativeTableCardComponent', () => {
   });
 
   // -------------------------------------------------------------------------
-  // 11. onDeleteConfirm()
+  // 12. onDeleteConfirm()
   // -------------------------------------------------------------------------
 
   describe('onDeleteConfirm()', () => {
@@ -624,14 +643,14 @@ describe('DeclarativeTableCardComponent', () => {
   });
 
   // -------------------------------------------------------------------------
-  // 12. Cancel / closing dialogs — no confirm event emitted
+  // 13. Cancel / closing dialogs — no confirm event emitted
   // -------------------------------------------------------------------------
 
   describe('dialog cancel / close', () => {
-    it('setting createDialogOpen to false does not emit createConfirmed', () => {
+    it('closing createDialogOpen without calling confirm does not emit createConfirmed', () => {
       const { component } = setup({ createConfig: CREATE_CONFIG });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).pendingFormValue.set({ name: 'x' });
+      (component as any).pendingFormValue.set({ 'metadata.name': 'x' });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (component as any).createDialogOpen.set(true);
 
@@ -645,12 +664,12 @@ describe('DeclarativeTableCardComponent', () => {
       expect(emitted).toHaveLength(0);
     });
 
-    it('setting editDialogOpen to false does not emit editConfirmed', () => {
-      const { component } = setup({ editDeleteConfig: EDIT_DELETE_CONFIG });
+    it('closing editDialogOpen without calling confirm does not emit editConfirmed', () => {
+      const { component } = setup({ editConfig: EDIT_CONFIG });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (component as any).pendingResource.set(RESOURCES[0]);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).pendingFormValue.set({ name: 'x' });
+      (component as any).pendingFormValue.set({ 'metadata.name': 'x' });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (component as any).editDialogOpen.set(true);
 
@@ -663,7 +682,7 @@ describe('DeclarativeTableCardComponent', () => {
       expect(emitted).toHaveLength(0);
     });
 
-    it('setting deleteDialogOpen to false does not emit deleteConfirmed', () => {
+    it('closing deleteDialogOpen without calling confirm does not emit deleteConfirmed', () => {
       const { component } = setup({ deleteConfig: DELETE_CONFIG });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (component as any).pendingResource.set(RESOURCES[0]);
@@ -681,7 +700,7 @@ describe('DeclarativeTableCardComponent', () => {
   });
 
   // -------------------------------------------------------------------------
-  // 13. Pass-through outputs wired to the table
+  // 14. Pass-through outputs
   // -------------------------------------------------------------------------
 
   describe('pass-through outputs', () => {
@@ -699,6 +718,29 @@ describe('DeclarativeTableCardComponent', () => {
     it('exposes paginationLimitChanged output', () => {
       const { component } = setup();
       expect(typeof component.paginationLimitChanged.emit).toBe('function');
+    });
+
+    it('exposes searchChanged output', () => {
+      const { component } = setup();
+      expect(typeof component.searchChanged.emit).toBe('function');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // 15. readConfig pagination pass-through
+  // -------------------------------------------------------------------------
+
+  describe('readConfig pagination', () => {
+    it('effectiveColumns() uses fields from readConfig', () => {
+      const customColumns: TableFieldDefinition[] = [
+        { label: 'Phase', property: 'status.phase' },
+      ];
+      const { component } = setup({
+        readConfig: { fields: customColumns, totalItemsCount: 42, paginationLimit: 10, hasMore: true },
+      });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const cols = (component as any).effectiveColumns();
+      expect(cols[0]).toEqual(customColumns[0]);
     });
   });
 });

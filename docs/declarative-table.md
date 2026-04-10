@@ -2,11 +2,12 @@
 
 A data table web component that renders rows and columns from a declarative column definition. Supports pagination, grouped columns, conditional cell styling, and multiple cell display modes (plain text, link, boolean icon, secret, tooltip, button, image).
 
-## Custom element tag
+## Tags
 
-```html
-<mfp-declarative-table></mfp-declarative-table>
-```
+| Usage | Tag |
+|---|---|
+| Angular component | `<mfp-declarative-table>` |
+| Web Component (framework-agnostic) | `<mfp-wc-declarative-table>` |
 
 ---
 
@@ -21,7 +22,7 @@ Include the bundle and set properties via JavaScript. Because the component uses
     <script type="module" src="declarative-table.js"/>
   </head>
   <body>
-    <mfp-declarative-table id="table"/>
+    <mfp-wc-declarative-table id="table"></mfp-wc-declarative-table>
 
     <script type="module">
       const table = document.getElementById('table');

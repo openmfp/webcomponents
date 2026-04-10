@@ -40,19 +40,37 @@ export const TABLE_RESOURCES = [
 
 export const TABLE_COLUMNS = [
   { label: 'Name', property: 'metadata.name' },
-  { label: 'Ready', property: 'status.ready', uiSettings: { displayAs: 'boolIcon' } },
+  { label: 'Namespace', property: 'metadata.namespace' },
+  {
+    label: 'Ready',
+    property: 'status.ready',
+    uiSettings: { displayAs: 'boolIcon' },
+  },
   {
     label: 'Phase',
     property: 'status.phase',
     uiSettings: {
       cssRules: [
-        { if: { condition: 'equals', value: 'Running' }, styles: { color: 'green' } },
-        { if: { condition: 'equals', value: 'Pending' }, styles: { color: 'darkorange' } },
-        { if: { condition: 'equals', value: 'Failed' }, styles: { color: 'red', fontWeight: 'bold' } },
+        {
+          if: { condition: 'equals', value: 'Running' },
+          styles: { color: 'green' },
+        },
+        {
+          if: { condition: 'equals', value: 'Pending' },
+          styles: { color: 'darkorange' },
+        },
+        {
+          if: { condition: 'equals', value: 'Failed' },
+          styles: { color: 'red', fontWeight: 'bold' },
+        },
       ],
     },
   },
-  { label: 'UID', property: 'metadata.uid', uiSettings: { displayAs: 'secret', withCopyButton: true } },
+  {
+    label: 'UID',
+    property: 'metadata.uid',
+    uiSettings: { displayAs: 'secret', withCopyButton: true },
+  },
   {
     property: 'spec.image',
     uiSettings: { labelDisplay: true },
@@ -63,14 +81,78 @@ export const TABLE_COLUMNS = [
     uiSettings: { labelDisplay: true },
     group: { name: 'placement' },
   },
-  { label: 'Alert', property: 'status.message', uiSettings: { displayAs: 'alert' } },
+  {
+    label: 'Alert',
+    property: 'status.message',
+    uiSettings: { displayAs: 'alert' },
+  },
   { label: 'Message', property: 'status.message', value: '—' },
   {
-    label: 'Actions',
     property: 'metadata.name',
     uiSettings: {
       displayAs: 'button',
-      buttonSettings: { text: 'Inspect', icon: 'inspect', design: 'Emphasized', action: 'navigate' },
+      buttonSettings: {
+        text: 'Inspect',
+        icon: 'inspect',
+        design: 'Emphasized',
+        action: 'navigate',
+      },
     },
+    group: { name: 'actions', label: 'Actions', multiline: false },
   },
 ];
+
+export const POD_FORM_FIELDS = [
+  { name: 'metadata.name', label: 'Name', required: true },
+  {
+    name: 'metadata.namespace',
+    label: 'Namespace',
+    required: true,
+    loadValues: async () => [
+      { value: 'default', label: 'Default' },
+      { value: 'kube-system', label: 'Kube-system' },
+      { value: 'production', label: 'Production' },
+    ],
+  },
+];
+
+export const POD_EDIT_FORM_FIELDS = [
+  { name: 'metadata.name', label: 'Name', required: true, disabled: true },
+  {
+    name: 'metadata.namespace',
+    label: 'Namespace',
+    required: true,
+    loadValues: async () => [
+      { value: 'default', label: 'default' },
+      { value: 'kube-system', label: 'kube-system' },
+      { value: 'production', label: 'production' },
+    ],
+  },
+];
+
+export const BASE_READ_CONFIG = {
+  fields: TABLE_COLUMNS,
+  paginationLimit: 5,
+  hasMore: false,
+};
+
+export const DELETE_CONFIG = {
+  title: 'Delete Pod?',
+  message: 'This action cannot be undone. The pod will be permanently removed.',
+  confirmLabel: 'Delete',
+  cancelLabel: 'Cancel',
+};
+
+export const CREATE_CONFIG = {
+  fields: POD_FORM_FIELDS,
+  title: 'Create Pod',
+  confirmLabel: 'Create',
+  cancelLabel: 'Cancel',
+};
+
+export const EDIT_CONFIG = {
+  fields: POD_EDIT_FORM_FIELDS,
+  title: 'Edit Pod',
+  confirmLabel: 'Save',
+  cancelLabel: 'Cancel',
+};

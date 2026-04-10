@@ -82,7 +82,7 @@ const PODS: Pod[] = [
 @Component({
   selector: 'mfp-declarative-table-story',
   template: `
-    <mfp-declarative-table
+    <mfp-wc-declarative-table
       [columns]="columns"
       [hasMore]="hasMore"
       [paginationLimit]="paginationLimit"

@@ -152,7 +152,6 @@ export class DeclarativeForm {
       setPropertyByPath(result, key, this.form.controls[key].value);
     }
 
-    console.log(result, 'result');
     return result;
   }
 }

@@ -3,61 +3,13 @@ import { DeclarativeForm } from './declarative-form.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 describe('DeclarativeForm', () => {
   let component: DeclarativeForm;
   let fixture: ComponentFixture<DeclarativeForm>;
 
   const testFields: FormFieldDefinition[] = [
-    { name: 'metadata_name', label: 'Name', required: true },
-    { name: 'metadata_namespace', label: 'Namespace', required: false },
+    { name: 'metadata.name', label: 'Name', required: true },
+    { name: 'metadata.namespace', label: 'Namespace', required: false },
   ];
 
   beforeEach(async () => {
@@ -77,18 +29,18 @@ describe('DeclarativeForm', () => {
 
   describe('form initialization', () => {
     it('should create controls for each field', () => {
-      expect(component.form.controls['metadata_name']).toBeDefined();
-      expect(component.form.controls['metadata_namespace']).toBeDefined();
+      expect(component.form.controls['metadata.name']).toBeDefined();
+      expect(component.form.controls['metadata.namespace']).toBeDefined();
     });
 
     it('should apply required validator when field.required is true', () => {
-      const ctrl = component.form.controls['metadata_name'];
+      const ctrl = component.form.controls['metadata.name'];
       ctrl.setValue('');
       expect(ctrl.valid).toBeFalsy();
     });
 
     it('should not apply required validator when field.required is false', () => {
-      const ctrl = component.form.controls['metadata_namespace'];
+      const ctrl = component.form.controls['metadata.namespace'];
       ctrl.setValue('');
       expect(ctrl.valid).toBeTruthy();
     });
@@ -96,23 +48,19 @@ describe('DeclarativeForm', () => {
     it('should pre-populate controls from initialValues', () => {
       fixture.componentRef.setInput('fields', testFields);
       fixture.componentRef.setInput('initialValues', {
-        metadata_name: 'my-resource',
-        metadata_namespace: 'default',
+        'metadata.name': 'my-resource',
+        'metadata.namespace': 'default',
       });
 
       fixture.detectChanges();
 
-      expect(component.form.controls['metadata_name'].value).toBe(
-        'my-resource',
-      );
-      expect(component.form.controls['metadata_namespace'].value).toBe(
-        'default',
-      );
+      expect(component.form.controls['metadata.name'].value).toBe('my-resource');
+      expect(component.form.controls['metadata.namespace'].value).toBe('default');
     });
 
     it('should default missing initialValues keys to empty string', () => {
       fixture.componentRef.setInput('initialValues', {});
-      expect(component.form.controls['metadata_name'].value).toBe('');
+      expect(component.form.controls['metadata.name'].value).toBe('');
     });
 
     it('should apply extra validators from field.validators', () => {
@@ -134,21 +82,21 @@ describe('DeclarativeForm', () => {
   describe('formValidChange output', () => {
     it('should emit false when a required field is empty', () => {
       const spy = vi.spyOn(component.formValidChange, 'emit');
-      component.form.controls['metadata_name'].setValue('');
-      component.form.controls['metadata_name'].updateValueAndValidity();
+      component.form.controls['metadata.name'].setValue('');
+      component.form.controls['metadata.name'].updateValueAndValidity();
       expect(spy).toHaveBeenCalledWith(false);
     });
 
     it('should emit true when all required fields are filled', () => {
       const spy = vi.spyOn(component.formValidChange, 'emit');
-      component.form.controls['metadata_name'].setValue('hello');
+      component.form.controls['metadata.name'].setValue('hello');
       expect(spy).toHaveBeenCalledWith(true);
     });
 
     it('should emit false again after clearing a required field', () => {
-      component.form.controls['metadata_name'].setValue('hello');
+      component.form.controls['metadata.name'].setValue('hello');
       const spy = vi.spyOn(component.formValidChange, 'emit');
-      component.form.controls['metadata_name'].setValue('');
+      component.form.controls['metadata.name'].setValue('');
       expect(spy).toHaveBeenCalledWith(false);
     });
   });
@@ -156,14 +104,14 @@ describe('DeclarativeForm', () => {
   describe('formValue output', () => {
     it('should not emit when form is invalid', () => {
       const spy = vi.spyOn(component.formValue, 'emit');
-      component.form.controls['metadata_name'].setValue('');
-      component.form.controls['metadata_name'].updateValueAndValidity();
+      component.form.controls['metadata.name'].setValue('');
+      component.form.controls['metadata.name'].updateValueAndValidity();
       expect(spy).not.toHaveBeenCalled();
     });
 
     it('should emit nested object when form is valid', () => {
       const spy = vi.spyOn(component.formValue, 'emit');
-      component.form.controls['metadata_name'].setValue('my-app');
+      component.form.controls['metadata.name'].setValue('my-app');
       expect(spy).toHaveBeenCalledWith(
         expect.objectContaining({
           metadata: expect.objectContaining({ name: 'my-app' }),
@@ -171,15 +119,15 @@ describe('DeclarativeForm', () => {
       );
     });
 
-    it('should map underscores back to dots as nested path', () => {
+    it('should use dots in field names as nested path segments', () => {
       fixture.componentRef.setInput('fields', [
-        { name: 'spec_replicas', required: true },
+        { name: 'spec.replicas', required: true },
       ]);
 
       fixture.detectChanges();
 
       const spy = vi.spyOn(component.formValue, 'emit');
-      component.form.controls['spec_replicas'].setValue('3');
+      component.form.controls['spec.replicas'].setValue('3');
 
       expect(spy).toHaveBeenCalledWith(
         expect.objectContaining({ spec: { replicas: '3' } }),
@@ -190,13 +138,13 @@ describe('DeclarativeForm', () => {
   describe('setFormControlValue', () => {
     it('should set value, mark touched and dirty', () => {
       const event = { target: { value: 'new-value' } };
-      const ctrl = component.form.controls['metadata_name'];
+      const ctrl = component.form.controls['metadata.name'];
 
       vi.spyOn(ctrl, 'setValue');
       vi.spyOn(ctrl, 'markAsTouched');
       vi.spyOn(ctrl, 'markAsDirty');
 
-      component.setFormControlValue(event as unknown as Event, 'metadata_name');
+      component.setFormControlValue(event as unknown as Event, 'metadata.name');
 
       expect(ctrl.setValue).toHaveBeenCalledWith('new-value');
       expect(ctrl.markAsTouched).toHaveBeenCalled();
@@ -206,33 +154,33 @@ describe('DeclarativeForm', () => {
 
   describe('getValueState', () => {
     it('should return Negative for invalid and touched control', () => {
-      const ctrl = component.form.controls['metadata_name'];
+      const ctrl = component.form.controls['metadata.name'];
       ctrl.setValue('');
       ctrl.markAsTouched();
-      expect(component.getValueState('metadata_name')).toBe('Negative');
+      expect(component.getValueState('metadata.name')).toBe('Negative');
     });
 
     it('should return None for valid control', () => {
-      const ctrl = component.form.controls['metadata_name'];
+      const ctrl = component.form.controls['metadata.name'];
       ctrl.setValue('valid');
       ctrl.markAsTouched();
-      expect(component.getValueState('metadata_name')).toBe('None');
+      expect(component.getValueState('metadata.name')).toBe('None');
     });
 
     it('should return None for untouched invalid control', () => {
-      const ctrl = component.form.controls['metadata_name'];
+      const ctrl = component.form.controls['metadata.name'];
       ctrl.setValue('');
       ctrl.markAsUntouched();
-      expect(component.getValueState('metadata_name')).toBe('None');
+      expect(component.getValueState('metadata.name')).toBe('None');
     });
   });
 
   describe('onFieldBlur', () => {
     it('should mark control as touched', () => {
-      const ctrl = component.form.controls['metadata_name'];
+      const ctrl = component.form.controls['metadata.name'];
       vi.spyOn(ctrl, 'markAsTouched');
 
-      component.onFieldBlur('metadata_name');
+      component.onFieldBlur('metadata.name');
 
       expect(ctrl.markAsTouched).toHaveBeenCalled();
     });

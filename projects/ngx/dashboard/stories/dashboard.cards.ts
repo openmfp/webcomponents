@@ -1,5 +1,11 @@
 import type { CardConfig, SectionConfig } from '../models';
-import { TABLE_COLUMNS, TABLE_RESOURCES } from './pods-table.config';
+import {
+  BASE_READ_CONFIG,
+  CREATE_CONFIG,
+  DELETE_CONFIG,
+  EDIT_CONFIG,
+  TABLE_RESOURCES,
+} from './pods-table.config';
 
 export const SECTIONS: SectionConfig[] = [
   { id: 'ras', title: 'Recently accessed services', editable: false },
@@ -56,26 +62,28 @@ export const CARDS: CardConfig[] = [
     colSpan: 4,
     rowSpan: 1,
     sectionId: 'ras',
-    component: 'mfp-visited-service-card',
+    component: 'mfp-wc-visited-service-card',
     componentInputs: { ...t },
   })),
   {
     id: 'table-pods',
     colSpan: 12,
     rowSpan: 4,
-    component: 'mfp-declarative-table',
+    component: 'mfp-wc-declarative-table-card',
     componentInputs: {
-      columns: TABLE_COLUMNS,
+      createConfig: CREATE_CONFIG,
+      editConfig: EDIT_CONFIG,
+      deleteConfig: DELETE_CONFIG,
+      readConfig: BASE_READ_CONFIG,
+      header: 'Pods',
+      headerTooltip: 'This table lists all pods running in the cluster.',
       resources: TABLE_RESOURCES,
-      trackByProperty: 'metadata.uid',
-      hasMore: false,
-      paginationLimit: 5,
     },
   },
   {
     id: 'mfp-favorites',
     colSpan: 5,
     rowSpan: 2,
-    component: 'mfp-favorites',
+    component: 'mfp-wc-favorites',
   },
 ];
