@@ -9,7 +9,7 @@
       } @else {
         <ui5-table-header-cell
           [attr.test-id]="'generic-table-header-' + column.property"
-          [width]="column.uiSettings?.displayAs === 'alert' ? '30px' : 'auto'"
+          [width]="column.uiSettings?.columnWidth ?? 'auto'"
           >{{ column.label }}</ui5-table-header-cell
         >
       }

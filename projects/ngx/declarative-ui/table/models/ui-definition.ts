@@ -1,6 +1,11 @@
 import { GenericResource } from './resource';
 
-export type TransformType = 'uppercase' | 'lowercase' | 'capitalize' | 'decode' | 'encode';
+export type TransformType =
+  | 'uppercase'
+  | 'lowercase'
+  | 'capitalize'
+  | 'decode'
+  | 'encode';
 
 export interface PropertyField {
   key: string;
@@ -22,6 +27,7 @@ export interface UiSettings {
   withCopyButton?: boolean;
   cssCustomization?: Partial<CSSStyleDeclaration>;
   cssRules?: CssRule[];
+  columnWidth?: string;
 }
 
 type KnownButtonActions = 'openInModal' | 'navigate' | 'edit' | 'delete';

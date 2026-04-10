@@ -44,7 +44,7 @@ export const TABLE_COLUMNS = [
   {
     label: 'Ready',
     property: 'status.ready',
-    uiSettings: { displayAs: 'boolIcon' },
+    uiSettings: { displayAs: 'boolIcon', columnWidth: '56px' },
   },
   {
     label: 'Phase',
@@ -84,7 +84,7 @@ export const TABLE_COLUMNS = [
   {
     label: 'Alert',
     property: 'status.message',
-    uiSettings: { displayAs: 'alert' },
+    uiSettings: { displayAs: 'alert', columnWidth: '42px' },
   },
   { label: 'Message', property: 'status.message', value: '—' },
   {
@@ -92,9 +92,8 @@ export const TABLE_COLUMNS = [
     uiSettings: {
       displayAs: 'button',
       buttonSettings: {
-        text: 'Inspect',
         icon: 'inspect',
-        design: 'Emphasized',
+        design: 'Transparent',
         action: 'navigate',
       },
     },
