@@ -52,7 +52,7 @@
     "@storybook/addon-links": "^10.2.16",
     "@storybook/angular": "^10.2.16",
     "@types/jsonpath": "^0.2.4",
-    "@types/node": "22.13.8",
+    "@types/node": "22.19.17",
     "@vitest/coverage-v8": "4.1.2",
     "concurrently": "9.2.1",
     "eslint": "9.39.4",
