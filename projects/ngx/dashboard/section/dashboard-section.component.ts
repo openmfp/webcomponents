@@ -5,13 +5,13 @@ import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 
 @Component({
   selector: 'mfp-dashboard-section',
-  templateUrl: './dashboard-section.component.html',
-  styleUrls: ['./dashboard-section.component.scss'],
-  encapsulation: ViewEncapsulation.ShadowDom,
   imports: [DashboardCardComponent, Button],
+  templateUrl: './dashboard-section.component.html',
+  styleUrl: './dashboard-section.component.scss',
+  encapsulation: ViewEncapsulation.ShadowDom,
   host: {
-    '[style.grid-column]': '"span " + (section().colSpan ?? 12)',
-    '[style.grid-row]': '"span " + (section().rowSpan ?? 1)',
+    '[style.grid-column]': '"span " + (section().w ?? 12)',
+    '[style.grid-row]': '"span " + (section().h ?? 1)',
   },
 })
 export class DashboardSectionComponent {
@@ -19,6 +19,6 @@ export class DashboardSectionComponent {
   cards = input<CardConfig[]>([]);
   columns = input<number>(12);
   editMode = input<boolean>(false);
-  removeSection = output<void>();
-  removeCard = output<string>();
+  readonly removeSection = output<void>();
+  readonly removeCard = output<string>();
 }

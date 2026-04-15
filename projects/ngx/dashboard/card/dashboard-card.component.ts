@@ -14,19 +14,19 @@ import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 
 @Component({
   selector: 'mfp-dashboard-card',
-  templateUrl: './dashboard-card.component.html',
-  styleUrls: ['./dashboard-card.component.scss'],
-  encapsulation: ViewEncapsulation.ShadowDom,
   imports: [Button],
+  templateUrl: './dashboard-card.component.html',
+  styleUrl: './dashboard-card.component.scss',
+  encapsulation: ViewEncapsulation.ShadowDom,
   host: {
-    '[style.grid-column]': '"span " + (card().colSpan ?? 1)',
-    '[style.grid-row]': '"span " + (card().rowSpan ?? 1)',
+    '[style.grid-column]': '"span " + (card().w ?? 1)',
+    '[style.grid-row]': '"span " + (card().h ?? 1)',
   },
 })
 export class DashboardCardComponent {
   card = input.required<CardConfig>();
   editMode = input<boolean>(false);
-  removeCard = output<void>();
+  readonly removeCard = output<void>();
 
   private componentHost = viewChild<ElementRef>('componentHost');
   private renderer = inject(Renderer2);
@@ -45,7 +45,9 @@ export class DashboardCardComponent {
       }
       this.renderer.appendChild(host.nativeElement, el);
 
-      return () => { host.nativeElement.innerHTML = ''; };
+      return () => {
+        host.nativeElement.innerHTML = '';
+      };
     });
   }
 }

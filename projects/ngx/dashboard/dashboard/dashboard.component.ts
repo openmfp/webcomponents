@@ -7,22 +7,29 @@ import {
   ViewEncapsulation,
   computed,
   input,
+  linkedSignal,
   model,
   output,
   signal,
+  viewChild,
 } from '@angular/core';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 import { Text } from '@fundamental-ngx/ui5-webcomponents/text';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
+import { GridStackNode, GridStackOptions } from 'gridstack';
+import {
+  GridstackComponent,
+  GridstackItemComponent,
+  nodesCB,
+} from 'gridstack/dist/angular';
 
 document.body.classList.add('ui5-content-density-compact');
 
 @Component({
   selector: 'mfp-dashboard',
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss'],
-  encapsulation: ViewEncapsulation.ShadowDom,
   imports: [
+    GridstackComponent,
+    GridstackItemComponent,
     AddCardDialog,
     DashboardSectionComponent,
     DashboardCardComponent,
@@ -30,6 +37,9 @@ document.body.classList.add('ui5-content-density-compact');
     Title,
     Text,
   ],
+  templateUrl: './dashboard.component.html',
+  styleUrl: './dashboard.component.scss',
+  encapsulation: ViewEncapsulation.ShadowDom,
   host: {
     '[style.background-image]':
       'config().backgroundImageUrl ? "url(" + config().backgroundImageUrl + ")" : null',
@@ -41,12 +51,36 @@ export class Dashboard {
   cards = model<CardConfig[]>([]);
   availableCards = input<CardConfig[]>([]);
 
-  saved = output<{ sections: SectionConfig[]; cards: CardConfig[] }>();
+  readonly saved = output<{ sections: SectionConfig[]; cards: CardConfig[] }>();
 
   editMode = signal(false);
 
   private sectionsSnapshot: SectionConfig[] = [];
   private cardsSnapshot: CardConfig[] = [];
+  private positionSnapshot: GridStackNode[] = [];
+  private gridStackItems = viewChild.required<GridstackComponent>('grid');
+
+  protected gridOptions = computed(
+    (): GridStackOptions => ({
+      cellHeight: 100,
+      disableResize: true,
+      disableDrag: !this.editMode(),
+      columnOpts: {
+        breakpoints: [
+          {
+            w: 600,
+            c: 1,
+            layout: 'compact',
+          },
+          {
+            w: 1023,
+            c: 8,
+            layout: 'compact',
+          },
+        ],
+      },
+    }),
+  );
 
   cardDialogOpen = signal(false);
 
@@ -64,22 +98,43 @@ export class Dashboard {
     return (sectionId: string) => all.filter((c) => c.sectionId === sectionId);
   });
 
-  looseCards = computed(() => this.cards().filter((c) => !c.sectionId));
+  cardsPosition = new Map();
+  looseCards = linkedSignal(() => this.cards().filter((c) => !c.sectionId));
+
+  private newGridStackNodes: GridStackNode[] = [];
 
   enterEditMode(): void {
-    this.sectionsSnapshot = structuredClone(this.sections());
-    this.cardsSnapshot = structuredClone(this.cards());
+    const gridStackNodes = this.gridStackItems()
+      .gridstackItems?.toArray()
+      .map((node) => node.options);
+
+    if (gridStackNodes) {
+      this.saveCardsPosition(gridStackNodes);
+    }
+
+    this.sectionsSnapshot = [...this.sections()];
+    this.cardsSnapshot = [...this.cards()];
     this.editMode.set(true);
   }
 
   saveEdit(): void {
     this.saved.emit({ sections: this.sections(), cards: this.cards() });
+    this.saveCardsPosition(this.newGridStackNodes);
     this.editMode.set(false);
   }
 
   cancelEdit(): void {
     this.sections.set(this.sectionsSnapshot);
-    this.cards.set(this.cardsSnapshot);
+    this.cards.set(
+      this.cardsSnapshot.map((c) => {
+        const pos = this.cardsPosition.get(c.id);
+        return {
+          ...c,
+          x: pos?.x,
+          y: pos?.y,
+        };
+      }),
+    );
     this.cardDialogOpen.set(false);
     this.editMode.set(false);
   }
@@ -112,5 +167,17 @@ export class Dashboard {
       ]);
     }
     this.closeCardPanel();
+  }
+
+  onOrderChange(event: nodesCB): void {
+    this.newGridStackNodes = event.nodes;
+  }
+
+  private saveCardsPosition(items: GridStackNode[]): void {
+    if (items) {
+      items.forEach((node) => {
+        this.cardsPosition.set(node.id, { x: node.x, y: node.y });
+      });
+    }
   }
 }
