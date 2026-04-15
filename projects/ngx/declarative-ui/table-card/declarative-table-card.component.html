@@ -1,7 +1,8 @@
 <div class="card">
   <div class="card__header">
     @if (header(); as header) {
-      <div class="card__title">{{ header }}
+      <div class="card__title">
+        {{ header }}
         @if (headerTooltip(); as tooltip) {
           <ui5-icon
             class="card__info-icon"
@@ -15,31 +16,39 @@
     <div class="card__actions">
       @if (searchExpanded()) {
         <ui5-input
-        #searchInput
-        [class]="'card__search-input card__search-input--' + (searchCollapsing() ? 'leave' : 'enter')"
-        [formControl]="searchControl"
-        (blur)="onSearchBlur()"
-        (animationend)="onSearchAnimationEnd()"
+          #searchInput
+          [class]="
+            'card__search-input card__search-input--' +
+            (searchCollapsing() ? 'leave' : 'enter')
+          "
+          [formControl]="searchControl"
+          (blur)="onSearchBlur()"
+          (animationend)="onSearchAnimationEnd()"
         />
       }
-      <ui5-icon
-        class="card__search-icon"
-        name="search"
+      <ui5-button
+        class="card__search-btn"
+        design="Transparent"
+        [icon]="searchButtonConfig()?.icon ?? 'search'"
+        [tooltip]="searchButtonConfig()?.tooltip ?? 'Search'"
         (click)="toggleSearch()"
       />
-      @if (createConfig()) {
+      @if (createFormConfig()) {
         <ui5-button
           class="card__create-btn"
-          icon="add"
-          design="Transparent"
+          [icon]="createButtonConfig()?.icon ?? 'add'"
+          [design]="createButtonConfig()?.design ?? 'Transparent'"
+          [tooltip]="createButtonConfig()?.tooltip"
           (click)="createDialogOpen.set(true)"
-        />
+        >
+          {{ createButtonConfig()?.text ?? '' }}
+        </ui5-button>
       }
     </div>
   </div>
 
   <div class="card__body">
-    @if(readConfig(); as config) {
+    @if (tableConfig(); as config) {
       <mfp-declarative-table
         [columns]="effectiveColumns()"
         [resources]="resources()"
@@ -55,8 +64,11 @@
   </div>
 </div>
 
-@if (createConfig(); as config) {
-  <ui5-dialog [open]="createDialogOpen()" (ui5BeforeClose)="createDialogOpen.set(false)">
+@if (createFormConfig(); as config) {
+  <ui5-dialog
+    [open]="createDialogOpen()"
+    (ui5BeforeClose)="createDialogOpen.set(false)"
+  >
     <div slot="header" class="dialog__header">
       <ui5-title level="H5">{{ config.title ?? 'Create' }}</ui5-title>
     </div>
@@ -68,18 +80,25 @@
       />
     </div>
     <div slot="footer" class="dialog__footer">
-      <ui5-button design="Emphasized" [disabled]="createForm.form.invalid" (click)="onCreateConfirm()">
-        {{ createConfig()!.confirmLabel ?? 'Save' }}
+      <ui5-button
+        design="Emphasized"
+        [disabled]="createForm.form.invalid"
+        (click)="onCreateConfirm()"
+      >
+        {{ config.confirmLabel ?? 'Save' }}
       </ui5-button>
       <ui5-button design="Transparent" (click)="createDialogOpen.set(false)">
-        {{ createConfig()!.cancelLabel ?? 'Cancel' }}
+        {{ config.cancelLabel ?? 'Cancel' }}
       </ui5-button>
     </div>
   </ui5-dialog>
 }
 
-@if (editConfig(); as config) {
-  <ui5-dialog [open]="editDialogOpen()" (ui5BeforeClose)="editDialogOpen.set(false)">
+@if (editFormConfig(); as config) {
+  <ui5-dialog
+    [open]="editDialogOpen()"
+    (ui5BeforeClose)="editDialogOpen.set(false)"
+  >
     <div slot="header" class="dialog__header">
       <ui5-title level="H5">{{ config.title ?? 'Edit' }}</ui5-title>
     </div>
@@ -93,7 +112,11 @@
       />
     </div>
     <div slot="footer" class="dialog__footer">
-      <ui5-button design="Emphasized" [disabled]="editForm.form.invalid" (click)="onEditConfirm()">
+      <ui5-button
+        design="Emphasized"
+        [disabled]="editForm.form.invalid"
+        (click)="onEditConfirm()"
+      >
         {{ config.confirmLabel ?? 'Edit' }}
       </ui5-button>
       <ui5-button design="Transparent" (click)="editDialogOpen.set(false)">
@@ -103,8 +126,11 @@
   </ui5-dialog>
 }
 
-@if (deleteConfig(); as config) {
-  <ui5-dialog [open]="deleteDialogOpen()" (ui5BeforeClose)="deleteDialogOpen.set(false)">
+@if (deleteConfirmationConfig(); as config) {
+  <ui5-dialog
+    [open]="deleteDialogOpen()"
+    (ui5BeforeClose)="deleteDialogOpen.set(false)"
+  >
     <div slot="header" class="dialog__header">
       <ui5-title level="H5">{{ config.title ?? 'Confirm Delete' }}</ui5-title>
     </div>

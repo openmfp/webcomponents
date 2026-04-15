@@ -29,7 +29,7 @@
   flex-direction: column;
   border: 1px solid var(--sapGroup_ContentBorderColor, #d9d9d9);
   border-radius: 16px;
-    background: var(--sapGroup_TitleBackground, #fff);
+  background: var(--sapGroup_TitleBackground, #fff);
 
   &__header {
     display: flex;
@@ -58,11 +58,6 @@
     gap: 0.5rem;
   }
 
-  &__search-icon {
-    cursor: pointer;
-    color: var(--sapButton_IconColor, #0070f2);
-  }
-
   &__info-icon {
     color: var(--sapButton_IconColor, #0070f2);
     margin-left: 0.5rem;
@@ -81,6 +76,12 @@
   }
 
   &__create-btn {
+    min-width: auto;
+    color: var(--sapButton_IconColor, #0070f2);
+  }
+
+  &__search-btn {
+    min-width: auto;
     color: var(--sapButton_IconColor, #0070f2);
   }
 

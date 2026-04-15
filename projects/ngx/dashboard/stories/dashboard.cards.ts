@@ -1,11 +1,5 @@
 import type { CardConfig, SectionConfig } from '../models';
-import {
-  BASE_READ_CONFIG,
-  CREATE_CONFIG,
-  DELETE_CONFIG,
-  EDIT_CONFIG,
-  TABLE_RESOURCES,
-} from './pods-table.config';
+import { TABLE_CARD_CONFIG, TABLE_RESOURCES } from './pods-table.config';
 
 export const SECTIONS: SectionConfig[] = [
   { id: 'ras', title: 'Recently accessed services', editable: false },
@@ -71,10 +65,7 @@ export const CARDS: CardConfig[] = [
     rowSpan: 4,
     component: 'mfp-wc-declarative-table-card',
     componentInputs: {
-      createConfig: CREATE_CONFIG,
-      editConfig: EDIT_CONFIG,
-      deleteConfig: DELETE_CONFIG,
-      readConfig: BASE_READ_CONFIG,
+      config: TABLE_CARD_CONFIG,
       header: 'Pods',
       headerTooltip: 'This table lists all pods running in the cluster.',
       resources: TABLE_RESOURCES,

@@ -1,10 +1,10 @@
 import type { FormFieldDefinition } from '../form/models';
-import { DeclarativeTableCardComponent } from '../table-card/declarative-table-card.component';
+import { DeclarativeTableCard } from '../table-card/declarative-table-card.component';
 import {
-  TableCardCreateConfig,
-  TableCardDeleteConfig,
-  TableCardEditConfig,
-  TableCardReadConfig,
+  DeleteResourceConfirmationConfig,
+  ResourceFormConfig,
+  TableCardConfig,
+  TableConfig,
 } from '../table-card/models/configs';
 import type { GenericResource, TableFieldDefinition } from '../table/models';
 import type { Meta, StoryObj } from '@storybook/angular';
@@ -121,40 +121,41 @@ const POD_EDIT_FORM_FIELDS: FormFieldDefinition[] = [
   },
 ];
 
-const BASE_READ_CONFIG: TableCardReadConfig = {
+const BASE_TABLE_CONFIG: TableConfig = {
   fields: BASE_COLUMNS,
   paginationLimit: 5,
   hasMore: false,
+};
+
+const BASE_CONFIG: TableCardConfig = {
+  tableConfig: BASE_TABLE_CONFIG,
 };
 
 // ---------------------------------------------------------------------------
 // Meta
 // ---------------------------------------------------------------------------
 
-const meta: Meta<DeclarativeTableCardComponent<GenericResource>> = {
+const meta: Meta<DeclarativeTableCard<GenericResource>> = {
   title: 'Declarative UI / DeclarativeTableCard',
-  component: DeclarativeTableCardComponent,
+  component: DeclarativeTableCard,
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',
   },
   argTypes: {
-    readConfig: { control: 'object' },
+    config: { control: 'object' },
     header: { control: 'text' },
     headerTooltip: { control: 'text' },
-    createConfig: { control: 'object' },
-    editConfig: { control: 'object' },
-    deleteConfig: { control: 'object' },
   },
   args: {
     header: 'Pods',
-    readConfig: BASE_READ_CONFIG,
+    config: BASE_CONFIG,
     resources: PODS,
   },
 };
 
 export default meta;
-type Story = StoryObj<DeclarativeTableCardComponent<GenericResource>>;
+type Story = StoryObj<DeclarativeTableCard<GenericResource>>;
 
 // ---------------------------------------------------------------------------
 // Stories
@@ -173,62 +174,74 @@ export const WithHeaderTooltip: Story = {
 /** Adds a Create button that opens a dialog with name + namespace fields. */
 export const WithCreate: Story = {
   args: {
-    createConfig: {
-      fields: POD_FORM_FIELDS,
-      title: 'Create Pod',
-      confirmLabel: 'Create',
-      cancelLabel: 'Cancel',
-    } satisfies TableCardCreateConfig,
+    config: {
+      ...BASE_CONFIG,
+      createResourceFormConfig: {
+        fields: POD_FORM_FIELDS,
+        title: 'Create Pod',
+        confirmLabel: 'Create',
+        cancelLabel: 'Cancel',
+      } satisfies ResourceFormConfig,
+    },
   },
 };
 
 /** Adds Edit row-action button. Clicking it opens a pre-filled dialog. */
 export const WithEdit: Story = {
   args: {
-    editConfig: {
-      fields: POD_EDIT_FORM_FIELDS,
-      title: 'Edit Pod',
-      confirmLabel: 'Save',
-      cancelLabel: 'Cancel',
-    } satisfies TableCardEditConfig,
+    config: {
+      ...BASE_CONFIG,
+      editResourceFormConfig: {
+        fields: POD_EDIT_FORM_FIELDS,
+        title: 'Edit Pod',
+        confirmLabel: 'Save',
+        cancelLabel: 'Cancel',
+      } satisfies ResourceFormConfig,
+    },
   },
 };
 
 /** Adds Delete row-action button with a confirmation dialog. */
 export const WithDelete: Story = {
   args: {
-    deleteConfig: {
-      title: 'Delete Pod?',
-      message:
-        'This action cannot be undone. The pod will be permanently removed.',
-      confirmLabel: 'Delete',
-      cancelLabel: 'Cancel',
-    } satisfies TableCardDeleteConfig,
+    config: {
+      ...BASE_CONFIG,
+      deleteResourceConfirmationConfig: {
+        title: 'Delete Pod?',
+        message:
+          'This action cannot be undone. The pod will be permanently removed.',
+        confirmLabel: 'Delete',
+        cancelLabel: 'Cancel',
+      } satisfies DeleteResourceConfirmationConfig,
+    },
   },
 };
 
 /** Full action suite: Create button, Edit row button, Delete row button. */
 export const WithAllActions: Story = {
   args: {
-    createConfig: {
-      fields: POD_FORM_FIELDS,
-      title: 'Create Pod',
-      confirmLabel: 'Create',
-      cancelLabel: 'Cancel',
-    } satisfies TableCardCreateConfig,
-    editConfig: {
-      fields: POD_EDIT_FORM_FIELDS,
-      title: 'Edit Pod',
-      confirmLabel: 'Save',
-      cancelLabel: 'Cancel',
-    } satisfies TableCardEditConfig,
-    deleteConfig: {
-      title: 'Delete Pod?',
-      message:
-        'This action cannot be undone. The pod will be permanently removed.',
-      confirmLabel: 'Delete',
-      cancelLabel: 'Cancel',
-    } satisfies TableCardDeleteConfig,
+    config: {
+      ...BASE_CONFIG,
+      createResourceFormConfig: {
+        fields: POD_FORM_FIELDS,
+        title: 'Create Pod',
+        confirmLabel: 'Create',
+        cancelLabel: 'Cancel',
+      } satisfies ResourceFormConfig,
+      editResourceFormConfig: {
+        fields: POD_EDIT_FORM_FIELDS,
+        title: 'Edit Pod',
+        confirmLabel: 'Save',
+        cancelLabel: 'Cancel',
+      } satisfies ResourceFormConfig,
+      deleteResourceConfirmationConfig: {
+        title: 'Delete Pod?',
+        message:
+          'This action cannot be undone. The pod will be permanently removed.',
+        confirmLabel: 'Delete',
+        cancelLabel: 'Cancel',
+      } satisfies DeleteResourceConfirmationConfig,
+    },
   },
 };
 
@@ -242,11 +255,14 @@ export const EmptyState: Story = {
 /** Shows pagination controls when hasMore is true. */
 export const WithPagination: Story = {
   args: {
-    readConfig: {
-      ...BASE_READ_CONFIG,
-      totalItemsCount: 42,
-      paginationLimit: 5,
-      hasMore: true,
+    config: {
+      ...BASE_CONFIG,
+      tableConfig: {
+        ...BASE_TABLE_CONFIG,
+        totalItemsCount: 42,
+        paginationLimit: 5,
+        hasMore: true,
+      },
     },
   },
 };

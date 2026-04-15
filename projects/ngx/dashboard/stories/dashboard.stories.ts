@@ -1,13 +1,7 @@
 import { Dashboard } from '../dashboard/dashboard.component';
 import type { CardConfig, DashboardConfig } from '../models';
 import { CARDS, SECTIONS } from './dashboard.cards';
-import {
-  BASE_READ_CONFIG,
-  CREATE_CONFIG,
-  DELETE_CONFIG,
-  EDIT_CONFIG,
-  TABLE_RESOURCES,
-} from './pods-table.config';
+import { TABLE_CARD_CONFIG, TABLE_RESOURCES } from './pods-table.config';
 import type { Meta, StoryObj } from '@storybook/angular';
 
 // ---------------------------------------------------------------------------
@@ -26,12 +20,9 @@ const AVAILABLE_CARDS: CardConfig[] = [
     label: 'Pods Table',
     colSpan: 12,
     rowSpan: 4,
-    component: 'mfp-wc-declarative-table',
+    component: 'mfp-wc-declarative-table-card',
     componentInputs: {
-      createConfig: CREATE_CONFIG,
-      editConfig: EDIT_CONFIG,
-      deleteConfig: DELETE_CONFIG,
-      readConfig: BASE_READ_CONFIG,
+      config: TABLE_CARD_CONFIG,
       header: 'Pods',
       headerTooltip: 'This table lists all pods running in the cluster.',
       resources: TABLE_RESOURCES,

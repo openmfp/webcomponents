@@ -1,20 +1,34 @@
+import { FormFieldDefinition } from '../form/models';
+import {
+  ButtonSettings,
+  GenericResource,
+  TableFieldDefinition,
+  ValueCellButtonClickEvent,
+} from '../table/models';
+import { DeclarativeTableCard } from './declarative-table-card.component';
+import {
+  DeleteResourceConfirmationConfig,
+  ResourceFormConfig,
+  TableCardConfig,
+  TableConfig,
+} from './models/configs';
 import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { DeclarativeTableCardComponent } from './declarative-table-card.component';
-import {
-  TableCardCreateConfig,
-  TableCardDeleteConfig,
-  TableCardEditConfig,
-  TableCardReadConfig,
-} from './models/configs';
-import { TableFieldDefinition, ValueCellButtonClickEvent, GenericResource } from '../table/models';
-import { FormFieldDefinition } from '../form/models';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-type Comp = DeclarativeTableCardComponent<GenericResource>;
+type TableCardCreateConfig = ResourceFormConfig;
+type TableCardReadConfig = TableConfig;
+type TableCardEditConfig = ResourceFormConfig & {
+  editButtonSettings?: Partial<ButtonSettings>;
+};
+type TableCardDeleteConfig = DeleteResourceConfirmationConfig & {
+  deleteButtonSettings?: Partial<ButtonSettings>;
+};
+
+type Comp = DeclarativeTableCard<GenericResource>;
 type Fixture = ComponentFixture<Comp>;
 
 const COLUMNS: TableFieldDefinition[] = [
@@ -60,36 +74,52 @@ const DELETE_CONFIG: TableCardDeleteConfig = {
   cancelLabel: 'Cancel',
 };
 
-function makeEvent(action: string, resource?: GenericResource): ValueCellButtonClickEvent<GenericResource> {
+function makeEvent(
+  action: string,
+  resource?: GenericResource,
+): ValueCellButtonClickEvent<GenericResource> {
   return {
     event: new MouseEvent('click'),
     field: {
       label: '',
-      uiSettings: { displayAs: 'button', buttonSettings: { action, icon: action } },
+      uiSettings: {
+        displayAs: 'button',
+        buttonSettings: { action, icon: action },
+      },
     },
     resource,
   };
 }
 
-function setup(opts: {
-  readConfig?: TableCardReadConfig;
-  resources?: GenericResource[];
-  header?: string;
-  createConfig?: TableCardCreateConfig;
-  editConfig?: TableCardEditConfig;
-  deleteConfig?: TableCardDeleteConfig;
-} = {}): { fixture: Fixture; component: Comp } {
+function setup(
+  opts: {
+    readConfig?: TableCardReadConfig;
+    resources?: GenericResource[];
+    header?: string;
+    createConfig?: TableCardCreateConfig;
+    editConfig?: TableCardEditConfig;
+    deleteConfig?: TableCardDeleteConfig;
+  } = {},
+): { fixture: Fixture; component: Comp } {
   const fixture: Fixture = TestBed.createComponent(
-    DeclarativeTableCardComponent as unknown as typeof DeclarativeTableCardComponent<GenericResource>,
+    DeclarativeTableCard as unknown as typeof DeclarativeTableCard<GenericResource>,
   );
   const component = fixture.componentInstance as Comp;
 
-  fixture.componentRef.setInput('readConfig', opts.readConfig ?? READ_CONFIG);
+  const config: TableCardConfig = {
+    tableConfig: opts.readConfig ?? READ_CONFIG,
+    createResourceFormConfig: opts.createConfig,
+    editResourceFormConfig: opts.editConfig,
+    deleteResourceConfirmationConfig: opts.deleteConfig,
+    buttonSettings: {
+      editButton: opts.editConfig?.editButtonSettings,
+      deleteButton: opts.deleteConfig?.deleteButtonSettings,
+    },
+  };
+
+  fixture.componentRef.setInput('config', config);
   fixture.componentRef.setInput('resources', opts.resources ?? RESOURCES);
   fixture.componentRef.setInput('header', opts.header ?? 'Test Header');
-  if (opts.createConfig !== undefined) fixture.componentRef.setInput('createConfig', opts.createConfig);
-  if (opts.editConfig !== undefined) fixture.componentRef.setInput('editConfig', opts.editConfig);
-  if (opts.deleteConfig !== undefined) fixture.componentRef.setInput('deleteConfig', opts.deleteConfig);
 
   fixture.detectChanges();
   return { fixture, component };
@@ -99,10 +129,12 @@ function setup(opts: {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe('DeclarativeTableCardComponent', () => {
+describe('DeclarativeTableCard', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DeclarativeTableCardComponent as unknown as typeof DeclarativeTableCardComponent<GenericResource>],
+      imports: [
+        DeclarativeTableCard as unknown as typeof DeclarativeTableCard<GenericResource>,
+      ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
@@ -123,7 +155,8 @@ describe('DeclarativeTableCardComponent', () => {
   describe('DOM: mfp-declarative-table', () => {
     it('renders mfp-declarative-table in the host element', () => {
       const { fixture } = setup();
-      const root: ShadowRoot | HTMLElement = fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+      const root: ShadowRoot | HTMLElement =
+        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
       expect(root.querySelector('mfp-declarative-table')).not.toBeNull();
     });
   });
@@ -135,7 +168,8 @@ describe('DeclarativeTableCardComponent', () => {
   describe('header input', () => {
     it('renders the header title when header is provided', () => {
       const { fixture } = setup({ header: 'My Pods' });
-      const root: ShadowRoot | HTMLElement = fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+      const root: ShadowRoot | HTMLElement =
+        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
       const title = root.querySelector('.card__title');
       expect(title).not.toBeNull();
       expect(title?.textContent?.trim()).toBe('My Pods');
@@ -151,7 +185,8 @@ describe('DeclarativeTableCardComponent', () => {
       const { fixture } = setup();
       fixture.componentRef.setInput('headerTooltip', 'Some tooltip');
       fixture.detectChanges();
-      const root: ShadowRoot | HTMLElement = fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+      const root: ShadowRoot | HTMLElement =
+        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
       const icon = root.querySelector('ui5-icon[name="hint"]');
       expect(icon).not.toBeNull();
       expect(icon?.getAttribute('accessible-name')).toBe('Some tooltip');
@@ -159,7 +194,8 @@ describe('DeclarativeTableCardComponent', () => {
 
     it('does not render info icon when headerTooltip is not provided', () => {
       const { fixture } = setup();
-      const root: ShadowRoot | HTMLElement = fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+      const root: ShadowRoot | HTMLElement =
+        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
       expect(root.querySelector('ui5-icon[name="hint"]')).toBeNull();
     });
   });
@@ -243,18 +279,16 @@ describe('DeclarativeTableCardComponent', () => {
   describe('create button', () => {
     it('create button is absent when createConfig is not provided', () => {
       const { fixture } = setup();
-      const root: ShadowRoot | HTMLElement = fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
-      const buttons = Array.from(root.querySelectorAll('ui5-button'));
-      const createButton = buttons.find(b => b.getAttribute('icon') === 'add');
-      expect(createButton).toBeUndefined();
+      const root: ShadowRoot | HTMLElement =
+        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+      expect(root.querySelector('.card__create-btn')).toBeNull();
     });
 
     it('create button is present when createConfig is provided', () => {
       const { fixture } = setup({ createConfig: CREATE_CONFIG });
-      const root: ShadowRoot | HTMLElement = fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
-      const buttons = Array.from(root.querySelectorAll('ui5-button'));
-      const createButton = buttons.find(b => b.getAttribute('icon') === 'add');
-      expect(createButton).not.toBeUndefined();
+      const root: ShadowRoot | HTMLElement =
+        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+      expect(root.querySelector('.card__create-btn')).not.toBeNull();
     });
   });
 
@@ -277,7 +311,8 @@ describe('DeclarativeTableCardComponent', () => {
       const cols = (component as any).effectiveColumns();
       expect(cols).toHaveLength(COLUMNS.length + 1);
       const editCol = cols.find(
-        (c: TableFieldDefinition) => c.uiSettings?.buttonSettings?.action === 'edit',
+        (c: TableFieldDefinition) =>
+          c.uiSettings?.buttonSettings?.action === 'edit',
       );
       expect(editCol).toBeDefined();
       expect(editCol.uiSettings.buttonSettings.icon).toBe('edit');
@@ -289,21 +324,27 @@ describe('DeclarativeTableCardComponent', () => {
       const cols = (component as any).effectiveColumns();
       expect(cols).toHaveLength(COLUMNS.length + 1);
       const deleteCol = cols.find(
-        (c: TableFieldDefinition) => c.uiSettings?.buttonSettings?.action === 'delete',
+        (c: TableFieldDefinition) =>
+          c.uiSettings?.buttonSettings?.action === 'delete',
       );
       expect(deleteCol).toBeDefined();
     });
 
     it('adds both edit and delete columns when both configs are provided', () => {
-      const { component } = setup({ editConfig: EDIT_CONFIG, deleteConfig: DELETE_CONFIG });
+      const { component } = setup({
+        editConfig: EDIT_CONFIG,
+        deleteConfig: DELETE_CONFIG,
+      });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cols = (component as any).effectiveColumns();
       expect(cols).toHaveLength(COLUMNS.length + 2);
       const editCol = cols.find(
-        (c: TableFieldDefinition) => c.uiSettings?.buttonSettings?.action === 'edit',
+        (c: TableFieldDefinition) =>
+          c.uiSettings?.buttonSettings?.action === 'edit',
       );
       const deleteCol = cols.find(
-        (c: TableFieldDefinition) => c.uiSettings?.buttonSettings?.action === 'delete',
+        (c: TableFieldDefinition) =>
+          c.uiSettings?.buttonSettings?.action === 'delete',
       );
       expect(editCol).toBeDefined();
       expect(deleteCol).toBeDefined();
@@ -314,7 +355,8 @@ describe('DeclarativeTableCardComponent', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cols = (component as any).effectiveColumns();
       const deleteCol = cols.find(
-        (c: TableFieldDefinition) => c.uiSettings?.buttonSettings?.action === 'delete',
+        (c: TableFieldDefinition) =>
+          c.uiSettings?.buttonSettings?.action === 'delete',
       );
       expect(deleteCol.uiSettings.buttonSettings.icon).toBe('decline');
     });
@@ -328,7 +370,8 @@ describe('DeclarativeTableCardComponent', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cols = (component as any).effectiveColumns();
       const editCol = cols.find(
-        (c: TableFieldDefinition) => c.uiSettings?.buttonSettings?.action === 'edit',
+        (c: TableFieldDefinition) =>
+          c.uiSettings?.buttonSettings?.action === 'edit',
       );
       expect(editCol.uiSettings.buttonSettings.icon).toBe('pen-tool');
     });
@@ -342,7 +385,8 @@ describe('DeclarativeTableCardComponent', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cols = (component as any).effectiveColumns();
       const deleteCol = cols.find(
-        (c: TableFieldDefinition) => c.uiSettings?.buttonSettings?.action === 'delete',
+        (c: TableFieldDefinition) =>
+          c.uiSettings?.buttonSettings?.action === 'delete',
       );
       expect(deleteCol.uiSettings.buttonSettings.icon).toBe('trash');
     });
@@ -406,7 +450,7 @@ describe('DeclarativeTableCardComponent', () => {
     it('intercepts action="edit": does not emit actionButtonClick', () => {
       const { component } = setup({ editConfig: EDIT_CONFIG });
       const emitted: unknown[] = [];
-      component.actionButtonClick.subscribe(e => emitted.push(e));
+      component.actionButtonClick.subscribe((e) => emitted.push(e));
       component.onButtonClick(makeEvent('edit', RESOURCES[0]));
       expect(emitted).toHaveLength(0);
     });
@@ -425,7 +469,7 @@ describe('DeclarativeTableCardComponent', () => {
     it('intercepts action="delete": does not emit actionButtonClick', () => {
       const { component } = setup({ deleteConfig: DELETE_CONFIG });
       const emitted: unknown[] = [];
-      component.actionButtonClick.subscribe(e => emitted.push(e));
+      component.actionButtonClick.subscribe((e) => emitted.push(e));
       component.onButtonClick(makeEvent('delete', RESOURCES[0]));
       expect(emitted).toHaveLength(0);
     });
@@ -433,7 +477,7 @@ describe('DeclarativeTableCardComponent', () => {
     it('forwards other actions via actionButtonClick output', () => {
       const { component } = setup();
       const emitted: ValueCellButtonClickEvent<GenericResource>[] = [];
-      component.actionButtonClick.subscribe(e => emitted.push(e));
+      component.actionButtonClick.subscribe((e) => emitted.push(e));
 
       const event = makeEvent('navigate', RESOURCES[0]);
       component.onButtonClick(event);
@@ -445,7 +489,7 @@ describe('DeclarativeTableCardComponent', () => {
     it('forwards action="edit" without a resource via actionButtonClick', () => {
       const { component } = setup();
       const emitted: unknown[] = [];
-      component.actionButtonClick.subscribe(e => emitted.push(e));
+      component.actionButtonClick.subscribe((e) => emitted.push(e));
       component.onButtonClick(makeEvent('edit', undefined));
       expect(emitted).toHaveLength(1);
     });
@@ -453,7 +497,7 @@ describe('DeclarativeTableCardComponent', () => {
     it('forwards action="delete" without a resource via actionButtonClick', () => {
       const { component } = setup();
       const emitted: unknown[] = [];
-      component.actionButtonClick.subscribe(e => emitted.push(e));
+      component.actionButtonClick.subscribe((e) => emitted.push(e));
       component.onButtonClick(makeEvent('delete', undefined));
       expect(emitted).toHaveLength(1);
     });
@@ -466,12 +510,15 @@ describe('DeclarativeTableCardComponent', () => {
   describe('onCreateConfirm()', () => {
     it('emits createConfirmed with pendingFormValue when it is set', () => {
       const { component } = setup({ createConfig: CREATE_CONFIG });
-      const formValue = { 'metadata.name': 'new-pod', 'metadata.namespace': 'default' };
+      const formValue = {
+        'metadata.name': 'new-pod',
+        'metadata.namespace': 'default',
+      };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (component as any).pendingFormValue.set(formValue);
 
       const emitted: Record<string, unknown>[] = [];
-      component.createConfirmed.subscribe(v => emitted.push(v));
+      component.createConfirmed.subscribe((v) => emitted.push(v));
 
       component.onCreateConfirm();
 
@@ -482,7 +529,7 @@ describe('DeclarativeTableCardComponent', () => {
     it('does not emit createConfirmed when pendingFormValue is null', () => {
       const { component } = setup({ createConfig: CREATE_CONFIG });
       const emitted: unknown[] = [];
-      component.createConfirmed.subscribe(v => emitted.push(v));
+      component.createConfirmed.subscribe((v) => emitted.push(v));
 
       component.onCreateConfirm();
 
@@ -522,14 +569,20 @@ describe('DeclarativeTableCardComponent', () => {
     it('emits editConfirmed with resource and formValue when both are set', () => {
       const { component } = setup({ editConfig: EDIT_CONFIG });
       const resource = RESOURCES[0];
-      const formValue = { 'metadata.name': 'pod-alpha', 'metadata.namespace': 'staging' };
+      const formValue = {
+        'metadata.name': 'pod-alpha',
+        'metadata.namespace': 'staging',
+      };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (component as any).pendingResource.set(resource);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (component as any).pendingFormValue.set(formValue);
 
-      const emitted: { resource: GenericResource; formValue: Record<string, unknown> }[] = [];
-      component.editConfirmed.subscribe(v => emitted.push(v));
+      const emitted: {
+        resource: GenericResource;
+        formValue: Record<string, unknown>;
+      }[] = [];
+      component.editConfirmed.subscribe((v) => emitted.push(v));
 
       component.onEditConfirm();
 
@@ -544,7 +597,7 @@ describe('DeclarativeTableCardComponent', () => {
       (component as any).pendingFormValue.set({ 'metadata.name': 'x' });
 
       const emitted: unknown[] = [];
-      component.editConfirmed.subscribe(v => emitted.push(v));
+      component.editConfirmed.subscribe((v) => emitted.push(v));
 
       component.onEditConfirm();
 
@@ -557,7 +610,7 @@ describe('DeclarativeTableCardComponent', () => {
       (component as any).pendingResource.set(RESOURCES[0]);
 
       const emitted: unknown[] = [];
-      component.editConfirmed.subscribe(v => emitted.push(v));
+      component.editConfirmed.subscribe((v) => emitted.push(v));
 
       component.onEditConfirm();
 
@@ -601,7 +654,7 @@ describe('DeclarativeTableCardComponent', () => {
       (component as any).pendingResource.set(resource);
 
       const emitted: GenericResource[] = [];
-      component.deleteConfirmed.subscribe(v => emitted.push(v));
+      component.deleteConfirmed.subscribe((v) => emitted.push(v));
 
       component.onDeleteConfirm();
 
@@ -612,7 +665,7 @@ describe('DeclarativeTableCardComponent', () => {
     it('does not emit deleteConfirmed when pendingResource is null', () => {
       const { component } = setup({ deleteConfig: DELETE_CONFIG });
       const emitted: unknown[] = [];
-      component.deleteConfirmed.subscribe(v => emitted.push(v));
+      component.deleteConfirmed.subscribe((v) => emitted.push(v));
 
       component.onDeleteConfirm();
 
@@ -655,7 +708,7 @@ describe('DeclarativeTableCardComponent', () => {
       (component as any).createDialogOpen.set(true);
 
       const emitted: unknown[] = [];
-      component.createConfirmed.subscribe(v => emitted.push(v));
+      component.createConfirmed.subscribe((v) => emitted.push(v));
 
       // Simulate cancel: close dialog without calling onCreateConfirm
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -674,7 +727,7 @@ describe('DeclarativeTableCardComponent', () => {
       (component as any).editDialogOpen.set(true);
 
       const emitted: unknown[] = [];
-      component.editConfirmed.subscribe(v => emitted.push(v));
+      component.editConfirmed.subscribe((v) => emitted.push(v));
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (component as any).editDialogOpen.set(false);
@@ -690,7 +743,7 @@ describe('DeclarativeTableCardComponent', () => {
       (component as any).deleteDialogOpen.set(true);
 
       const emitted: unknown[] = [];
-      component.deleteConfirmed.subscribe(v => emitted.push(v));
+      component.deleteConfirmed.subscribe((v) => emitted.push(v));
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (component as any).deleteDialogOpen.set(false);
@@ -736,7 +789,12 @@ describe('DeclarativeTableCardComponent', () => {
         { label: 'Phase', property: 'status.phase' },
       ];
       const { component } = setup({
-        readConfig: { fields: customColumns, totalItemsCount: 42, paginationLimit: 10, hasMore: true },
+        readConfig: {
+          fields: customColumns,
+          totalItemsCount: 42,
+          paginationLimit: 10,
+          hasMore: true,
+        },
       });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cols = (component as any).effectiveColumns();

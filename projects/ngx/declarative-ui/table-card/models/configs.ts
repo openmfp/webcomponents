@@ -4,28 +4,38 @@ import {
   TableFieldDefinition,
 } from '@openmfp/webcomponents/declarative-ui';
 
-export interface TableCardCreateConfig {
+export interface ResourceFormConfig {
   fields: FormFieldDefinition[];
   title?: string;
   confirmLabel?: string;
   cancelLabel?: string;
 }
 
-export interface TableCardEditConfig extends TableCardCreateConfig {
-  editButtonSettings?: Partial<ButtonSettings>;
+export interface DeleteResourceConfirmationConfig {
+  title?: string;
+  message?: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
 }
 
-export interface TableCardReadConfig {
+export interface TableConfig {
   fields: TableFieldDefinition[];
   totalItemsCount?: number;
   paginationLimit?: number;
   hasMore?: boolean;
 }
 
-export interface TableCardDeleteConfig {
-  title?: string;
-  message?: string;
-  confirmLabel?: string;
-  cancelLabel?: string;
-  deleteButtonSettings?: Partial<ButtonSettings>;
+export interface TableCardButtonSettings {
+  createButton?: Partial<ButtonSettings>;
+  searchButton?: Partial<ButtonSettings>;
+  editButton?: Partial<ButtonSettings>;
+  deleteButton?: Partial<ButtonSettings>;
+}
+
+export interface TableCardConfig {
+  tableConfig: TableConfig;
+  buttonSettings?: TableCardButtonSettings;
+  createResourceFormConfig?: ResourceFormConfig;
+  editResourceFormConfig?: ResourceFormConfig;
+  deleteResourceConfirmationConfig?: DeleteResourceConfirmationConfig;
 }

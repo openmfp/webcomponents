@@ -1,5 +1,5 @@
 import { DeclarativeForm } from '../ngx/declarative-ui/form/declarative-form/declarative-form.component';
-import { DeclarativeTableCardComponent } from '../ngx/declarative-ui/table-card/declarative-table-card.component';
+import { DeclarativeTableCard } from '../ngx/declarative-ui/table-card/declarative-table-card.component';
 import { DeclarativeTable } from '../ngx/declarative-ui/table/declarative-table/declarative-table.component';
 import { Favorites } from '../ngx/favorites/favorites.component';
 import { ServiceStatusCard } from '../ngx/service-status/service-status-card.component';
@@ -22,7 +22,7 @@ import { createApplication } from '@angular/platform-browser';
   customElements.define('mfp-wc-declarative-form', DeclarativeFormElement);
 
   const DeclarativeTableCardElement = createCustomElement(
-    DeclarativeTableCardComponent,
+    DeclarativeTableCard,
     {
       injector: app.injector,
     },

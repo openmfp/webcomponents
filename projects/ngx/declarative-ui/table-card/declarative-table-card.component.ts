@@ -7,12 +7,7 @@ import {
   ValueCellButtonClickEvent,
 } from '../table/models';
 import { getResourceValueByJsonPath } from '../table/utils/resource-field-by-path';
-import {
-  TableCardCreateConfig,
-  TableCardDeleteConfig,
-  TableCardEditConfig,
-  TableCardReadConfig,
-} from './models/configs';
+import { ResourceFormConfig, TableCardConfig } from './models/configs';
 import {
   CUSTOM_ELEMENTS_SCHEMA,
   ChangeDetectionStrategy,
@@ -36,6 +31,8 @@ import { Input } from '@fundamental-ngx/ui5-webcomponents/input';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 import { debounceTime } from 'rxjs';
 
+type SearchState = 'collapsed' | 'expanded' | 'collapsing';
+
 @Component({
   selector: 'mfp-declarative-table-card',
   imports: [
@@ -54,15 +51,12 @@ import { debounceTime } from 'rxjs';
   encapsulation: ViewEncapsulation.ShadowDom,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class DeclarativeTableCardComponent<T extends GenericResource> {
+export class DeclarativeTableCard<T extends GenericResource> {
   header = input.required<string>();
   resources = input.required<T[]>();
   headerTooltip = input<string>();
 
-  readConfig = input.required<TableCardReadConfig>();
-  createConfig = input<TableCardCreateConfig>();
-  editConfig = input<TableCardEditConfig>();
-  deleteConfig = input<TableCardDeleteConfig>();
+  config = input.required<TableCardConfig>();
 
   readonly actionButtonClick = output<ValueCellButtonClickEvent<T>>();
   readonly tableRowClicked = output<T>();
@@ -77,8 +71,11 @@ export class DeclarativeTableCardComponent<T extends GenericResource> {
   }>();
   readonly deleteConfirmed = output<T>();
 
-  protected searchExpanded = signal(false);
-  protected searchCollapsing = signal(false);
+  protected searchState = signal<SearchState>('collapsed');
+  protected searchExpanded = computed(() => this.searchState() !== 'collapsed');
+  protected searchCollapsing = computed(
+    () => this.searchState() === 'collapsing',
+  );
   protected searchControl = new FormControl('');
   protected searchInputRef = viewChild<Input>('searchInput');
 
@@ -89,10 +86,26 @@ export class DeclarativeTableCardComponent<T extends GenericResource> {
   protected pendingResource = signal<T | null>(null);
   protected pendingFormValue = signal<Record<string, unknown> | null>(null);
 
+  protected tableConfig = computed(() => this.config().tableConfig);
+  protected createFormConfig = computed(
+    () => this.config().createResourceFormConfig,
+  );
+  protected editFormConfig = computed(
+    () => this.config().editResourceFormConfig,
+  );
+  protected deleteConfirmationConfig = computed(
+    () => this.config().deleteResourceConfirmationConfig,
+  );
+  protected createButtonConfig = computed(
+    () => this.config().buttonSettings?.createButton,
+  );
+  protected searchButtonConfig = computed(
+    () => this.config().buttonSettings?.searchButton,
+  );
   protected effectiveColumns = computed(() => this.addActionsColumn());
   protected editInitialValue = computed(() => {
     const pendingResource = this.pendingResource();
-    const editConfig = this.editConfig();
+    const editConfig = this.editFormConfig();
     if (!pendingResource || !editConfig) {
       return {};
     }
@@ -111,10 +124,10 @@ export class DeclarativeTableCardComponent<T extends GenericResource> {
   }
 
   toggleSearch(): void {
-    if (this.searchExpanded() && !this.searchCollapsing()) {
+    if (this.searchState() === 'expanded') {
       this.collapseSearch();
-    } else if (!this.searchExpanded()) {
-      this.searchExpanded.set(true);
+    } else if (this.searchState() === 'collapsed') {
+      this.searchState.set('expanded');
       afterNextRender(
         () => {
           this.searchInputRef()?.elementRef.nativeElement.focus();
@@ -132,14 +145,13 @@ export class DeclarativeTableCardComponent<T extends GenericResource> {
 
   onSearchAnimationEnd(): void {
     if (this.searchCollapsing()) {
-      this.searchCollapsing.set(false);
-      this.searchExpanded.set(false);
+      this.searchState.set('collapsed');
       this.searchControl.setValue('', { emitEvent: false });
     }
   }
 
   private collapseSearch(): void {
-    this.searchCollapsing.set(true);
+    this.searchState.set('collapsing');
   }
 
   onButtonClick(event: ValueCellButtonClickEvent<T>): void {
@@ -179,9 +191,10 @@ export class DeclarativeTableCardComponent<T extends GenericResource> {
   }
 
   private addActionsColumn(): TableFieldDefinition[] {
-    const cols = this.readConfig().fields;
-    const editButton = this.editConfig();
-    const deleteButton = this.deleteConfig();
+    const cols = this.tableConfig().fields;
+    const buttonSettings = this.config().buttonSettings;
+    const editButton = this.editFormConfig();
+    const deleteButton = this.deleteConfirmationConfig();
     const actions: TableFieldDefinition[] = [];
 
     if (editButton) {
@@ -192,7 +205,7 @@ export class DeclarativeTableCardComponent<T extends GenericResource> {
             icon: 'edit',
             design: 'Transparent',
             action: 'edit',
-            ...editButton.editButtonSettings,
+            ...buttonSettings?.editButton,
           },
         },
         group: { name: 'actions', label: '', multiline: false },
@@ -207,7 +220,7 @@ export class DeclarativeTableCardComponent<T extends GenericResource> {
             icon: 'decline',
             design: 'Transparent',
             action: 'delete',
-            ...deleteButton.deleteButtonSettings,
+            ...buttonSettings?.deleteButton,
           },
         },
         group: { name: 'actions', label: '', multiline: false },
