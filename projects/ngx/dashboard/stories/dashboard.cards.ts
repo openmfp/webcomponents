@@ -1,5 +1,10 @@
+import { Favorites } from '../../favorites/favorites.component';
+import { VisitedServiceCard } from '../../visited-service-card/visited-service-card.component';
+import { Dashboard } from '../dashboard/dashboard.component';
 import type { CardConfig, SectionConfig } from '../models';
 import { TABLE_CARD_CONFIG, TABLE_RESOURCES } from './pods-table.config';
+
+Dashboard.addComponentToSelectorType([Favorites, VisitedServiceCard]);
 
 export const SECTIONS: SectionConfig[] = [
   { id: 'ras', title: 'Recently accessed services', editable: false, w: 12 },
@@ -56,7 +61,7 @@ export const CARDS: CardConfig[] = [
     w: 4,
     h: 12,
     sectionId: 'ras',
-    component: 'mfp-wc-visited-service-card',
+    component: 'mfp-visited-service-card',
     componentInputs: { ...t },
   })),
   {

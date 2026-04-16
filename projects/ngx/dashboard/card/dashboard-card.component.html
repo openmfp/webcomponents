@@ -1,7 +1,7 @@
 @if (card().component) {
   <div class="component-card">
     @if (editMode()) {
-    <div class="remove-wrapper">
+      <div class="remove-wrapper">
         <ui5-button
           class="card__remove"
           design="Default"
@@ -10,11 +10,20 @@
         />
       </div>
     }
-      <div [style.pointer-events]="editMode() ? 'none' : 'auto'" #componentHost></div>
+    <div
+      [style.pointer-events]="editMode() ? 'none' : 'auto'"
+      class="component-host"
+    >
+      <ng-container #angularHost />
+      <div #elementHost></div>
+    </div>
   </div>
 } @else {
   <div class="card">
-    <div [style.pointer-events]="editMode() ? 'none' : 'auto'" class="card__body">
+    <div
+      [style.pointer-events]="editMode() ? 'none' : 'auto'"
+      class="card__body"
+    >
       <ng-content />
     </div>
   </div>

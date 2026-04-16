@@ -1,3 +1,5 @@
+import { Favorites } from '../../favorites/favorites.component';
+import { ServiceStatusCard } from '../../service-status/service-status-card.component';
 import { Dashboard } from '../dashboard/dashboard.component';
 import type {
   CardConfig,
@@ -7,6 +9,8 @@ import type {
 import { CARDS, SECTIONS } from './dashboard.cards';
 import { TABLE_CARD_CONFIG, TABLE_RESOURCES } from './pods-table.config';
 import type { Meta, StoryObj } from '@storybook/angular';
+
+Dashboard.addComponentToSelectorType([Favorites, ServiceStatusCard]);
 
 // ---------------------------------------------------------------------------
 // Shared config
