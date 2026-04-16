@@ -1,7 +1,7 @@
 import { AddCardDialog } from '../add-card-dialog/add-card-dialog.component';
-import { DashboardCardComponent } from '../card/dashboard-card.component';
+import { DashboardCard } from '../card/dashboard-card.component';
 import { CardConfig, DashboardConfig, SectionConfig } from '../models';
-import { DashboardSectionComponent } from '../section/dashboard-section.component';
+import { DashboardSection } from '../section/dashboard-section.component';
 import {
   Component,
   ViewEncapsulation,
@@ -31,8 +31,8 @@ document.body.classList.add('ui5-content-density-compact');
     GridstackComponent,
     GridstackItemComponent,
     AddCardDialog,
-    DashboardSectionComponent,
-    DashboardCardComponent,
+    DashboardSection,
+    DashboardCard,
     Button,
     Title,
     Text,

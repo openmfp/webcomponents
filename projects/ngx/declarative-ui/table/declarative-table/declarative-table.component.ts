@@ -4,7 +4,7 @@ import {
   ValueCellButtonClickEvent,
 } from '../models';
 import { processGroupFields } from '../utils/proccess-fields';
-import { ValueCellComponent } from '../value-cell/value-cell.component';
+import { ValueCell } from '../value-cell/value-cell.component';
 import {
   Component,
   ViewEncapsulation,
@@ -32,7 +32,7 @@ import '@ui5/webcomponents-fiori/dist/illustrations/NoData.js';
     TableHeaderCell,
     TableHeaderRow,
     TableRow,
-    ValueCellComponent,
+    ValueCell,
     Select,
     Option,
     TableGrowing,

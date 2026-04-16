@@ -1,10 +1,10 @@
-import { DashboardCardComponent } from './dashboard-card.component';
+import { DashboardCard } from './dashboard-card.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-type Fixture = ComponentFixture<DashboardCardComponent>;
+type Fixture = ComponentFixture<DashboardCard>;
 
-function setup(): { fixture: Fixture; component: DashboardCardComponent } {
-  const fixture = TestBed.createComponent(DashboardCardComponent);
+function setup(): { fixture: Fixture; component: DashboardCard } {
+  const fixture = TestBed.createComponent(DashboardCard);
   const component = fixture.componentInstance;
   return { fixture, component };
 }
@@ -13,10 +13,10 @@ function root(fixture: Fixture): ShadowRoot | HTMLElement {
   return fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
 }
 
-describe('DashboardCardComponent', () => {
+describe('DashboardCard', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DashboardCardComponent],
+      imports: [DashboardCard],
     }).compileComponents();
   });
 

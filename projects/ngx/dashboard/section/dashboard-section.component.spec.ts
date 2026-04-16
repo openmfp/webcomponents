@@ -1,12 +1,12 @@
-import { DashboardCardComponent } from '../card/dashboard-card.component';
-import { DashboardSectionComponent } from './dashboard-section.component';
+import { DashboardCard } from '../card/dashboard-card.component';
+import { DashboardSection } from './dashboard-section.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
-type Fixture = ComponentFixture<DashboardSectionComponent>;
+type Fixture = ComponentFixture<DashboardSection>;
 
-function setup(): { fixture: Fixture; component: DashboardSectionComponent } {
-  const fixture = TestBed.createComponent(DashboardSectionComponent);
+function setup(): { fixture: Fixture; component: DashboardSection } {
+  const fixture = TestBed.createComponent(DashboardSection);
   const component = fixture.componentInstance;
   return { fixture, component };
 }
@@ -15,10 +15,10 @@ function root(fixture: Fixture): ShadowRoot | HTMLElement {
   return fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
 }
 
-describe('DashboardSectionComponent', () => {
+describe('DashboardSection', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DashboardSectionComponent],
+      imports: [DashboardSection],
     }).compileComponents();
   });
 
@@ -75,8 +75,8 @@ describe('DashboardSectionComponent', () => {
     fixture.detectChanges();
 
     const card = fixture.debugElement.query(
-      By.directive(DashboardCardComponent),
-    ).componentInstance as DashboardCardComponent;
+      By.directive(DashboardCard),
+    ).componentInstance as DashboardCard;
 
     expect(root(fixture).querySelector('.section__remove')).toBeNull();
     expect(card.editMode()).toBe(false);
@@ -98,8 +98,8 @@ describe('DashboardSectionComponent', () => {
     fixture.detectChanges();
 
     const card = fixture.debugElement.query(
-      By.directive(DashboardCardComponent),
-    ).componentInstance as DashboardCardComponent;
+      By.directive(DashboardCard),
+    ).componentInstance as DashboardCard;
     card.removeCard.emit();
 
     expect(emitted).toEqual(['card-1']);

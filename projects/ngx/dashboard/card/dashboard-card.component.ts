@@ -23,7 +23,7 @@ import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
     '[style.grid-row]': '"span " + (card().h ?? 1)',
   },
 })
-export class DashboardCardComponent {
+export class DashboardCard {
   card = input.required<CardConfig>();
   editMode = input<boolean>(false);
   readonly removeCard = output<void>();
