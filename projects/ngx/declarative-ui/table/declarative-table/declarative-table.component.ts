@@ -39,7 +39,7 @@ import '@ui5/webcomponents-fiori/dist/illustrations/NoData.js';
   ],
   templateUrl: './declarative-table.component.html',
   styleUrl: './declarative-table.component.scss',
-  encapsulation: ViewEncapsulation.ShadowDom
+  encapsulation: ViewEncapsulation.ShadowDom,
 })
 export class DeclarativeTable<T extends GenericResource> {
   columns = input.required<TableFieldDefinition[]>();

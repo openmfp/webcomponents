@@ -3,9 +3,9 @@ import { CUSTOM_ELEMENTS_SCHEMA, Component, Input } from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
 
 @Component({
-  selector: 'declarative-form-story',
+  selector: 'mfp-declarative-form-story',
   template: `
-    <mfp-declarative-form
+    <mfp-wc-declarative-form
       [editMode]="editMode"
       [fields]="fields"
       [initialValues]="initialValues"

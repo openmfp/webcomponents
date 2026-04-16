@@ -2,11 +2,12 @@
 
 A dynamic form web component that renders fields from a declarative field definition. Supports text inputs, static selects (from a string array), and dynamic selects (loaded asynchronously). Emits the form value as a nested object whenever the form is valid.
 
-## Custom element tag
+## Tags
 
-```html
-<mfp-declarative-form></mfp-declarative-form>
-```
+| Usage | Tag |
+|---|---|
+| Angular component | `<mfp-declarative-form>` |
+| Web Component (framework-agnostic) | `<mfp-wc-declarative-form>` |
 
 ---
 
@@ -21,14 +22,14 @@ Include the bundle and set properties via JavaScript. Because the component uses
     <script type="module" src="declarative-form.js"/>
   </head>
   <body>
-    <mfp-declarative-form id="form"/>
+    <mfp-wc-declarative-form id="form"></mfp-wc-declarative-form>
 
     <script type="module">
       const form = document.getElementById('form');
 
       form.fields = [
-        { name: 'metadata_name', label: 'Name', required: true },
-        { name: 'metadata_namespace', label: 'Namespace' },
+        { name: 'metadata.name',      label: 'Name',      required: true },
+        { name: 'metadata.namespace', label: 'Namespace' },
       ];
 
       form.addEventListener('formValue', (e) => {
@@ -68,14 +69,17 @@ import { FormFieldDefinition } from '@openmfp/webcomponents';
 })
 export class MyComponent {
   fields: FormFieldDefinition[] = [
-    { name: 'metadata_name', label: 'Name', required: true },
-    { name: 'metadata_namespace', label: 'Namespace' },
+    { name: 'metadata.name',      label: 'Name',      required: true },
+    { name: 'metadata.namespace', label: 'Namespace' },
   ];
-  initialValues = {};
+  initialValues = {
+    'metadata.name': 'my-app',
+    'metadata.namespace': 'default',
+  };
   editMode = false;
 
-  onFormValue(value: Record<string, any>) {
-    // value is a nested object: { metadata: { name: '...', namespace: '...' } }
+  onFormValue(value: Record<string, unknown>) {
+    // value is a nested object: { metadata: { name: 'my-app', namespace: 'default' } }
   }
 
   onValidChange(valid: boolean) {}
@@ -90,15 +94,15 @@ export class MyComponent {
 
 | Input | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `fields` | `FormFieldDefinition[]` | no | `[]` | Field definitions to render |
-| `initialValues` | `Record<string, any>` | no | `{}` | Initial values keyed by field name (flat, using underscore notation) |
+| `fields` | `FormFieldDefinition[]` | yes | — | Field definitions to render |
+| `initialValues` | `Record<string, unknown>` | no | `{}` | Initial values keyed by `field.name` (flat, exact match) |
 | `editMode` | `boolean` | no | `false` | Signals edit mode to consumers; does not change component behavior on its own |
 
 ### Outputs / Events
 
 | Event | Detail payload | Description |
 |---|---|---|
-| `formValue` | `Record<string, any>` | Fires on every valid form state change; value is a nested object |
+| `formValue` | `Record<string, unknown>` | Fires on every valid form state change; value is a nested object |
 | `formValidChange` | `boolean` | Fires whenever the overall validity changes |
 
 **Listening to events from a web component:**
@@ -114,13 +118,13 @@ form.addEventListener('formValidChange', (e) => console.log('valid:', e.detail))
 
 ```ts
 interface FormFieldDefinition {
-  name: string;           // Field name — used as form control key (use underscores for nested paths)
-  label?: string;         // Display label shown above the field
-  required?: boolean;     // Adds a required validator and shows a visual indicator
-  values?: string[];      // Static select options; renders a <ui5-select> when present
-  loadValues?: () => Promise<SelectOption[]>;  // Async select; takes priority over `values` when both absent
+  name: string;          // Field name — used as form control key; dots create nested output paths
+  label?: string;        // Display label shown above the field
+  required?: boolean;    // Adds a required validator and shows a visual indicator
+  values?: string[];     // Static select options; renders a <ui5-select> when present
+  loadValues?: () => Promise<SelectOption[]>; // Async select options
   validators?: ValidatorFn[];  // Additional Angular validators (e.g. Validators.email)
-  disabled?: boolean;     // Disables the field
+  disabled?: boolean;    // Disables the field (read-only in edit dialogs)
 }
 ```
 
@@ -145,28 +149,39 @@ For each field, the component renders in this order:
 
 ---
 
-## Underscore-to-dot path convention
+## Dot-notation path convention
 
-Field names use underscores to represent nested object paths. The component converts them back to dot-notation when building the output value:
+Field `name` values use dots to represent nested object paths. The component uses the name directly as a path when building the output:
 
 | Field `name` | Output path |
 |---|---|
-| `metadata_name` | `metadata.name` |
-| `spec_replicas` | `spec.replicas` |
-| `metadata_namespace` | `metadata.namespace` |
+| `metadata.name` | `metadata.name` → `{ metadata: { name: '...' } }` |
+| `spec.replicas` | `spec.replicas` → `{ spec: { replicas: '...' } }` |
+| `title` | flat key → `{ title: '...' }` |
 
 **Example:**
 
 ```js
 form.fields = [
-  { name: 'metadata_name', required: true },
-  { name: 'spec_replicas' },
+  { name: 'metadata.name',  required: true },
+  { name: 'spec.replicas' },
 ];
 
 form.addEventListener('formValue', (e) => {
   // e.detail = { metadata: { name: 'my-app' }, spec: { replicas: '3' } }
 });
 ```
+
+`initialValues` keys must match `field.name` exactly (flat, including dots):
+
+```js
+form.initialValues = {
+  'metadata.name': 'my-app',
+  'spec.replicas': '3',
+};
+```
+
+> **Note:** Underscores in field names are treated as literal characters, not path separators.
 
 ---
 

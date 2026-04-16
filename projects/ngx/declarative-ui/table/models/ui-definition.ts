@@ -1,6 +1,11 @@
 import { GenericResource } from './resource';
 
-export type TransformType = 'uppercase' | 'lowercase' | 'capitalize' | 'decode' | 'encode';
+export type TransformType =
+  | 'uppercase'
+  | 'lowercase'
+  | 'capitalize'
+  | 'decode'
+  | 'encode';
 
 export interface PropertyField {
   key: string;
@@ -9,21 +14,38 @@ export interface PropertyField {
 
 export interface UiSettings {
   labelDisplay?: boolean;
-  displayAs?: 'secret' | 'boolIcon' | 'link' | 'tooltip' | 'alert' | 'img' | 'button';
+  displayAs?:
+    | 'secret'
+    | 'boolIcon'
+    | 'link'
+    | 'tooltip'
+    | 'alert'
+    | 'img'
+    | 'button';
   buttonSettings?: ButtonSettings;
   tooltipIcon?: string;
   withCopyButton?: boolean;
   cssCustomization?: Partial<CSSStyleDeclaration>;
   cssRules?: CssRule[];
+  columnWidth?: string;
 }
+
+type KnownButtonActions = 'openInModal' | 'navigate' | 'edit' | 'delete';
+type ButtonActions = KnownButtonActions | (string & {});
 
 export interface ButtonSettings {
   text?: string;
   icon?: string;
   endIcon?: string;
-  design?: 'Default' | 'Positive' | 'Negative' | 'Transparent' | 'Emphasized' | 'Attention';
+  design?:
+    | 'Default'
+    | 'Positive'
+    | 'Negative'
+    | 'Transparent'
+    | 'Emphasized'
+    | 'Attention';
   tooltip?: string;
-  action: 'openInModal' | 'navigate';
+  action: ButtonActions;
   modalSettings?: ModalSettings;
 }
 
