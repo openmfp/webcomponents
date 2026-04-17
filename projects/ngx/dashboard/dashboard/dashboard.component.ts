@@ -19,9 +19,6 @@ document.body.classList.add('ui5-content-density-compact');
 
 @Component({
   selector: 'mfp-dashboard',
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss'],
-  encapsulation: ViewEncapsulation.ShadowDom,
   imports: [
     AddCardDialog,
     DashboardSectionComponent,
@@ -30,6 +27,9 @@ document.body.classList.add('ui5-content-density-compact');
     Title,
     Text,
   ],
+  templateUrl: './dashboard.component.html',
+  styleUrl: './dashboard.component.scss',
+  encapsulation: ViewEncapsulation.ShadowDom,
   host: {
     '[style.background-image]':
       'config().backgroundImageUrl ? "url(" + config().backgroundImageUrl + ")" : null',
@@ -67,8 +67,8 @@ export class Dashboard {
   looseCards = computed(() => this.cards().filter((c) => !c.sectionId));
 
   enterEditMode(): void {
-    this.sectionsSnapshot = structuredClone(this.sections());
-    this.cardsSnapshot = structuredClone(this.cards());
+    this.sectionsSnapshot = [...this.sections()];
+    this.cardsSnapshot = [...this.cards()];
     this.editMode.set(true);
   }
 
