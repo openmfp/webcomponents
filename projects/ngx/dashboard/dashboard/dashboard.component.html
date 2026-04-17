@@ -18,6 +18,16 @@
         >
       } @else {
         <ui5-button design="Default" (click)="enterEditMode()">Edit</ui5-button>
+        @for (action of customActions(); track action.action) {
+          <ui5-button
+            [design]="action.design ?? 'Default'"
+            [icon]="action.icon ?? ''"
+            [endIcon]="action?.endIcon"
+            [tooltip]="action.tooltip ?? ''"
+            (click)="actionButtonClick.emit({ event: $event, action: action })"
+            >{{ action.text }}</ui5-button
+          >
+        }
       }
     </div>
   </div>
