@@ -1,5 +1,9 @@
 import { Dashboard } from '../dashboard/dashboard.component';
-import type { DashboardButtonSettings, CardConfig, DashboardConfig } from '../models';
+import type {
+  CardConfig,
+  DashboardButtonSettings,
+  DashboardConfig,
+} from '../models';
 import { CARDS, SECTIONS } from './dashboard.cards';
 import { TABLE_CARD_CONFIG, TABLE_RESOURCES } from './pods-table.config';
 import type { Meta, StoryObj } from '@storybook/angular';
@@ -31,6 +35,7 @@ const SAMPLE_CONFIG: DashboardConfig = {
     'Monitor your platform metrics, traffic and service health in real time.',
   backgroundImageUrl: '/background-lightblue.png',
   customActions: CUSTOM_ACTIONS,
+  editable: true,
 };
 
 const AVAILABLE_CARDS: CardConfig[] = [

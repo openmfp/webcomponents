@@ -39,4 +39,5 @@ export interface DashboardConfig {
   description?: string;
   backgroundImageUrl?: string;
   customActions?: DashboardButtonSettings[];
+  editable?: boolean;
 }

@@ -17,7 +17,11 @@
           >+ Add Card</ui5-button
         >
       } @else {
-        <ui5-button design="Default" (click)="enterEditMode()">Edit</ui5-button>
+        @if (config().editable) {
+          <ui5-button design="Default" (click)="enterEditMode()"
+            >Edit</ui5-button
+          >
+        }
         @for (action of customActions(); track action.action) {
           <ui5-button
             [design]="action.design ?? 'Default'"
