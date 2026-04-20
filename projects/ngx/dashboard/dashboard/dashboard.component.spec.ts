@@ -199,7 +199,12 @@ describe('Dashboard', () => {
 
     component.saveEdit();
 
-    expect(emitted).toEqual([{ sections, cards }]);
+    expect(emitted).toEqual([
+      {
+        sections,
+        cards: [{ id: 'card-1', component: 'mfp-a', x: 7, y: 5 }],
+      },
+    ]);
     expect(component.cardsPosition.get('card-1')).toEqual({ x: 7, y: 5 });
     expect(component.editMode()).toBe(false);
   });
