@@ -1,6 +1,6 @@
 # DeclarativeForm
 
-A dynamic form web component that renders fields from a declarative field definition. Supports text inputs, static selects (from a string array), and dynamic selects (loaded asynchronously). Emits the form value as a nested object whenever the form is valid.
+A dynamic form web component that renders fields from a declarative field definition. Supports text inputs and selects from already retrieved string values. Emits the form value as a nested object whenever the form is valid.
 
 ## Tags
 
@@ -122,18 +122,8 @@ interface FormFieldDefinition {
   label?: string;        // Display label shown above the field
   required?: boolean;    // Adds a required validator and shows a visual indicator
   values?: string[];     // Static select options; renders a <ui5-select> when present
-  loadValues?: () => Promise<SelectOption[]>; // Async select options
   validators?: ValidatorFn[];  // Additional Angular validators (e.g. Validators.email)
   disabled?: boolean;    // Disables the field (read-only in edit dialogs)
-}
-```
-
-## `SelectOption`
-
-```ts
-interface SelectOption {
-  value: string;   // The option value submitted with the form
-  label: string;   // The text displayed in the dropdown
 }
 ```
 
@@ -144,8 +134,7 @@ interface SelectOption {
 For each field, the component renders in this order:
 
 1. **Static select** — if `field.values` is a non-empty array
-2. **Dynamic select** — if `field.loadValues` is defined
-3. **Text input** — default fallback
+2. **Text input** — default fallback
 
 ---
 
