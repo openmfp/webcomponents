@@ -8,6 +8,24 @@ export interface CardConfig {
   label?: string;
 }
 
+type KnownButtonActions = 'openInModal' | 'navigate' | 'edit' | 'delete';
+type ButtonActions = KnownButtonActions | (string & {});
+
+export interface DashboardButtonSettings {
+  text?: string;
+  icon?: string;
+  endIcon?: string;
+  design?:
+    | 'Default'
+    | 'Positive'
+    | 'Negative'
+    | 'Transparent'
+    | 'Emphasized'
+    | 'Attention';
+  tooltip?: string;
+  action: ButtonActions;
+}
+
 export interface SectionConfig {
   id: string;
   colSpan?: number;
@@ -20,4 +38,6 @@ export interface DashboardConfig {
   title: string;
   description?: string;
   backgroundImageUrl?: string;
+  customActions?: DashboardButtonSettings[];
+  editable?: boolean;
 }
