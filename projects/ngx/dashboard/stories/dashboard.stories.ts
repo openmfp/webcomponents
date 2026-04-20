@@ -20,7 +20,7 @@ const AVAILABLE_CARDS: CardConfig[] = [
     label: 'Pods Table',
     id: 'table-pods',
     w: 12,
-    h: 5,
+    h: 49,
     component: 'mfp-wc-declarative-table-card',
     componentInputs: {
       config: TABLE_CARD_CONFIG,
@@ -33,21 +33,21 @@ const AVAILABLE_CARDS: CardConfig[] = [
     id: 'whats-new',
     label: "What's New",
     w: 5,
-    h: 6,
+    h: 56,
     component: 'mfp-wc-whats-new',
   },
   {
     id: 'favorites',
     label: 'Favorites',
     w: 4,
-    h: 3,
+    h: 21,
     component: 'mfp-wc-favorites',
   },
   {
     id: 'service-status',
     label: 'Service Status',
     w: 4,
-    h: 3,
+    h: 29,
     component: 'mfp-wc-service-status-card',
   },
 ];

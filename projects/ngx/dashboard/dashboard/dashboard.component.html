@@ -23,18 +23,18 @@
       </div>
     </div>
   </div>
-  
-    @for (section of sections(); track section.id) {
-      <mfp-dashboard-section
-        [section]="section"
-        [cards]="sectionCards()(section.id)"
-        [columns]="12"
-        [editMode]="editMode()"
-        (removeSection)="removeSection(section.id)"
-        (removeCard)="removeCard($event)"
-      />
-    }
-  
+ <div class="sections-container">
+   @for (section of sections(); track section.id) {
+    <mfp-dashboard-section
+       [section]="section"
+       [cards]="sectionCards()(section.id)"
+       [columns]="12"
+       [editMode]="editMode()"
+       (removeSection)="removeSection(section.id)"
+       (removeCard)="removeCard($event)"
+     />
+   }
+ </div>
     <gridstack #grid (changeCB)="onOrderChange($event)" [options]="gridOptions()">
       @for (card of looseCards(); track card.id ?? card.component) {
         <gridstack-item [style.cursor]="editMode() ? 'pointer' : 'auto'" [options]="card">

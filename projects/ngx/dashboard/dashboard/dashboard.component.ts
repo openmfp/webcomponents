@@ -61,21 +61,26 @@ export class Dashboard {
 
   protected gridOptions = computed(
     (): GridStackOptions => ({
-      cellHeight: 100,
+      cellHeight: 10,
       disableResize: true,
       disableDrag: !this.editMode(),
-      column: 12,
       columnOpts: {
+        breakpointForWindow: true,
         breakpoints: [
           {
-            w: 726,
-            c: 1,
-            layout: 'list',
+            w: 1920,
+            c: 12,
+            layout: 'none',
           },
           {
             w: 1200,
             c: 8,
             layout: 'compact',
+          },
+          {
+            w: 726,
+            c: 1,
+            layout: 'list',
           },
         ],
       },
