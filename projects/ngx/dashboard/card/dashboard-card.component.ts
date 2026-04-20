@@ -45,7 +45,9 @@ export class DashboardCardComponent {
       }
       this.renderer.appendChild(host.nativeElement, el);
 
-      return () => { host.nativeElement.innerHTML = ''; };
+      return () => {
+        host.nativeElement.innerHTML = '';
+      };
     });
   }
 }
