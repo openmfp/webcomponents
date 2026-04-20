@@ -57,7 +57,6 @@ export class Dashboard {
 
   private sectionsSnapshot: SectionConfig[] = [];
   private cardsSnapshot: CardConfig[] = [];
-  private positionSnapshot: GridStackNode[] = [];
   private gridStackItems = viewChild.required<GridstackComponent>('grid');
 
   protected gridOptions = computed(
@@ -65,15 +64,16 @@ export class Dashboard {
       cellHeight: 100,
       disableResize: true,
       disableDrag: !this.editMode(),
+      column: 12,
       columnOpts: {
         breakpoints: [
           {
-            w: 600,
+            w: 726,
             c: 1,
-            layout: 'compact',
+            layout: 'list',
           },
           {
-            w: 1023,
+            w: 1200,
             c: 8,
             layout: 'compact',
           },
@@ -98,7 +98,7 @@ export class Dashboard {
     return (sectionId: string) => all.filter((c) => c.sectionId === sectionId);
   });
 
-  cardsPosition = new Map();
+  cardsPosition = new Map<string, { x?: number; y?: number }>();
   looseCards = linkedSignal(() => this.cards().filter((c) => !c.sectionId));
 
   private newGridStackNodes: GridStackNode[] = [];
@@ -118,8 +118,18 @@ export class Dashboard {
   }
 
   saveEdit(): void {
-    this.saved.emit({ sections: this.sections(), cards: this.cards() });
     this.saveCardsPosition(this.newGridStackNodes);
+    this.saved.emit({
+      sections: this.sections(),
+      cards: this.cards().map((c) => {
+        const pos = this.cardsPosition.get(c.id);
+        return {
+          ...c,
+          x: pos?.x,
+          y: pos?.y,
+        };
+      }),
+    });
     this.editMode.set(false);
   }
 
@@ -145,6 +155,7 @@ export class Dashboard {
   }
 
   removeCard(id: string): void {
+    this.cardsPosition.delete(id);
     this.cards.update((list) => list.filter((c) => c.id !== id));
   }
 
@@ -174,10 +185,10 @@ export class Dashboard {
   }
 
   private saveCardsPosition(items: GridStackNode[]): void {
-    if (items) {
-      items.forEach((node) => {
+    items.forEach((node) => {
+      if (node.id) {
         this.cardsPosition.set(node.id, { x: node.x, y: node.y });
-      });
-    }
+      }
+    });
   }
 }

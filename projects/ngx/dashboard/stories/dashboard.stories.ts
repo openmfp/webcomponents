@@ -32,22 +32,22 @@ const AVAILABLE_CARDS: CardConfig[] = [
   {
     id: 'whats-new',
     label: "What's New",
-    w: 6,
-    h: 3,
+    w: 5,
+    h: 6,
     component: 'mfp-wc-whats-new',
   },
   {
     id: 'favorites',
     label: 'Favorites',
-    w: 5,
-    h: 4,
+    w: 4,
+    h: 3,
     component: 'mfp-wc-favorites',
   },
   {
     id: 'service-status',
     label: 'Service Status',
     w: 4,
-    h: 2,
+    h: 3,
     component: 'mfp-wc-service-status-card',
   },
 ];
