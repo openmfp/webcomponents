@@ -33,6 +33,8 @@ export interface TableCardButtonSettings {
 }
 
 export interface TableCardConfig {
+  header: string;
+  headerTooltip?: string;
   tableConfig: TableConfig;
   buttonSettings?: TableCardButtonSettings;
   createResourceFormConfig?: ResourceFormConfig;

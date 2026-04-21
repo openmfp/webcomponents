@@ -93,6 +93,7 @@ function makeEvent(
 
 function setup(
   opts: {
+    headerTooltip?: string;
     readConfig?: TableCardReadConfig;
     resources?: GenericResource[];
     header?: string;
@@ -107,6 +108,8 @@ function setup(
   const component = fixture.componentInstance as Comp;
 
   const config: TableCardConfig = {
+    header: opts.header || '',
+    headerTooltip: opts.headerTooltip,
     tableConfig: opts.readConfig ?? READ_CONFIG,
     createResourceFormConfig: opts.createConfig,
     editResourceFormConfig: opts.editConfig,
@@ -119,7 +122,6 @@ function setup(
 
   fixture.componentRef.setInput('config', config);
   fixture.componentRef.setInput('resources', opts.resources ?? RESOURCES);
-  fixture.componentRef.setInput('header', opts.header ?? 'Test Header');
 
   fixture.detectChanges();
   return { fixture, component };
@@ -182,8 +184,7 @@ describe('DeclarativeTableCard', () => {
 
   describe('headerTooltip input', () => {
     it('renders info icon when headerTooltip is provided', () => {
-      const { fixture } = setup();
-      fixture.componentRef.setInput('headerTooltip', 'Some tooltip');
+      const { fixture } = setup({ header: 'My Pods', headerTooltip: 'Some tooltip' });
       fixture.detectChanges();
       const root: ShadowRoot | HTMLElement =
         fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
@@ -193,7 +194,7 @@ describe('DeclarativeTableCard', () => {
     });
 
     it('does not render info icon when headerTooltip is not provided', () => {
-      const { fixture } = setup();
+      const { fixture } = setup({ headerTooltip: undefined });
       const root: ShadowRoot | HTMLElement =
         fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
       expect(root.querySelector('ui5-icon[name="hint"]')).toBeNull();

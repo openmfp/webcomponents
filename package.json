@@ -23,6 +23,7 @@
     "npm": ">=10.0.0"
   },
   "dependencies": {
+    "gridstack": "12.6.0",
     "tslib": "2.8.1"
   },
   "peerDependencies": {
@@ -35,7 +36,6 @@
     "@angular/platform-browser": "^21.2.0",
     "@fundamental-ngx/ui5-webcomponents": "^0.61.0",
     "@fundamental-ngx/ui5-webcomponents-fiori": "^0.61.0",
-    "gridstack": "^12.6.0",
     "jsonpath": "^1.1.1",
     "rxjs": "^7.8.2"
   },
