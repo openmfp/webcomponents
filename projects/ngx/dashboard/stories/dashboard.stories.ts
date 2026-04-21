@@ -115,7 +115,7 @@ export const WithSubheader: Story = {
     props: args,
     template: `
       <mfp-dashboard [config]="config" [sections]="sections" [cards]="cards" [availableCards]="availableCards">
-        <div dashboardSubheader style="display:flex;align-items:center;gap:1.5rem;width:100%">
+        <div slot="dashboard-subheader" style="display:flex;align-items:center;gap:1.5rem;width:100%">
           <img src="https://platform-mesh.io/main/pm_logo.svg" alt="Platform Mesh logo" style="width:48px;height:48px;object-fit:contain;flex-shrink:0" />
           <div style="display:flex;gap:2rem;flex-wrap:wrap">
             <div style="display:flex;flex-direction:column;gap:0.25rem">
