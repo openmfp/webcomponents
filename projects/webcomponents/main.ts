@@ -1,3 +1,4 @@
+import { Dashboard } from '../ngx/dashboard/dashboard/dashboard.component';
 import { DeclarativeForm } from '../ngx/declarative-ui/form/declarative-form/declarative-form.component';
 import { DeclarativeTableCard } from '../ngx/declarative-ui/table-card/declarative-table-card.component';
 import { DeclarativeTable } from '../ngx/declarative-ui/table/declarative-table/declarative-table.component';
@@ -10,6 +11,11 @@ import { createApplication } from '@angular/platform-browser';
 
 (async () => {
   const app = await createApplication();
+
+  const DashboardElement = createCustomElement(Dashboard, {
+    injector: app.injector,
+  });
+  customElements.define('mfp-wc-dashboard', DashboardElement);
 
   const DeclarativeTableElement = createCustomElement(DeclarativeTable, {
     injector: app.injector,

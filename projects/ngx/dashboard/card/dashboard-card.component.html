@@ -1,18 +1,20 @@
 @if (card().component) {
   <div class="component-card">
     @if (editMode()) {
-      <ui5-button
-        class="card__remove"
-        design="Default"
-        icon="decline"
-        (click)="removeCard.emit()"
-      />
+    <div class="remove-wrapper">
+        <ui5-button
+          class="card__remove"
+          design="Default"
+          icon="decline"
+          (click)="removeCard.emit()"
+        />
+      </div>
     }
-    <div #componentHost></div>
+      <div [style.pointer-events]="editMode() ? 'none' : 'auto'" #componentHost></div>
   </div>
 } @else {
   <div class="card">
-    <div class="card__body">
+    <div [style.pointer-events]="editMode() ? 'none' : 'auto'" class="card__body">
       <ng-content />
     </div>
   </div>

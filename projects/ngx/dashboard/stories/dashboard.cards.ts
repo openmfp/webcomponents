@@ -2,7 +2,7 @@ import type { CardConfig, SectionConfig } from '../models';
 import { TABLE_CARD_CONFIG, TABLE_RESOURCES } from './pods-table.config';
 
 export const SECTIONS: SectionConfig[] = [
-  { id: 'ras', title: 'Recently accessed services', editable: false },
+  { id: 'ras', title: 'Recently accessed services', editable: false, w: 12 },
 ];
 
 const RAS_CARD_TEMPLATES = [
@@ -53,16 +53,16 @@ const RAS_CARD_TEMPLATES = [
 export const CARDS: CardConfig[] = [
   ...RAS_CARD_TEMPLATES.map((t, i) => ({
     id: `ras-card-${i}`,
-    colSpan: 4,
-    rowSpan: 1,
+    w: 4,
+    h: 12,
     sectionId: 'ras',
     component: 'mfp-wc-visited-service-card',
     componentInputs: { ...t },
   })),
   {
     id: 'table-pods',
-    colSpan: 12,
-    rowSpan: 4,
+    w: 12,
+    h: 51,
     component: 'mfp-wc-declarative-table-card',
     componentInputs: {
       config: TABLE_CARD_CONFIG,
@@ -73,8 +73,8 @@ export const CARDS: CardConfig[] = [
   },
   {
     id: 'mfp-favorites',
-    colSpan: 5,
-    rowSpan: 2,
+    w: 5,
+    h: 21,
     component: 'mfp-wc-favorites',
   },
 ];

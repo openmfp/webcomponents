@@ -41,8 +41,9 @@ const SAMPLE_CONFIG: DashboardConfig = {
 const AVAILABLE_CARDS: CardConfig[] = [
   {
     label: 'Pods Table',
-    colSpan: 12,
-    rowSpan: 4,
+    id: 'table-pods',
+    w: 12,
+    h: 51,
     component: 'mfp-wc-declarative-table-card',
     componentInputs: {
       config: TABLE_CARD_CONFIG,
@@ -52,21 +53,24 @@ const AVAILABLE_CARDS: CardConfig[] = [
     },
   },
   {
+    id: 'whats-new',
     label: "What's New",
-    colSpan: 6,
-    rowSpan: 3,
+    w: 5,
+    h: 56,
     component: 'mfp-wc-whats-new',
   },
   {
+    id: 'favorites',
     label: 'Favorites',
-    colSpan: 5,
-    rowSpan: 2,
+    w: 4,
+    h: 21,
     component: 'mfp-wc-favorites',
   },
   {
+    id: 'service-status',
     label: 'Service Status',
-    colSpan: 4,
-    rowSpan: 1,
+    w: 4,
+    h: 29,
     component: 'mfp-wc-service-status-card',
   },
 ];

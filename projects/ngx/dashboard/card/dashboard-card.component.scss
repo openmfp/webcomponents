@@ -7,7 +7,7 @@
 
 .card__remove {
   position: absolute;
-  top: -0.5rem;
+  top: 0;
   right: -0.5rem;
   z-index: 10;
   border-radius: 50% !important;
@@ -18,11 +18,20 @@
   font-size: 0.625rem !important;
 }
 
+.remove-wrapper {
+  position: sticky;
+  height: 0.5rem;
+  top: 0;
+  right: 0;
+  z-index: 10;
+}
+
 .component-card {
   position: relative;
   height: 100%;
   overflow: visible;
   isolation: isolate;
+  padding: 0 0.5rem;
 }
 
 .card {

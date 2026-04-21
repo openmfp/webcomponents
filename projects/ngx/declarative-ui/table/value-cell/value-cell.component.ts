@@ -31,7 +31,7 @@ import '@ui5/webcomponents-icons/dist/AllIcons.js';
   encapsulation: ViewEncapsulation.ShadowDom,
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class ValueCellComponent<
+export class ValueCell<
   T extends GenericResource,
   F extends FieldDefinition,
 > {

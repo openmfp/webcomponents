@@ -7,7 +7,8 @@
       "projectType": "library",
       "schematics": {
         "@schematics/angular:component": {
-          "style": "scss"
+          "style": "scss",
+          "path": "projects/ngx"
         }
       },
       "root": "projects/ngx",
@@ -112,7 +113,8 @@
   },
   "schematics": {
     "@schematics/angular:component": {
-      "type": "component"
+      "type": "component",
+      "addTypeToClassName": false
     },
     "@schematics/angular:directive": {
       "type": "directive"
