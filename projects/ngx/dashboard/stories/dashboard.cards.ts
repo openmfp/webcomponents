@@ -2,7 +2,7 @@ import type { CardConfig, SectionConfig } from '../models';
 import { TABLE_CARD_CONFIG, TABLE_RESOURCES } from './pods-table.config';
 
 export const SECTIONS: SectionConfig[] = [
-  { id: 'ras', title: 'Recently accessed services', editable: false },
+  { id: 'ras', title: 'Recently accessed services', editable: false, w: 12 },
 ];
 
 const RAS_CARD_TEMPLATES = [
@@ -62,7 +62,7 @@ export const CARDS: CardConfig[] = [
   {
     id: 'table-pods',
     w: 12,
-    h: 49,
+    h: 51,
     component: 'mfp-wc-declarative-table-card',
     componentInputs: {
       config: TABLE_CARD_CONFIG,

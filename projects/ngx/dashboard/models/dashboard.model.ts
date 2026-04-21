@@ -13,7 +13,6 @@ export interface CardConfig {
 export interface SectionConfig {
   id: string;
   w?: number;
-  h?: number;
   title?: string;
   editable?: boolean;
 }

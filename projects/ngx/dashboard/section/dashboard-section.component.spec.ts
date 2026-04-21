@@ -22,20 +22,19 @@ describe('DashboardSection', () => {
     }).compileComponents();
   });
 
-  it('uses w and h for grid placement and renders the title', () => {
+  it('uses w for grid placement and lets content define the height', () => {
     const { fixture } = setup();
 
     fixture.componentRef.setInput('section', {
       id: 'section-1',
       title: 'Favorites',
       w: 8,
-      h: 2,
     });
     fixture.componentRef.setInput('cards', []);
     fixture.detectChanges();
 
     expect(fixture.nativeElement.style.gridColumn).toBe('span 8');
-    expect(fixture.nativeElement.style.gridRow).toBe('span 2');
+    expect(fixture.nativeElement.style.gridRow).toBe('');
     expect(root(fixture).textContent).toContain('Favorites');
   });
 
@@ -74,9 +73,8 @@ describe('DashboardSection', () => {
     fixture.componentRef.setInput('editMode', true);
     fixture.detectChanges();
 
-    const card = fixture.debugElement.query(
-      By.directive(DashboardCard),
-    ).componentInstance as DashboardCard;
+    const card = fixture.debugElement.query(By.directive(DashboardCard))
+      .componentInstance as DashboardCard;
 
     expect(root(fixture).querySelector('.section__remove')).toBeNull();
     expect(card.editMode()).toBe(false);
@@ -97,9 +95,8 @@ describe('DashboardSection', () => {
     fixture.componentRef.setInput('editMode', true);
     fixture.detectChanges();
 
-    const card = fixture.debugElement.query(
-      By.directive(DashboardCard),
-    ).componentInstance as DashboardCard;
+    const card = fixture.debugElement.query(By.directive(DashboardCard))
+      .componentInstance as DashboardCard;
     card.removeCard.emit();
 
     expect(emitted).toEqual(['card-1']);

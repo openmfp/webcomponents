@@ -11,7 +11,6 @@ import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
   encapsulation: ViewEncapsulation.ShadowDom,
   host: {
     '[style.grid-column]': '"span " + (section().w ?? 12)',
-    '[style.grid-row]': '"span " + (section().h ?? 1)',
   },
 })
 export class DashboardSection {

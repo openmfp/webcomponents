@@ -20,7 +20,7 @@ const AVAILABLE_CARDS: CardConfig[] = [
     label: 'Pods Table',
     id: 'table-pods',
     w: 12,
-    h: 49,
+    h: 51,
     component: 'mfp-wc-declarative-table-card',
     componentInputs: {
       config: TABLE_CARD_CONFIG,

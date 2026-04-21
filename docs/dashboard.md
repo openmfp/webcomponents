@@ -41,7 +41,7 @@ export class DashboardPage {
 
   sections: SectionConfig[] = [
     { id: 'favorites', title: 'Favorites', editable: false },
-    { id: 'runtime', title: 'Runtime', w: 12, h: 2 },
+    { id: 'runtime', title: 'Runtime', w: 12 },
   ];
 
   cards: CardConfig[] = [
@@ -120,7 +120,6 @@ interface DashboardConfig {
 interface SectionConfig {
   id: string;
   w?: number;
-  h?: number;
   title?: string;
   editable?: boolean;
 }
@@ -142,4 +141,4 @@ interface CardConfig {
 }
 ```
 
-`w` and `h` control the rendered grid span. `x` and `y` persist the loose-card position reported by drag and drop functionality when edit mode is saved.
+For sections, `w` controls the column span while height is determined by the section content. For cards, `w` and `h` control the rendered grid span. `x` and `y` persist the loose-card position reported by drag and drop functionality when edit mode is saved.
