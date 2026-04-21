@@ -113,3 +113,30 @@ type Story = StoryObj<Dashboard>;
 // ---------------------------------------------------------------------------
 
 export const Default: Story = {};
+
+export const WithSubheader: Story = {
+  render: (args) => ({
+    props: args,
+    template: `
+      <mfp-dashboard [config]="config" [sections]="sections" [cards]="cards" [availableCards]="availableCards">
+        <div slot="dashboard-subheader" style="display:flex;align-items:center;gap:1.5rem;width:100%">
+          <img src="https://platform-mesh.io/main/pm_logo.svg" alt="Platform Mesh logo" style="width:48px;height:48px;object-fit:contain;flex-shrink:0" />
+          <div style="display:flex;gap:2rem;flex-wrap:wrap">
+            <div style="display:flex;flex-direction:column;gap:0.25rem">
+              <span style="font-size:0.75rem;color:var(--sapContent_LabelColor,#6a6d70)">Workspace Path</span>
+              <span style="font-size:0.875rem">root:orgs:sub:a1</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.25rem">
+              <span style="font-size:0.75rem;color:var(--sapContent_LabelColor,#6a6d70)">Description</span>
+              <span style="font-size:0.875rem">Platform Mesh sub-organization</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.25rem">
+              <span style="font-size:0.75rem;color:var(--sapContent_LabelColor,#6a6d70)">Display Name</span>
+              <span style="font-size:0.875rem">a1</span>
+            </div>
+          </div>
+        </div>
+      </mfp-dashboard>
+    `,
+  }),
+};
