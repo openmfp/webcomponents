@@ -1,4 +1,3 @@
-import { DeclarativeDynamicSelect } from '../dynamic-select';
 import { FormFieldDefinition } from '../models';
 import { setPropertyByPath } from '../utils/set-property-by-path';
 import {
@@ -32,7 +31,6 @@ import { Select } from '@fundamental-ngx/ui5-webcomponents/select';
     Label,
     Select,
     Option,
-    DeclarativeDynamicSelect,
   ],
   templateUrl: './declarative-form.component.html',
   styleUrl: './declarative-form.component.scss',

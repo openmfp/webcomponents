@@ -1,5 +1,9 @@
 import { Dashboard } from '../dashboard/dashboard.component';
-import type { CardConfig, DashboardConfig } from '../models';
+import type {
+  CardConfig,
+  DashboardButtonSettings,
+  DashboardConfig,
+} from '../models';
 import { CARDS, SECTIONS } from './dashboard.cards';
 import { TABLE_CARD_CONFIG, TABLE_RESOURCES } from './pods-table.config';
 import type { Meta, StoryObj } from '@storybook/angular';
@@ -8,11 +12,30 @@ import type { Meta, StoryObj } from '@storybook/angular';
 // Shared config
 // ---------------------------------------------------------------------------
 
+const CUSTOM_ACTIONS: DashboardButtonSettings[] = [
+  {
+    action: 'download-config',
+    text: 'Download config',
+    icon: 'download',
+    design: 'Default',
+    tooltip: 'Download the current dashboard configuration',
+  },
+  {
+    action: 'switch-account',
+    text: 'Switch account',
+    icon: 'customer',
+    design: 'Default',
+    tooltip: 'Switch to a different account',
+  },
+];
+
 const SAMPLE_CONFIG: DashboardConfig = {
   title: 'System Overview',
   description:
     'Monitor your platform metrics, traffic and service health in real time.',
   backgroundImageUrl: '/background-lightblue.png',
+  customActions: CUSTOM_ACTIONS,
+  editable: true,
 };
 
 const AVAILABLE_CARDS: CardConfig[] = [
@@ -68,6 +91,7 @@ const meta: Meta<Dashboard> = {
     sections: { control: 'object' },
     cards: { control: 'object' },
     availableCards: { control: 'object' },
+    actionButtonClick: { action: 'actionButtonClick' },
   },
   args: {
     config: SAMPLE_CONFIG,
@@ -77,7 +101,7 @@ const meta: Meta<Dashboard> = {
   },
   render: (args) => ({
     props: args,
-    template: `<mfp-dashboard [config]="config" [sections]="sections" [cards]="cards" [availableCards]="availableCards" />`,
+    template: `<mfp-dashboard [config]="config" [sections]="sections" [cards]="cards" [availableCards]="availableCards" (actionButtonClick)="actionButtonClick($event)" />`,
   }),
 };
 

@@ -1,6 +1,11 @@
 import { AddCardDialog } from '../add-card-dialog/add-card-dialog.component';
 import { DashboardCard } from '../card/dashboard-card.component';
-import { CardConfig, DashboardConfig, SectionConfig } from '../models';
+import {
+  CardConfig,
+  DashboardButtonSettings,
+  DashboardConfig,
+  SectionConfig,
+} from '../models';
 import { DashboardSection } from '../section/dashboard-section.component';
 import {
   Component,
@@ -52,6 +57,10 @@ export class Dashboard {
   availableCards = input<CardConfig[]>([]);
 
   readonly saved = output<{ sections: SectionConfig[]; cards: CardConfig[] }>();
+  readonly actionButtonClick = output<{
+    event: MouseEvent;
+    action: DashboardButtonSettings;
+  }>();
 
   editMode = signal(false);
 
@@ -88,6 +97,8 @@ export class Dashboard {
   );
 
   cardDialogOpen = signal(false);
+
+  customActions = computed(() => this.config().customActions ?? []);
 
   addedComponents = computed(
     () =>

@@ -11,7 +11,7 @@
   background-attachment: local;
 }
 
-.container {
+.dashboard {
   padding: 2rem
 }
 
@@ -21,7 +21,6 @@
   grid-auto-rows: auto;
   align-content: start;
   gap: 1rem;
-  padding: 2rem;
 
   @media (max-width: 726px) {
     grid-template-columns: 1fr;

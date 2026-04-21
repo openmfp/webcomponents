@@ -137,11 +137,7 @@ export const POD_FORM_FIELDS = [
     name: 'metadata.namespace',
     label: 'Namespace',
     required: true,
-    loadValues: async () => [
-      { value: 'default', label: 'Default' },
-      { value: 'kube-system', label: 'Kube-system' },
-      { value: 'production', label: 'Production' },
-    ],
+    values: ['default', 'kube-system', 'production'],
   },
 ];
 
@@ -151,11 +147,7 @@ export const POD_EDIT_FORM_FIELDS = [
     name: 'metadata.namespace',
     label: 'Namespace',
     required: true,
-    loadValues: async () => [
-      { value: 'default', label: 'default' },
-      { value: 'kube-system', label: 'kube-system' },
-      { value: 'production', label: 'production' },
-    ],
+    values: ['default', 'kube-system', 'production'],
   },
 ];
 
