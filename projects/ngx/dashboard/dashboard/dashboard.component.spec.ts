@@ -91,7 +91,9 @@ describe('Dashboard', () => {
       root(fixture).querySelectorAll('mfp-dashboard-section'),
     ).toHaveLength(1);
     expect(root(fixture).querySelectorAll('gridstack-item')).toHaveLength(1);
-    expect(root(fixture).textContent).toContain('Edit');
+    expect(
+      root(fixture).querySelector('.dashboard__toolbar ui5-button'),
+    ).toBeNull();
   });
 
   it('switches the template into edit mode and opens the add-card dialog from the toolbar', () => {
@@ -99,13 +101,14 @@ describe('Dashboard', () => {
 
     fixture.componentRef.setInput('config', {
       title: 'Operations',
+      editable: true,
     });
     component.cards.set([{ id: 'card-1', component: 'mfp-a' }]);
     fixture.detectChanges();
 
-    const editButton = Array.from(
-      root(fixture).querySelectorAll('ui5-button'),
-    ).find((button) => button.textContent?.includes('Edit'));
+    const editButton = root(fixture).querySelector(
+      '.dashboard__toolbar ui5-button',
+    );
 
     editButton?.dispatchEvent(new Event('click'));
     fixture.detectChanges();
@@ -114,8 +117,9 @@ describe('Dashboard', () => {
 
     expect(component.editMode()).toBe(true);
     expect(addCardButton).not.toBeNull();
-    expect(root(fixture).textContent).toContain('Save');
-    expect(root(fixture).textContent).toContain('Cancel');
+    expect(
+      root(fixture).querySelectorAll('.dashboard__edit-bar ui5-button'),
+    ).toHaveLength(2);
 
     addCardButton?.dispatchEvent(new Event('click'));
     fixture.detectChanges();
