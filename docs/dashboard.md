@@ -1,6 +1,6 @@
 # Dashboard
 
-An Angular dashboard layout component that combines editable sections with draggable loose cards. It is designed for composition with webcomponents exposed through the `component` field of each card.
+An Angular dashboard layout component that combines editable sections with draggable loose cards. Cards can render either registered Angular components or pre-registered web components through the same `component` field.
 
 ## Tags
 
@@ -12,13 +12,18 @@ An Angular dashboard layout component that combines editable sections with dragg
 
 ## Usage as an Angular component
 
+Register Angular card components once before rendering the dashboard. The dashboard reads each Angular component selector and uses that selector string from `CardConfig.component`.
+
 ```ts
 import {
   CardConfig,
   Dashboard,
   DashboardConfig,
   SectionConfig,
+  VisitedServiceCard,
 } from '@openmfp/webcomponents';
+
+Dashboard.registerAngularComponents([VisitedServiceCard]);
 
 @Component({
   imports: [Dashboard],
@@ -46,11 +51,18 @@ export class DashboardPage {
 
   cards: CardConfig[] = [
     {
-      id: 'favorites-card',
+      id: 'recent-service-card',
       sectionId: 'favorites',
-      component: 'mfp-wc-favorites',
+      component: 'mfp-visited-service-card',
       w: 6,
       h: 2,
+      componentInputs: {
+        serviceType: 'SAP HANA Cloud',
+        serviceName: 'orders-db',
+        serviceDescription: 'Production / europe',
+        serviceIcon: 'database',
+        path: '/hana/orders-db',
+      },
     },
     {
       id: 'pods-card',
@@ -81,6 +93,61 @@ export class DashboardPage {
 }
 ```
 
+`componentInputs` is shared by both render modes:
+
+- For Angular components, values are applied with Angular `setInput(...)`.
+- For Angular input aliases, both the class property name and the public alias are accepted.
+- Unknown Angular input names are ignored and logged as a development warning.
+- For web components, values are set as DOM properties, matching the previous behavior.
+
+Example with an aliased Angular input:
+
+```ts
+@Component({
+  selector: 'app-card',
+  template: '{{ title() }}',
+})
+export class AppCard {
+  title = input('', { alias: 'cardTitle' });
+}
+
+Dashboard.registerAngularComponents([AppCard]);
+
+const card: CardConfig = {
+  id: 'app-card',
+  component: 'app-card',
+  componentInputs: {
+    // Class property name works.
+    title: 'Runtime',
+  },
+};
+
+const sameCardUsingAlias: CardConfig = {
+  id: 'app-card-alias',
+  component: 'app-card',
+  componentInputs: {
+    // Public alias works too.
+    cardTitle: 'Runtime',
+  },
+};
+```
+
+## Usage with web components
+
+Custom elements are still supported. They must be registered in the browser before the dashboard renders them.
+
+```ts
+cards: CardConfig[] = [
+  {
+    id: 'pods-card',
+    component: 'mfp-wc-declarative-table-card',
+    componentInputs: {
+      header: 'Pods',
+    },
+  },
+];
+```
+
 ---
 
 ## API
@@ -100,6 +167,12 @@ export class DashboardPage {
 | ------- | ---------------------------------------------------- | ------------------------------- |
 | `saved` | `{ sections: SectionConfig[]; cards: CardConfig[] }` | Emits when the user saves edits |
 
+### Static methods
+
+| Method                       | Description                                                                 |
+| ---------------------------- | --------------------------------------------------------------------------- |
+| `registerAngularComponents()` | Registers standalone Angular card components by their element selector name |
+
 ---
 
 ## Configuration types
@@ -111,6 +184,27 @@ interface DashboardConfig {
   title: string;
   description?: string;
   backgroundImageUrl?: string;
+  customActions?: DashboardButtonSettings[];
+  editable?: boolean;
+}
+```
+
+### `DashboardButtonSettings`
+
+```ts
+interface DashboardButtonSettings {
+  text?: string;
+  icon?: string;
+  endIcon?: string;
+  design?:
+    | 'Default'
+    | 'Positive'
+    | 'Negative'
+    | 'Transparent'
+    | 'Emphasized'
+    | 'Attention';
+  tooltip?: string;
+  action: 'openInModal' | 'navigate' | 'edit' | 'delete' | string;
 }
 ```
 
@@ -142,3 +236,10 @@ interface CardConfig {
 ```
 
 For sections, `w` controls the column span while height is determined by the section content. For cards, `w` and `h` control the rendered grid span. `x` and `y` persist the loose-card position reported by drag and drop functionality when edit mode is saved.
+
+`component` accepts either:
+
+- an element selector for a component registered with `Dashboard.registerAngularComponents(...)`
+- a custom element tag that has already been registered with `customElements.define(...)`
+
+Angular registry support intentionally accepts only single element selectors such as `mfp-visited-service-card`. Attribute selectors like `[my-card]`, class selectors like `.my-card`, and comma-separated selectors are rejected because dashboard card configs use `component` as a tag-like persisted key.

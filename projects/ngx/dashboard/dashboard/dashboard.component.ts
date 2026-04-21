@@ -53,7 +53,7 @@ document.body.classList.add('ui5-content-density-compact');
   },
 })
 export class Dashboard {
-  static registerAngularComponent(componentTypes: Type<unknown>[]): void {
+  static registerAngularComponents(componentTypes: Type<unknown>[]): void {
     addComponentToRegistry(componentTypes);
   }
 

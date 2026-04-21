@@ -11,7 +11,7 @@ import { CARDS, SECTIONS } from './dashboard.cards';
 import { TABLE_CARD_CONFIG, TABLE_RESOURCES } from './pods-table.config';
 import type { Meta, StoryObj } from '@storybook/angular';
 
-Dashboard.registerAngularComponent([
+Dashboard.registerAngularComponents([
   Favorites,
   ServiceStatusCard,
   VisitedServiceCard,

@@ -4,14 +4,7 @@ import { Dashboard } from '../dashboard/dashboard.component';
 import type { CardConfig, SectionConfig } from '../models';
 import { TABLE_CARD_CONFIG, TABLE_RESOURCES } from './pods-table.config';
 
-
-
-
-
-
-
-
-Dashboard.registerAngularComponent([Favorites, VisitedServiceCard]);
+Dashboard.registerAngularComponents([Favorites, VisitedServiceCard]);
 
 export const SECTIONS: SectionConfig[] = [
   { id: 'ras', title: 'Recently accessed services', editable: false, w: 12 },
