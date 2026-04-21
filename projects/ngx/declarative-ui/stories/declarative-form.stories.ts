@@ -1,4 +1,4 @@
-import type { FormFieldDefinition, SelectOption } from '../form/models';
+import type { FormFieldDefinition } from '../form/models';
 import { CUSTOM_ELEMENTS_SCHEMA, Component, Input } from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
 
@@ -90,11 +90,8 @@ export const StaticSelect: Story = {
   },
 };
 
-/**
- * Dynamic select — options loaded asynchronously via a `loadValues` function.
- * Simulates a 400 ms network delay.
- */
-export const DynamicSelect: Story = {
+/** Select populated from already retrieved values. */
+export const PrefetchedSelect: Story = {
   args: {
     fields: [
       { name: 'metadata_name', label: 'Name', required: true },
@@ -102,16 +99,7 @@ export const DynamicSelect: Story = {
         name: 'metadata_namespace',
         label: 'Namespace',
         required: true,
-        loadValues: (): Promise<SelectOption[]> =>
-          new Promise((resolve) =>
-            setTimeout(() => {
-              resolve([
-                { value: 'default', label: 'default' },
-                { value: 'kube-system', label: 'kube-system' },
-                { value: 'production', label: 'production' },
-              ]);
-            }, 400),
-          ),
+        values: ['default', 'kube-system', 'production'],
       },
     ] satisfies FormFieldDefinition[],
   },
@@ -136,7 +124,7 @@ export const EditMode: Story = {
   },
 };
 
-/** All field types combined: text input, static select, and dynamic select. */
+/** All field types combined: text input and select. */
 export const AllFieldTypes: Story = {
   args: {
     fields: [
@@ -149,11 +137,7 @@ export const AllFieldTypes: Story = {
       {
         name: 'metadata_namespace',
         label: 'Namespace',
-        loadValues: (): Promise<SelectOption[]> =>
-          Promise.resolve([
-            { value: 'default', label: 'default' },
-            { value: 'kube-system', label: 'kube-system' },
-          ]),
+        values: ['default', 'kube-system'],
       },
     ] satisfies FormFieldDefinition[],
   },

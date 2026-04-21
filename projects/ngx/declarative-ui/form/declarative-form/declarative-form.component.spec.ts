@@ -77,6 +77,43 @@ describe('DeclarativeForm', () => {
       component.form.controls['email'].setValue('valid@example.com');
       expect(component.form.controls['email'].valid).toBeTruthy();
     });
+
+    it('should render a select when field.values are provided', () => {
+      fixture.componentRef.setInput('fields', [
+        {
+          name: 'metadata.namespace',
+          label: 'Namespace',
+          values: ['default', 'kube-system'],
+        },
+      ]);
+
+      fixture.detectChanges();
+
+      const shadowRoot = fixture.nativeElement.shadowRoot as ShadowRoot;
+      const fieldElement = shadowRoot.querySelector(
+        '[test-id="generic-form-field-metadata.namespace"]',
+      );
+
+      expect(fieldElement?.tagName.toLowerCase()).toBe('ui5-select');
+    });
+
+    it('should render an input when field.values are not provided', () => {
+      fixture.componentRef.setInput('fields', [
+        {
+          name: 'metadata.namespace',
+          label: 'Namespace',
+        },
+      ]);
+
+      fixture.detectChanges();
+
+      const shadowRoot = fixture.nativeElement.shadowRoot as ShadowRoot;
+      const fieldElement = shadowRoot.querySelector(
+        '[test-id="generic-form-field-metadata.namespace"]',
+      );
+
+      expect(fieldElement?.tagName.toLowerCase()).toBe('ui5-input');
+    });
   });
 
   describe('formValidChange output', () => {

@@ -40,18 +40,6 @@
             >
           }
         </ui5-select>
-      } @else if (field.loadValues) {
-        <mfp-declarative-dynamic-select
-          [attr.test-id]="'generic-form-field-' + field.name"
-          [loadValues]="field.loadValues"
-          [value]="form.controls[field.name].value"
-          (input)="setFormControlValue($event, field.name)"
-          (change)="setFormControlValue($event, field.name)"
-          (blur)="onFieldBlur(field.name)"
-          [required]="!!field.required"
-          [valueState]="getValueState(field.name)"
-          [disabled]="!!field.disabled"
-        />
       } @else {
         <ui5-input
           class="input"
