@@ -10,6 +10,7 @@ import {
   Renderer2,
   ViewContainerRef,
   ViewEncapsulation,
+  computed,
   effect,
   inject,
   input,
@@ -25,14 +26,20 @@ import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
   styleUrl: './dashboard-card.component.scss',
   encapsulation: ViewEncapsulation.ShadowDom,
   host: {
-    '[style.grid-column]': '"span " + (card().w ?? 1)',
-    '[style.grid-row]': '"span " + (card().h ?? 1)',
+    '[style.grid-column]': 'gridColumn()',
+    '[style.grid-row]': 'gridRow()',
   },
 })
 export class DashboardCard {
   card = input.required<CardConfig>();
   editMode = input<boolean>(false);
   readonly removeCard = output<void>();
+  protected readonly gridColumn = computed(() =>
+    this.createGridTrack(this.card().x, this.card().w),
+  );
+  protected readonly gridRow = computed(() =>
+    this.createGridTrack(this.card().y, this.card().h),
+  );
 
   private angularHost = viewChild('angularHost', { read: ViewContainerRef });
   private elementHost = viewChild<ElementRef<HTMLElement>>('elementHost');
@@ -89,24 +96,18 @@ export class DashboardCard {
   private applyAngularInputs(
     componentRef: ComponentRef<unknown>,
     selector: string,
-    bindings: ReadonlyMap<
-      string,
-      {
-        propName: string;
-        templateName: string;
-      }
-    >,
+    bindings: ReadonlyMap<string, string>,
     componentInputs: Record<string, unknown>,
   ): void {
     for (const [inputName, value] of Object.entries(componentInputs)) {
-      const binding = bindings.get(inputName);
+      const templateName = bindings.get(inputName);
 
-      if (!binding) {
+      if (!templateName) {
         warnForUnknownDashboardCardInput(selector, inputName);
         continue;
       }
 
-      componentRef.setInput(binding.templateName, value);
+      componentRef.setInput(templateName, value);
     }
   }
 
@@ -116,5 +117,18 @@ export class DashboardCard {
 
   private clearElementHost(host: HTMLElement): void {
     host.innerHTML = '';
+  }
+
+  private createGridTrack(
+    start: number | undefined,
+    span: number | undefined,
+  ): string {
+    const resolvedSpan = span ?? 1;
+
+    if (start === undefined) {
+      return `span ${resolvedSpan}`;
+    }
+
+    return `${start + 1} / span ${resolvedSpan}`;
   }
 }

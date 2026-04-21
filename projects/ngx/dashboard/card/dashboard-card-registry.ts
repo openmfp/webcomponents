@@ -5,15 +5,11 @@ import {
   reflectComponentType,
 } from '@angular/core';
 
-interface DashboardCardInputBinding {
-  propName: string;
-  templateName: string;
-}
 
 export interface RegisteredDashboardCardComponent {
   componentType: Type<unknown>;
   selector: string;
-  inputs: ReadonlyMap<string, DashboardCardInputBinding>;
+  inputs: ReadonlyMap<string, string>;
 }
 
 const ELEMENT_SELECTOR_PATTERN = /^[a-z](?:[a-z0-9-]*)$/;
@@ -23,9 +19,7 @@ const dashboardCardRegistry = new Map<
   RegisteredDashboardCardComponent
 >();
 
-export function addDashboardCardComponents(
-  componentTypes: Array<Type<unknown>>,
-): void {
+export function addComponentToRegistry(componentTypes: Type<unknown>[]): void {
   for (const componentType of componentTypes) {
     const mirror = reflectComponentType(componentType);
 
@@ -53,12 +47,7 @@ export function addDashboardCardComponents(
     dashboardCardRegistry.set(selector, {
       componentType,
       selector,
-      inputs: createInputMap(
-        mirror.inputs.map((input) => ({
-          propName: input.propName,
-          templateName: input.templateName,
-        })),
-      ),
+      inputs: createInputMap(mirror.inputs),
     });
   }
 }
@@ -85,13 +74,16 @@ export function warnForUnknownDashboardCardInput(
 }
 
 function createInputMap(
-  inputs: DashboardCardInputBinding[],
-): ReadonlyMap<string, DashboardCardInputBinding> {
-  const bindings = new Map<string, DashboardCardInputBinding>();
+  inputs: readonly {
+    readonly propName: string;
+    readonly templateName: string;
+  }[],
+): ReadonlyMap<string, string> {
+  const bindings = new Map<string, string>();
 
   for (const input of inputs) {
-    bindings.set(input.templateName, input);
-    bindings.set(input.propName, input);
+    bindings.set(input.templateName, input.templateName);
+    bindings.set(input.propName, input.templateName);
   }
 
   return bindings;

@@ -1,5 +1,5 @@
 import {
-  addDashboardCardComponents,
+  addComponentToRegistry,
   resetDashboardCardRegistry,
 } from './dashboard-card-registry';
 import { Component } from '@angular/core';
@@ -41,37 +41,35 @@ describe('dashboard card registry', () => {
   });
 
   it('registers standalone Angular components by selector', () => {
-    expect(() => addDashboardCardComponents([DashboardTestCard])).not.toThrow();
+    expect(() => addComponentToRegistry([DashboardTestCard])).not.toThrow();
   });
 
   it('rejects non-component registrations', () => {
     class NotAComponent {}
 
-    expect(() => addDashboardCardComponents([NotAComponent])).toThrowError(
+    expect(() => addComponentToRegistry([NotAComponent])).toThrowError(
       'Dashboard card registration failed: "NotAComponent" is not an Angular component.',
     );
   });
 
   it('rejects selectors that are not a single element selector', () => {
-    expect(() => addDashboardCardComponents([DashboardAttrCard])).toThrowError(
+    expect(() => addComponentToRegistry([DashboardAttrCard])).toThrowError(
       /must use a single element selector\. Received "\[dashboard-test-card\]"./,
     );
   });
 
   it('rejects non-standalone Angular components', () => {
     expect(() =>
-      addDashboardCardComponents([DashboardNonStandaloneCard]),
+      addComponentToRegistry([DashboardNonStandaloneCard]),
     ).toThrowError(
       'Dashboard card registration failed: "dashboard-non-standalone-card" must be a standalone Angular component.',
     );
   });
 
   it('rejects duplicate selector registrations for different component types', () => {
-    addDashboardCardComponents([DashboardTestCard]);
+    addComponentToRegistry([DashboardTestCard]);
 
-    expect(() =>
-      addDashboardCardComponents([DashboardDuplicateCard]),
-    ).toThrowError(
+    expect(() => addComponentToRegistry([DashboardDuplicateCard])).toThrowError(
       'Dashboard card registration failed: selector "dashboard-test-card" is already registered.',
     );
   });

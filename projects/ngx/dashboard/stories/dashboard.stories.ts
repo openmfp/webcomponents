@@ -1,5 +1,6 @@
 import { Favorites } from '../../favorites/favorites.component';
 import { ServiceStatusCard } from '../../service-status/service-status-card.component';
+import { VisitedServiceCard } from '../../visited-service-card/visited-service-card.component';
 import { Dashboard } from '../dashboard/dashboard.component';
 import type {
   CardConfig,
@@ -10,7 +11,11 @@ import { CARDS, SECTIONS } from './dashboard.cards';
 import { TABLE_CARD_CONFIG, TABLE_RESOURCES } from './pods-table.config';
 import type { Meta, StoryObj } from '@storybook/angular';
 
-Dashboard.addComponentToSelectorType([Favorites, ServiceStatusCard]);
+Dashboard.registerAngularComponent([
+  Favorites,
+  ServiceStatusCard,
+  VisitedServiceCard,
+]);
 
 // ---------------------------------------------------------------------------
 // Shared config
@@ -74,6 +79,80 @@ const AVAILABLE_CARDS: CardConfig[] = [
     w: 4,
     h: 29,
     component: 'mfp-wc-service-status-card',
+  },
+];
+
+const ANGULAR_REGISTRY_SECTIONS = [
+  {
+    id: 'angular-cards',
+    title: 'Angular cards',
+    editable: true,
+    w: 12,
+  },
+  {
+    id: 'wc-cards',
+    title: 'Webcomponent cards',
+    editable: true,
+    w: 12,
+  },
+];
+
+const ANGULAR_REGISTRY_CARDS: CardConfig[] = [
+  {
+    id: 'angular-visited-service',
+    w: 4,
+    h: 12,
+    sectionId: 'angular-cards',
+    component: 'mfp-visited-service-card',
+    componentInputs: {
+      serviceType: 'SAP HANA Cloud',
+      serviceName: 'orders-db',
+      serviceIcon: 'database',
+      serviceDescription: 'Registered Angular component',
+      path: '/hana/orders-db',
+    },
+  },
+  {
+    id: 'angular-favorites',
+    sectionId: 'angular-cards',
+    x: 0,
+    y: 12,
+    w: 5,
+    h: 21,
+    component: 'mfp-favorites',
+  },
+  {
+    id: 'webcomponent-table',
+    sectionId: 'wc-cards',
+    w: 12,
+    h: 51,
+    component: 'mfp-wc-declarative-table-card',
+    componentInputs: {
+      config: TABLE_CARD_CONFIG,
+      header: 'Pods rendered by web component',
+      headerTooltip:
+        'This card intentionally uses the existing custom-element render path.',
+      resources: TABLE_RESOURCES,
+    },
+  },
+];
+
+const ANGULAR_REGISTRY_AVAILABLE_CARDS: CardConfig[] = [
+  {
+    id: 'angular-service-status-template',
+    label: 'Angular Service Status',
+    sectionId: 'angular-cards',
+    w: 4,
+    h: 29,
+    component: 'mfp-service-status-card',
+  },
+  {
+    id: 'webcomponent-whats-new-template',
+    sectionId: 'wc-cards',
+    label: "Web Component What's New",
+    w: 5,
+    h: 56,
+    component: 'mfp-wc-whats-new',
   },
 ];
 
@@ -141,4 +220,18 @@ export const WithSubheader: Story = {
       </mfp-dashboard>
     `,
   }),
+};
+
+export const AngularComponentRegistry: Story = {
+  args: {
+    config: {
+      ...SAMPLE_CONFIG,
+      title: 'Angular Component Registry',
+      description:
+        'This story mixes registered Angular card components with existing web components.',
+    },
+    sections: ANGULAR_REGISTRY_SECTIONS,
+    cards: ANGULAR_REGISTRY_CARDS,
+    availableCards: ANGULAR_REGISTRY_AVAILABLE_CARDS,
+  },
 };

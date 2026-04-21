@@ -1,5 +1,5 @@
 import { AddCardDialog } from '../add-card-dialog/add-card-dialog.component';
-import { addDashboardCardComponents } from '../card/dashboard-card-registry';
+import { addComponentToRegistry } from '../card/dashboard-card-registry';
 import { DashboardCard } from '../card/dashboard-card.component';
 import {
   CardConfig,
@@ -53,8 +53,8 @@ document.body.classList.add('ui5-content-density-compact');
   },
 })
 export class Dashboard {
-  static addComponentToSelectorType(componentTypes: Type<unknown>[]): void {
-    addDashboardCardComponents(componentTypes);
+  static registerAngularComponent(componentTypes: Type<unknown>[]): void {
+    addComponentToRegistry(componentTypes);
   }
 
   config = input.required<DashboardConfig>();
