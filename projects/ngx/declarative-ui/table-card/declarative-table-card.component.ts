@@ -29,6 +29,8 @@ import { Dialog } from '@fundamental-ngx/ui5-webcomponents/dialog';
 import { Icon } from '@fundamental-ngx/ui5-webcomponents/icon';
 import { Input } from '@fundamental-ngx/ui5-webcomponents/input';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
+import '@ui5/webcomponents-icons/dist/add.js';
+import '@ui5/webcomponents-icons/dist/search.js';
 import { debounceTime } from 'rxjs';
 
 type SearchState = 'collapsed' | 'expanded' | 'collapsing';
