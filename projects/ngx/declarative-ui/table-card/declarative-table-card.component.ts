@@ -7,7 +7,7 @@ import {
   ValueCellButtonClickEvent,
 } from '../table/models';
 import { getResourceValueByJsonPath } from '../table/utils/resource-field-by-path';
-import { ResourceFormConfig, TableCardConfig } from './models/configs';
+import { TableCardConfig } from './models/configs';
 import {
   CUSTOM_ELEMENTS_SCHEMA,
   ChangeDetectionStrategy,
@@ -52,9 +52,7 @@ type SearchState = 'collapsed' | 'expanded' | 'collapsing';
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class DeclarativeTableCard<T extends GenericResource> {
-  header = input.required<string>();
   resources = input.required<T[]>();
-  headerTooltip = input<string>();
 
   config = input.required<TableCardConfig>();
 
@@ -87,6 +85,8 @@ export class DeclarativeTableCard<T extends GenericResource> {
   protected pendingFormValue = signal<Record<string, unknown> | null>(null);
 
   protected tableConfig = computed(() => this.config().tableConfig);
+  protected header = computed(() => this.config().header);
+  protected headerTooltip = computed(() => this.config().headerTooltip);
   protected createFormConfig = computed(
     () => this.config().createResourceFormConfig,
   );

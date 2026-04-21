@@ -46,8 +46,6 @@ const AVAILABLE_CARDS: CardConfig[] = [
     component: 'mfp-wc-declarative-table-card',
     componentInputs: {
       config: TABLE_CARD_CONFIG,
-      header: 'Pods',
-      headerTooltip: 'This table lists all pods running in the cluster.',
       resources: TABLE_RESOURCES,
     },
   },

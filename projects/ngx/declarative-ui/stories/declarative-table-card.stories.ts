@@ -120,6 +120,7 @@ const BASE_TABLE_CONFIG: TableConfig = {
 };
 
 const BASE_CONFIG: TableCardConfig = {
+  header: 'Pods',
   tableConfig: BASE_TABLE_CONFIG,
 };
 
@@ -136,11 +137,8 @@ const meta: Meta<DeclarativeTableCard<GenericResource>> = {
   },
   argTypes: {
     config: { control: 'object' },
-    header: { control: 'text' },
-    headerTooltip: { control: 'text' },
   },
   args: {
-    header: 'Pods',
     config: BASE_CONFIG,
     resources: PODS,
   },
@@ -159,7 +157,10 @@ export const Basic: Story = {};
 /** Header with an info icon that shows a tooltip on hover. */
 export const WithHeaderTooltip: Story = {
   args: {
-    headerTooltip: 'This table lists all pods running in the cluster.',
+    config: {
+      ...BASE_CONFIG,
+      headerTooltip: 'This table lists all pods running in the cluster.',
+    },
   },
 };
 
