@@ -1,12 +1,23 @@
-import type { Meta, StoryObj } from '@storybook/angular';
-import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { AddCardDialog } from '../add-card-dialog.component';
 import type { CardConfig } from '../../models';
+import { AddCardDialog } from '../add-card-dialog.component';
+import { Component, Input } from '@angular/core';
+import type { Meta, StoryObj } from '@storybook/angular';
 
 const AVAILABLE_CARDS: CardConfig[] = [
-  { component: 'mfp-declarative-table', label: 'Pods Table', colSpan: 12, rowSpan: 4 },
-  { component: 'mfp-whats-new', label: "What's New", colSpan: 3, rowSpan: 3 },
-  { component: 'mfp-visited-service-card', label: 'Recently Visited', colSpan: 4, rowSpan: 1 },
+  {
+    id: 'whats-new',
+    component: 'mfp-whats-new',
+    label: "What's New",
+    w: 3,
+    h: 3,
+  },
+  {
+    id: 'recently-visited',
+    component: 'mfp-visited-service-card',
+    label: 'Recently Visited',
+    w: 4,
+    h: 1,
+  },
 ];
 
 @Component({
@@ -15,11 +26,11 @@ const AVAILABLE_CARDS: CardConfig[] = [
   template: `
     <ui5-button (click)="open = true">Open Dialog</ui5-button>
     <mfp-add-card-dialog
-      [open]="open"
-      [availableCards]="availableCards"
       [addedComponents]="addedComponents"
-      (confirm)="onConfirm($event)"
+      [availableCards]="availableCards"
+      [open]="open"
       (cancel)="open = false"
+      (confirm)="onConfirm($event)"
     />
     @if (lastAdded) {
       <ui5-message-strip design="Positive" style="margin-top: 1rem;">
