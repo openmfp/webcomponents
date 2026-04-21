@@ -1,7 +1,9 @@
 export interface CardConfig {
-  id?: string;
-  colSpan?: number;
-  rowSpan?: number;
+  id: string;
+  w?: number;
+  h?: number;
+  x?: number;
+  y?: number;
   sectionId?: string;
   component: string;
   componentInputs?: Record<string, unknown>;
@@ -28,8 +30,7 @@ export interface DashboardButtonSettings {
 
 export interface SectionConfig {
   id: string;
-  colSpan?: number;
-  rowSpan?: number;
+  w?: number;
   title?: string;
   editable?: boolean;
 }

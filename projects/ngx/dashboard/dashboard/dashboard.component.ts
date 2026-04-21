@@ -1,33 +1,43 @@
 import { AddCardDialog } from '../add-card-dialog/add-card-dialog.component';
-import { DashboardCardComponent } from '../card/dashboard-card.component';
+import { DashboardCard } from '../card/dashboard-card.component';
 import {
   CardConfig,
   DashboardButtonSettings,
   DashboardConfig,
   SectionConfig,
 } from '../models';
-import { DashboardSectionComponent } from '../section/dashboard-section.component';
+import { DashboardSection } from '../section/dashboard-section.component';
 import {
   Component,
   ViewEncapsulation,
   computed,
   input,
+  linkedSignal,
   model,
   output,
   signal,
+  viewChild,
 } from '@angular/core';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 import { Text } from '@fundamental-ngx/ui5-webcomponents/text';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
+import { GridStackNode, GridStackOptions } from 'gridstack';
+import {
+  GridstackComponent,
+  GridstackItemComponent,
+  nodesCB,
+} from 'gridstack/dist/angular';
 
 document.body.classList.add('ui5-content-density-compact');
 
 @Component({
   selector: 'mfp-dashboard',
   imports: [
+    GridstackComponent,
+    GridstackItemComponent,
     AddCardDialog,
-    DashboardSectionComponent,
-    DashboardCardComponent,
+    DashboardSection,
+    DashboardCard,
     Button,
     Title,
     Text,
@@ -46,13 +56,45 @@ export class Dashboard {
   cards = model<CardConfig[]>([]);
   availableCards = input<CardConfig[]>([]);
 
-  saved = output<{ sections: SectionConfig[]; cards: CardConfig[] }>();
-  actionButtonClick = output<{ event: MouseEvent; action: DashboardButtonSettings }>();
+  readonly saved = output<{ sections: SectionConfig[]; cards: CardConfig[] }>();
+  readonly actionButtonClick = output<{
+    event: MouseEvent;
+    action: DashboardButtonSettings;
+  }>();
 
   editMode = signal(false);
 
   private sectionsSnapshot: SectionConfig[] = [];
   private cardsSnapshot: CardConfig[] = [];
+  private gridStackItems = viewChild.required<GridstackComponent>('grid');
+
+  protected gridOptions = computed(
+    (): GridStackOptions => ({
+      cellHeight: 10,
+      disableResize: true,
+      disableDrag: !this.editMode(),
+      columnOpts: {
+        breakpointForWindow: true,
+        breakpoints: [
+          {
+            w: 1920,
+            c: 12,
+            layout: 'none',
+          },
+          {
+            w: 1200,
+            c: 8,
+            layout: 'compact',
+          },
+          {
+            w: 726,
+            c: 1,
+            layout: 'list',
+          },
+        ],
+      },
+    }),
+  );
 
   cardDialogOpen = signal(false);
 
@@ -72,22 +114,53 @@ export class Dashboard {
     return (sectionId: string) => all.filter((c) => c.sectionId === sectionId);
   });
 
-  looseCards = computed(() => this.cards().filter((c) => !c.sectionId));
+  cardsPosition = new Map<string, { x?: number; y?: number }>();
+  looseCards = linkedSignal(() => this.cards().filter((c) => !c.sectionId));
+
+  private newGridStackNodes: GridStackNode[] = [];
 
   enterEditMode(): void {
+    const gridStackNodes = this.gridStackItems()
+      .gridstackItems?.toArray()
+      .map((node) => node.options);
+
+    if (gridStackNodes) {
+      this.saveCardsPosition(gridStackNodes);
+    }
+
     this.sectionsSnapshot = [...this.sections()];
     this.cardsSnapshot = [...this.cards()];
     this.editMode.set(true);
   }
 
   saveEdit(): void {
-    this.saved.emit({ sections: this.sections(), cards: this.cards() });
+    this.saveCardsPosition(this.newGridStackNodes);
+    this.saved.emit({
+      sections: this.sections(),
+      cards: this.cards().map((c) => {
+        const pos = this.cardsPosition.get(c.id);
+        return {
+          ...c,
+          x: pos?.x,
+          y: pos?.y,
+        };
+      }),
+    });
     this.editMode.set(false);
   }
 
   cancelEdit(): void {
     this.sections.set(this.sectionsSnapshot);
-    this.cards.set(this.cardsSnapshot);
+    this.cards.set(
+      this.cardsSnapshot.map((c) => {
+        const pos = this.cardsPosition.get(c.id);
+        return {
+          ...c,
+          x: pos?.x,
+          y: pos?.y,
+        };
+      }),
+    );
     this.cardDialogOpen.set(false);
     this.editMode.set(false);
   }
@@ -98,6 +171,7 @@ export class Dashboard {
   }
 
   removeCard(id: string): void {
+    this.cardsPosition.delete(id);
     this.cards.update((list) => list.filter((c) => c.id !== id));
   }
 
@@ -120,5 +194,17 @@ export class Dashboard {
       ]);
     }
     this.closeCardPanel();
+  }
+
+  onOrderChange(event: nodesCB): void {
+    this.newGridStackNodes = event.nodes;
+  }
+
+  private saveCardsPosition(items: GridStackNode[]): void {
+    items.forEach((node) => {
+      if (node.id) {
+        this.cardsPosition.set(node.id, { x: node.x, y: node.y });
+      }
+    });
   }
 }

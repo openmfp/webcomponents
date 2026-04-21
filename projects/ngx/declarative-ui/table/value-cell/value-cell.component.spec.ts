@@ -1,13 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ValueCellComponent } from './value-cell.component';
+import { ValueCell } from './value-cell.component';
 import { FieldDefinition, GenericResource, ValueCellButtonClickEvent } from '../models';
 
-type Fixture = ComponentFixture<ValueCellComponent<GenericResource, FieldDefinition>>;
-type Comp = ValueCellComponent<GenericResource, FieldDefinition>;
+type Fixture = ComponentFixture<ValueCell<GenericResource, FieldDefinition>>;
+type Comp = ValueCell<GenericResource, FieldDefinition>;
 
 function setup(field: FieldDefinition, resource?: Partial<GenericResource>): { fixture: Fixture; component: Comp } {
   const fixture: Fixture = TestBed.createComponent(
-    ValueCellComponent as unknown as typeof ValueCellComponent<GenericResource, FieldDefinition>,
+    ValueCell as unknown as typeof ValueCell<GenericResource, FieldDefinition>,
   );
   const component = fixture.componentInstance;
   fixture.componentRef.setInput('fieldDefinition', field);
@@ -24,10 +24,10 @@ function q(fixture: Fixture, selector: string): Element | null {
   return (fixture.nativeElement.shadowRoot ?? fixture.nativeElement).querySelector(selector);
 }
 
-describe('ValueCellComponent', () => {
+describe('ValueCell', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ValueCellComponent],
+      imports: [ValueCell],
     }).compileComponents();
   });
 
