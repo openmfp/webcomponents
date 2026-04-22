@@ -1,3 +1,4 @@
+import { resetDashboardCardRegistry } from '../card/dashboard-card-registry';
 import { CardConfig, SectionConfig } from '../models';
 import { Dashboard } from './dashboard.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
@@ -51,6 +52,7 @@ function root(fixture: Fixture): ShadowRoot | HTMLElement {
 
 describe('Dashboard', () => {
   beforeEach(async () => {
+    resetDashboardCardRegistry();
     await TestBed.configureTestingModule({
       imports: [Dashboard],
     }).compileComponents();
@@ -190,8 +192,7 @@ describe('Dashboard', () => {
     const { component } = setup();
     const sections: SectionConfig[] = [{ id: 'alpha', title: 'Alpha' }];
     const cards: CardConfig[] = [{ id: 'card-1', component: 'mfp-a' }];
-    const emitted: Array<{ sections: SectionConfig[]; cards: CardConfig[] }> =
-      [];
+    const emitted: { sections: SectionConfig[]; cards: CardConfig[] }[] = [];
 
     component.sections.set(sections);
     component.cards.set(cards);

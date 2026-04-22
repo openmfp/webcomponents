@@ -35,6 +35,23 @@ describe('DashboardCard', () => {
     expect(fixture.nativeElement.style.gridRow).toBe('span 2');
   });
 
+  it('uses x and y as zero-based grid start coordinates when provided', () => {
+    const { fixture } = setup();
+
+    fixture.componentRef.setInput('card', {
+      id: 'card-1',
+      component: 'demo-widget',
+      w: 3,
+      h: 2,
+      x: 0,
+      y: 4,
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.style.gridColumn).toBe('1 / span 3');
+    expect(fixture.nativeElement.style.gridRow).toBe('5 / span 2');
+  });
+
   it('renders a dynamic component and applies component inputs', () => {
     const { fixture } = setup();
 
