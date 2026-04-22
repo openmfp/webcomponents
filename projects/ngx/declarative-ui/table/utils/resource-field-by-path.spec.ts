@@ -1,4 +1,4 @@
-import { GenericResource, PropertyField, TransformType } from '../models';
+import { GenericResource, PropertyField, TransformType } from '../../models';
 import {
   decodeBase64,
   encodeBase64,
@@ -18,7 +18,9 @@ describe('getResourceValueByJsonPath', () => {
   });
 
   it('should return undefined and log error when property is an array', () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { /* noop */ });
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {
+      /* noop */
+    });
     const result = getResourceValueByJsonPath(mockResource, {
       property: ['path1', 'path2'],
     });
@@ -63,7 +65,9 @@ describe('getResourceValueByJsonPath', () => {
   });
 
   it('should apply propertyField transform when provided', () => {
-    const resource = { spec: { data: { key1: 'value1', key2: 'value2' } } } as unknown as GenericResource;
+    const resource = {
+      spec: { data: { key1: 'value1', key2: 'value2' } },
+    } as unknown as GenericResource;
 
     const propertyField: PropertyField = {
       key: 'key1',
@@ -79,7 +83,9 @@ describe('getResourceValueByJsonPath', () => {
   });
 
   it('should handle none existing transform', () => {
-    const resource = { spec: { data: { text: 'hello world' } } } as unknown as GenericResource;
+    const resource = {
+      spec: { data: { text: 'hello world' } },
+    } as unknown as GenericResource;
 
     const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
@@ -90,7 +96,9 @@ describe('getResourceValueByJsonPath', () => {
   });
 
   it('should handle uppercase transform', () => {
-    const resource = { spec: { data: { text: 'hello world' } } } as unknown as GenericResource;
+    const resource = {
+      spec: { data: { text: 'hello world' } },
+    } as unknown as GenericResource;
 
     const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
@@ -101,7 +109,9 @@ describe('getResourceValueByJsonPath', () => {
   });
 
   it('should handle lowercase transform', () => {
-    const resource = { spec: { data: { text: 'HELLO WORLD' } } } as unknown as GenericResource;
+    const resource = {
+      spec: { data: { text: 'HELLO WORLD' } },
+    } as unknown as GenericResource;
 
     const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
@@ -112,7 +122,9 @@ describe('getResourceValueByJsonPath', () => {
   });
 
   it('should handle capitalize transform', () => {
-    const resource = { spec: { data: { text: 'hello' } } } as unknown as GenericResource;
+    const resource = {
+      spec: { data: { text: 'hello' } },
+    } as unknown as GenericResource;
 
     const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
@@ -123,7 +135,9 @@ describe('getResourceValueByJsonPath', () => {
   });
 
   it('should handle multiple transforms', () => {
-    const resource = { spec: { data: { text: 'HELLO WORLD' } } } as unknown as GenericResource;
+    const resource = {
+      spec: { data: { text: 'HELLO WORLD' } },
+    } as unknown as GenericResource;
 
     const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
@@ -134,7 +148,9 @@ describe('getResourceValueByJsonPath', () => {
   });
 
   it('should handle encode transform', () => {
-    const resource = { spec: { data: { text: 'test' } } } as unknown as GenericResource;
+    const resource = {
+      spec: { data: { text: 'test' } },
+    } as unknown as GenericResource;
 
     const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
@@ -148,9 +164,13 @@ describe('getResourceValueByJsonPath', () => {
     vi.spyOn(globalThis, 'btoa').mockImplementation(() => {
       throw new Error('btoa error');
     });
-    vi.spyOn(console, 'error').mockImplementation(() => { /* noop */ });
+    vi.spyOn(console, 'error').mockImplementation(() => {
+      /* noop */
+    });
 
-    const resource = { spec: { data: { text: 'test-value' } } } as unknown as GenericResource;
+    const resource = {
+      spec: { data: { text: 'test-value' } },
+    } as unknown as GenericResource;
 
     const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
@@ -163,7 +183,9 @@ describe('getResourceValueByJsonPath', () => {
 
   it('should handle decode transform', () => {
     const encoded = encodeBase64('test');
-    const resource = { spec: { data: { text: encoded } } } as unknown as GenericResource;
+    const resource = {
+      spec: { data: { text: encoded } },
+    } as unknown as GenericResource;
 
     const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
@@ -174,7 +196,9 @@ describe('getResourceValueByJsonPath', () => {
   });
 
   it('should return original value when transform fails', () => {
-    const resource = { spec: { data: { text: 'invalid-base64!!!' } } } as unknown as GenericResource;
+    const resource = {
+      spec: { data: { text: 'invalid-base64!!!' } },
+    } as unknown as GenericResource;
 
     const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
@@ -185,7 +209,9 @@ describe('getResourceValueByJsonPath', () => {
   });
 
   it('should handle null value in transform', () => {
-    const resource = { spec: { data: { text: null } } } as unknown as GenericResource;
+    const resource = {
+      spec: { data: { text: null } },
+    } as unknown as GenericResource;
 
     const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
@@ -196,7 +222,9 @@ describe('getResourceValueByJsonPath', () => {
   });
 
   it('should handle undefined value in transform', () => {
-    const resource = { spec: { data: { text: undefined } } } as unknown as GenericResource;
+    const resource = {
+      spec: { data: { text: undefined } },
+    } as unknown as GenericResource;
 
     const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
@@ -207,7 +235,9 @@ describe('getResourceValueByJsonPath', () => {
   });
 
   it('should return value when no transform is provided', () => {
-    const resource = { spec: { data: { text: 'no-transform' } } } as unknown as GenericResource;
+    const resource = {
+      spec: { data: { text: 'no-transform' } },
+    } as unknown as GenericResource;
 
     const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
@@ -218,7 +248,9 @@ describe('getResourceValueByJsonPath', () => {
   });
 
   it('should return value when transform is empty array', () => {
-    const resource = { spec: { data: { text: 'empty-transform' } } } as unknown as GenericResource;
+    const resource = {
+      spec: { data: { text: 'empty-transform' } },
+    } as unknown as GenericResource;
 
     const result = getResourceValueByJsonPath(resource, {
       property: 'spec.data',
@@ -262,14 +294,18 @@ describe('encodeBase64', () => {
   });
 
   it('should log error when encoding fails', () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { /* noop */ });
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {
+      /* noop */
+    });
     vi.spyOn(globalThis, 'btoa').mockImplementation(() => {
       throw new Error('btoa error');
     });
 
     try {
       encodeBase64('test');
-    } catch { /* expected to throw */ }
+    } catch {
+      /* expected to throw */
+    }
 
     expect(consoleSpy).toHaveBeenCalledWith(
       'Base64 encoding failed:',
@@ -309,11 +345,15 @@ describe('decodeBase64', () => {
   });
 
   it('should log error when decoding fails', () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { /* noop */ });
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {
+      /* noop */
+    });
 
     try {
       decodeBase64('invalid!!!');
-    } catch { /* expected to throw */ }
+    } catch {
+      /* expected to throw */
+    }
 
     expect(consoleSpy).toHaveBeenCalledWith(
       'Base64 decoding failed:',

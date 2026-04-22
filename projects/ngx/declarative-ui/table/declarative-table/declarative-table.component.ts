@@ -1,8 +1,5 @@
-import {
-  GenericResource,
-  TableFieldDefinition,
-  ValueCellButtonClickEvent,
-} from '../models';
+import { GenericResource } from '../../models';
+import { TableFieldDefinition, ValueCellButtonClickEvent } from '../models';
 import { processGroupFields } from '../utils/proccess-fields';
 import { ValueCell } from '../value-cell/value-cell.component';
 import {

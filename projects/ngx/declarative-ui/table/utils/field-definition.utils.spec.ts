@@ -1,5 +1,5 @@
+import { FieldDefinition } from '../../models';
 import { getFieldValue } from './field-definition.utils';
-import { FieldDefinition } from '../models';
 
 describe('field-definition.utils', () => {
   describe('getFieldValue', () => {
@@ -14,12 +14,18 @@ describe('field-definition.utils', () => {
     });
 
     it('returns empty string when property resolves to empty string', () => {
-      const field: FieldDefinition = { property: 'metadata.name', value: 'fallback' };
+      const field: FieldDefinition = {
+        property: 'metadata.name',
+        value: 'fallback',
+      };
       expect(getFieldValue(field, { metadata: { name: '' } })).toBe('');
     });
 
     it('returns falsy value (false) over field.value fallback', () => {
-      const field: FieldDefinition = { property: 'spec.enabled', value: 'default' };
+      const field: FieldDefinition = {
+        property: 'spec.enabled',
+        value: 'default',
+      };
       expect(getFieldValue(field, { spec: { enabled: false } })).toBe(false);
     });
 
@@ -45,13 +51,19 @@ describe('field-definition.utils', () => {
 
     it('returns complex object as field.value', () => {
       const complexValue = { nested: { data: 'value' } };
-      const field: FieldDefinition = { property: 'spec.config', value: complexValue as unknown as string };
+      const field: FieldDefinition = {
+        property: 'spec.config',
+        value: complexValue as unknown as string,
+      };
       expect(getFieldValue(field, undefined)).toEqual(complexValue);
     });
 
     it('returns array as field.value', () => {
       const arrayValue = ['item1', 'item2'];
-      const field: FieldDefinition = { property: 'spec.items', value: arrayValue as unknown as string };
+      const field: FieldDefinition = {
+        property: 'spec.items',
+        value: arrayValue as unknown as string,
+      };
       expect(getFieldValue(field, undefined)).toEqual(arrayValue);
     });
   });

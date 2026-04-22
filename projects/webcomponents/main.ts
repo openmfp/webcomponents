@@ -1,13 +1,12 @@
-import { Dashboard } from '../ngx/dashboard/dashboard/dashboard.component';
-import { DeclarativeForm } from '../ngx/declarative-ui/form/declarative-form/declarative-form.component';
-import { DeclarativeTableCard } from '../ngx/declarative-ui/table-card/declarative-table-card.component';
-import { DeclarativeTable } from '../ngx/declarative-ui/table/declarative-table/declarative-table.component';
-import { Favorites } from '../ngx/favorites/favorites.component';
-import { ServiceStatusCard } from '../ngx/service-status/service-status-card.component';
-import { VisitedServiceCard } from '../ngx/visited-service-card/visited-service-card.component';
-import { WhatsNew } from '../ngx/whats-new/whats-new.component';
+import { VisitedServiceCard } from '../ngx/cards/visited-service-card/visited-service-card.component';
 import { createCustomElement } from '@angular/elements';
 import { createApplication } from '@angular/platform-browser';
+import {
+  Dashboard,
+  DeclarativeForm,
+  DeclarativeTable,
+  DeclarativeTableCard,
+} from '@openmfp/webcomponents/declarative-ui';
 
 (async () => {
   const app = await createApplication();
@@ -45,19 +44,4 @@ import { createApplication } from '@angular/platform-browser';
     'mfp-wc-visited-service-card',
     VisitedServiceCardElement,
   );
-
-  const WhatsNewElement = createCustomElement(WhatsNew, {
-    injector: app.injector,
-  });
-  customElements.define('mfp-wc-whats-new', WhatsNewElement);
-
-  const FavoritesElement = createCustomElement(Favorites, {
-    injector: app.injector,
-  });
-  customElements.define('mfp-wc-favorites', FavoritesElement);
-
-  const ServiceStatusCardElement = createCustomElement(ServiceStatusCard, {
-    injector: app.injector,
-  });
-  customElements.define('mfp-wc-service-status-card', ServiceStatusCardElement);
 })();

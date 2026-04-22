@@ -1,5 +1,13 @@
+import { VisitedServiceCard } from '../visited-service-card/visited-service-card.component';
+import {
+  CUSTOM_ELEMENTS_SCHEMA,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
+import { MessageStrip } from '@fundamental-ngx/ui5-webcomponents/message-strip';
 import type { Meta, StoryObj } from '@storybook/angular';
-import { Component, Input, Output, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'visited-service-card-story',
@@ -10,9 +18,15 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
       [serviceIcon]="serviceIcon"
       [serviceDescription]="serviceDescription"
       [path]="path"
-      (click)="click.emit(path)"
+      (click)="onCardClick()"
     ></mfp-visited-service-card>
+    @if (clicked) {
+      <ui5-message-strip design="Information" style="margin-top: 1rem;">
+        Card clicked — would navigate to: {{ path }}
+      </ui5-message-strip>
+    }
   `,
+  imports: [MessageStrip, VisitedServiceCard],
 })
 class VisitedServiceCardStory {
   @Input() serviceType = '';
@@ -21,15 +35,18 @@ class VisitedServiceCardStory {
   @Input() serviceDescription = '';
   @Input() path = '';
   @Output() click = new EventEmitter<string>();
+  clicked = false;
+  onCardClick() {
+    this.clicked = true;
+    setTimeout(() => (this.clicked = false), 3000);
+  }
 }
 
 const meta: Meta<VisitedServiceCardStory> = {
-  title: 'Visited Service Card / VisitedServiceCard',
+  title: 'Cards / VisitedServiceCard',
   component: VisitedServiceCardStory,
   tags: ['autodocs'],
-  parameters: {
-    layout: 'padded',
-  },
+  parameters: { layout: 'padded' },
   argTypes: {
     serviceType: { control: 'text' },
     serviceName: { control: 'text' },
@@ -37,31 +54,6 @@ const meta: Meta<VisitedServiceCardStory> = {
     serviceDescription: { control: 'text' },
     path: { control: 'text' },
   },
-  render: (args) => ({
-    props: {
-      ...args,
-      clicked: false,
-      onCardClick() {
-        this['clicked'] = true;
-        setTimeout(() => (this['clicked'] = false), 3000);
-      },
-    },
-    template: `
-      <mfp-visited-service-card
-        [serviceType]="serviceType"
-        [serviceName]="serviceName"
-        [serviceIcon]="serviceIcon"
-        [serviceDescription]="serviceDescription"
-        [path]="path"
-        (click)="onCardClick()"
-      ></mfp-visited-service-card>
-      @if (clicked) {
-        <ui5-message-strip design="Information" style="margin-top: 1rem;">
-          Card clicked — would navigate to: {{ path }}
-        </ui5-message-strip>
-      }
-    `,
-  }),
 };
 
 export default meta;

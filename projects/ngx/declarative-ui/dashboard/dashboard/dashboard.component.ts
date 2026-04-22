@@ -1,12 +1,8 @@
+import { ButtonSettings } from '../../models/ui-definition';
 import { AddCardDialog } from '../add-card-dialog/add-card-dialog.component';
 import { addComponentToRegistry } from '../card/dashboard-card-registry';
 import { DashboardCard } from '../card/dashboard-card.component';
-import {
-  CardConfig,
-  DashboardButtonSettings,
-  DashboardConfig,
-  SectionConfig,
-} from '../models';
+import { CardConfig, DashboardConfig, SectionConfig } from '../models';
 import { DashboardSection } from '../section/dashboard-section.component';
 import {
   Component,
@@ -65,7 +61,7 @@ export class Dashboard {
   readonly saved = output<{ sections: SectionConfig[]; cards: CardConfig[] }>();
   readonly actionButtonClick = output<{
     event: MouseEvent;
-    action: DashboardButtonSettings;
+    action: ButtonSettings;
   }>();
 
   editMode = signal(false);

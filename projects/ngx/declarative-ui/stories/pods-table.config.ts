@@ -1,10 +1,10 @@
+import type { TableFieldDefinition } from '../../declarative-ui/table/models';
 import type {
   DeleteResourceConfirmationConfig,
   ResourceFormConfig,
   TableCardConfig,
   TableConfig,
-} from '../../declarative-ui/table-card/models/configs';
-import type { TableFieldDefinition } from '../../declarative-ui/table/models';
+} from '..//table-card/models/configs';
 
 export const TABLE_RESOURCES = [
   {

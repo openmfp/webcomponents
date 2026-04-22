@@ -1,4 +1,5 @@
-import type { GenericResource, TableFieldDefinition } from '../table/models';
+import type { GenericResource } from '../models';
+import type { TableFieldDefinition } from '../table/models';
 import { CUSTOM_ELEMENTS_SCHEMA, Component, Input } from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
 

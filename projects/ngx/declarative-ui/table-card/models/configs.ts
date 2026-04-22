@@ -1,8 +1,6 @@
 import { FormFieldDefinition } from '../../form';
-import {
-  ButtonSettings,
-  TableFieldDefinition,
-} from '@openmfp/webcomponents/declarative-ui';
+import { ButtonSettings } from '../../models';
+import { TableFieldDefinition } from '../../table';
 
 export interface ResourceFormConfig {
   fields: FormFieldDefinition[];

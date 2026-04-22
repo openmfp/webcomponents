@@ -1,10 +1,17 @@
-import { Favorites } from '../../favorites/favorites.component';
-import { VisitedServiceCard } from '../../visited-service-card/visited-service-card.component';
-import { Dashboard } from '../dashboard/dashboard.component';
-import type { CardConfig, SectionConfig } from '../models';
+import { Favorites } from '../../cards/favorites/favorites.component';
+import { ServiceStatusCard } from '../../cards/service-status/service-status-card.component';
+import { VisitedServiceCard } from '../../cards/visited-service-card/visited-service-card.component';
+import { WhatsNew } from '../../cards/whats-new/whats-new.component';
+import { Dashboard } from '../dashboard/dashboard/dashboard.component';
+import type { CardConfig, SectionConfig } from '../dashboard/models';
 import { TABLE_CARD_CONFIG, TABLE_RESOURCES } from './pods-table.config';
 
-Dashboard.registerAngularComponents([Favorites, VisitedServiceCard]);
+Dashboard.registerAngularComponents([
+  Favorites,
+  VisitedServiceCard,
+  ServiceStatusCard,
+  WhatsNew,
+]);
 
 export const SECTIONS: SectionConfig[] = [
   { id: 'ras', title: 'Recently accessed services', editable: false, w: 12 },
@@ -75,11 +82,5 @@ export const CARDS: CardConfig[] = [
       headerTooltip: 'This table lists all pods running in the cluster.',
       resources: TABLE_RESOURCES,
     },
-  },
-  {
-    id: 'mfp-favorites',
-    w: 5,
-    h: 21,
-    component: 'mfp-wc-favorites',
   },
 ];

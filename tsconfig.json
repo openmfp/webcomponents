@@ -16,9 +16,6 @@
     "paths": {
       "@openmfp/webcomponents/declarative-ui": [
         "./projects/ngx/declarative-ui/public-api.ts"
-      ],
-      "@openmfp/webcomponents/dashboard": [
-        "./projects/ngx/dashboard/public-api.ts"
       ]
     }
   },
@@ -35,12 +32,6 @@
     },
     {
       "path": "./projects/ngx/declarative-ui/tsconfig.spec.json"
-    },
-    {
-      "path": "./projects/ngx/dashboard/tsconfig.lib.json"
-    },
-    {
-      "path": "./projects/ngx/dashboard/tsconfig.spec.json"
     }
   ]
 }
