@@ -1,5 +1,3 @@
-import '@ui5/webcomponents-icons/dist/action-settings.js';
-import '@ui5/webcomponents-icons/dist/menu2.js';
 import { ButtonSettings } from '../../models/ui-definition';
 import { AddCardDialog } from '../add-card-dialog/add-card-dialog.component';
 import { addComponentToRegistry } from '../card/dashboard-card-registry';
@@ -28,6 +26,8 @@ import { MenuItem } from '@fundamental-ngx/ui5-webcomponents/menu-item';
 import { MenuSeparator } from '@fundamental-ngx/ui5-webcomponents/menu-separator';
 import { Text } from '@fundamental-ngx/ui5-webcomponents/text';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
+import '@ui5/webcomponents-icons/dist/action-settings.js';
+import '@ui5/webcomponents-icons/dist/menu2.js';
 import { GridStackNode, GridStackOptions } from 'gridstack';
 import {
   GridstackComponent,
@@ -85,8 +85,6 @@ export class Dashboard implements OnInit, OnDestroy {
   private sectionsSnapshot: SectionConfig[] = [];
   private cardsSnapshot: CardConfig[] = [];
   private gridStackItems = viewChild.required<GridstackComponent>('grid');
-  protected menuBtnRef = viewChild<Button>('menuBtn');
-  protected menuOpener = computed(() => this.menuBtnRef()?.elementRef.nativeElement);
   private resizeObserver?: ResizeObserver;
   private readonly hostEl = inject(ElementRef<HTMLElement>);
 

@@ -30,10 +30,15 @@
           ></ui5-button>
           <ui5-menu
             [open]="toolbarMenuOpen()"
-            [opener]="menuOpener()"
+            [opener]="menuBtn.element"
             (ui5Open)="toolbarMenuOpen.set(true)"
             (ui5Close)="toolbarMenuOpen.set(false)"
-            (ui5ItemClick)="onMenuItemClick($any($event).detail.item.dataset['action'], $event)"
+            (ui5ItemClick)="
+              onMenuItemClick(
+                $any($event).detail.item.dataset['action'],
+                $event
+              )
+            "
           >
             @for (action of customActions(); track action.action) {
               <ui5-menu-item
