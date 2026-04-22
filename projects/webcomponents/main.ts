@@ -1,7 +1,4 @@
-import { Favorites } from '../ngx/cards/favorites/favorites.component';
-import { ServiceStatusCard } from '../ngx/cards/service-status/service-status-card.component';
 import { VisitedServiceCard } from '../ngx/cards/visited-service-card/visited-service-card.component';
-import { WhatsNew } from '../ngx/cards/whats-new/whats-new.component';
 import { createCustomElement } from '@angular/elements';
 import { createApplication } from '@angular/platform-browser';
 import {
@@ -47,19 +44,4 @@ import {
     'mfp-wc-visited-service-card',
     VisitedServiceCardElement,
   );
-
-  const WhatsNewElement = createCustomElement(WhatsNew, {
-    injector: app.injector,
-  });
-  customElements.define('mfp-wc-whats-new', WhatsNewElement);
-
-  const FavoritesElement = createCustomElement(Favorites, {
-    injector: app.injector,
-  });
-  customElements.define('mfp-wc-favorites', FavoritesElement);
-
-  const ServiceStatusCardElement = createCustomElement(ServiceStatusCard, {
-    injector: app.injector,
-  });
-  customElements.define('mfp-wc-service-status-card', ServiceStatusCardElement);
 })();

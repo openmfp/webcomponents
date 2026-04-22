@@ -1,2 +1,2 @@
 export * from './declarative-ui/public-api';
-export * from './cards/visited-service-card/public-api';
+export * from './cards/public-api';

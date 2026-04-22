@@ -1,3 +1,4 @@
+import { VisitedServiceCard } from '../visited-service-card/visited-service-card.component';
 import {
   CUSTOM_ELEMENTS_SCHEMA,
   Component,
@@ -5,26 +6,27 @@ import {
   Input,
   Output,
 } from '@angular/core';
+import { MessageStrip } from '@fundamental-ngx/ui5-webcomponents/message-strip';
 import type { Meta, StoryObj } from '@storybook/angular';
 
 @Component({
   selector: 'visited-service-card-story',
   template: `
-    <mfp-wc-visited-service-card
+    <mfp-visited-service-card
       [serviceType]="serviceType"
       [serviceName]="serviceName"
       [serviceIcon]="serviceIcon"
       [serviceDescription]="serviceDescription"
       [path]="path"
       (click)="onCardClick()"
-    ></mfp-wc-visited-service-card>
+    ></mfp-visited-service-card>
     @if (clicked) {
       <ui5-message-strip design="Information" style="margin-top: 1rem;">
         Card clicked — would navigate to: {{ path }}
       </ui5-message-strip>
     }
   `,
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  imports: [MessageStrip, VisitedServiceCard],
 })
 class VisitedServiceCardStory {
   @Input() serviceType = '';

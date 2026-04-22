@@ -61,21 +61,21 @@ const AVAILABLE_CARDS: CardConfig[] = [
     label: "What's New",
     w: 5,
     h: 56,
-    component: 'mfp-wc-whats-new',
+    component: 'mfp-whats-new',
   },
   {
     id: 'favorites',
     label: 'Favorites',
     w: 4,
-    h: 21,
-    component: 'mfp-wc-favorites',
+    h: 25,
+    component: 'mfp-favorites',
   },
   {
     id: 'service-status',
     label: 'Service Status',
     w: 4,
-    h: 29,
-    component: 'mfp-wc-service-status-card',
+    h: 35,
+    component: 'mfp-service-status-card',
   },
 ];
 
