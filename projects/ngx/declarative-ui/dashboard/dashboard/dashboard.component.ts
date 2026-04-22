@@ -1,4 +1,5 @@
 import '@ui5/webcomponents-icons/dist/action-settings.js';
+import '@ui5/webcomponents-icons/dist/menu2.js';
 import { ButtonSettings } from '../../models/ui-definition';
 import { AddCardDialog } from '../add-card-dialog/add-card-dialog.component';
 import { addComponentToRegistry } from '../card/dashboard-card-registry';
@@ -7,9 +8,13 @@ import { CardConfig, DashboardConfig, SectionConfig } from '../models';
 import { DashboardSection } from '../section/dashboard-section.component';
 import {
   Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
   Type,
   ViewEncapsulation,
   computed,
+  inject,
   input,
   linkedSignal,
   model,
@@ -18,6 +23,9 @@ import {
   viewChild,
 } from '@angular/core';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
+import { Menu } from '@fundamental-ngx/ui5-webcomponents/menu';
+import { MenuItem } from '@fundamental-ngx/ui5-webcomponents/menu-item';
+import { MenuSeparator } from '@fundamental-ngx/ui5-webcomponents/menu-separator';
 import { Text } from '@fundamental-ngx/ui5-webcomponents/text';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 import { GridStackNode, GridStackOptions } from 'gridstack';
@@ -26,6 +34,8 @@ import {
   GridstackItemComponent,
   nodesCB,
 } from 'gridstack/dist/angular';
+
+const COMPACT_BREAKPOINT = 726;
 
 document.body.classList.add('ui5-content-density-compact');
 
@@ -38,6 +48,9 @@ document.body.classList.add('ui5-content-density-compact');
     DashboardSection,
     DashboardCard,
     Button,
+    Menu,
+    MenuItem,
+    MenuSeparator,
     Title,
     Text,
   ],
@@ -49,7 +62,7 @@ document.body.classList.add('ui5-content-density-compact');
       'config().backgroundImageUrl ? "url(" + config().backgroundImageUrl + ")" : null',
   },
 })
-export class Dashboard {
+export class Dashboard implements OnInit, OnDestroy {
   static registerAngularComponents(componentTypes: Type<unknown>[]): void {
     addComponentToRegistry(componentTypes);
   }
@@ -66,10 +79,16 @@ export class Dashboard {
   }>();
 
   editMode = signal(false);
+  compactToolbar = signal(false);
+  toolbarMenuOpen = signal(false);
 
   private sectionsSnapshot: SectionConfig[] = [];
   private cardsSnapshot: CardConfig[] = [];
   private gridStackItems = viewChild.required<GridstackComponent>('grid');
+  protected menuBtnRef = viewChild<Button>('menuBtn');
+  protected menuOpener = computed(() => this.menuBtnRef()?.elementRef.nativeElement);
+  private resizeObserver?: ResizeObserver;
+  private readonly hostEl = inject(ElementRef<HTMLElement>);
 
   protected gridOptions = computed(
     (): GridStackOptions => ({
@@ -79,30 +98,16 @@ export class Dashboard {
       columnOpts: {
         breakpointForWindow: true,
         breakpoints: [
-          {
-            w: 1920,
-            c: 12,
-            layout: 'none',
-          },
-          {
-            w: 1200,
-            c: 8,
-            layout: 'compact',
-          },
-          {
-            w: 726,
-            c: 1,
-            layout: 'list',
-          },
+          { w: 1920, c: 12, layout: 'none' },
+          { w: 1200, c: 8, layout: 'compact' },
+          { w: 726, c: 1, layout: 'list' },
         ],
       },
     }),
   );
 
   cardDialogOpen = signal(false);
-
   customActions = computed(() => this.config().customActions ?? []);
-
   addedComponents = computed(
     () =>
       new Set(
@@ -121,6 +126,29 @@ export class Dashboard {
   looseCards = linkedSignal(() => this.cards().filter((c) => !c.sectionId));
 
   private newGridStackNodes: GridStackNode[] = [];
+
+  ngOnInit(): void {
+    this.resizeObserver = new ResizeObserver((entries) => {
+      const width = entries[0]?.contentRect.width ?? 0;
+      this.compactToolbar.set(width < COMPACT_BREAKPOINT);
+    });
+    this.resizeObserver.observe(this.hostEl.nativeElement);
+  }
+
+  ngOnDestroy(): void {
+    this.resizeObserver?.disconnect();
+  }
+
+  onMenuItemClick(actionId: string, event: Event): void {
+    if (actionId === 'edit-view') {
+      this.enterEditMode();
+      return;
+    }
+    const action = this.customActions().find((a) => a.action === actionId);
+    if (action) {
+      this.actionButtonClick.emit({ event: event as MouseEvent, action });
+    }
+  }
 
   enterEditMode(): void {
     const gridStackNodes = this.gridStackItems()
@@ -142,11 +170,7 @@ export class Dashboard {
       sections: this.sections(),
       cards: this.cards().map((c) => {
         const pos = this.cardsPosition.get(c.id);
-        return {
-          ...c,
-          x: pos?.x,
-          y: pos?.y,
-        };
+        return { ...c, x: pos?.x, y: pos?.y };
       }),
     });
     this.editMode.set(false);
@@ -157,11 +181,7 @@ export class Dashboard {
     this.cards.set(
       this.cardsSnapshot.map((c) => {
         const pos = this.cardsPosition.get(c.id);
-        return {
-          ...c,
-          x: pos?.x,
-          y: pos?.y,
-        };
+        return { ...c, x: pos?.x, y: pos?.y };
       }),
     );
     this.cardDialogOpen.set(false);
