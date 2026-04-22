@@ -2,12 +2,14 @@ import { Favorites } from '../ngx/cards/favorites/favorites.component';
 import { ServiceStatusCard } from '../ngx/cards/service-status/service-status-card.component';
 import { VisitedServiceCard } from '../ngx/cards/visited-service-card/visited-service-card.component';
 import { WhatsNew } from '../ngx/cards/whats-new/whats-new.component';
-import { Dashboard } from '../ngx/declarative-ui/dashboard/dashboard/dashboard.component';
-import { DeclarativeForm } from '../ngx/declarative-ui/form/declarative-form/declarative-form.component';
-import { DeclarativeTableCard } from '../ngx/declarative-ui/table-card/declarative-table-card.component';
-import { DeclarativeTable } from '../ngx/declarative-ui/table/declarative-table/declarative-table.component';
 import { createCustomElement } from '@angular/elements';
 import { createApplication } from '@angular/platform-browser';
+import {
+  Dashboard,
+  DeclarativeForm,
+  DeclarativeTable,
+  DeclarativeTableCard,
+} from '@openmfp/webcomponents/declarative-ui';
 
 (async () => {
   const app = await createApplication();

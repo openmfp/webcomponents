@@ -1,23 +1,30 @@
+import {
+  CUSTOM_ELEMENTS_SCHEMA,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
-import { Component, Input, Output, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'visited-service-card-story',
   template: `
-    <mfp-visited-service-card
+    <mfp-wc-visited-service-card
       [serviceType]="serviceType"
       [serviceName]="serviceName"
       [serviceIcon]="serviceIcon"
       [serviceDescription]="serviceDescription"
       [path]="path"
       (click)="onCardClick()"
-    ></mfp-visited-service-card>
+    ></mfp-wc-visited-service-card>
     @if (clicked) {
       <ui5-message-strip design="Information" style="margin-top: 1rem;">
         Card clicked — would navigate to: {{ path }}
       </ui5-message-strip>
     }
   `,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 class VisitedServiceCardStory {
   @Input() serviceType = '';

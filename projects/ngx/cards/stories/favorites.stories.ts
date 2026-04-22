@@ -1,9 +1,12 @@
+import { Favorites } from '../favorites/favorites.component';
+import { CUSTOM_ELEMENTS_SCHEMA, Component } from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
-import { Component } from '@angular/core';
 
 @Component({
   selector: 'favorites-story',
+  imports: [Favorites],
   template: `<mfp-favorites style="display: block;"></mfp-favorites>`,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 class FavoritesStory {}
 

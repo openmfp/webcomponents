@@ -1,14 +1,17 @@
+import { CUSTOM_ELEMENTS_SCHEMA, Component } from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
-import { Component } from '@angular/core';
 
 @Component({
   selector: 'whats-new-story',
-  template: `<mfp-whats-new style="display: block; height: 480px;"></mfp-whats-new>`,
+  template: `<mfp-wc-whats-new
+    style="display: block; height: 480px;"
+  ></mfp-wc-whats-new>`,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 class WhatsNewStory {}
 
 const meta: Meta<WhatsNewStory> = {
-  title: "Cards / WhatsNew",
+  title: 'Cards / WhatsNew',
   component: WhatsNewStory,
   tags: ['autodocs'],
   parameters: { layout: 'padded' },
