@@ -20,12 +20,43 @@
             (click)="openCardPanel()"
             >+ Add Card</ui5-button
           >
+        } @else if (compactToolbar()) {
+          <ui5-button
+            #menuBtn
+            design="Transparent"
+            icon="menu2"
+            tooltip="Actions"
+            (click)="toolbarMenuOpen.update(v => !v)"
+          ></ui5-button>
+          <ui5-menu
+            [open]="toolbarMenuOpen()"
+            [opener]="menuBtn.element"
+            (ui5Open)="toolbarMenuOpen.set(true)"
+            (ui5Close)="toolbarMenuOpen.set(false)"
+            (ui5ItemClick)="
+              onMenuItemClick(
+                $any($event).detail.item.dataset['action'],
+                $event
+              )
+            "
+          >
+            @for (action of customActions(); track action.action) {
+              <ui5-menu-item
+                [icon]="action.icon ?? ''"
+                [text]="action.text ?? ''"
+                [attr.data-action]="action.action"
+              ></ui5-menu-item>
+            }
+            @if (config().editable) {
+              <ui5-menu-separator></ui5-menu-separator>
+              <ui5-menu-item
+                icon="action-settings"
+                text="Edit View"
+                data-action="edit-view"
+              ></ui5-menu-item>
+            }
+          </ui5-menu>
         } @else {
-          @if (config().editable) {
-            <ui5-button design="Default" (click)="enterEditMode()"
-              >Edit View</ui5-button
-            >
-          }
           @for (action of customActions(); track action.action) {
             <ui5-button
               [design]="action.design ?? 'Default'"
@@ -38,6 +69,14 @@
               >{{ action.text }}</ui5-button
             >
           }
+          @if (config().editable) {
+            <ui5-button
+              design="Transparent"
+              icon="action-settings"
+              tooltip="Edit View"
+              (click)="enterEditMode()"
+            ></ui5-button>
+          }
         }
       </div>
     </div>
@@ -46,38 +85,41 @@
       <slot name="dashboard-subheader"></slot>
     </div>
   </div>
- <div class="sections-container">
-   @for (section of sections(); track section.id) {
-    <mfp-dashboard-section
-       [section]="section"
-       [cards]="sectionCards()(section.id)"
-       [columns]="12"
-       [editMode]="editMode()"
-       (removeSection)="removeSection(section.id)"
-       (removeCard)="removeCard($event)"
-     />
-   }
- </div>
-    <gridstack #grid (changeCB)="onOrderChange($event)" [options]="gridOptions()">
-      @for (card of looseCards(); track card.id ?? card.component) {
-        <gridstack-item [style.cursor]="editMode() ? 'pointer' : 'auto'" [options]="card">
-          <mfp-dashboard-card
-            [card]="card"
-            [editMode]="editMode()"
-            (removeCard)="removeCard($any(card.id))"
-          />
-        </gridstack-item>
-      }
-    </gridstack>
-  
-    @if (editMode()) {
-      <div class="dashboard__edit-bar">
-        <ui5-button design="Emphasized" (click)="saveEdit()">Save</ui5-button>
-        <ui5-button design="Transparent" (click)="cancelEdit()"
-          >Cancel</ui5-button
-        >
-      </div>
+  <div class="sections-container">
+    @for (section of sections(); track section.id) {
+      <mfp-dashboard-section
+        [section]="section"
+        [cards]="sectionCards()(section.id)"
+        [columns]="12"
+        [editMode]="editMode()"
+        (removeSection)="removeSection(section.id)"
+        (removeCard)="removeCard($event)"
+      />
     }
+  </div>
+  <gridstack #grid (changeCB)="onOrderChange($event)" [options]="gridOptions()">
+    @for (card of looseCards(); track card.id ?? card.component) {
+      <gridstack-item
+        [style.cursor]="editMode() ? 'pointer' : 'auto'"
+        [options]="card"
+      >
+        <mfp-dashboard-card
+          [card]="card"
+          [editMode]="editMode()"
+          (removeCard)="removeCard($any(card.id))"
+        />
+      </gridstack-item>
+    }
+  </gridstack>
+
+  @if (editMode()) {
+    <div class="dashboard__edit-bar">
+      <ui5-button design="Emphasized" (click)="saveEdit()">Save</ui5-button>
+      <ui5-button design="Transparent" (click)="cancelEdit()"
+        >Cancel</ui5-button
+      >
+    </div>
+  }
 </div>
 
 <mfp-add-card-dialog
