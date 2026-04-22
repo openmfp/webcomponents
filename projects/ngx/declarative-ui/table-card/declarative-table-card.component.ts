@@ -1,8 +1,8 @@
 import { FormFieldDefinition } from '../form';
 import { DeclarativeForm } from '../form/declarative-form/declarative-form.component';
+import { GenericResource } from '../models';
 import { DeclarativeTable } from '../table/declarative-table/declarative-table.component';
 import {
-  GenericResource,
   TableFieldDefinition,
   ValueCellButtonClickEvent,
 } from '../table/models';

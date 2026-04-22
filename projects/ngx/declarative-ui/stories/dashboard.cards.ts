@@ -1,7 +1,7 @@
 import { Favorites } from '../../favorites/favorites.component';
 import { VisitedServiceCard } from '../../visited-service-card/visited-service-card.component';
-import { Dashboard } from '../dashboard/dashboard.component';
-import type { CardConfig, SectionConfig } from '../models';
+import { Dashboard } from '../dashboard/dashboard/dashboard.component';
+import type { CardConfig, SectionConfig } from '../dashboard/models';
 import { TABLE_CARD_CONFIG, TABLE_RESOURCES } from './pods-table.config';
 
 Dashboard.registerAngularComponents([Favorites, VisitedServiceCard]);

@@ -1,27 +1,39 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  FieldDefinition,
+  GenericResource,
+  ValueCellButtonClickEvent,
+} from '../../models';
 import { ValueCell } from './value-cell.component';
-import { FieldDefinition, GenericResource, ValueCellButtonClickEvent } from '../models';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 type Fixture = ComponentFixture<ValueCell<GenericResource, FieldDefinition>>;
 type Comp = ValueCell<GenericResource, FieldDefinition>;
 
-function setup(field: FieldDefinition, resource?: Partial<GenericResource>): { fixture: Fixture; component: Comp } {
+function setup(
+  field: FieldDefinition,
+  resource?: Partial<GenericResource>,
+): { fixture: Fixture; component: Comp } {
   const fixture: Fixture = TestBed.createComponent(
     ValueCell as unknown as typeof ValueCell<GenericResource, FieldDefinition>,
   );
   const component = fixture.componentInstance;
   fixture.componentRef.setInput('fieldDefinition', field);
-  if (resource !== undefined) fixture.componentRef.setInput('resource', resource as GenericResource);
+  if (resource !== undefined)
+    fixture.componentRef.setInput('resource', resource as GenericResource);
   fixture.detectChanges();
   return { fixture, component };
 }
 
 function el(fixture: Fixture, testId: string): Element | null {
-  return (fixture.nativeElement.shadowRoot ?? fixture.nativeElement).querySelector(`[test-id="${testId}"]`);
+  return (
+    fixture.nativeElement.shadowRoot ?? fixture.nativeElement
+  ).querySelector(`[test-id="${testId}"]`);
 }
 
 function q(fixture: Fixture, selector: string): Element | null {
-  return (fixture.nativeElement.shadowRoot ?? fixture.nativeElement).querySelector(selector);
+  return (
+    fixture.nativeElement.shadowRoot ?? fixture.nativeElement
+  ).querySelector(selector);
 }
 
 describe('ValueCell', () => {
@@ -85,7 +97,10 @@ describe('ValueCell', () => {
     });
 
     it('isBoolLike() is false for non-boolean value', () => {
-      const { component } = setup({ property: 'status' }, { status: 'running' });
+      const { component } = setup(
+        { property: 'status' },
+        { status: 'running' },
+      );
       expect(component.isBoolLike()).toBe(false);
     });
 
@@ -105,7 +120,10 @@ describe('ValueCell', () => {
     });
 
     it('isUrlValue() is true for valid http URL', () => {
-      const { component } = setup({ property: 'link' }, { link: 'https://example.com' });
+      const { component } = setup(
+        { property: 'link' },
+        { link: 'https://example.com' },
+      );
       expect(component.isUrlValue()).toBe(true);
     });
 
@@ -249,14 +267,25 @@ describe('ValueCell', () => {
 
   describe('cssStyles', () => {
     it('merges cssCustomization and cssRules', () => {
-      const { component } = setup({
-        property: 'status',
-        uiSettings: {
-          cssCustomization: { color: 'red' },
-          cssRules: [{ if: { condition: 'equals', value: 'Active' }, styles: { fontWeight: 'bold' } }],
+      const { component } = setup(
+        {
+          property: 'status',
+          uiSettings: {
+            cssCustomization: { color: 'red' },
+            cssRules: [
+              {
+                if: { condition: 'equals', value: 'Active' },
+                styles: { fontWeight: 'bold' },
+              },
+            ],
+          },
         },
-      }, { status: 'Active' });
-      expect(component.cssStyles()).toEqual({ color: 'red', fontWeight: 'bold' });
+        { status: 'Active' },
+      );
+      expect(component.cssStyles()).toEqual({
+        color: 'red',
+        fontWeight: 'bold',
+      });
     });
   });
 

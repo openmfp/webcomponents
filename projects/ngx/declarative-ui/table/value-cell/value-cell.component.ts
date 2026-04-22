@@ -2,7 +2,7 @@ import {
   FieldDefinition,
   GenericResource,
   ValueCellButtonClickEvent,
-} from '../models';
+} from '../../models';
 import { evaluateCssRules } from '../utils/cssRules.engine';
 import { getFieldValue } from '../utils/field-definition.utils';
 import { BooleanValue } from './boolean-value/boolean-value.component';
@@ -29,12 +29,9 @@ import '@ui5/webcomponents-icons/dist/AllIcons.js';
   styleUrl: './value-cell.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.ShadowDom,
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class ValueCell<
-  T extends GenericResource,
-  F extends FieldDefinition,
-> {
+export class ValueCell<T extends GenericResource, F extends FieldDefinition> {
   fieldDefinition = input.required<F>();
   resource = input<T>();
   readonly buttonClick = output<ValueCellButtonClickEvent<T>>();

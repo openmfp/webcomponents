@@ -1,4 +1,4 @@
-import { Dashboard } from '../ngx/dashboard/dashboard/dashboard.component';
+import { Dashboard } from '../ngx/declarative-ui/dashboard/dashboard/dashboard.component';
 import { DeclarativeForm } from '../ngx/declarative-ui/form/declarative-form/declarative-form.component';
 import { DeclarativeTableCard } from '../ngx/declarative-ui/table-card/declarative-table-card.component';
 import { DeclarativeTable } from '../ngx/declarative-ui/table/declarative-table/declarative-table.component';

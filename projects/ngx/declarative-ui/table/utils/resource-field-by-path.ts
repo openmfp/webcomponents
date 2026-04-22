@@ -1,5 +1,5 @@
+import { PropertyField, TransformType } from '../../models';
 import jsonpath from 'jsonpath';
-import { PropertyField, TransformType } from '../models';
 
 export const getResourceValueByJsonPath = <T>(
   resource: T,
@@ -26,7 +26,10 @@ export const getResourceValueByJsonPath = <T>(
   const value = queryResult.length ? queryResult[0] : undefined;
 
   if (value && field.propertyField) {
-    return executeTransform(value[field.propertyField.key], field.propertyField.transform);
+    return executeTransform(
+      value[field.propertyField.key],
+      field.propertyField.transform,
+    );
   }
 
   return value;
@@ -73,7 +76,9 @@ const executeTransform = (
 export const encodeBase64 = (str: string): string => {
   try {
     const utf8Bytes = new TextEncoder().encode(str);
-    const binaryString = Array.from(utf8Bytes, (byte) => String.fromCharCode(byte)).join('');
+    const binaryString = Array.from(utf8Bytes, (byte) =>
+      String.fromCharCode(byte),
+    ).join('');
     return btoa(binaryString);
   } catch (error) {
     console.error('Base64 encoding failed:', error);

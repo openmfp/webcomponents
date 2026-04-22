@@ -1,12 +1,9 @@
 import { Favorites } from '../../favorites/favorites.component';
 import { ServiceStatusCard } from '../../service-status/service-status-card.component';
 import { VisitedServiceCard } from '../../visited-service-card/visited-service-card.component';
-import { Dashboard } from '../dashboard/dashboard.component';
-import type {
-  CardConfig,
-  DashboardButtonSettings,
-  DashboardConfig,
-} from '../models';
+import { Dashboard } from '../dashboard/dashboard/dashboard.component';
+import type { CardConfig, DashboardConfig } from '../dashboard/models';
+import { ButtonSettings } from '../models/ui-definition';
 import { CARDS, SECTIONS } from './dashboard.cards';
 import { TABLE_CARD_CONFIG, TABLE_RESOURCES } from './pods-table.config';
 import type { Meta, StoryObj } from '@storybook/angular';
@@ -21,7 +18,7 @@ Dashboard.registerAngularComponents([
 // Shared config
 // ---------------------------------------------------------------------------
 
-const CUSTOM_ACTIONS: DashboardButtonSettings[] = [
+const CUSTOM_ACTIONS: ButtonSettings[] = [
   {
     action: 'download-config',
     text: 'Download config',
@@ -161,7 +158,7 @@ const ANGULAR_REGISTRY_AVAILABLE_CARDS: CardConfig[] = [
 // ---------------------------------------------------------------------------
 
 const meta: Meta<Dashboard> = {
-  title: 'Dashboard / Dashboard',
+  title: 'Declarative UI / Dashboard',
   component: Dashboard,
   tags: ['autodocs'],
   parameters: {

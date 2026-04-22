@@ -1,4 +1,4 @@
-import { CssRule } from '../models';
+import { CssRule } from '../../models';
 
 export const parseStringValue = (value: string) => {
   if (value === 'true') {
@@ -16,7 +16,10 @@ export const parseStringValue = (value: string) => {
   return value;
 };
 
-export const cssRuleResolver = (rule: CssRule, resourceValue: string): boolean => {
+export const cssRuleResolver = (
+  rule: CssRule,
+  resourceValue: string,
+): boolean => {
   const parsedResouceValue = parseStringValue(resourceValue);
   const parsedConditionValue = parseStringValue(rule.if.value);
 

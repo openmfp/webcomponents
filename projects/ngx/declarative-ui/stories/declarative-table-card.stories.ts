@@ -1,4 +1,5 @@
 import type { FormFieldDefinition } from '../form/models';
+import { GenericResource } from '../models/resource';
 import { DeclarativeTableCard } from '../table-card/declarative-table-card.component';
 import {
   DeleteResourceConfirmationConfig,
@@ -6,7 +7,7 @@ import {
   TableCardConfig,
   TableConfig,
 } from '../table-card/models/configs';
-import type { GenericResource, TableFieldDefinition } from '../table/models';
+import type { TableFieldDefinition } from '../table/models';
 import type { Meta, StoryObj } from '@storybook/angular';
 
 // ---------------------------------------------------------------------------

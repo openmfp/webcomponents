@@ -1,4 +1,4 @@
-import { CssRule, CssRuleCondition } from '../models';
+import { CssRule, CssRuleCondition } from '../../models';
 import {
   cssRuleResolver,
   evaluateCssRules,
