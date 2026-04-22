@@ -21,11 +21,6 @@
             >+ Add Card</ui5-button
           >
         } @else {
-          @if (config().editable) {
-            <ui5-button design="Default" (click)="enterEditMode()"
-              >Edit View</ui5-button
-            >
-          }
           @for (action of customActions(); track action.action) {
             <ui5-button
               [design]="action.design ?? 'Default'"
@@ -37,6 +32,14 @@
               "
               >{{ action.text }}</ui5-button
             >
+          }
+          @if (config().editable) {
+            <ui5-button
+              design="Transparent"
+              icon="action-settings"
+              tooltip="Edit View"
+              (click)="enterEditMode()"
+            ></ui5-button>
           }
         }
       </div>

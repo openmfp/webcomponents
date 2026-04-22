@@ -1,3 +1,4 @@
+import '@ui5/webcomponents-icons/dist/action-settings.js';
 import { ButtonSettings } from '../../models/ui-definition';
 import { AddCardDialog } from '../add-card-dialog/add-card-dialog.component';
 import { addComponentToRegistry } from '../card/dashboard-card-registry';
