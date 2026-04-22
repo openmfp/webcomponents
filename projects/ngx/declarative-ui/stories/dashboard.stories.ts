@@ -1,6 +1,6 @@
-import { Favorites } from '../../favorites/favorites.component';
-import { ServiceStatusCard } from '../../service-status/service-status-card.component';
-import { VisitedServiceCard } from '../../visited-service-card/visited-service-card.component';
+import { Favorites } from '../../cards/favorites/favorites.component';
+import { ServiceStatusCard } from '../../cards/service-status/service-status-card.component';
+import { VisitedServiceCard } from '../../cards/visited-service-card/visited-service-card.component';
 import { Dashboard } from '../dashboard/dashboard/dashboard.component';
 import type { CardConfig, DashboardConfig } from '../dashboard/models';
 import { ButtonSettings } from '../models/ui-definition';

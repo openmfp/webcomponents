@@ -1,5 +1,5 @@
-import { Favorites } from '../../favorites/favorites.component';
-import { VisitedServiceCard } from '../../visited-service-card/visited-service-card.component';
+import { Favorites } from '../../cards/favorites/favorites.component';
+import { VisitedServiceCard } from '../../cards/visited-service-card/visited-service-card.component';
 import { Dashboard } from '../dashboard/dashboard/dashboard.component';
 import type { CardConfig, SectionConfig } from '../dashboard/models';
 import { TABLE_CARD_CONFIG, TABLE_RESOURCES } from './pods-table.config';

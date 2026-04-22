@@ -8,12 +8,10 @@ import { Component } from '@angular/core';
 class WhatsNewStory {}
 
 const meta: Meta<WhatsNewStory> = {
-  title: "What's New / WhatsNew",
+  title: "Cards / WhatsNew",
   component: WhatsNewStory,
   tags: ['autodocs'],
-  parameters: {
-    layout: 'padded',
-  },
+  parameters: { layout: 'padded' },
 };
 
 export default meta;

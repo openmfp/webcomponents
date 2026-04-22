@@ -1,5 +1,5 @@
-import type { CardConfig } from '../../models';
-import { AddCardDialog } from '../add-card-dialog.component';
+import { AddCardDialog } from '../dashboard/add-card-dialog/add-card-dialog.component';
+import type { CardConfig } from '../dashboard/models';
 import { Component, Input } from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
 
@@ -54,7 +54,7 @@ class AddCardDialogStory {
 }
 
 const meta: Meta<AddCardDialogStory> = {
-  title: 'Dashboard / AddCardDialog',
+  title: 'Declarative UI / AddCardDialog',
   component: AddCardDialogStory,
   tags: ['autodocs'],
   parameters: {
