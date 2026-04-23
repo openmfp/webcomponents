@@ -142,8 +142,8 @@ describe('Dashboard', () => {
 
     component.cards.set(cards);
 
-    expect(component.addedComponents()).toEqual(
-      new Set(['mfp-a', 'mfp-b', 'mfp-c']),
+    expect(component.addedCardsIds()).toEqual(
+      new Set(['card-1', 'card-2', 'card-3']),
     );
     expect(component.sectionCards()('alpha')).toEqual([cards[0]]);
     expect(component.looseCards()).toEqual([cards[1], cards[2]]);
@@ -281,10 +281,9 @@ describe('Dashboard', () => {
     expect(component.cardDialogOpen()).toBe(false);
   });
 
-  it('adds new cards with generated ids and closes the panel', () => {
+  it('adds new cards and closes the panel', () => {
     const { component } = setup();
 
-    vi.spyOn(Date, 'now').mockReturnValue(1700);
     component.cards.set([{ id: 'card-1', component: 'mfp-a' }]);
     component.cardDialogOpen.set(true);
 
@@ -300,7 +299,7 @@ describe('Dashboard', () => {
     expect(component.cards()).toEqual([
       { id: 'card-1', component: 'mfp-a' },
       {
-        id: 'card-mfp-b-1700',
+        id: 'template-card',
         component: 'mfp-b',
         label: 'Table',
         componentInputs: { size: 'L' },

@@ -106,14 +106,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
   cardDialogOpen = signal(false);
   customActions = computed(() => this.config().customActions ?? []);
-  addedComponents = computed(
-    () =>
-      new Set(
-        this.cards()
-          .map((c) => c.component)
-          .filter(Boolean) as string[],
-      ),
-  );
+  addedCardsIds = computed(() => new Set(this.cards().map((c) => c.id)));
 
   sectionCards = computed(() => {
     const all = this.cards();
@@ -210,7 +203,6 @@ export class Dashboard implements OnInit, OnDestroy {
         ...list,
         ...cards.map((ac) => ({
           ...ac,
-          id: `card-${ac.component}-${Date.now()}`,
         })),
       ]);
     }
