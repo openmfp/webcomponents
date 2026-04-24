@@ -26,7 +26,7 @@ const AVAILABLE_CARDS: CardConfig[] = [
   template: `
     <ui5-button (click)="open = true">Open Dialog</ui5-button>
     <mfp-add-card-dialog
-      [addedComponents]="addedComponents"
+      [addedCardsIds]="addedComponents"
       [availableCards]="availableCards"
       [open]="open"
       (cancel)="open = false"
@@ -79,13 +79,13 @@ export const NoneAdded: Story = {
 export const SomeAdded: Story = {
   args: {
     availableCards: AVAILABLE_CARDS,
-    addedComponents: new Set(['mfp-whats-new']),
+    addedComponents: new Set(['whats-new']),
   },
 };
 
 export const AllAdded: Story = {
   args: {
     availableCards: AVAILABLE_CARDS,
-    addedComponents: new Set(AVAILABLE_CARDS.map((c) => c.component)),
+    addedComponents: new Set(AVAILABLE_CARDS.map((c) => c.id)),
   },
 };

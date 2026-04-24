@@ -1,7 +1,4 @@
-<ui5-dialog
-  [open]="open()"
-  (ui5BeforeClose)="cancel.emit()"
->
+<ui5-dialog [open]="open()" (ui5BeforeClose)="cancel.emit()">
   <div slot="header" class="add-card-dialog__header">
     <ui5-title level="H5">Add Card</ui5-title>
   </div>
@@ -9,16 +6,16 @@
     @if (availableCards().length === 0) {
       <p class="add-card-dialog__empty">No cards available.</p>
     }
-    @for (ac of availableCards(); track ac.component) {
-      @let alreadyAdded = addedComponents().has(ac.component);
+    @for (ac of availableCards(); track ac.id) {
+      @let alreadyAdded = addedCardsIds().has(ac.id);
       <div
         class="add-card-dialog__item"
         [class.add-card-dialog__item--disabled]="alreadyAdded"
       >
         <ui5-checkbox
-          [checked]="alreadyAdded || selectedComponents().has(ac.component)"
+          [checked]="alreadyAdded || selectedIds().has(ac.id)"
           [disabled]="alreadyAdded"
-          (ui5Change)="toggle(ac.component)"
+          (ui5Change)="toggle(ac.id)"
           [text]="ac.label || ac.component"
         />
       </div>

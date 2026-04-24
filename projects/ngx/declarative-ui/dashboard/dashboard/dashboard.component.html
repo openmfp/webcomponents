@@ -98,7 +98,7 @@
     }
   </div>
   <gridstack #grid (changeCB)="onOrderChange($event)" [options]="gridOptions()">
-    @for (card of looseCards(); track card.id ?? card.component) {
+    @for (card of looseCards(); track card.id) {
       <gridstack-item
         [style.cursor]="editMode() ? 'pointer' : 'auto'"
         [options]="card"
@@ -125,7 +125,7 @@
 <mfp-add-card-dialog
   [open]="cardDialogOpen()"
   [availableCards]="availableCards()"
-  [addedComponents]="addedComponents()"
+  [addedCardsIds]="addedCardsIds()"
   (confirm)="onCardsAdded($event)"
   (cancel)="closeCardPanel()"
 />
