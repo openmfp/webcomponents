@@ -1,4 +1,4 @@
-import { FormFieldDefinition } from '../form';
+import { FormFieldChangeEvent, FormFieldDefinition } from '../form';
 import { DeclarativeForm } from '../form/declarative-form/declarative-form.component';
 import { GenericResource } from '../models';
 import { DeclarativeTable } from '../table/declarative-table/declarative-table.component';
@@ -7,7 +7,7 @@ import {
   ValueCellButtonClickEvent,
 } from '../table/models';
 import { getResourceValueByJsonPath } from '../table/utils/resource-field-by-path';
-import { TableCardConfig } from './models/configs';
+import { TableCardConfig, TableCardFormState } from './models/configs';
 import {
   CUSTOM_ELEMENTS_SCHEMA,
   ChangeDetectionStrategy,
@@ -57,6 +57,8 @@ export class DeclarativeTableCard<T extends GenericResource> {
   resources = input.required<T[]>();
 
   config = input.required<TableCardConfig>();
+  createFormState = input<TableCardFormState>({});
+  editFormState = input<TableCardFormState>({});
 
   readonly actionButtonClick = output<ValueCellButtonClickEvent<T>>();
   readonly tableRowClicked = output<T>();
@@ -64,12 +66,17 @@ export class DeclarativeTableCard<T extends GenericResource> {
   readonly paginationLimitChanged = output<number>();
 
   readonly searchChanged = output<string>();
-  readonly createConfirmed = output<Record<string, unknown>>();
-  readonly editConfirmed = output<{
+  readonly createFieldChange = output<FormFieldChangeEvent>();
+  readonly editFieldChange = output<{
     resource: T;
-    formValue: Record<string, unknown>;
+    form: FormFieldChangeEvent;
   }>();
-  readonly deleteConfirmed = output<T>();
+  readonly createSubmit = output<Record<string, unknown>>();
+  readonly editSubmit = output<{
+    resource: T;
+    value: Record<string, unknown>;
+  }>();
+  readonly deleteSubmit = output<T>();
 
   protected searchState = signal<SearchState>('collapsed');
   protected searchExpanded = computed(() => this.searchState() !== 'collapsed');
@@ -84,7 +91,6 @@ export class DeclarativeTableCard<T extends GenericResource> {
   protected deleteDialogOpen = signal(false);
 
   protected pendingResource = signal<T | null>(null);
-  protected pendingFormValue = signal<Record<string, unknown> | null>(null);
 
   protected tableConfig = computed(() => this.config().tableConfig);
   protected header = computed(() => this.config().header);
@@ -160,7 +166,6 @@ export class DeclarativeTableCard<T extends GenericResource> {
     const action = event.field.uiSettings?.buttonSettings?.action;
     if (action === 'edit' && event.resource) {
       this.pendingResource.set(event.resource);
-      this.pendingFormValue.set(null);
       this.editDialogOpen.set(true);
       return;
     }
@@ -173,23 +178,50 @@ export class DeclarativeTableCard<T extends GenericResource> {
     this.actionButtonClick.emit(event);
   }
 
-  onCreateConfirm(): void {
-    const value = this.pendingFormValue();
-    if (value) this.createConfirmed.emit(value);
+  closeCreateDialog(): void {
     this.createDialogOpen.set(false);
   }
 
-  onEditConfirm(): void {
-    const resource = this.pendingResource();
-    const formValue = this.pendingFormValue();
-    if (resource && formValue) this.editConfirmed.emit({ resource, formValue });
+  closeEditDialog(): void {
     this.editDialogOpen.set(false);
   }
 
-  onDeleteConfirm(): void {
-    const resource = this.pendingResource();
-    if (resource) this.deleteConfirmed.emit(resource);
+  closeDeleteDialog(): void {
     this.deleteDialogOpen.set(false);
+  }
+
+  onCreateFieldChange(event: FormFieldChangeEvent): void {
+    this.createFieldChange.emit(event);
+  }
+
+  onEditFieldChange(event: FormFieldChangeEvent): void {
+    const resource = this.pendingResource();
+
+    if (resource) {
+      this.editFieldChange.emit({ resource, form: event });
+    }
+  }
+
+  onCreateSubmit(value: Record<string, unknown>): void {
+    this.createSubmit.emit(value);
+  }
+
+  onEditSubmit(value: Record<string, unknown>): void {
+    const resource = this.pendingResource();
+
+    if (resource) {
+      this.editSubmit.emit({ resource, value });
+    }
+  }
+
+  onDeleteSubmit(): void {
+    const resource = this.pendingResource();
+    if (resource) this.deleteSubmit.emit(resource);
+  }
+
+  protected hasErrors(state: TableCardFormState): boolean {
+    const errors = state.fieldErrors;
+    return !!errors && Object.values(errors).some((val) => !!val);
   }
 
   private addActionsColumn(): TableFieldDefinition[] {
@@ -250,4 +282,5 @@ export class DeclarativeTableCard<T extends GenericResource> {
       {} as Record<string, unknown>,
     );
   }
+
 }

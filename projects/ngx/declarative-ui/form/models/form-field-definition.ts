@@ -1,10 +1,15 @@
-import { ValidatorFn } from '@angular/forms';
-
 export interface FormFieldDefinition {
   name: string;
   label?: string;
   required?: boolean;
   values?: string[];
-  validators?: ValidatorFn[];
   disabled?: boolean;
+  validation?: 'onBlur' | 'onChange';
 }
+
+export interface FormFieldChangeEvent {
+  controlName: string;
+  value: unknown;
+}
+
+export type FormFieldErrors = Record<string, string | null>;

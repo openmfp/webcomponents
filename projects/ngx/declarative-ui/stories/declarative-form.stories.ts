@@ -1,4 +1,8 @@
-import type { FormFieldDefinition } from '../form/models';
+import type {
+  FormFieldChangeEvent,
+  FormFieldDefinition,
+  FormFieldErrors,
+} from '../form/models';
 import { CUSTOM_ELEMENTS_SCHEMA, Component, Input } from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
 
@@ -7,8 +11,10 @@ import type { Meta, StoryObj } from '@storybook/angular';
   template: `
     <mfp-wc-declarative-form
       [editMode]="editMode"
+      [fieldErrors]="fieldErrors"
       [fields]="fields"
       [initialValues]="initialValues"
+      (fieldChange)="handleFormChange($event)"
     />
   `,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -16,7 +22,19 @@ import type { Meta, StoryObj } from '@storybook/angular';
 class DeclarativeFormStory {
   @Input() fields: FormFieldDefinition[] = [];
   @Input() initialValues: Record<string, unknown> = {};
+  @Input() fieldErrors: FormFieldErrors = {};
   @Input() editMode = false;
+
+  handleFormChange(event: CustomEvent<FormFieldChangeEvent>): void {
+    const { controlName, value } = event.detail;
+    const field = this.fields.find((f) => f.name === controlName);
+    const nextErrors = { ...this.fieldErrors };
+    nextErrors[controlName] =
+      field?.required && !value
+        ? `${field.label ?? controlName} is required`
+        : null;
+    this.fieldErrors = nextErrors;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -32,6 +50,7 @@ const meta: Meta<DeclarativeFormStory> = {
   },
   argTypes: {
     fields: { control: 'object' },
+    fieldErrors: { control: 'object' },
     initialValues: { control: 'object' },
     editMode: { control: 'boolean' },
   },
@@ -40,6 +59,7 @@ const meta: Meta<DeclarativeFormStory> = {
       { name: 'metadata_name', label: 'Name' },
       { name: 'metadata_namespace', label: 'Namespace' },
     ],
+    fieldErrors: {},
     initialValues: {},
     editMode: false,
   },
@@ -63,20 +83,25 @@ export const Basic: Story = {
 };
 
 /**
- * Required field demonstrates the Negative value state when left empty and
- * blurred. Fill in the Name field to see the form become valid.
+ * Required markers are visual. This story validates in the host wrapper and
+ * passes a string error back after the field is dirty.
  */
-export const WithValidation: Story = {
+export const WithHostValidation: Story = {
   args: {
     fields: [
-      { name: 'metadata_name', label: 'Name', required: true },
+      {
+        name: 'metadata_name',
+        label: 'Name',
+        required: true,
+        validation: 'onChange',
+      },
       { name: 'metadata_namespace', label: 'Namespace' },
     ] satisfies FormFieldDefinition[],
   },
 };
 
 /** Static select — options provided as a plain string array via `values`. */
-export const StaticSelect: Story = {
+export const WithSelect: Story = {
   args: {
     fields: [
       { name: 'metadata_name', label: 'Name', required: true },
@@ -85,21 +110,6 @@ export const StaticSelect: Story = {
         label: 'Scope',
         required: true,
         values: ['ClusterScoped', 'Namespaced'],
-      },
-    ] satisfies FormFieldDefinition[],
-  },
-};
-
-/** Select populated from already retrieved values. */
-export const PrefetchedSelect: Story = {
-  args: {
-    fields: [
-      { name: 'metadata_name', label: 'Name', required: true },
-      {
-        name: 'metadata_namespace',
-        label: 'Namespace',
-        required: true,
-        values: ['default', 'kube-system', 'production'],
       },
     ] satisfies FormFieldDefinition[],
   },
@@ -133,11 +143,6 @@ export const AllFieldTypes: Story = {
         name: 'spec_scope',
         label: 'Scope',
         values: ['ClusterScoped', 'Namespaced'],
-      },
-      {
-        name: 'metadata_namespace',
-        label: 'Namespace',
-        values: ['default', 'kube-system'],
       },
     ] satisfies FormFieldDefinition[],
   },

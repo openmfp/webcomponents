@@ -1,13 +1,15 @@
-import type { FormFieldDefinition } from '../form/models';
-import { GenericResource } from '../models/resource';
+import type { FormFieldChangeEvent, FormFieldDefinition } from '../form/models';
+import type { GenericResource } from '../models/resource';
 import { DeclarativeTableCard } from '../table-card/declarative-table-card.component';
-import {
+import type {
   DeleteResourceConfirmationConfig,
   ResourceFormConfig,
   TableCardConfig,
+  TableCardFormState,
   TableConfig,
 } from '../table-card/models/configs';
 import type { TableFieldDefinition } from '../table/models';
+import { Component, Input } from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
 
 // ---------------------------------------------------------------------------
@@ -104,6 +106,21 @@ const POD_FORM_FIELDS: FormFieldDefinition[] = [
   },
 ];
 
+const CREATE_FORM_STATE_FIELDS: FormFieldDefinition[] = [
+  {
+    name: 'metadata.name',
+    label: 'Name',
+    required: true,
+    validation: 'onChange',
+  },
+  {
+    name: 'metadata.namespace',
+    label: 'Namespace',
+    required: true,
+    validation: 'onBlur',
+  },
+];
+
 const POD_EDIT_FORM_FIELDS: FormFieldDefinition[] = [
   { name: 'metadata.name', label: 'Name', required: true, disabled: true },
   {
@@ -126,21 +143,79 @@ const BASE_CONFIG: TableCardConfig = {
 };
 
 // ---------------------------------------------------------------------------
+// Wrapper component for stories that need host-owned state
+// ---------------------------------------------------------------------------
+
+@Component({
+  selector: 'mfp-declarative-table-card-create-story',
+  imports: [DeclarativeTableCard],
+  template: `
+    <mfp-declarative-table-card
+      #tableCard
+      [config]="config"
+      [createFormState]="createFormState"
+      [resources]="resources"
+      (createFieldChange)="onCreateFieldChange($event)"
+      (createSubmit)="onCreateSubmit($event, tableCard)"
+    />
+  `,
+})
+class DeclarativeTableCardCreateStory {
+  @Input() config!: TableCardConfig;
+  @Input() resources: GenericResource[] = [];
+  createFormState: TableCardFormState = {};
+
+  onCreateFieldChange(event: FormFieldChangeEvent): void {
+    const fieldErrors: Record<string, string | null> = {
+      ...this.createFormState.fieldErrors,
+    };
+
+    switch (event.controlName) {
+      case 'metadata.name':
+        fieldErrors[event.controlName] = event.value
+          ? null
+          : 'Name is required';
+        break;
+      case 'metadata.namespace':
+        fieldErrors[event.controlName] = event.value
+          ? null
+          : 'Namespace is required';
+        break;
+    }
+
+    this.createFormState = { fieldErrors };
+  }
+
+  onCreateSubmit(
+    _value: Record<string, unknown>,
+    tableCard: DeclarativeTableCard<GenericResource>,
+  ): void {
+    setTimeout(() => {
+      alert(JSON.stringify(_value));
+      tableCard.closeCreateDialog();
+    }, 1000);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Meta
 // ---------------------------------------------------------------------------
 
 const meta: Meta<DeclarativeTableCard<GenericResource>> = {
   title: 'Declarative UI / DeclarativeTableCard',
-  component: DeclarativeTableCard,
+  component: DeclarativeTableCardCreateStory,
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',
   },
   argTypes: {
     config: { control: 'object' },
+    createFormState: { control: 'object' },
+    editFormState: { control: 'object' },
   },
   args: {
     config: BASE_CONFIG,
+    editFormState: {} satisfies TableCardFormState,
     resources: PODS,
   },
 };
@@ -177,6 +252,26 @@ export const WithCreate: Story = {
         cancelLabel: 'Cancel',
       } satisfies ResourceFormConfig,
     },
+  },
+};
+
+/** Create dialog with host-owned validation and submit state. */
+export const WithCreateFormState: StoryObj<DeclarativeTableCardCreateStory> = {
+  render: (args) => ({
+    props: args,
+    component: DeclarativeTableCardCreateStory,
+  }),
+  args: {
+    config: {
+      ...BASE_CONFIG,
+      createResourceFormConfig: {
+        fields: CREATE_FORM_STATE_FIELDS,
+        title: 'Create Pod',
+        confirmLabel: 'Create',
+        cancelLabel: 'Cancel',
+      } satisfies ResourceFormConfig,
+    },
+    resources: PODS,
   },
 };
 

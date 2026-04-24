@@ -1,15 +1,16 @@
-import { FormFieldDefinition } from '../models';
+import { FormFieldChangeEvent, FormFieldDefinition } from '../models';
 import { DeclarativeForm } from './declarative-form.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ReactiveFormsModule, Validators } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 
 describe('DeclarativeForm', () => {
   let component: DeclarativeForm;
   let fixture: ComponentFixture<DeclarativeForm>;
 
   const testFields: FormFieldDefinition[] = [
-    { name: 'metadata.name', label: 'Name', required: true },
-    { name: 'metadata.namespace', label: 'Namespace', required: false },
+    { name: 'metadata.name', label: 'Name', required: true, validation: 'onChange' },
+    { name: 'metadata.namespace', label: 'Namespace', required: false, validation: 'onBlur' },
+    { name: 'metadata.labels', label: 'Labels' },
   ];
 
   beforeEach(async () => {
@@ -31,22 +32,19 @@ describe('DeclarativeForm', () => {
     it('should create controls for each field', () => {
       expect(component.form.controls['metadata.name']).toBeDefined();
       expect(component.form.controls['metadata.namespace']).toBeDefined();
+      expect(component.form.controls['metadata.labels']).toBeDefined();
     });
 
-    it('should apply required validator when field.required is true', () => {
+    it('should not register validators for required fields', () => {
       const ctrl = component.form.controls['metadata.name'];
+
       ctrl.setValue('');
-      expect(ctrl.valid).toBeFalsy();
+
+      expect(ctrl.validator).toBeNull();
+      expect(ctrl.valid).toBe(true);
     });
 
-    it('should not apply required validator when field.required is false', () => {
-      const ctrl = component.form.controls['metadata.namespace'];
-      ctrl.setValue('');
-      expect(ctrl.valid).toBeTruthy();
-    });
-
-    it('should pre-populate controls from initialValues', () => {
-      fixture.componentRef.setInput('fields', testFields);
+    it('should pre-populate controls from initialValues without marking dirty', () => {
       fixture.componentRef.setInput('initialValues', {
         'metadata.name': 'my-resource',
         'metadata.namespace': 'default',
@@ -54,28 +52,19 @@ describe('DeclarativeForm', () => {
 
       fixture.detectChanges();
 
-      expect(component.form.controls['metadata.name'].value).toBe('my-resource');
-      expect(component.form.controls['metadata.namespace'].value).toBe('default');
+      expect(component.form.controls['metadata.name'].value).toBe(
+        'my-resource',
+      );
+      expect(component.form.controls['metadata.namespace'].value).toBe(
+        'default',
+      );
+      expect(component.form.controls['metadata.name'].dirty).toBe(false);
+      expect(component.getValueState('metadata.name')).toBe('None');
     });
 
     it('should default missing initialValues keys to empty string', () => {
       fixture.componentRef.setInput('initialValues', {});
       expect(component.form.controls['metadata.name'].value).toBe('');
-    });
-
-    it('should apply extra validators from field.validators', () => {
-      const emailField: FormFieldDefinition[] = [
-        { name: 'email', required: false, validators: [Validators.email] },
-      ];
-      fixture.componentRef.setInput('fields', emailField);
-
-      fixture.detectChanges();
-
-      component.form.controls['email'].setValue('not-an-email');
-      expect(component.form.controls['email'].valid).toBeFalsy();
-
-      component.form.controls['email'].setValue('valid@example.com');
-      expect(component.form.controls['email'].valid).toBeTruthy();
     });
 
     it('should render a select when field.values are provided', () => {
@@ -116,110 +105,197 @@ describe('DeclarativeForm', () => {
     });
   });
 
-  describe('formValidChange output', () => {
-    it('should emit false when a required field is empty', () => {
-      const spy = vi.spyOn(component.formValidChange, 'emit');
-      component.form.controls['metadata.name'].setValue('');
-      component.form.controls['metadata.name'].updateValueAndValidity();
-      expect(spy).toHaveBeenCalledWith(false);
-    });
+  describe('fieldChange output', () => {
+    it('should emit on value change for validation: onChange field', () => {
+      const emitted: FormFieldChangeEvent[] = [];
+      component.fieldChange.subscribe((event) => emitted.push(event));
 
-    it('should emit true when all required fields are filled', () => {
-      const spy = vi.spyOn(component.formValidChange, 'emit');
-      component.form.controls['metadata.name'].setValue('hello');
-      expect(spy).toHaveBeenCalledWith(true);
-    });
-
-    it('should emit false again after clearing a required field', () => {
-      component.form.controls['metadata.name'].setValue('hello');
-      const spy = vi.spyOn(component.formValidChange, 'emit');
-      component.form.controls['metadata.name'].setValue('');
-      expect(spy).toHaveBeenCalledWith(false);
-    });
-  });
-
-  describe('formValue output', () => {
-    it('should not emit when form is invalid', () => {
-      const spy = vi.spyOn(component.formValue, 'emit');
-      component.form.controls['metadata.name'].setValue('');
-      component.form.controls['metadata.name'].updateValueAndValidity();
-      expect(spy).not.toHaveBeenCalled();
-    });
-
-    it('should emit nested object when form is valid', () => {
-      const spy = vi.spyOn(component.formValue, 'emit');
-      component.form.controls['metadata.name'].setValue('my-app');
-      expect(spy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          metadata: expect.objectContaining({ name: 'my-app' }),
-        }),
+      const onChangeField = testFields.find((f) => f.name === 'metadata.name')!;
+      component.setFormControlValue(
+        { target: { value: 'new-value' } } as unknown as Event,
+        onChangeField,
       );
+
+      expect(emitted).toEqual([
+        { controlName: 'metadata.name', value: 'new-value' },
+      ]);
     });
 
-    it('should use dots in field names as nested path segments', () => {
-      fixture.componentRef.setInput('fields', [
-        { name: 'spec.replicas', required: true },
-      ]);
+    it('should not emit on blur for validation: onChange field', () => {
+      const emitted: FormFieldChangeEvent[] = [];
+      component.fieldChange.subscribe((event) => emitted.push(event));
 
+      const onChangeField = testFields.find((f) => f.name === 'metadata.name')!;
+      component.onFieldBlur(onChangeField);
+
+      expect(emitted).toEqual([]);
+    });
+
+    it('should emit on blur for validation: onBlur field', () => {
+      const emitted: FormFieldChangeEvent[] = [];
+      component.fieldChange.subscribe((event) => emitted.push(event));
+
+      const onBlurField = testFields.find((f) => f.name === 'metadata.namespace')!;
+      component.setFormControlValue(
+        { target: { value: 'kube-system' } } as unknown as Event,
+        onBlurField,
+      );
+
+      expect(emitted).toEqual([]);
+
+      component.onFieldBlur(onBlurField);
+
+      expect(emitted).toEqual([
+        { controlName: 'metadata.namespace', value: 'kube-system' },
+      ]);
+    });
+
+    it('should not emit on value change for validation: onBlur field', () => {
+      const emitted: FormFieldChangeEvent[] = [];
+      component.fieldChange.subscribe((event) => emitted.push(event));
+
+      const onBlurField = testFields.find((f) => f.name === 'metadata.namespace')!;
+      component.setFormControlValue(
+        { target: { value: 'kube-system' } } as unknown as Event,
+        onBlurField,
+      );
+
+      expect(emitted).toEqual([]);
+    });
+
+    it('should not emit on change or blur for field without validation', () => {
+      const emitted: FormFieldChangeEvent[] = [];
+      component.fieldChange.subscribe((event) => emitted.push(event));
+
+      const noValidationField = testFields.find((f) => f.name === 'metadata.labels')!;
+      component.setFormControlValue(
+        { target: { value: 'some-label' } } as unknown as Event,
+        noValidationField,
+      );
+      component.onFieldBlur(noValidationField);
+
+      expect(emitted).toEqual([]);
+    });
+
+    it('should emit fieldChange for validated fields when initialValues change', () => {
+      const emitted: FormFieldChangeEvent[] = [];
+      component.fieldChange.subscribe((event) => emitted.push(event));
+
+      fixture.componentRef.setInput('initialValues', {
+        'metadata.name': 'my-resource',
+        'metadata.namespace': 'ns-value',
+      });
       fixture.detectChanges();
 
-      const spy = vi.spyOn(component.formValue, 'emit');
-      component.form.controls['spec.replicas'].setValue('3');
+      expect(emitted).toEqual(
+        expect.arrayContaining([
+          { controlName: 'metadata.name', value: 'my-resource' },
+          { controlName: 'metadata.namespace', value: 'ns-value' },
+        ]),
+      );
+      expect(
+        emitted.find((e) => e.controlName === 'metadata.labels'),
+      ).toBeUndefined();
+    });
+  });
 
-      expect(spy).toHaveBeenCalledWith(
-        expect.objectContaining({ spec: { replicas: '3' } }),
+  describe('initial emission', () => {
+    it('should emit fieldChange for fields with validation on init', () => {
+      const localFixture = TestBed.createComponent(DeclarativeForm);
+      const localComponent = localFixture.componentInstance;
+
+      const emitted: FormFieldChangeEvent[] = [];
+      localComponent.fieldChange.subscribe((event) => emitted.push(event));
+
+      localFixture.componentRef.setInput('fields', testFields);
+      localFixture.detectChanges();
+
+      expect(emitted).toEqual(
+        expect.arrayContaining([
+          { controlName: 'metadata.name', value: '' },
+          { controlName: 'metadata.namespace', value: '' },
+        ]),
       );
     });
-  });
 
-  describe('setFormControlValue', () => {
-    it('should set value, mark touched and dirty', () => {
-      const event = { target: { value: 'new-value' } };
-      const ctrl = component.form.controls['metadata.name'];
+    it('should not emit fieldChange for fields without validation on init', () => {
+      const localFixture = TestBed.createComponent(DeclarativeForm);
+      const localComponent = localFixture.componentInstance;
 
-      vi.spyOn(ctrl, 'setValue');
-      vi.spyOn(ctrl, 'markAsTouched');
-      vi.spyOn(ctrl, 'markAsDirty');
+      const emitted: FormFieldChangeEvent[] = [];
+      localComponent.fieldChange.subscribe((event) => emitted.push(event));
 
-      component.setFormControlValue(event as unknown as Event, 'metadata.name');
+      localFixture.componentRef.setInput('fields', testFields);
+      localFixture.detectChanges();
 
-      expect(ctrl.setValue).toHaveBeenCalledWith('new-value');
-      expect(ctrl.markAsTouched).toHaveBeenCalled();
-      expect(ctrl.markAsDirty).toHaveBeenCalled();
+      expect(
+        emitted.find((e) => e.controlName === 'metadata.labels'),
+      ).toBeUndefined();
     });
   });
 
-  describe('getValueState', () => {
-    it('should return Negative for invalid and touched control', () => {
-      const ctrl = component.form.controls['metadata.name'];
-      ctrl.setValue('');
-      ctrl.markAsTouched();
+  describe('field errors', () => {
+    it('should show no error for a pristine field', () => {
+      fixture.componentRef.setInput('fieldErrors', {
+        'metadata.name': 'Name is required',
+      });
+      fixture.detectChanges();
+
+      expect(component.getValueState('metadata.name')).toBe('None');
+    });
+
+    it('should show error for a dirty field with an error string', () => {
+      fixture.componentRef.setInput('fieldErrors', {
+        'metadata.name': 'Name is required',
+      });
+
+      const onChangeField = testFields.find((f) => f.name === 'metadata.name')!;
+      component.setFormControlValue(
+        { target: { value: '' } } as unknown as Event,
+        onChangeField,
+      );
+      fixture.detectChanges();
+
+      const shadowRoot = fixture.nativeElement.shadowRoot as ShadowRoot;
+      const message = shadowRoot.querySelector('[slot="valueStateMessage"]');
+
+      expect(component.getValueState('metadata.name')).toBe('Negative');
+      expect(message?.textContent?.trim()).toBe('Name is required');
+    });
+
+    it('should show error for a touched field', () => {
+      fixture.componentRef.setInput('fieldErrors', {
+        'metadata.name': 'Name is required',
+      });
+      fixture.detectChanges();
+
+      const control = component.form.controls['metadata.name'];
+      control.markAsTouched();
+
       expect(component.getValueState('metadata.name')).toBe('Negative');
     });
-
-    it('should return None for valid control', () => {
-      const ctrl = component.form.controls['metadata.name'];
-      ctrl.setValue('valid');
-      ctrl.markAsTouched();
-      expect(component.getValueState('metadata.name')).toBe('None');
-    });
-
-    it('should return None for untouched invalid control', () => {
-      const ctrl = component.form.controls['metadata.name'];
-      ctrl.setValue('');
-      ctrl.markAsUntouched();
-      expect(component.getValueState('metadata.name')).toBe('None');
-    });
   });
 
-  describe('onFieldBlur', () => {
-    it('should mark control as touched', () => {
-      const ctrl = component.form.controls['metadata.name'];
-      vi.spyOn(ctrl, 'markAsTouched');
+  describe('submit output', () => {
+    it('should emit nested object built from dotted field names', () => {
+      const emitted: Record<string, unknown>[] = [];
+      component.formSubmit.subscribe((value) => emitted.push(value));
 
-      component.onFieldBlur('metadata.name');
+      component.form.controls['metadata.name'].setValue('my-app');
+      component.form.controls['metadata.namespace'].setValue('default');
+      component.form.controls['metadata.labels'].setValue('app=my-app');
 
-      expect(ctrl.markAsTouched).toHaveBeenCalled();
+      component.submit();
+
+      expect(emitted).toEqual([
+        {
+          metadata: {
+            name: 'my-app',
+            namespace: 'default',
+            labels: 'app=my-app',
+          },
+        },
+      ]);
     });
   });
 });

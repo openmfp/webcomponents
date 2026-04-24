@@ -1,22 +1,22 @@
-import { FormFieldDefinition } from '../models';
+import {
+  FormFieldChangeEvent,
+  FormFieldDefinition,
+  FormFieldErrors,
+} from '../models';
 import { setPropertyByPath } from '../utils/set-property-by-path';
 import {
   Component,
-  DestroyRef,
   ViewEncapsulation,
   effect,
   inject,
   input,
   output,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormBuilder,
   FormControl,
   FormGroup,
   ReactiveFormsModule,
-  ValidatorFn,
-  Validators,
 } from '@angular/forms';
 import { Input } from '@fundamental-ngx/ui5-webcomponents/input';
 import { Label } from '@fundamental-ngx/ui5-webcomponents/label';
@@ -25,13 +25,7 @@ import { Select } from '@fundamental-ngx/ui5-webcomponents/select';
 
 @Component({
   selector: 'mfp-declarative-form',
-  imports: [
-    ReactiveFormsModule,
-    Input,
-    Label,
-    Select,
-    Option,
-  ],
+  imports: [ReactiveFormsModule, Input, Label, Select, Option],
   templateUrl: './declarative-form.component.html',
   styleUrl: './declarative-form.component.scss',
   encapsulation: ViewEncapsulation.ShadowDom,
@@ -39,20 +33,17 @@ import { Select } from '@fundamental-ngx/ui5-webcomponents/select';
 export class DeclarativeForm {
   readonly fields = input.required<FormFieldDefinition[]>();
   readonly initialValues = input<Record<string, unknown>>({});
-  readonly editMode = input<boolean>(false);
+  readonly fieldErrors = input<FormFieldErrors>({});
 
-  readonly formValue = output<Record<string, unknown>>();
-  readonly formValidChange = output<boolean>();
+  readonly fieldChange = output<FormFieldChangeEvent>();
+  readonly formSubmit = output<Record<string, unknown>>();
 
   readonly form: FormGroup;
 
   private readonly fb = inject(FormBuilder);
-  private readonly destroyRef = inject(DestroyRef);
 
   constructor() {
     this.form = this.fb.group({});
-
-    this.subscribeToFormChanges();
 
     effect(() => {
       this.rebuildControls(this.fields());
@@ -61,27 +52,62 @@ export class DeclarativeForm {
     effect(() => {
       this.setInitialValues(this.initialValues());
     });
+
+    effect(() => {
+      const fields = this.fields();
+      this.initialValues();
+
+      for (const field of fields) {
+        if (field.validation) {
+          this.fieldChange.emit({
+            controlName: field.name,
+            value: this.form.controls[field.name]?.value ?? '',
+          });
+        }
+      }
+    });
   }
 
-  setFormControlValue($event: Event, name: string): void {
+  setFormControlValue($event: Event, field: FormFieldDefinition): void {
     const target = $event.target as
       | HTMLInputElement
       | HTMLTextAreaElement
       | HTMLSelectElement;
-    this.form.controls[name]?.setValue(target.value);
-    this.form.controls[name]?.markAsTouched();
-    this.form.controls[name]?.markAsDirty();
+
+    const control = this.form.controls[field.name];
+    control.setValue(target.value);
+    control.markAsTouched();
+    control.markAsDirty();
+
+    if (field.validation === 'onChange') {
+      this.fieldChange.emit({ controlName: field.name, value: control.value });
+    }
   }
 
-  getValueState(
-    name: string,
-  ): 'None' | 'Positive' | 'Critical' | 'Negative' | 'Information' {
+  getError(name: string): string | null {
     const control = this.form.controls[name];
-    return control?.invalid && control?.touched ? 'Negative' : 'None';
+    const error = this.fieldErrors()[name];
+
+    return error && (control.dirty || control.touched) ? error : null;
   }
 
-  onFieldBlur(name: string): void {
-    this.form.controls[name]?.markAsTouched();
+  getValueState(name: string): 'None' | 'Negative' {
+    return this.getError(name) ? 'Negative' : 'None';
+  }
+
+  onFieldBlur(field: FormFieldDefinition): void {
+    this.form.controls[field.name]?.markAsTouched();
+
+    if (field.validation === 'onBlur') {
+      this.fieldChange.emit({
+        controlName: field.name,
+        value: this.form.controls[field.name]?.value,
+      });
+    }
+  }
+
+  submit(): void {
+    this.formSubmit.emit(this.buildOutputValue());
   }
 
   private rebuildControls(fields: FormFieldDefinition[]): void {
@@ -89,20 +115,15 @@ export class DeclarativeForm {
     const nextFieldNames = new Set(fields.map((field) => field.name));
 
     for (const field of fields) {
-      const validators: ValidatorFn[] = [
-        ...(field.required ? [Validators.required] : []),
-        ...(field.validators ?? []),
-      ];
-
       const existingControl = existingControls[field.name];
 
       if (existingControl) {
-        existingControl.setValidators(validators);
+        existingControl.clearValidators();
         existingControl.updateValueAndValidity({ emitEvent: false });
         continue;
       }
 
-      this.form.addControl(field.name, new FormControl('', validators));
+      this.form.addControl(field.name, new FormControl(''));
     }
 
     for (const controlName of Object.keys(existingControls)) {
@@ -122,25 +143,8 @@ export class DeclarativeForm {
     }
 
     this.form.patchValue(initialValues, { emitEvent: false });
+    this.form.markAsPristine({ emitEvent: false });
     this.form.updateValueAndValidity({ emitEvent: false });
-
-    this.formValidChange.emit(this.form.valid);
-
-    if (this.form.valid) {
-      this.formValue.emit(this.buildOutputValue());
-    }
-  }
-
-  private subscribeToFormChanges(): void {
-    this.form.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
-        this.formValidChange.emit(this.form.valid);
-
-        if (this.form.valid) {
-          this.formValue.emit(this.buildOutputValue());
-        }
-      });
   }
 
   private buildOutputValue(): Record<string, unknown> {
