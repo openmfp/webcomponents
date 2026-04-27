@@ -509,7 +509,7 @@ describe('DeclarativeTableCard', () => {
 
   describe('form state and submit flow', () => {
     const fieldChange: FormFieldChangeEvent = {
-      controlName: 'metadata.name',
+      fieldProperty: 'metadata.name',
       value: 'new-pod',
     };
 
@@ -528,7 +528,7 @@ describe('DeclarativeTableCard', () => {
       const resource = RESOURCES[0];
       const emitted: {
         resource: GenericResource;
-        form: FormFieldChangeEvent;
+        formChangeEvent: FormFieldChangeEvent;
       }[] = [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (component as any).pendingResource.set(resource);
@@ -536,7 +536,7 @@ describe('DeclarativeTableCard', () => {
 
       component.onEditFieldChange(fieldChange);
 
-      expect(emitted).toEqual([{ resource, form: fieldChange }]);
+      expect(emitted).toEqual([{ resource, formChangeEvent: fieldChange }]);
     });
 
     it('does not emit editFieldChange without pending resource', () => {

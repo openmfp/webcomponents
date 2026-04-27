@@ -170,14 +170,14 @@ class DeclarativeTableCardCreateStory {
       ...this.createFormState.fieldErrors,
     };
 
-    switch (event.controlName) {
+    switch (event.fieldProperty) {
       case 'metadata.name':
-        fieldErrors[event.controlName] = event.value
+        fieldErrors[event.fieldProperty] = event.value
           ? null
           : 'Name is required';
         break;
       case 'metadata.namespace':
-        fieldErrors[event.controlName] = event.value
+        fieldErrors[event.fieldProperty] = event.value
           ? null
           : 'Namespace is required';
         break;

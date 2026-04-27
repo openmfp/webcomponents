@@ -26,12 +26,12 @@ class DeclarativeFormStory {
   @Input() editMode = false;
 
   handleFormChange(event: CustomEvent<FormFieldChangeEvent>): void {
-    const { controlName, value } = event.detail;
-    const field = this.fields.find((f) => f.name === controlName);
+    const { fieldProperty, value } = event.detail;
+    const field = this.fields.find((f) => f.name === fieldProperty);
     const nextErrors = { ...this.fieldErrors };
-    nextErrors[controlName] =
+    nextErrors[fieldProperty] =
       field?.required && !value
-        ? `${field.label ?? controlName} is required`
+        ? `${field.label ?? fieldProperty} is required`
         : null;
     this.fieldErrors = nextErrors;
   }

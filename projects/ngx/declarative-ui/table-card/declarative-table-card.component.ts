@@ -69,7 +69,7 @@ export class DeclarativeTableCard<T extends GenericResource> {
   readonly createFieldChange = output<FormFieldChangeEvent>();
   readonly editFieldChange = output<{
     resource: T;
-    form: FormFieldChangeEvent;
+    formChangeEvent: FormFieldChangeEvent;
   }>();
   readonly createSubmit = output<Record<string, unknown>>();
   readonly editSubmit = output<{
@@ -198,7 +198,7 @@ export class DeclarativeTableCard<T extends GenericResource> {
     const resource = this.pendingResource();
 
     if (resource) {
-      this.editFieldChange.emit({ resource, form: event });
+      this.editFieldChange.emit({ resource, formChangeEvent: event });
     }
   }
 

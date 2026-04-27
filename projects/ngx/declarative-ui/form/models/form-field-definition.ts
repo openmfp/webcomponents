@@ -8,7 +8,7 @@ export interface FormFieldDefinition {
 }
 
 export interface FormFieldChangeEvent {
-  controlName: string;
+  fieldProperty: string;
   value: unknown;
 }
 

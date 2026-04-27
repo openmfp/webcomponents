@@ -25,16 +25,16 @@ A dynamic form web component that renders fields from a declarative field defini
   ];
 
   form.addEventListener('fieldChange', (event) => {
-    const { controlName, value } = event.detail;
-    const fieldErrors = { ...form.fieldErrors }
+    const { fieldProperty, value } = event.detail;
+    const fieldErrors = { ...form.fieldErrors };
 
-    if (controlName === 'metadata.name' && !value) {
-      fieldError[conrolName] = 'metadata.name': 'Name is required';
+    if (fieldProperty === 'metadata.name' && !value) {
+      fieldErrors[fieldProperty] = 'Name is required';
     } else {
-      fieldError[controlName] = null;
+      fieldErrors[fieldProperty] = null;
     }
 
-    form.fieldError = fieldError
+    form.fieldErrors = fieldErrors;
   });
 
   form.addEventListener('formSubmit', (event) => {
@@ -90,10 +90,10 @@ export class MyComponent {
   fieldErrors: FormFieldErrors = {};
 
   onFieldChange(event: FormFieldChangeEvent): void {
-    const { controlName, value } = event;
+    const { fieldProperty, value } = event;
     this.fieldErrors = {
       ...this.fieldErrors,
-      [controlName]: !value ? 'Field is required' : null,
+      [fieldProperty]: !value ? 'Field is required' : null,
     };
   }
 
@@ -138,7 +138,7 @@ interface FormFieldDefinition {
 }
 
 interface FormFieldChangeEvent {
-  controlName: string;  // The form control name (matches field.name)
+  fieldProperty: string;  // The field property name (matches field.name)
   value: unknown;       // Current value of the control
 }
 
@@ -148,7 +148,7 @@ type FormFieldErrors = Record<string, string | null>;
 `fieldChange` emits a single field at a time:
 
 ```ts
-{ controlName: 'metadata.name', value: 'my-app' }
+{ fieldProperty: 'metadata.name', value: 'my-app' }
 ```
 
 `formSubmit` emits a nested object:

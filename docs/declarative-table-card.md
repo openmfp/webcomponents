@@ -46,12 +46,12 @@ A card component that wraps `mfp-declarative-table` and adds a header, search, a
   };
 
   card.addEventListener('createFieldChange', (event) => {
-    const { controlName, value } = event.detail;
+    const { fieldProperty, value } = event.detail;
 
     card.createFormState = {
       fieldErrors: {
         ...card.createFormState?.fieldErrors,
-        [controlName]: !value ? 'Field is required' : null,
+        [fieldProperty]: !value ? 'Field is required' : null,
       },
     };
   });
@@ -123,17 +123,20 @@ export class MyComponent {
   };
 
   onCreateFieldChange(event: FormFieldChangeEvent): void {
-    const { controlName, value } = event;
+    const { fieldProperty, value } = event;
     this.createFormState = {
       fieldErrors: {
         ...this.createFormState.fieldErrors,
-        [controlName]: !value ? 'Field is required' : null,
+        [fieldProperty]: !value ? 'Field is required' : null,
       },
     };
   }
 
-  onEditFieldChange(event: { resource: Pod; form: FormFieldChangeEvent }): void {
-    // Validate event.form and update editFormState.
+  onEditFieldChange(event: {
+    resource: Pod;
+    formChangeEvent: FormFieldChangeEvent;
+  }): void {
+    // Validate event.formChangeEvent and update editFormState.
   }
 
   async onCreateSubmit(
@@ -182,7 +185,7 @@ export class MyComponent {
 | Event                    | Payload                                           | Description                                                  |
 | ------------------------ | ------------------------------------------------- | ------------------------------------------------------------ |
 | `createFieldChange`       | `FormFieldChangeEvent`                            | Re-emits per-field change from the create form               |
-| `editFieldChange`         | `{ resource: T; form: FormFieldChangeEvent }`     | Re-emits per-field change from the edit form with resource   |
+| `editFieldChange`         | `{ resource: T; formChangeEvent: FormFieldChangeEvent }` | Re-emits per-field change from the edit form with resource   |
 | `createSubmit`           | `Record<string, unknown>`                         | Fires when the create dialog Save button is clicked          |
 | `editSubmit`             | `{ resource: T; value: Record<string, unknown> }` | Fires when the edit dialog Save button is clicked            |
 | `deleteSubmit`           | `T`                                               | Fires when the delete dialog Delete button is clicked        |

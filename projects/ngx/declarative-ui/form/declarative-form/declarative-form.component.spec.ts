@@ -117,7 +117,7 @@ describe('DeclarativeForm', () => {
       );
 
       expect(emitted).toEqual([
-        { controlName: 'metadata.name', value: 'new-value' },
+        { fieldProperty: 'metadata.name', value: 'new-value' },
       ]);
     });
 
@@ -146,7 +146,7 @@ describe('DeclarativeForm', () => {
       component.onFieldBlur(onBlurField);
 
       expect(emitted).toEqual([
-        { controlName: 'metadata.namespace', value: 'kube-system' },
+        { fieldProperty: 'metadata.namespace', value: 'kube-system' },
       ]);
     });
 
@@ -189,12 +189,12 @@ describe('DeclarativeForm', () => {
 
       expect(emitted).toEqual(
         expect.arrayContaining([
-          { controlName: 'metadata.name', value: 'my-resource' },
-          { controlName: 'metadata.namespace', value: 'ns-value' },
+          { fieldProperty: 'metadata.name', value: 'my-resource' },
+          { fieldProperty: 'metadata.namespace', value: 'ns-value' },
         ]),
       );
       expect(
-        emitted.find((e) => e.controlName === 'metadata.labels'),
+        emitted.find((e) => e.fieldProperty === 'metadata.labels'),
       ).toBeUndefined();
     });
   });
@@ -212,8 +212,8 @@ describe('DeclarativeForm', () => {
 
       expect(emitted).toEqual(
         expect.arrayContaining([
-          { controlName: 'metadata.name', value: '' },
-          { controlName: 'metadata.namespace', value: '' },
+          { fieldProperty: 'metadata.name', value: '' },
+          { fieldProperty: 'metadata.namespace', value: '' },
         ]),
       );
     });
@@ -229,7 +229,7 @@ describe('DeclarativeForm', () => {
       localFixture.detectChanges();
 
       expect(
-        emitted.find((e) => e.controlName === 'metadata.labels'),
+        emitted.find((e) => e.fieldProperty === 'metadata.labels'),
       ).toBeUndefined();
     });
   });

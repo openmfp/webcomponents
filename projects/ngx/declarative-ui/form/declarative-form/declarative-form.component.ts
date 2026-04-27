@@ -60,7 +60,7 @@ export class DeclarativeForm {
       for (const field of fields) {
         if (field.validation) {
           this.fieldChange.emit({
-            controlName: field.name,
+            fieldProperty: field.name,
             value: this.form.controls[field.name]?.value ?? '',
           });
         }
@@ -80,7 +80,7 @@ export class DeclarativeForm {
     control.markAsDirty();
 
     if (field.validation === 'onChange') {
-      this.fieldChange.emit({ controlName: field.name, value: control.value });
+      this.fieldChange.emit({ fieldProperty: field.name, value: control.value });
     }
   }
 
@@ -100,7 +100,7 @@ export class DeclarativeForm {
 
     if (field.validation === 'onBlur') {
       this.fieldChange.emit({
-        controlName: field.name,
+        fieldProperty: field.name,
         value: this.form.controls[field.name]?.value,
       });
     }
