@@ -1,4 +1,7 @@
-<div class="section" [class.section--edit]="editMode() && section().editable !== false">
+<div
+  class="section"
+  [class.section--edit]="editMode() && section().editable !== false"
+>
   @if (editMode() && section().editable !== false) {
     <ui5-button
       class="section__remove"
@@ -15,7 +18,11 @@
   }
   <div class="section__grid" [style.--cols]="columns()">
     @for (card of cards(); track card.id) {
-      <mfp-dashboard-card [card]="card" [editMode]="editMode() && section().editable !== false" (removeCard)="removeCard.emit($any(card.id))" />
+      <mfp-dashboard-card
+        [card]="card"
+        [editMode]="editMode() && section().editable !== false"
+        (removeCard)="removeCard.emit($any(card.id))"
+      />
     }
   </div>
 </div>

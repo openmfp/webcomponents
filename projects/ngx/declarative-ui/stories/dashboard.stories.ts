@@ -46,10 +46,10 @@ const SAMPLE_CONFIG: DashboardConfig = {
 
 const AVAILABLE_CARDS: CardConfig[] = [
   {
-    label: 'Pods Table',
     id: 'table-pods',
+    label: 'Pods Table',
     w: 12,
-    h: 51,
+    h: 10,
     component: 'mfp-wc-declarative-table-card',
     componentInputs: {
       config: TABLE_CARD_CONFIG,
@@ -60,26 +60,26 @@ const AVAILABLE_CARDS: CardConfig[] = [
     id: 'whats-new',
     label: "What's New",
     w: 5,
-    h: 56,
+    h: 5.7,
     component: 'mfp-whats-new',
   },
   {
     id: 'favorites',
     label: 'Favorites',
     w: 4,
-    h: 25,
+    h: 2.1,
     component: 'mfp-favorites',
   },
   {
     id: 'service-status',
     label: 'Service Status',
     w: 4,
-    h: 35,
+    h: 3,
     component: 'mfp-service-status-card',
   },
 ];
 
-const ANGULAR_REGISTRY_SECTIONS = [
+const REGISTRY_SECTIONS = [
   {
     id: 'angular-cards',
     title: 'Angular cards',
@@ -94,11 +94,11 @@ const ANGULAR_REGISTRY_SECTIONS = [
   },
 ];
 
-const ANGULAR_REGISTRY_CARDS: CardConfig[] = [
+const REGISTRY_CARDS: CardConfig[] = [
   {
     id: 'angular-visited-service',
     w: 4,
-    h: 12,
+    h: 1,
     sectionId: 'angular-cards',
     component: 'mfp-visited-service-card',
     componentInputs: {
@@ -113,16 +113,16 @@ const ANGULAR_REGISTRY_CARDS: CardConfig[] = [
     id: 'angular-favorites',
     sectionId: 'angular-cards',
     x: 0,
-    y: 12,
+    y: 0,
     w: 5,
-    h: 21,
+    h: 2,
     component: 'mfp-favorites',
   },
   {
     id: 'webcomponent-table',
     sectionId: 'wc-cards',
     w: 12,
-    h: 51,
+    h: 5,
     component: 'mfp-wc-declarative-table-card',
     componentInputs: {
       config: TABLE_CARD_CONFIG,
@@ -138,18 +138,16 @@ const ANGULAR_REGISTRY_AVAILABLE_CARDS: CardConfig[] = [
   {
     id: 'angular-service-status-template',
     label: 'Angular Service Status',
-    sectionId: 'angular-cards',
     w: 4,
-    h: 29,
+    h: 2.9,
     component: 'mfp-service-status-card',
   },
   {
     id: 'webcomponent-whats-new-template',
-    sectionId: 'wc-cards',
     label: "Web Component What's New",
     w: 5,
-    h: 56,
-    component: 'mfp-wc-whats-new',
+    h: 5.6,
+    component: 'mfp-whats-new',
   },
 ];
 
@@ -266,8 +264,8 @@ export const AngularComponentRegistry: Story = {
       description:
         'This story mixes registered Angular card components with existing web components.',
     },
-    sections: ANGULAR_REGISTRY_SECTIONS,
-    cards: ANGULAR_REGISTRY_CARDS,
+    sections: REGISTRY_SECTIONS,
+    cards: REGISTRY_CARDS,
     availableCards: ANGULAR_REGISTRY_AVAILABLE_CARDS,
   },
 };
