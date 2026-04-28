@@ -16,9 +16,11 @@
         @if (editMode()) {
           <ui5-button
             id="add-card-btn"
-            design="Default"
+            [design]="addCardButton().design"
+            [icon]="addCardButton().icon"
+            [tooltip]="addCardButton().tooltip"
             (click)="openCardPanel()"
-            >+ Add Card</ui5-button
+            >{{ addCardButton().text }}</ui5-button
           >
         } @else if (compactToolbar()) {
           <ui5-button
@@ -33,12 +35,7 @@
             [opener]="menuBtn.element"
             (ui5Open)="toolbarMenuOpen.set(true)"
             (ui5Close)="toolbarMenuOpen.set(false)"
-            (ui5ItemClick)="
-              onMenuItemClick(
-                $any($event).detail.item.dataset['action'],
-                $event
-              )
-            "
+            (ui5ItemClick)="onMenuItemClick($any($event).detail.item.dataset['action'], $event)"
           >
             @for (action of customActions(); track action.action) {
               <ui5-menu-item
@@ -50,8 +47,8 @@
             @if (config().editable) {
               <ui5-menu-separator></ui5-menu-separator>
               <ui5-menu-item
-                icon="action-settings"
-                text="Edit View"
+                [icon]="editViewButton().icon"
+                [text]="editViewButton().text || 'Edit View'"
                 data-action="edit-view"
               ></ui5-menu-item>
             }
@@ -63,19 +60,18 @@
               [icon]="action.icon ?? ''"
               [endIcon]="action?.endIcon"
               [tooltip]="action.tooltip ?? ''"
-              (click)="
-                actionButtonClick.emit({ event: $event, action: action })
-              "
+              (click)="actionButtonClick.emit({ event: $event, action: action })"
               >{{ action.text }}</ui5-button
             >
           }
           @if (config().editable) {
             <ui5-button
-              design="Transparent"
-              icon="action-settings"
-              tooltip="Edit View"
+              [design]="editViewButton().design"
+              [icon]="editViewButton().icon"
+              [tooltip]="editViewButton().tooltip"
               (click)="enterEditMode()"
-            ></ui5-button>
+              >{{ editViewButton().text }}</ui5-button
+            >
           }
         }
       </div>

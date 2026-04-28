@@ -184,15 +184,59 @@ interface DashboardConfig {
   title: string;
   description?: string;
   backgroundImageUrl?: string;
-  customActions?: DashboardButtonSettings[];
+  buttonsSettings?: DashboardButtonsSettings;
+  customActions?: ButtonSettings[];
   editable?: boolean;
 }
 ```
 
 ### `DashboardButtonSettings`
 
+Controls the appearance of the two built-in toolbar buttons. Both fields accept a `Partial<ButtonSettings>` that is **merged on top of the defaults** — any property you omit keeps its default value.
+
 ```ts
-interface DashboardButtonSettings {
+interface DashboardButtonsSettings {
+  editViewButton?: Partial<ButtonSettings>;
+  addCardButton?: Partial<ButtonSettings>;
+}
+```
+
+| Button | Default `icon` | Default `design` | Default `tooltip` | Default `text` |
+| --- | --- | --- | --- | --- |
+| `editViewButton` | `action-settings` | `Transparent` | `Edit View` | _(empty — icon only)_ |
+| `addCardButton` | _(none)_ | `Default` | _(none)_ | `+ Add Card` |
+
+**Example — text-only buttons without icons:**
+
+```ts
+const config: DashboardConfig = {
+  title: 'Platform Overview',
+  editable: true,
+  buttonsSettings: {
+    editViewButton: {
+      text: 'Edit View',
+      icon: '',
+      design: 'Default',
+      tooltip: '',
+    },
+    addCardButton: {
+      text: 'Add Card',
+      icon: '',
+      design: 'Emphasized',
+      tooltip: '',
+    },
+  },
+};
+```
+
+The compact toolbar (viewport width < 726 px) collapses all actions into a burger menu. The Edit View menu item always uses the configured `icon` and falls back to the text `'Edit View'` when no `text` override is set.
+
+### `ButtonSettings`
+
+Used both for `customActions` entries and as the override type for `DashboardButtonSettings`.
+
+```ts
+interface ButtonSettings {
   text?: string;
   icon?: string;
   endIcon?: string;
