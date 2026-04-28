@@ -3,6 +3,7 @@ import { AddCardDialog } from '../add-card-dialog/add-card-dialog.component';
 import { addComponentToRegistry } from '../card/dashboard-card-registry';
 import { DashboardCard } from '../card/dashboard-card.component';
 import { CardConfig, DashboardConfig, SectionConfig } from '../models';
+import { CELL_HEIGHT, COMPACT_BREAKPOINT } from '../models/constants';
 import { DashboardSection } from '../section/dashboard-section.component';
 import {
   Component,
@@ -34,8 +35,6 @@ import {
   GridstackItemComponent,
   nodesCB,
 } from 'gridstack/dist/angular';
-
-const COMPACT_BREAKPOINT = 726;
 
 document.body.classList.add('ui5-content-density-compact');
 
@@ -90,15 +89,15 @@ export class Dashboard implements OnInit, OnDestroy {
 
   protected gridOptions = computed(
     (): GridStackOptions => ({
-      cellHeight: 10,
+      cellHeight: CELL_HEIGHT,
       disableResize: true,
       disableDrag: !this.editMode(),
       columnOpts: {
         breakpointForWindow: true,
         breakpoints: [
-          { w: 1920, c: 12, layout: 'none' },
-          { w: 1200, c: 8, layout: 'compact' },
-          { w: 726, c: 1, layout: 'list' },
+          { w: 1440, c: 12, layout: 'none' },
+          { w: 1024, c: 8, layout: 'compact' },
+          { w: 600, c: 1, layout: 'list' },
         ],
       },
     }),
