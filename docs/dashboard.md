@@ -184,7 +184,7 @@ interface DashboardConfig {
   title: string;
   description?: string;
   backgroundImageUrl?: string;
-  buttonSettings?: DashboardButtonSettings;
+  buttonsSettings?: DashboardButtonsSettings;
   customActions?: ButtonSettings[];
   editable?: boolean;
 }
@@ -195,7 +195,7 @@ interface DashboardConfig {
 Controls the appearance of the two built-in toolbar buttons. Both fields accept a `Partial<ButtonSettings>` that is **merged on top of the defaults** — any property you omit keeps its default value.
 
 ```ts
-interface DashboardButtonSettings {
+interface DashboardButtonsSettings {
   editViewButton?: Partial<ButtonSettings>;
   addCardButton?: Partial<ButtonSettings>;
 }
@@ -212,7 +212,7 @@ interface DashboardButtonSettings {
 const config: DashboardConfig = {
   title: 'Platform Overview',
   editable: true,
-  buttonSettings: {
+  buttonsSettings: {
     editViewButton: {
       text: 'Edit View',
       icon: '',

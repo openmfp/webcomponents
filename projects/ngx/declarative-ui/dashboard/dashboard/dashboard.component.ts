@@ -1,5 +1,3 @@
-import '@ui5/webcomponents-icons/dist/action-settings.js';
-import '@ui5/webcomponents-icons/dist/menu2.js';
 import { ButtonSettings } from '../../models/ui-definition';
 import { AddCardDialog } from '../add-card-dialog/add-card-dialog.component';
 import { addComponentToRegistry } from '../card/dashboard-card-registry';
@@ -30,6 +28,8 @@ import { MenuSeparator } from '@fundamental-ngx/ui5-webcomponents/menu-separator
 import { Text } from '@fundamental-ngx/ui5-webcomponents/text';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 import '@ui5/webcomponents-icons/dist/action-settings.js';
+import '@ui5/webcomponents-icons/dist/action-settings.js';
+import '@ui5/webcomponents-icons/dist/menu2.js';
 import '@ui5/webcomponents-icons/dist/menu2.js';
 import { GridStackNode, GridStackOptions } from 'gridstack';
 import {
@@ -114,7 +114,7 @@ export class Dashboard implements OnInit, OnDestroy {
     design: 'Transparent' as const,
     tooltip: 'Edit View',
     text: '',
-    ...this.config().buttonSettings?.editViewButton,
+    ...this.config().buttonsSettings?.editViewButton,
   }));
 
   addCardButton = computed(() => ({
@@ -122,7 +122,7 @@ export class Dashboard implements OnInit, OnDestroy {
     design: 'Default' as const,
     tooltip: '',
     text: '+ Add Card',
-    ...this.config().buttonSettings?.addCardButton,
+    ...this.config().buttonsSettings?.addCardButton,
   }));
 
   sectionCards = computed(() => {

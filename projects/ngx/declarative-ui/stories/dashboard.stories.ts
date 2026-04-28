@@ -277,7 +277,7 @@ export const CustomButtonSettings: Story = {
       title: 'Custom Button Settings',
       description:
         'Edit View and Add Card buttons configured via buttonSettings — text labels, no icons.',
-      buttonSettings: {
+      buttonsSettings: {
         editViewButton: {
           text: 'Edit View',
           icon: '',
