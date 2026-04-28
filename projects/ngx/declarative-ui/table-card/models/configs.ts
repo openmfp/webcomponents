@@ -1,4 +1,4 @@
-import { FormFieldDefinition } from '../../form';
+import { FormFieldDefinition, FormFieldErrors } from '../../form';
 import { ButtonSettings } from '../../models';
 import { TableFieldDefinition } from '../../table';
 
@@ -7,6 +7,10 @@ export interface ResourceFormConfig {
   title?: string;
   confirmLabel?: string;
   cancelLabel?: string;
+}
+
+export interface TableCardFormState {
+  fieldErrors?: FormFieldErrors;
 }
 
 export interface DeleteResourceConfirmationConfig {
