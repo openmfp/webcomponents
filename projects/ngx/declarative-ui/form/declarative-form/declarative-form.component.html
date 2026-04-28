@@ -1,9 +1,6 @@
-<section
-  test-id="generic-form"
-  class="form"
-  [formGroup]="form"
->
+<section test-id="generic-form" class="form" [formGroup]="form">
   @for (field of fields(); track field.name) {
+    @let control = form.controls[field.name];
     <div
       class="inputs"
       [attr.test-id]="'generic-form-field-container-' + field.name"
@@ -18,14 +15,17 @@
         <ui5-select
           class="input"
           [attr.test-id]="'generic-form-field-' + field.name"
-          [value]="form.controls[field.name].value"
-          (input)="setFormControlValue($event, field.name)"
-          (change)="setFormControlValue($event, field.name)"
-          (blur)="onFieldBlur(field.name)"
+          [value]="control.value"
+          (input)="setFormControlValue($event, field)"
+          (change)="setFormControlValue($event, field)"
+          (blur)="onFieldBlur(field)"
           [required]="field.required"
           [valueState]="getValueState(field.name)"
           [disabled]="field.disabled"
         >
+          @if (getError(field.name); as error) {
+            <div slot="valueStateMessage">{{ error }}</div>
+          }
           @for (value of [''].concat(field.values ?? []); track value) {
             <ui5-option
               [attr.test-id]="
@@ -35,7 +35,7 @@
                 (value || 'empty')
               "
               [value]="value"
-              [selected]="value === form.controls[field.name].value"
+              [selected]="value === control.value"
               >{{ value }}</ui5-option
             >
           }
@@ -44,14 +44,18 @@
         <ui5-input
           class="input"
           [attr.test-id]="'generic-form-field-' + field.name"
-          [value]="form.controls[field.name].value"
-          (blur)="onFieldBlur(field.name)"
-          (change)="setFormControlValue($event, field.name)"
-          (input)="setFormControlValue($event, field.name)"
+          [value]="control.value"
+          (blur)="onFieldBlur(field)"
+          (change)="setFormControlValue($event, field)"
+          (input)="setFormControlValue($event, field)"
           [required]="field.required"
           [valueState]="getValueState(field.name)"
           [disabled]="field.disabled"
-        />
+        >
+          @if (getError(field.name); as error) {
+            <div slot="valueStateMessage">{{ error }}</div>
+          }
+        </ui5-input>
       }
     </div>
   }

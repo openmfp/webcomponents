@@ -28,6 +28,8 @@ import { MenuItem } from '@fundamental-ngx/ui5-webcomponents/menu-item';
 import { MenuSeparator } from '@fundamental-ngx/ui5-webcomponents/menu-separator';
 import { Text } from '@fundamental-ngx/ui5-webcomponents/text';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
+import '@ui5/webcomponents-icons/dist/action-settings.js';
+import '@ui5/webcomponents-icons/dist/menu2.js';
 import { GridStackNode, GridStackOptions } from 'gridstack';
 import {
   GridstackComponent,
@@ -85,8 +87,6 @@ export class Dashboard implements OnInit, OnDestroy {
   private sectionsSnapshot: SectionConfig[] = [];
   private cardsSnapshot: CardConfig[] = [];
   private gridStackItems = viewChild.required<GridstackComponent>('grid');
-  protected menuBtnRef = viewChild<Button>('menuBtn');
-  protected menuOpener = computed(() => this.menuBtnRef()?.elementRef.nativeElement);
   private resizeObserver?: ResizeObserver;
   private readonly hostEl = inject(ElementRef<HTMLElement>);
 
@@ -108,14 +108,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
   cardDialogOpen = signal(false);
   customActions = computed(() => this.config().customActions ?? []);
-  addedComponents = computed(
-    () =>
-      new Set(
-        this.cards()
-          .map((c) => c.component)
-          .filter(Boolean) as string[],
-      ),
-  );
+  addedCardsIds = computed(() => new Set(this.cards().map((c) => c.id)));
 
   editViewButton = computed(() => ({
     icon: 'action-settings',
@@ -228,7 +221,6 @@ export class Dashboard implements OnInit, OnDestroy {
         ...list,
         ...cards.map((ac) => ({
           ...ac,
-          id: `card-${ac.component}-${Date.now()}`,
         })),
       ]);
     }

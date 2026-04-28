@@ -39,13 +39,13 @@ describe('AddCardDialog', () => {
     ]);
     fixture.detectChanges();
 
-    component.toggle('mfp-a');
-    expect(component.selectedComponents().has('mfp-a')).toBe(true);
+    component.toggle('card-1');
+    expect(component.selectedIds().has('card-1')).toBe(true);
 
     fixture.componentRef.setInput('open', true);
     fixture.detectChanges();
 
-    expect(component.selectedComponents().size).toBe(0);
+    expect(component.selectedIds().size).toBe(0);
   });
 
   it('emits only selected cards that have not already been added', () => {
@@ -58,11 +58,11 @@ describe('AddCardDialog', () => {
 
     component.confirm.subscribe((cards) => emitted.push(cards));
     fixture.componentRef.setInput('availableCards', availableCards);
-    fixture.componentRef.setInput('addedComponents', new Set(['mfp-b']));
+    fixture.componentRef.setInput('addedCardsIds', new Set(['card-2']));
     fixture.detectChanges();
 
-    component.toggle('mfp-a');
-    component.toggle('mfp-b');
+    component.toggle('card-1');
+    component.toggle('card-2');
     component.confirmAdd();
 
     expect(emitted).toEqual([[availableCards[0]]]);

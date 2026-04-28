@@ -21,29 +21,29 @@ import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 })
 export class AddCardDialog {
   availableCards = input<CardConfig[]>([]);
-  addedComponents = input<Set<string>>(new Set());
+  addedCardsIds = input<Set<string>>(new Set());
   open = input<boolean>(false);
 
   confirm = output<CardConfig[]>();
   cancel = output<void>();
 
-  selectedComponents = signal<Set<string>>(new Set());
+  selectedIds = signal<Set<string>>(new Set());
 
   constructor() {
     effect(() => {
       if (this.open()) {
-        this.selectedComponents.set(new Set());
+        this.selectedIds.set(new Set());
       }
     });
   }
 
-  toggle(component: string): void {
-    this.selectedComponents.update((set) => {
+  toggle(id: string): void {
+    this.selectedIds.update((set) => {
       const next = new Set(set);
-      if (next.has(component)) {
-        next.delete(component);
+      if (next.has(id)) {
+        next.delete(id);
       } else {
-        next.add(component);
+        next.add(id);
       }
       return next;
     });
@@ -51,9 +51,7 @@ export class AddCardDialog {
 
   confirmAdd(): void {
     const toAdd = this.availableCards().filter(
-      (ac) =>
-        this.selectedComponents().has(ac.component) &&
-        !this.addedComponents().has(ac.component),
+      (ac) => this.selectedIds().has(ac.id) && !this.addedCardsIds().has(ac.id),
     );
     this.confirm.emit(toAdd);
   }

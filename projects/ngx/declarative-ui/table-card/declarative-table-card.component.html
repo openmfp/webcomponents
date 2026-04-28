@@ -76,18 +76,20 @@
       <mfp-declarative-form
         #createForm
         [fields]="config.fields"
-        (formValue)="pendingFormValue.set($event)"
+        [fieldErrors]="createFormState().fieldErrors ?? {}"
+        (fieldChange)="onCreateFieldChange($event)"
+        (formSubmit)="onCreateSubmit($event)"
       />
     </div>
     <div slot="footer" class="dialog__footer">
       <ui5-button
         design="Emphasized"
-        [disabled]="createForm.form.invalid"
-        (click)="onCreateConfirm()"
+        [disabled]="hasErrors(createFormState())"
+        (click)="createForm.submit()"
       >
         {{ config.confirmLabel ?? 'Save' }}
       </ui5-button>
-      <ui5-button design="Transparent" (click)="createDialogOpen.set(false)">
+      <ui5-button design="Transparent" (click)="closeCreateDialog()">
         {{ config.cancelLabel ?? 'Cancel' }}
       </ui5-button>
     </div>
@@ -106,20 +108,21 @@
       <mfp-declarative-form
         #editForm
         [fields]="config.fields"
-        [editMode]="true"
         [initialValues]="editInitialValue()"
-        (formValue)="pendingFormValue.set($event)"
+        [fieldErrors]="editFormState().fieldErrors ?? {}"
+        (fieldChange)="onEditFieldChange($event)"
+        (formSubmit)="onEditSubmit($event)"
       />
     </div>
     <div slot="footer" class="dialog__footer">
       <ui5-button
         design="Emphasized"
-        [disabled]="editForm.form.invalid"
-        (click)="onEditConfirm()"
+        [disabled]="hasErrors(editFormState())"
+        (click)="editForm.submit()"
       >
         {{ config.confirmLabel ?? 'Edit' }}
       </ui5-button>
-      <ui5-button design="Transparent" (click)="editDialogOpen.set(false)">
+      <ui5-button design="Transparent" (click)="closeEditDialog()">
         {{ config.cancelLabel ?? 'Cancel' }}
       </ui5-button>
     </div>
@@ -140,10 +143,10 @@
       </div>
     }
     <div slot="footer" class="dialog__footer">
-      <ui5-button design="Negative" (click)="onDeleteConfirm()">
+      <ui5-button design="Negative" (click)="onDeleteSubmit()">
         {{ config.confirmLabel ?? 'Delete' }}
       </ui5-button>
-      <ui5-button design="Transparent" (click)="deleteDialogOpen.set(false)">
+      <ui5-button design="Transparent" (click)="closeDeleteDialog()">
         {{ config.cancelLabel ?? 'Cancel' }}
       </ui5-button>
     </div>
