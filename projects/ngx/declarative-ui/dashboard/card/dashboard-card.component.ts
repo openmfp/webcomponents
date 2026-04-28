@@ -1,4 +1,5 @@
 import { CardConfig } from '../models';
+import { CELL_HEIGHT } from '../models/constants';
 import {
   getRegisteredDashboardCardComponent,
   warnForUnknownDashboardCardInput,
@@ -37,9 +38,11 @@ export class DashboardCard {
   protected readonly gridColumn = computed(() =>
     this.createGridTrack(this.card().x, this.card().w),
   );
-  protected readonly gridRow = computed(() =>
-    this.createGridTrack(this.card().y, this.card().h),
-  );
+  protected readonly gridRow = computed(() => {
+    const coefficient = this.card().sectionId ? CELL_HEIGHT / 10 : 1;
+    const height = (this.card().h ?? 1) * coefficient;
+    return this.createGridTrack(this.card().y, height);
+  });
 
   private angularHost = viewChild('angularHost', { read: ViewContainerRef });
   private elementHost = viewChild<ElementRef<HTMLElement>>('elementHost');

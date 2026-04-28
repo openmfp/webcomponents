@@ -224,8 +224,8 @@ interface SectionConfig {
 ```ts
 interface CardConfig {
   id: string;
-  w?: number;
-  h?: number;
+  w?: number; // expresed in number of columns till 12
+  h?: number; // expresed hipotetical number of rows, where a row is 100px high, so the value of 2.7 translarts to 270 px
   x?: number;
   y?: number;
   sectionId?: string;
@@ -235,7 +235,9 @@ interface CardConfig {
 }
 ```
 
-For sections, `w` controls the column span while height is determined by the section content. For cards, `w` and `h` control the rendered grid span. `x` and `y` persist the loose-card position reported by drag and drop functionality when edit mode is saved.
+For sections, `w` controls the column span while height is determined by the section content. 
+For cards, `w` and `h` control the rendered grid span. `x` and `y` persist the loose-card position reported by 
+drag and drop functionality when edit mode is saved.
 
 `component` accepts either:
 
