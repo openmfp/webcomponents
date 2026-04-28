@@ -21,17 +21,54 @@ import {
   });
   customElements.define('mfp-wc-declarative-table', DeclarativeTableElement);
 
-  const DeclarativeFormElement = createCustomElement(DeclarativeForm, {
+  const DeclarativeFormElementBase = createCustomElement(DeclarativeForm, {
     injector: app.injector,
-  });
+  }) as CustomElementConstructor;
+  class DeclarativeFormElement extends DeclarativeFormElementBase {
+    submit(): void {
+      const strategy = (
+        this as unknown as {
+          ngElementStrategy: {
+            componentRef?: { instance: DeclarativeForm };
+          };
+        }
+      ).ngElementStrategy;
+      strategy.componentRef?.instance.submit();
+    }
+  }
   customElements.define('mfp-wc-declarative-form', DeclarativeFormElement);
 
-  const DeclarativeTableCardElement = createCustomElement(
+  const DeclarativeTableCardElementBase = createCustomElement(
     DeclarativeTableCard,
     {
       injector: app.injector,
     },
-  );
+  ) as CustomElementConstructor;
+  class DeclarativeTableCardElement extends DeclarativeTableCardElementBase {
+    closeCreateDialog(): void {
+      this.componentInstance()?.closeCreateDialog();
+    }
+
+    closeEditDialog(): void {
+      this.componentInstance()?.closeEditDialog();
+    }
+
+    closeDeleteDialog(): void {
+      this.componentInstance()?.closeDeleteDialog();
+    }
+
+    private componentInstance(): DeclarativeTableCard<never> | undefined {
+      const strategy = (
+        this as unknown as {
+          ngElementStrategy: {
+            componentRef?: { instance: DeclarativeTableCard<never> };
+          };
+        }
+      ).ngElementStrategy;
+
+      return strategy.componentRef?.instance;
+    }
+  }
   customElements.define(
     'mfp-wc-declarative-table-card',
     DeclarativeTableCardElement,

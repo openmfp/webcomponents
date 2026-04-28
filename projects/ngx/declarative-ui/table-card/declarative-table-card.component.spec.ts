@@ -1,4 +1,4 @@
-import { FormFieldDefinition } from '../form/models';
+import { FormFieldChangeEvent, FormFieldDefinition } from '../form/models';
 import {
   ButtonSettings,
   GenericResource,
@@ -10,6 +10,7 @@ import {
   DeleteResourceConfirmationConfig,
   ResourceFormConfig,
   TableCardConfig,
+  TableCardFormState,
   TableConfig,
 } from './models/configs';
 import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
@@ -100,6 +101,8 @@ function setup(
     createConfig?: TableCardCreateConfig;
     editConfig?: TableCardEditConfig;
     deleteConfig?: TableCardDeleteConfig;
+    createFormState?: TableCardFormState;
+    editFormState?: TableCardFormState;
   } = {},
 ): { fixture: Fixture; component: Comp } {
   const fixture: Fixture = TestBed.createComponent(
@@ -122,6 +125,8 @@ function setup(
 
   fixture.componentRef.setInput('config', config);
   fixture.componentRef.setInput('resources', opts.resources ?? RESOURCES);
+  fixture.componentRef.setInput('createFormState', opts.createFormState ?? {});
+  fixture.componentRef.setInput('editFormState', opts.editFormState ?? {});
 
   fixture.detectChanges();
   return { fixture, component };
@@ -184,7 +189,10 @@ describe('DeclarativeTableCard', () => {
 
   describe('headerTooltip input', () => {
     it('renders info icon when headerTooltip is provided', () => {
-      const { fixture } = setup({ header: 'My Pods', headerTooltip: 'Some tooltip' });
+      const { fixture } = setup({
+        header: 'My Pods',
+        headerTooltip: 'Some tooltip',
+      });
       fixture.detectChanges();
       const root: ShadowRoot | HTMLElement =
         fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
@@ -439,15 +447,6 @@ describe('DeclarativeTableCard', () => {
       expect((component as any).editDialogOpen()).toBe(true);
     });
 
-    it('intercepts action="edit": clears pendingFormValue', () => {
-      const { component } = setup({ editConfig: EDIT_CONFIG });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).pendingFormValue.set({ 'metadata.name': 'stale' });
-      component.onButtonClick(makeEvent('edit', RESOURCES[0]));
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).pendingFormValue()).toBeNull();
-    });
-
     it('intercepts action="edit": does not emit actionButtonClick', () => {
       const { component } = setup({ editConfig: EDIT_CONFIG });
       const emitted: unknown[] = [];
@@ -505,251 +504,233 @@ describe('DeclarativeTableCard', () => {
   });
 
   // -------------------------------------------------------------------------
-  // 10. onCreateConfirm()
+  // 10. form state and submit flow
   // -------------------------------------------------------------------------
 
-  describe('onCreateConfirm()', () => {
-    it('emits createConfirmed with pendingFormValue when it is set', () => {
+  describe('form state and submit flow', () => {
+    const fieldChange: FormFieldChangeEvent = {
+      fieldProperty: 'metadata.name',
+      value: 'new-pod',
+    };
+
+    it('emits createFieldChange on field change', () => {
       const { component } = setup({ createConfig: CREATE_CONFIG });
-      const formValue = {
-        'metadata.name': 'new-pod',
-        'metadata.namespace': 'default',
-      };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).pendingFormValue.set(formValue);
+      const emitted: FormFieldChangeEvent[] = [];
+      component.createFieldChange.subscribe((event) => emitted.push(event));
 
-      const emitted: Record<string, unknown>[] = [];
-      component.createConfirmed.subscribe((v) => emitted.push(v));
+      component.onCreateFieldChange(fieldChange);
 
-      component.onCreateConfirm();
-
-      expect(emitted).toHaveLength(1);
-      expect(emitted[0]).toEqual(formValue);
+      expect(emitted).toEqual([fieldChange]);
     });
 
-    it('does not emit createConfirmed when pendingFormValue is null', () => {
-      const { component } = setup({ createConfig: CREATE_CONFIG });
-      const emitted: unknown[] = [];
-      component.createConfirmed.subscribe((v) => emitted.push(v));
-
-      component.onCreateConfirm();
-
-      expect(emitted).toHaveLength(0);
-    });
-
-    it('closes the create dialog after confirming', () => {
-      const { component } = setup({ createConfig: CREATE_CONFIG });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).createDialogOpen.set(true);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).pendingFormValue.set({ 'metadata.name': 'x' });
-
-      component.onCreateConfirm();
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).createDialogOpen()).toBe(false);
-    });
-
-    it('closes the create dialog even when pendingFormValue is null', () => {
-      const { component } = setup({ createConfig: CREATE_CONFIG });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).createDialogOpen.set(true);
-
-      component.onCreateConfirm();
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).createDialogOpen()).toBe(false);
-    });
-  });
-
-  // -------------------------------------------------------------------------
-  // 11. onEditConfirm()
-  // -------------------------------------------------------------------------
-
-  describe('onEditConfirm()', () => {
-    it('emits editConfirmed with resource and formValue when both are set', () => {
+    it('emits editFieldChange with pending resource', () => {
       const { component } = setup({ editConfig: EDIT_CONFIG });
       const resource = RESOURCES[0];
-      const formValue = {
-        'metadata.name': 'pod-alpha',
-        'metadata.namespace': 'staging',
-      };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).pendingResource.set(resource);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).pendingFormValue.set(formValue);
-
       const emitted: {
         resource: GenericResource;
-        formValue: Record<string, unknown>;
+        formChangeEvent: FormFieldChangeEvent;
       }[] = [];
-      component.editConfirmed.subscribe((v) => emitted.push(v));
-
-      component.onEditConfirm();
-
-      expect(emitted).toHaveLength(1);
-      expect(emitted[0].resource).toBe(resource);
-      expect(emitted[0].formValue).toEqual(formValue);
-    });
-
-    it('does not emit editConfirmed when pendingResource is null', () => {
-      const { component } = setup({ editConfig: EDIT_CONFIG });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).pendingFormValue.set({ 'metadata.name': 'x' });
-
-      const emitted: unknown[] = [];
-      component.editConfirmed.subscribe((v) => emitted.push(v));
-
-      component.onEditConfirm();
-
-      expect(emitted).toHaveLength(0);
-    });
-
-    it('does not emit editConfirmed when pendingFormValue is null', () => {
-      const { component } = setup({ editConfig: EDIT_CONFIG });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).pendingResource.set(RESOURCES[0]);
-
-      const emitted: unknown[] = [];
-      component.editConfirmed.subscribe((v) => emitted.push(v));
-
-      component.onEditConfirm();
-
-      expect(emitted).toHaveLength(0);
-    });
-
-    it('closes the edit dialog after confirming', () => {
-      const { component } = setup({ editConfig: EDIT_CONFIG });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).editDialogOpen.set(true);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).pendingResource.set(RESOURCES[0]);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).pendingFormValue.set({ 'metadata.name': 'x' });
-
-      component.onEditConfirm();
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).editDialogOpen()).toBe(false);
-    });
-
-    it('closes the edit dialog even when confirm condition is not met', () => {
-      const { component } = setup({ editConfig: EDIT_CONFIG });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).editDialogOpen.set(true);
-      component.onEditConfirm();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).editDialogOpen()).toBe(false);
-    });
-  });
-
-  // -------------------------------------------------------------------------
-  // 12. onDeleteConfirm()
-  // -------------------------------------------------------------------------
-
-  describe('onDeleteConfirm()', () => {
-    it('emits deleteConfirmed with the pending resource when set', () => {
-      const { component } = setup({ deleteConfig: DELETE_CONFIG });
-      const resource = RESOURCES[0];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (component as any).pendingResource.set(resource);
+      component.editFieldChange.subscribe((event) => emitted.push(event));
 
-      const emitted: GenericResource[] = [];
-      component.deleteConfirmed.subscribe((v) => emitted.push(v));
+      component.onEditFieldChange(fieldChange);
 
-      component.onDeleteConfirm();
-
-      expect(emitted).toHaveLength(1);
-      expect(emitted[0]).toBe(resource);
+      expect(emitted).toEqual([{ resource, formChangeEvent: fieldChange }]);
     });
 
-    it('does not emit deleteConfirmed when pendingResource is null', () => {
-      const { component } = setup({ deleteConfig: DELETE_CONFIG });
+    it('does not emit editFieldChange without pending resource', () => {
+      const { component } = setup({ editConfig: EDIT_CONFIG });
       const emitted: unknown[] = [];
-      component.deleteConfirmed.subscribe((v) => emitted.push(v));
+      component.editFieldChange.subscribe((event) => emitted.push(event));
 
-      component.onDeleteConfirm();
+      component.onEditFieldChange(fieldChange);
 
       expect(emitted).toHaveLength(0);
     });
 
-    it('closes the delete dialog after confirming', () => {
-      const { component } = setup({ deleteConfig: DELETE_CONFIG });
+    it('emits createSubmit and leaves create dialog open', () => {
+      const { component } = setup({ createConfig: CREATE_CONFIG });
+      const value = { metadata: { name: 'new-pod' } };
+      const emitted: Record<string, unknown>[] = [];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).deleteDialogOpen.set(true);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).pendingResource.set(RESOURCES[0]);
+      (component as any).createDialogOpen.set(true);
+      component.createSubmit.subscribe((event) => emitted.push(event));
 
-      component.onDeleteConfirm();
+      component.onCreateSubmit(value);
 
+      expect(emitted).toEqual([value]);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).deleteDialogOpen()).toBe(false);
+      expect((component as any).createDialogOpen()).toBe(true);
     });
 
-    it('closes the delete dialog even when pendingResource is null', () => {
+    it('emits editSubmit with resource and leaves edit dialog open', () => {
+      const { component } = setup({ editConfig: EDIT_CONFIG });
+      const resource = RESOURCES[0];
+      const value = { metadata: { namespace: 'staging' } };
+      const emitted: {
+        resource: GenericResource;
+        value: Record<string, unknown>;
+      }[] = [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (component as any).pendingResource.set(resource);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (component as any).editDialogOpen.set(true);
+      component.editSubmit.subscribe((event) => emitted.push(event));
+
+      component.onEditSubmit(value);
+
+      expect(emitted).toEqual([{ resource, value }]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).editDialogOpen()).toBe(true);
+    });
+
+    it('does not emit editSubmit without pending resource', () => {
+      const { component } = setup({ editConfig: EDIT_CONFIG });
+      const emitted: unknown[] = [];
+      component.editSubmit.subscribe((event) => emitted.push(event));
+
+      component.onEditSubmit({ metadata: { namespace: 'staging' } });
+
+      expect(emitted).toHaveLength(0);
+    });
+
+    it('emits deleteSubmit and leaves delete dialog open', () => {
       const { component } = setup({ deleteConfig: DELETE_CONFIG });
+      const resource = RESOURCES[0];
+      const emitted: GenericResource[] = [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (component as any).pendingResource.set(resource);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (component as any).deleteDialogOpen.set(true);
-      component.onDeleteConfirm();
+      component.deleteSubmit.subscribe((event) => emitted.push(event));
+
+      component.onDeleteSubmit();
+
+      expect(emitted).toEqual([resource]);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).deleteDialogOpen()).toBe(false);
+      expect((component as any).deleteDialogOpen()).toBe(true);
     });
   });
 
   // -------------------------------------------------------------------------
-  // 13. Cancel / closing dialogs — no confirm event emitted
+  // 11. close methods
   // -------------------------------------------------------------------------
 
-  describe('dialog cancel / close', () => {
-    it('closing createDialogOpen without calling confirm does not emit createConfirmed', () => {
+  describe('close methods', () => {
+    it('closeCreateDialog() closes the create dialog', () => {
       const { component } = setup({ createConfig: CREATE_CONFIG });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).pendingFormValue.set({ 'metadata.name': 'x' });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (component as any).createDialogOpen.set(true);
 
-      const emitted: unknown[] = [];
-      component.createConfirmed.subscribe((v) => emitted.push(v));
+      component.closeCreateDialog();
 
-      // Simulate cancel: close dialog without calling onCreateConfirm
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).createDialogOpen.set(false);
-
-      expect(emitted).toHaveLength(0);
+      expect((component as any).createDialogOpen()).toBe(false);
     });
 
-    it('closing editDialogOpen without calling confirm does not emit editConfirmed', () => {
+    it('closeEditDialog() closes the edit dialog', () => {
       const { component } = setup({ editConfig: EDIT_CONFIG });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).pendingResource.set(RESOURCES[0]);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).pendingFormValue.set({ 'metadata.name': 'x' });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (component as any).editDialogOpen.set(true);
 
-      const emitted: unknown[] = [];
-      component.editConfirmed.subscribe((v) => emitted.push(v));
+      component.closeEditDialog();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).editDialogOpen.set(false);
-
-      expect(emitted).toHaveLength(0);
+      expect((component as any).editDialogOpen()).toBe(false);
     });
 
-    it('closing deleteDialogOpen without calling confirm does not emit deleteConfirmed', () => {
+    it('closeDeleteDialog() closes the delete dialog', () => {
       const { component } = setup({ deleteConfig: DELETE_CONFIG });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).pendingResource.set(RESOURCES[0]);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (component as any).deleteDialogOpen.set(true);
 
-      const emitted: unknown[] = [];
-      component.deleteConfirmed.subscribe((v) => emitted.push(v));
+      component.closeDeleteDialog();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).deleteDialogOpen.set(false);
+      expect((component as any).deleteDialogOpen()).toBe(false);
+    });
+  });
 
-      expect(emitted).toHaveLength(0);
+  // -------------------------------------------------------------------------
+  // 12. runtime form state
+  // -------------------------------------------------------------------------
+
+  describe('runtime form state', () => {
+    it('disables the create submit button when fieldErrors has errors', () => {
+      const { fixture, component } = setup({
+        createConfig: CREATE_CONFIG,
+        createFormState: {
+          fieldErrors: { 'metadata.name': 'required' },
+        },
+      });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (component as any).createDialogOpen.set(true);
+      fixture.detectChanges();
+
+      const root: ShadowRoot | HTMLElement =
+        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+      const submitButton = root.querySelector(
+        '.dialog__footer ui5-button[design="Emphasized"]',
+      ) as HTMLElement & { disabled: boolean };
+
+      expect(submitButton.disabled).toBe(true);
+    });
+
+    it('enables the create submit button when fieldErrors is empty', () => {
+      const { fixture, component } = setup({
+        createConfig: CREATE_CONFIG,
+        createFormState: { fieldErrors: {} },
+      });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (component as any).createDialogOpen.set(true);
+      fixture.detectChanges();
+
+      const root: ShadowRoot | HTMLElement =
+        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+      const submitButton = root.querySelector(
+        '.dialog__footer ui5-button[design="Emphasized"]',
+      ) as HTMLElement & { disabled: boolean };
+
+      expect(submitButton.disabled).toBe(false);
+    });
+
+    it('disables the edit submit button when fieldErrors has errors', () => {
+      const { fixture, component } = setup({
+        editConfig: EDIT_CONFIG,
+        editFormState: {
+          fieldErrors: { 'metadata.name': 'required' },
+        },
+      });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (component as any).editDialogOpen.set(true);
+      fixture.detectChanges();
+
+      const root: ShadowRoot | HTMLElement =
+        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+      const submitButton = root.querySelector(
+        '.dialog__footer ui5-button[design="Emphasized"]',
+      ) as HTMLElement & { disabled: boolean };
+
+      expect(submitButton.disabled).toBe(true);
+    });
+
+    it('enables the edit submit button when fieldErrors is empty', () => {
+      const { fixture, component } = setup({
+        editConfig: EDIT_CONFIG,
+        editFormState: { fieldErrors: {} },
+      });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (component as any).editDialogOpen.set(true);
+      fixture.detectChanges();
+
+      const root: ShadowRoot | HTMLElement =
+        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+      const submitButton = root.querySelector(
+        '.dialog__footer ui5-button[design="Emphasized"]',
+      ) as HTMLElement & { disabled: boolean };
+
+      expect(submitButton.disabled).toBe(false);
     });
   });
 

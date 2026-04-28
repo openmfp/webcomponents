@@ -1,6 +1,6 @@
 # DeclarativeTableCard
 
-A card component that wraps `mfp-declarative-table` and adds a header, search, and optional create/edit/delete dialogs — all configured declaratively.
+A card component that wraps `mfp-declarative-table` and adds a header, search, and optional create/edit/delete dialogs. Form validation and async submit state are owned by the host application.
 
 ## Tags
 
@@ -13,115 +13,107 @@ A card component that wraps `mfp-declarative-table` and adds a header, search, a
 
 ## Usage as a web component
 
-Include the bundle and set properties via JavaScript.
-
 ```html
-<!DOCTYPE html>
-<html>
-  <head>
-    <script type="module" src="declarative-table-card.js" />
-  </head>
-  <body>
-    <mfp-wc-declarative-table-card id="card"></mfp-wc-declarative-table-card>
+<mfp-wc-declarative-table-card id="card"></mfp-wc-declarative-table-card>
 
-    <script type="module">
-      const card = document.getElementById('card');
+<script type="module">
+  const card = document.getElementById('card');
 
-      card.header = 'Pods';
-      card.resources = [
-        {
-          id: '1',
-          metadata: { name: 'api-server', namespace: 'default' },
-          status: { phase: 'Running' },
-        },
-      ];
-      card.config = {
-        tableConfig: {
-          fields: [
-            { label: 'Name', property: 'metadata.name' },
-            { label: 'Namespace', property: 'metadata.namespace' },
-          ],
-          paginationLimit: 10,
-          hasMore: false,
-        },
-        createResourceFormConfig: {
-          fields: [
-            { name: 'metadata.name', label: 'Name', required: true },
-            { name: 'metadata.namespace', label: 'Namespace', required: true },
-          ],
-          title: 'Create Pod',
-          confirmLabel: 'Create',
-        },
-      };
+  card.resources = [
+    {
+      id: '1',
+      metadata: { name: 'api-server', namespace: 'default' },
+      status: { phase: 'Running' },
+    },
+  ];
 
-      card.addEventListener('createConfirmed', (e) =>
-        console.log('create', e.detail),
-      );
-      card.addEventListener('editConfirmed', (e) =>
-        console.log('edit', e.detail),
-      );
-      card.addEventListener('deleteConfirmed', (e) =>
-        console.log('delete', e.detail),
-      );
-      card.addEventListener('searchChanged', (e) =>
-        console.log('search', e.detail),
-      );
-    </script>
-  </body>
-</html>
+  card.config = {
+    header: 'Pods',
+    tableConfig: {
+      fields: [
+        { label: 'Name', property: 'metadata.name' },
+        { label: 'Namespace', property: 'metadata.namespace' },
+      ],
+    },
+    createResourceFormConfig: {
+      fields: [
+        { name: 'metadata.name', label: 'Name', required: true },
+        { name: 'metadata.namespace', label: 'Namespace' },
+      ],
+      title: 'Create Pod',
+      confirmLabel: 'Create',
+    },
+  };
+
+  card.addEventListener('createFieldChange', (event) => {
+    const { fieldProperty, value } = event.detail;
+
+    card.createFormState = {
+      fieldErrors: {
+        ...card.createFormState?.fieldErrors,
+        [fieldProperty]: !value ? 'Field is required' : null,
+      },
+    };
+  });
+
+  card.addEventListener('createSubmit', async (event) => {
+    await createPod(event.detail);
+    card.createFormState = {};
+    card.closeCreateDialog();
+  });
+</script>
 ```
-
-> All inputs (`header`, `resources`, `config`) are JavaScript properties, not HTML attributes. They must be set programmatically after the element is available in the DOM.
 
 ---
 
 ## Usage as an Angular component
 
 ```ts
-import { DeclarativeTableCard, TableCardConfig } from '@openmfp/webcomponents';
+import {
+  DeclarativeTableCard,
+  FormFieldChangeEvent,
+  TableCardConfig,
+  TableCardFormState,
+} from '@openmfp/webcomponents';
 
 @Component({
   imports: [DeclarativeTableCard],
   template: `
     <mfp-declarative-table-card
-      header="Pods"
-      [resources]="pods"
+      #tableCard
       [config]="config"
-      (createConfirmed)="onCreate($event)"
-      (editConfirmed)="onEdit($event)"
-      (deleteConfirmed)="onDelete($event)"
+      [resources]="pods"
+      [createFormState]="createFormState"
+      [editFormState]="editFormState"
+      (createFieldChange)="onCreateFieldChange($event)"
+      (editFieldChange)="onEditFieldChange($event)"
+      (createSubmit)="onCreateSubmit($event, tableCard)"
+      (editSubmit)="onEditSubmit($event, tableCard)"
+      (deleteSubmit)="onDeleteSubmit($event, tableCard)"
       (searchChanged)="onSearch($event)"
     />
   `,
 })
 export class MyComponent {
-  pods = [...];
+  pods = [];
+  createFormState: TableCardFormState = {};
+  editFormState: TableCardFormState = {};
 
   config: TableCardConfig = {
+    header: 'Pods',
     tableConfig: {
       fields: [
-        { label: 'Name',      property: 'metadata.name' },
+        { label: 'Name', property: 'metadata.name' },
         { label: 'Namespace', property: 'metadata.namespace' },
       ],
-      paginationLimit: 10,
-      hasMore: false,
     },
     createResourceFormConfig: {
       fields: [
-        { name: 'metadata.name',      label: 'Name',      required: true },
-        { name: 'metadata.namespace', label: 'Namespace', required: true },
+        { name: 'metadata.name', label: 'Name', required: true },
+        { name: 'metadata.namespace', label: 'Namespace' },
       ],
       title: 'Create Pod',
       confirmLabel: 'Create',
-      cancelLabel: 'Cancel',
-    },
-    editResourceFormConfig: {
-      fields: [
-        { name: 'metadata.name',      label: 'Name',      disabled: true },
-        { name: 'metadata.namespace', label: 'Namespace', required: true },
-      ],
-      title: 'Edit Pod',
-      confirmLabel: 'Save',
     },
     deleteResourceConfirmationConfig: {
       title: 'Delete Pod?',
@@ -130,10 +122,48 @@ export class MyComponent {
     },
   };
 
-  onCreate(formValue: Record<string, unknown>) { /* ... */ }
-  onEdit({ resource, formValue }: { resource: Pod; formValue: Record<string, unknown> }) { /* ... */ }
-  onDelete(resource: Pod) { /* ... */ }
-  onSearch(query: string) { /* ... */ }
+  onCreateFieldChange(event: FormFieldChangeEvent): void {
+    const { fieldProperty, value } = event;
+    this.createFormState = {
+      fieldErrors: {
+        ...this.createFormState.fieldErrors,
+        [fieldProperty]: !value ? 'Field is required' : null,
+      },
+    };
+  }
+
+  onEditFieldChange(event: {
+    resource: Pod;
+    formChangeEvent: FormFieldChangeEvent;
+  }): void {
+    // Validate event.formChangeEvent and update editFormState.
+  }
+
+  async onCreateSubmit(
+    value: Record<string, unknown>,
+    tableCard: DeclarativeTableCard<Pod>,
+  ): Promise<void> {
+    await this.createPod(value);
+    this.createFormState = {};
+    tableCard.closeCreateDialog();
+  }
+
+  async onEditSubmit(
+    event: { resource: Pod; value: Record<string, unknown> },
+    tableCard: DeclarativeTableCard<Pod>,
+  ): Promise<void> {
+    await this.updatePod(event.resource, event.value);
+    this.editFormState = {};
+    tableCard.closeEditDialog();
+  }
+
+  async onDeleteSubmit(
+    pod: Pod,
+    tableCard: DeclarativeTableCard<Pod>,
+  ): Promise<void> {
+    await this.deletePod(pod);
+    tableCard.closeDeleteDialog();
+  }
 }
 ```
 
@@ -143,137 +173,63 @@ export class MyComponent {
 
 ### Inputs
 
-| Input           | Type              | Required | Default | Description                                                                              |
-| --------------- | ----------------- | -------- | ------- | ---------------------------------------------------------------------------------------- |
-| `header`        | `string`          | yes      | —       | Text shown in the card header                                                            |
-| `resources`     | `T[]`             | yes      | —       | Data rows passed to the inner table                                                      |
-| `config`        | `TableCardConfig` | yes      | —       | Table, button, and dialog configuration                                                  |
-| `headerTooltip` | `string`          | no       | —       | When set, renders an info icon next to the header. The value is used as the tooltip text |
+| Input             | Type                 | Required | Default | Description                                               |
+| ----------------- | -------------------- | -------- | ------- | --------------------------------------------------------- |
+| `resources`       | `T[]`                | yes      | -       | Data rows passed to the inner table                       |
+| `config`          | `TableCardConfig`    | yes      | -       | Static table, button, and dialog configuration            |
+| `createFormState` | `TableCardFormState` | no       | `{}`    | Runtime validation and submit state for the create dialog |
+| `editFormState`   | `TableCardFormState` | no       | `{}`    | Runtime validation and submit state for the edit dialog   |
 
 ### Outputs / Events
 
-| Event                    | Payload                                               | Description                                                            |
-| ------------------------ | ----------------------------------------------------- | ---------------------------------------------------------------------- |
-| `searchChanged`          | `string`                                              | Emits 300 ms after the search input changes. Empty string when cleared |
-| `createConfirmed`        | `Record<string, unknown>`                             | Emitted when the user confirms the create dialog                       |
-| `editConfirmed`          | `{ resource: T; formValue: Record<string, unknown> }` | Emitted when the user confirms the edit dialog                         |
-| `deleteConfirmed`        | `T`                                                   | Emitted when the user confirms the delete dialog                       |
-| `tableRowClicked`        | `T`                                                   | Emitted when a table row is clicked                                    |
-| `loadMoreResources`      | —                                                     | Emitted when the user triggers load more                               |
-| `paginationLimitChanged` | `number`                                              | Emitted when the user changes the page size                            |
-| `actionButtonClick`      | `ValueCellButtonClickEvent<T>`                        | Emitted for row-action buttons that are not `"edit"` or `"delete"`     |
+| Event                    | Payload                                           | Description                                                  |
+| ------------------------ | ------------------------------------------------- | ------------------------------------------------------------ |
+| `createFieldChange`       | `FormFieldChangeEvent`                            | Re-emits per-field change from the create form               |
+| `editFieldChange`         | `{ resource: T; formChangeEvent: FormFieldChangeEvent }` | Re-emits per-field change from the edit form with resource   |
+| `createSubmit`           | `Record<string, unknown>`                         | Fires when the create dialog Save button is clicked          |
+| `editSubmit`             | `{ resource: T; value: Record<string, unknown> }` | Fires when the edit dialog Save button is clicked            |
+| `deleteSubmit`           | `T`                                               | Fires when the delete dialog Delete button is clicked        |
+| `searchChanged`          | `string`                                          | Emits 300 ms after the search input changes                  |
+| `tableRowClicked`        | `T`                                               | Emits when a table row is clicked                            |
+| `loadMoreResources`      | -                                                 | Emits when the user triggers load more                       |
+| `paginationLimitChanged` | `number`                                          | Emits when the user changes page size                        |
+| `actionButtonClick`      | `ValueCellButtonClickEvent<T>`                    | Emits for row-action buttons other than built-in edit/delete |
+
+### Methods
+
+| Method                | Description              |
+| --------------------- | ------------------------ |
+| `closeCreateDialog()` | Closes the create dialog |
+| `closeEditDialog()`   | Closes the edit dialog   |
+| `closeDeleteDialog()` | Closes the delete dialog |
+
+Submit events do not close dialogs automatically. Close the dialog after successful validation, save, or delete.
 
 ---
 
 ## Configuration types
 
-### `TableCardConfig`
-
 ```ts
 interface TableCardConfig {
+  header: string;
+  headerTooltip?: string;
   tableConfig: TableConfig;
-  buttonSettings?: {
-    createButton?: Partial<ButtonSettings>;
-    searchButton?: Partial<ButtonSettings>;
-    editButton?: Partial<ButtonSettings>;
-    deleteButton?: Partial<ButtonSettings>;
-  };
+  buttonSettings?: TableCardButtonSettings;
   createResourceFormConfig?: ResourceFormConfig;
   editResourceFormConfig?: ResourceFormConfig;
   deleteResourceConfirmationConfig?: DeleteResourceConfirmationConfig;
 }
-```
 
-### `TableConfig`
-
-```ts
-interface TableConfig {
-  fields: TableFieldDefinition[]; // column definitions — see declarative-table.md
-  totalItemsCount?: number; // total rows across all pages
-  paginationLimit?: number; // rows per page (default: 5)
-  hasMore?: boolean; // show Load More trigger
-}
-```
-
-### `ResourceFormConfig`
-
-```ts
 interface ResourceFormConfig {
-  fields: FormFieldDefinition[]; // form fields shown in the dialog
-  title?: string; // dialog heading
-  confirmLabel?: string; // confirm button label
-  cancelLabel?: string; // cancel button label
+  fields: FormFieldDefinition[];
+  title?: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+}
+
+interface TableCardFormState {
+  fieldErrors?: FormFieldErrors;
 }
 ```
 
-To make a field read-only in edit mode, set `disabled: true` on the field definition:
-
-```ts
-config = {
-  ...config,
-  editResourceFormConfig: {
-    fields: [
-      { name: 'metadata.name', label: 'Name', disabled: true }, // non-editable
-      { name: 'metadata.namespace', label: 'Namespace' },
-    ],
-  },
-};
-```
-
-### `DeleteResourceConfirmationConfig`
-
-```ts
-interface DeleteResourceConfirmationConfig {
-  title?: string; // dialog heading (default: "Confirm Delete")
-  message?: string; // body text shown in the dialog
-  confirmLabel?: string; // confirm button label (default: "Delete")
-  cancelLabel?: string; // cancel button label (default: "Cancel")
-}
-```
-
----
-
-## Search
-
-A search icon is always shown in the card header. Clicking it expands a text input with a slide animation. The input collapses automatically when it loses focus and is empty.
-
-The `searchChanged` output is debounced by 300 ms and is the primary hook for filtering:
-
-```ts
-onSearch(query: string) {
-  this.filteredPods = query
-    ? this.pods.filter(p => p.metadata.name.includes(query))
-    : this.pods;
-}
-```
-
----
-
-## Custom action buttons
-
-To add row-action buttons beyond edit and delete, define button columns directly in `config.tableConfig.fields` and listen to `actionButtonClick`:
-
-```ts
-config: TableCardConfig = {
-  tableConfig: {
-    fields: [
-      { label: 'Name', property: 'metadata.name' },
-      {
-        uiSettings: {
-          displayAs: 'button',
-          buttonSettings: {
-            icon: 'action',
-            design: 'Transparent',
-            action: 'navigate',
-          },
-        },
-        group: { name: 'actions', label: '', multiline: false },
-      },
-    ],
-  },
-};
-```
-
-```html
-(actionButtonClick)="onAction($event)"
-```
+`ResourceFormConfig` is static. Keep runtime errors in `createFormState` / `editFormState`. The submit button is disabled when any entry in `fieldErrors` is truthy.
