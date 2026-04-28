@@ -271,3 +271,28 @@ export const AngularComponentRegistry: Story = {
     availableCards: ANGULAR_REGISTRY_AVAILABLE_CARDS,
   },
 };
+
+export const CustomButtonSettings: Story = {
+  args: {
+    config: {
+      ...SAMPLE_CONFIG,
+      title: 'Custom Button Settings',
+      description:
+        'Edit View and Add Card buttons configured via buttonSettings — text labels, no icons.',
+      buttonSettings: {
+        editViewButton: {
+          text: 'Edit View',
+          icon: '',
+          design: 'Default',
+          tooltip: '',
+        },
+        addCardButton: {
+          text: 'Add Card',
+          icon: '',
+          design: 'Emphasized',
+          tooltip: '',
+        },
+      },
+    },
+  },
+};

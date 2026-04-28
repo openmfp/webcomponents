@@ -117,6 +117,22 @@ export class Dashboard implements OnInit, OnDestroy {
       ),
   );
 
+  editViewButton = computed(() => ({
+    icon: 'action-settings',
+    design: 'Transparent' as const,
+    tooltip: 'Edit View',
+    text: '',
+    ...this.config().buttonSettings?.editViewButton,
+  }));
+
+  addCardButton = computed(() => ({
+    icon: '',
+    design: 'Default' as const,
+    tooltip: '',
+    text: '+ Add Card',
+    ...this.config().buttonSettings?.addCardButton,
+  }));
+
   sectionCards = computed(() => {
     const all = this.cards();
     return (sectionId: string) => all.filter((c) => c.sectionId === sectionId);

@@ -19,10 +19,16 @@ export interface SectionConfig {
   editable?: boolean;
 }
 
+export interface DashboardButtonSettings {
+  editViewButton?: Partial<ButtonSettings>;
+  addCardButton?: Partial<ButtonSettings>;
+}
+
 export interface DashboardConfig {
   title: string;
   description?: string;
   backgroundImageUrl?: string;
+  buttonSettings?: DashboardButtonSettings;
   customActions?: ButtonSettings[];
   editable?: boolean;
 }
