@@ -49,7 +49,7 @@ const AVAILABLE_CARDS: CardConfig[] = [
     id: 'table-pods',
     label: 'Pods Table',
     w: 12,
-    h: 10,
+    h: 100,
     component: 'mfp-wc-declarative-table-card',
     componentInputs: {
       config: TABLE_CARD_CONFIG,
@@ -60,21 +60,21 @@ const AVAILABLE_CARDS: CardConfig[] = [
     id: 'whats-new',
     label: "What's New",
     w: 5,
-    h: 5.7,
+    h: 57,
     component: 'mfp-whats-new',
   },
   {
     id: 'favorites',
     label: 'Favorites',
     w: 4,
-    h: 2.1,
+    h: 21,
     component: 'mfp-favorites',
   },
   {
     id: 'service-status',
     label: 'Service Status',
     w: 4,
-    h: 3,
+    h: 30,
     component: 'mfp-service-status-card',
   },
 ];
@@ -98,7 +98,7 @@ const REGISTRY_CARDS: CardConfig[] = [
   {
     id: 'angular-visited-service',
     w: 4,
-    h: 1,
+    h: 10,
     sectionId: 'angular-cards',
     component: 'mfp-visited-service-card',
     componentInputs: {
@@ -115,14 +115,14 @@ const REGISTRY_CARDS: CardConfig[] = [
     x: 0,
     y: 0,
     w: 5,
-    h: 2,
+    h: 20,
     component: 'mfp-favorites',
   },
   {
     id: 'webcomponent-table',
     sectionId: 'wc-cards',
     w: 12,
-    h: 5,
+    h: 50,
     component: 'mfp-wc-declarative-table-card',
     componentInputs: {
       config: TABLE_CARD_CONFIG,
@@ -139,14 +139,14 @@ const ANGULAR_REGISTRY_AVAILABLE_CARDS: CardConfig[] = [
     id: 'angular-service-status-template',
     label: 'Angular Service Status',
     w: 4,
-    h: 2.9,
+    h: 29,
     component: 'mfp-service-status-card',
   },
   {
     id: 'webcomponent-whats-new-template',
     label: "Web Component What's New",
     w: 5,
-    h: 5.6,
+    h: 56,
     component: 'mfp-whats-new',
   },
 ];

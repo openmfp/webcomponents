@@ -269,7 +269,7 @@ interface SectionConfig {
 interface CardConfig {
   id: string;
   w?: number; // expresed in number of columns till 12
-  h?: number; // expresed hipotetical number of rows, where a row is 100px high, so the value of 2.7 translarts to 270 px
+  h?: number; // expresed hipotetical number of rows, where a row is 10px high, so the value of 2.7 translarts to 270 px
   x?: number;
   y?: number;
   sectionId?: string;
