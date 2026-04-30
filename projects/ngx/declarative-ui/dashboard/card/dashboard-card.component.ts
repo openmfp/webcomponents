@@ -24,7 +24,7 @@ import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
   imports: [Button],
   templateUrl: './dashboard-card.component.html',
   styleUrl: './dashboard-card.component.scss',
-  encapsulation: ViewEncapsulation.ShadowDom,
+  encapsulation: ViewEncapsulation.Emulated,
   host: {
     '[style.grid-column]': 'gridColumn()',
     '[style.grid-row]': 'gridRow()',

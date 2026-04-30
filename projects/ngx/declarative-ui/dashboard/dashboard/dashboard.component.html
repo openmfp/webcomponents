@@ -1,7 +1,7 @@
-<div class="dashboard">
-  <div class="dashboard__topbar">
-    <div class="dashboard__topbar-row">
-      <div class="dashboard__header">
+<div class="mfp-dashboard">
+  <div class="mfp-dashboard__topbar">
+    <div class="mfp-dashboard__topbar-row">
+      <div class="mfp-dashboard__header">
         @if (config().title) {
           <ui5-title level="H2" size="H2" wrapping-type="Normal">{{
             config().title
@@ -12,7 +12,7 @@
         }
       </div>
 
-      <div class="dashboard__toolbar">
+      <div class="mfp-dashboard__toolbar">
         @if (editMode()) {
           <ui5-button
             id="add-card-btn"
@@ -77,11 +77,11 @@
       </div>
     </div>
 
-    <div class="dashboard__subheader">
+    <div class="mfp-dashboard__subheader">
       <slot name="dashboard-subheader"></slot>
     </div>
   </div>
-  <div class="sections-container">
+  <div class="mfp-sections-container">
     @for (section of sections(); track section.id) {
       <mfp-dashboard-section
         [section]="section"
@@ -109,7 +109,7 @@
   </gridstack>
 
   @if (editMode()) {
-    <div class="dashboard__edit-bar">
+    <div class="mfp-dashboard__edit-bar">
       <ui5-button design="Emphasized" (click)="saveEdit()">Save</ui5-button>
       <ui5-button design="Transparent" (click)="cancelEdit()"
         >Cancel</ui5-button

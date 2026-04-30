@@ -55,7 +55,7 @@ document.body.classList.add('ui5-content-density-compact');
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
-  encapsulation: ViewEncapsulation.ShadowDom,
+  encapsulation: ViewEncapsulation.None,
   host: {
     '[style.background-image]':
       'config().backgroundImageUrl ? "url(" + config().backgroundImageUrl + ")" : null',
