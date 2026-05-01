@@ -2,7 +2,6 @@ import { VisitedServiceCard } from '../ngx/cards/visited-service-card/visited-se
 import { createCustomElement } from '@angular/elements';
 import { createApplication } from '@angular/platform-browser';
 import {
-  Dashboard,
   DeclarativeForm,
   DeclarativeTable,
   DeclarativeTableCard,
@@ -10,11 +9,6 @@ import {
 
 (async () => {
   const app = await createApplication();
-
-  const DashboardElement = createCustomElement(Dashboard, {
-    injector: app.injector,
-  });
-  customElements.define('mfp-wc-dashboard', DashboardElement);
 
   const DeclarativeTableElement = createCustomElement(DeclarativeTable, {
     injector: app.injector,

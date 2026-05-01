@@ -1,9 +1,25 @@
 import { build } from 'esbuild';
-import { readdirSync, unlinkSync, mkdirSync, copyFileSync } from 'fs';
+import { readdirSync, unlinkSync, rmSync, mkdirSync, copyFileSync } from 'fs';
 import { join, resolve } from 'path';
 
+const publicDir = resolve('public');
+mkdirSync(publicDir, { recursive: true });
+
+const cleanup = ['prerendered-routes.json', '3rdpartylicenses.txt'];
+
+function cleanDist(dir) {
+  for (const file of readdirSync(dir)) {
+    if (
+      (file.startsWith('chunk-') && file.endsWith('.js')) ||
+      cleanup.includes(file)
+    ) {
+      unlinkSync(join(dir, file));
+    }
+  }
+}
+
+// --- mfp-webcomponents.js (all components) ---
 const dist = resolve('dist/webcomponents');
-// Angular application builder outputs the entry as main.js
 const entry = join(dist, 'main.js');
 const out = join(dist, 'mfp-webcomponents.js');
 
@@ -16,24 +32,31 @@ await build({
   logLevel: 'warning',
 });
 
-// Remove the original main.js — replaced by the bundled mfp-webcomponents.js
 unlinkSync(entry);
-
-// Remove leftover chunk files and build artifacts
-const cleanup = ['prerendered-routes.json', '3rdpartylicenses.txt'];
-for (const file of readdirSync(dist)) {
-  if (
-    (file.startsWith('chunk-') && file.endsWith('.js')) ||
-    cleanup.includes(file)
-  ) {
-    unlinkSync(join(dist, file));
-  }
-}
+cleanDist(dist);
 
 console.log('Single-file bundle written to dist/webcomponents/mfp-webcomponents.js');
-
-// Copy to public/ for local dev serving (create dir if needed)
-const publicDir = resolve('public');
-mkdirSync(publicDir, { recursive: true });
 copyFileSync(out, join(publicDir, 'mfp-webcomponents.js'));
 console.log('Copied to public/mfp-webcomponents.js');
+
+// --- mfp-wc-dashboard.js (dashboard only) ---
+const dashDist = resolve('dist/webcomponents-dashboard');
+const dashEntry = join(dashDist, 'main.js');
+const dashOut = join(dist, 'mfp-wc-dashboard.js');
+
+await build({
+  entryPoints: [dashEntry],
+  bundle: true,
+  format: 'esm',
+  outfile: dashOut,
+  minify: true,
+  logLevel: 'warning',
+});
+
+unlinkSync(dashEntry);
+cleanDist(dashDist);
+rmSync(dashDist, { recursive: true });
+
+console.log('Single-file bundle written to dist/webcomponents/mfp-wc-dashboard.js');
+copyFileSync(dashOut, join(publicDir, 'mfp-wc-dashboard.js'));
+console.log('Copied to public/mfp-wc-dashboard.js');
