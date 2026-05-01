@@ -34,11 +34,12 @@ export class DashboardCard {
   card = input.required<CardConfig>();
   editMode = input<boolean>(false);
   readonly removeCard = output<void>();
-  protected readonly gridColumn = computed(() =>
-    this.createGridTrack(this.card().x, this.card().w),
-  );
+  protected readonly gridColumn = computed(() => {
+    const width = this.card().w ?? 12;
+    return this.createGridTrack(this.card().x, width);
+  });
   protected readonly gridRow = computed(() => {
-    const height = this.card().h ?? 10;
+    const height = this.card().h ?? 100;
     return this.createGridTrack(this.card().y, height);
   });
 
@@ -120,16 +121,11 @@ export class DashboardCard {
     host.innerHTML = '';
   }
 
-  private createGridTrack(
-    start: number | undefined,
-    span: number | undefined,
-  ): string {
-    const resolvedSpan = span ?? 1;
-
+  private createGridTrack(start: number | undefined, span: number): string {
     if (start === undefined) {
-      return `span ${resolvedSpan}`;
+      return `span ${span}`;
     }
 
-    return `${start + 1} / span ${resolvedSpan}`;
+    return `${start + 1} / span ${span}`;
   }
 }
