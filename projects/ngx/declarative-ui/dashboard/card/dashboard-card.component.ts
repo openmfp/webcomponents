@@ -19,6 +19,18 @@ import {
 } from '@angular/core';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 
+type SapUiRequire = (
+  deps: string[],
+  cb: (
+    ComponentContainer: new (cfg: {
+      name: string;
+      manifest: boolean;
+      async: boolean;
+      settings: Record<string, unknown>;
+    }) => { placeAt(el: HTMLElement): void; destroy(): void },
+  ) => void,
+) => void;
+
 @Component({
   selector: 'mfp-dashboard-card',
   imports: [Button],
@@ -56,6 +68,40 @@ export class DashboardCard {
 
       this.clearAngularHost(angularHost);
       this.clearElementHost(elementHost.nativeElement);
+
+      if (cfg.type === 'sap-ui') {
+        let sapContainer: { destroy(): void } | null = null;
+        const sapRequire = (
+          window as unknown as { sap?: { ui: { require: SapUiRequire } } }
+        ).sap?.ui?.require;
+
+        if (sapRequire) {
+          sapRequire(
+            ['sap/ui/core/ComponentContainer'],
+            (ComponentContainer) => {
+              const container = new ComponentContainer({
+                name: cfg.component,
+                manifest: true,
+                async: true,
+                settings: cfg.componentInputs ?? {},
+              });
+
+              container.placeAt(elementHost.nativeElement);
+              sapContainer = container;
+            },
+          );
+        } else {
+          console.error(
+            '[DashboardCard] SAP UI5 is not available on window.sap',
+          );
+        }
+
+        onCleanup(() => {
+          sapContainer?.destroy();
+          this.clearElementHost(elementHost.nativeElement);
+        });
+        return;
+      }
 
       const registeredComponent = getRegisteredDashboardCardComponent(
         cfg.component,

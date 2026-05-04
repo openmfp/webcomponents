@@ -1,5 +1,4 @@
 import { VisitedServiceCard } from '../ngx/cards/visited-service-card/visited-service-card.component';
-import { UI5CardHostComponent } from '../ngx/cards/ui5-card-host/ui5-card-host.component';
 import { createCustomElement } from '@angular/elements';
 import { createApplication } from '@angular/platform-browser';
 import {
@@ -76,9 +75,4 @@ import {
     'mfp-wc-visited-service-card',
     VisitedServiceCardElement,
   );
-
-  const UI5CardHostElement = createCustomElement(UI5CardHostComponent, {
-    injector: app.injector,
-  });
-  customElements.define('mfp-ui5-card-host', UI5CardHostElement);
 })();

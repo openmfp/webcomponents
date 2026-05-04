@@ -8,6 +8,7 @@ export interface CardConfig {
   y?: number;
   sectionId?: string;
   component: string;
+  type?: 'wc' | 'angular' | 'sap-ui';
   componentInputs?: Record<string, unknown>;
   label?: string;
 }
