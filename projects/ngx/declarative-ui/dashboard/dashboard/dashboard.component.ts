@@ -28,8 +28,6 @@ import { MenuSeparator } from '@fundamental-ngx/ui5-webcomponents/menu-separator
 import { Text } from '@fundamental-ngx/ui5-webcomponents/text';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 import '@ui5/webcomponents-icons/dist/action-settings.js';
-import '@ui5/webcomponents-icons/dist/action-settings.js';
-import '@ui5/webcomponents-icons/dist/menu2.js';
 import '@ui5/webcomponents-icons/dist/menu2.js';
 import { GridStackNode, GridStackOptions } from 'gridstack';
 import {
@@ -92,7 +90,7 @@ export class Dashboard implements OnInit, OnDestroy {
   protected gridOptions = computed(
     (): GridStackOptions => ({
       cellHeight: CELL_HEIGHT,
-      disableResize: true,
+      disableResize: !this.editMode(),
       disableDrag: !this.editMode(),
       columnOpts: {
         breakpointForWindow: true,

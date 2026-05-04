@@ -66,7 +66,7 @@ export const CARDS: CardConfig[] = [
   ...RAS_CARD_TEMPLATES.map((t, i) => ({
     id: `ras-card-${i}`,
     w: 4,
-    h: 1,
+    h: 10,
     sectionId: 'ras',
     component: 'mfp-visited-service-card',
     componentInputs: { ...t },
@@ -74,7 +74,7 @@ export const CARDS: CardConfig[] = [
   {
     id: 'table-pods',
     w: 12,
-    h: 5,
+    h: 50,
     component: 'mfp-wc-declarative-table-card',
     componentInputs: {
       config: TABLE_CARD_CONFIG,
@@ -87,21 +87,21 @@ export const CARDS: CardConfig[] = [
     id: 'whats-new',
     label: "What's New",
     w: 5,
-    h: 5.7,
+    h: 57,
     component: 'mfp-whats-new',
   },
   {
     id: 'favorites',
     label: 'Favorites',
     w: 4,
-    h: 2.1,
+    h: 21,
     component: 'mfp-favorites',
   },
   {
     id: 'service-status',
     label: 'Service Status',
     w: 4,
-    h: 3,
+    h: 30,
     component: 'mfp-service-status-card',
   },
 ];
