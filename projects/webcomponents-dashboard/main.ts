@@ -1,0 +1,12 @@
+import { createCustomElement } from '@angular/elements';
+import { createApplication } from '@angular/platform-browser';
+import { Dashboard } from '@openmfp/webcomponents/declarative-ui';
+
+(async () => {
+  const app = await createApplication();
+
+  const DashboardElement = createCustomElement(Dashboard, {
+    injector: app.injector,
+  });
+  customElements.define('mfp-wc-dashboard', DashboardElement);
+})();

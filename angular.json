@@ -105,6 +105,37 @@
           "defaultConfiguration": "production"
         }
       }
+    },
+    "webcomponents-dashboard": {
+      "projectType": "application",
+      "root": "projects/webcomponents-dashboard",
+      "sourceRoot": "projects/webcomponents-dashboard",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": {
+              "base": "dist/webcomponents-dashboard",
+              "browser": ""
+            },
+            "browser": "projects/webcomponents-dashboard/main.ts",
+            "tsConfig": "projects/webcomponents-dashboard/tsconfig.app.json",
+            "index": false,
+            "outputHashing": "none",
+            "inlineStyleLanguage": "scss"
+          },
+          "configurations": {
+            "production": {
+              "optimization": true
+            },
+            "development": {
+              "optimization": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        }
+      }
     }
   },
   "cli": {

@@ -4,9 +4,39 @@ An Angular dashboard layout component that combines editable sections with dragg
 
 ## Tags
 
-| Usage             | Tag               |
-| ----------------- | ----------------- |
-| Angular component | `<mfp-dashboard>` |
+| Usage             | Tag                  |
+| ----------------- | -------------------- |
+| Angular component | `<mfp-dashboard>`    |
+| Web component     | `<mfp-wc-dashboard>` |
+
+---
+
+## Usage as a web component
+
+The dashboard is shipped as a **dedicated standalone bundle** `mfp-wc-dashboard.js`, separate from the main `mfp-webcomponents.js`. Load it independently — it does not depend on the main bundle.
+
+```html
+<script type="module" src="/mfp-wc-dashboard.js"></script>
+
+<mfp-wc-dashboard id="dashboard"></mfp-wc-dashboard>
+
+<script type="module">
+  const el = document.getElementById('dashboard');
+  el.config = { title: 'Platform Overview' };
+  el.sections = [{ id: 'runtime', title: 'Runtime', w: 12 }];
+  el.cards = [
+    {
+      id: 'pods-card',
+      component: 'mfp-wc-declarative-table-card',
+      w: 12,
+      h: 5,
+      componentInputs: { header: 'Pods' },
+    },
+  ];
+</script>
+```
+
+All inputs (`config`, `sections`, `cards`, `availableCards`) and the `saved` event work the same as the Angular component.
 
 ---
 
@@ -137,7 +167,7 @@ const sameCardUsingAlias: CardConfig = {
 Custom elements are still supported. They must be registered in the browser before the dashboard renders them.
 
 ```ts
-cards: CardConfig[] = [
+const cards: CardConfig[] = [
   {
     id: 'pods-card',
     component: 'mfp-wc-declarative-table-card',
@@ -268,7 +298,7 @@ interface SectionConfig {
 ```ts
 interface CardConfig {
   id: string;
-  w?: number; // expresed in number of columns till 12
+  w?: number; // expresed in number of columns up to 12
   h?: number; // expresed hipotetical number of rows, where a row is 10px high, so the value of 27 translarts to 270 px
   x?: number;
   y?: number;
