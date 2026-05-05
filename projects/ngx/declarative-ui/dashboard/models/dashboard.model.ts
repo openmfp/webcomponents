@@ -1,5 +1,13 @@
 import { ButtonSettings } from '../../models/ui-definition';
 
+export const CARD_TYPES = {
+  WC: 'wc',
+  ANGULAR: 'angular',
+  SAP_UI: 'sap-ui',
+} as const
+
+export type CardsType = typeof CARD_TYPES[keyof typeof CARD_TYPES];
+
 export interface CardConfig {
   id: string;
   w?: number;
@@ -8,7 +16,7 @@ export interface CardConfig {
   y?: number;
   sectionId?: string;
   component: string;
-  type?: 'wc' | 'angular' | 'sap-ui';
+  type?: CardsType
   componentInputs?: Record<string, unknown>;
   label?: string;
 }

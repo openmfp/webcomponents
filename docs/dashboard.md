@@ -84,6 +84,7 @@ export class DashboardPage {
       id: 'recent-service-card',
       sectionId: 'favorites',
       component: 'mfp-visited-service-card',
+      type: 'angular',
       w: 6,
       h: 2,
       componentInputs: {
@@ -97,6 +98,7 @@ export class DashboardPage {
     {
       id: 'pods-card',
       component: 'mfp-wc-declarative-table-card',
+      type: 'wc',
       w: 12,
       h: 5,
       x: 0,
@@ -111,6 +113,7 @@ export class DashboardPage {
     {
       id: 'service-status-template',
       component: 'mfp-wc-service-status-card',
+      type: 'wc',
       label: 'Service Status',
       w: 4,
       h: 2,
@@ -123,12 +126,13 @@ export class DashboardPage {
 }
 ```
 
-`componentInputs` is shared by both render modes:
+`componentInputs` behaviour depends on `type`:
 
-- For Angular components, values are applied with Angular `setInput(...)`.
+- For `type: 'angular'`, values are applied with Angular `setInput(...)`.
 - For Angular input aliases, both the class property name and the public alias are accepted.
 - Unknown Angular input names are ignored and logged as a development warning.
-- For web components, values are set as DOM properties, matching the previous behavior.
+- For `type: 'wc'` (or when `type` is omitted), values are set as DOM properties.
+- For `type: 'sap-ui'`, values are forwarded as `settings` to `ComponentContainer`.
 
 Example with an aliased Angular input:
 
@@ -146,6 +150,7 @@ Dashboard.registerAngularComponents([AppCard]);
 const card: CardConfig = {
   id: 'app-card',
   component: 'app-card',
+  type: 'angular',
   componentInputs: {
     // Class property name works.
     title: 'Runtime',
@@ -155,6 +160,7 @@ const card: CardConfig = {
 const sameCardUsingAlias: CardConfig = {
   id: 'app-card-alias',
   component: 'app-card',
+  type: 'angular',
   componentInputs: {
     // Public alias works too.
     cardTitle: 'Runtime',
@@ -304,6 +310,7 @@ interface CardConfig {
   y?: number;
   sectionId?: string;
   component: string;
+  type?: 'wc' | 'angular' | 'sap-ui';
   componentInputs?: Record<string, unknown>;
   label?: string;
 }
@@ -313,9 +320,36 @@ For sections, `w` controls the column span while height is determined by the sec
 For cards, `w` and `h` control the initial rendered grid span. `x` and `y` persist the loose-card position reported by 
 drag and drop functionality when edit mode is saved. As well in the edit mode the heigh and width of the card can be changed.
 
-`component` accepts either:
+`component` and `type` work together to determine how the card is rendered:
 
-- an element selector for a component registered with `Dashboard.registerAngularComponents(...)`
-- a custom element tag that has already been registered with `customElements.define(...)`
+| `type`     | Render strategy                                                           |
+| ---------- | ------------------------------------------------------------------------- |
+| `'wc'`     | Creates a custom element tag; sets `componentInputs` as DOM properties    |
+| omitted    | Same as `'wc'`                                                            |
+| `'angular'`| Looks up the Angular registry; warns and renders nothing if not found     |
+| `'sap-ui'` | Mounts via `window.sap.ui.require` + `ComponentContainer`                 |
 
 Angular registry support intentionally accepts only single element selectors such as `mfp-visited-service-card`. Attribute selectors like `[my-card]`, class selectors like `.my-card`, and comma-separated selectors are rejected because dashboard card configs use `component` as a tag-like persisted key.
+
+## Usage with SAP UI5 components
+
+Cards with `type: 'sap-ui'` are rendered using the SAP UI5 `ComponentContainer` API. `window.sap.ui.require` must be available on the page (loaded via the SAP UI5 bootstrap script) before the dashboard renders.
+
+`component` must be the SAP UI5 component name passed as `name` to `ComponentContainer`. `componentInputs` are forwarded as `settings` to the container constructor.
+
+```ts
+const cards: CardConfig[] = [
+  {
+    id: 'sap-component-card',
+    component: 'my.namespace.Component',
+    type: 'sap-ui',
+    w: 6,
+    h: 20,
+    componentInputs: {
+      env: 'production',
+    },
+  },
+];
+```
+
+If `window.sap` is not available when the card is rendered, an error is logged and the card host element is left empty.

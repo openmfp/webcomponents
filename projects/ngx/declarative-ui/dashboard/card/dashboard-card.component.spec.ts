@@ -126,4 +126,97 @@ describe('DashboardCard', () => {
     expect(root(fixture).querySelector('.card__body')).not.toBeNull();
     expect(root(fixture).querySelector('.component-card')).toBeNull();
   });
+
+  describe('sap-ui type', () => {
+    let placeAt: ReturnType<typeof vi.fn>;
+    let destroy: ReturnType<typeof vi.fn>;
+    let sapRequire: ReturnType<typeof vi.fn>;
+
+    beforeEach(() => {
+      placeAt = vi.fn();
+      destroy = vi.fn();
+      const ComponentContainer = vi.fn(function (this: Record<string, unknown>) {
+        this['placeAt'] = placeAt;
+        this['destroy'] = destroy;
+      });
+      sapRequire = vi.fn().mockImplementation((_deps: unknown, cb: (ctor: unknown) => void) => { cb(ComponentContainer); });
+
+      (window as unknown as Record<string, unknown>)['sap'] = {
+        ui: { require: sapRequire },
+      };
+    });
+
+    afterEach(() => {
+      delete (window as unknown as Record<string, unknown>)['sap'];
+    });
+
+    it('calls sap.ui.require with ComponentContainer dependency', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('card', {
+        id: 'card-1',
+        component: 'my.sap.App',
+        type: 'sap-ui',
+      });
+      fixture.detectChanges();
+
+      expect(sapRequire).toHaveBeenCalledWith(
+        ['sap/ui/core/ComponentContainer'],
+        expect.any(Function),
+      );
+    });
+
+    it('mounts the SAP component with correct config', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('card', {
+        id: 'card-1',
+        component: 'my.sap.App',
+        type: 'sap-ui',
+        componentInputs: { env: 'prod' },
+      });
+      fixture.detectChanges();
+
+      expect(placeAt).toHaveBeenCalledTimes(1);
+      expect(placeAt.mock.calls[0][0]).toBeInstanceOf(HTMLElement);
+    });
+
+    it('destroys the SAP container when the card definition changes', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('card', {
+        id: 'card-1',
+        component: 'my.sap.App',
+        type: 'sap-ui',
+      });
+      fixture.detectChanges();
+
+      fixture.componentRef.setInput('card', {
+        id: 'card-1',
+        component: 'my.sap.Other',
+        type: 'sap-ui',
+      });
+      fixture.detectChanges();
+
+      expect(destroy).toHaveBeenCalledTimes(1);
+    });
+
+    it('logs an error when window.sap is not available', () => {
+      delete (window as unknown as Record<string, unknown>)['sap'];
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('card', {
+        id: 'card-1',
+        component: 'my.sap.App',
+        type: 'sap-ui',
+      });
+      fixture.detectChanges();
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '[DashboardCard] SAP UI5 is not available on window.sap',
+      );
+      consoleSpy.mockRestore();
+    });
+  });
 });

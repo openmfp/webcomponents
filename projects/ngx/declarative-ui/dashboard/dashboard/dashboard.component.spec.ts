@@ -94,7 +94,7 @@ describe('Dashboard', () => {
     ).toHaveLength(1);
     expect(root(fixture).querySelectorAll('gridstack-item')).toHaveLength(1);
     expect(
-      root(fixture).querySelector('.dashboard__toolbar ui5-button'),
+      root(fixture).querySelector('.mfp-dashboard__toolbar ui5-button'),
     ).toBeNull();
   });
 
@@ -109,7 +109,7 @@ describe('Dashboard', () => {
     fixture.detectChanges();
 
     const editButton = root(fixture).querySelector(
-      '.dashboard__toolbar ui5-button',
+      '.mfp-dashboard__toolbar ui5-button',
     );
 
     editButton?.dispatchEvent(new Event('click'));
@@ -120,7 +120,7 @@ describe('Dashboard', () => {
     expect(component.editMode()).toBe(true);
     expect(addCardButton).not.toBeNull();
     expect(
-      root(fixture).querySelectorAll('.dashboard__edit-bar ui5-button'),
+      root(fixture).querySelectorAll('.mfp-dashboard__edit-bar ui5-button'),
     ).toHaveLength(2);
 
     addCardButton?.dispatchEvent(new Event('click'));

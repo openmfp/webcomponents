@@ -1,11 +1,11 @@
-import { CardConfig } from '../models';
+import { CARD_TYPES, CardConfig } from '../models';
 import {
   getRegisteredDashboardCardComponent,
   warnForUnknownDashboardCardInput,
 } from './dashboard-card-registry';
 import {
   Component,
-  ComponentRef,
+  EffectCleanupRegisterFn,
   ElementRef,
   Renderer2,
   ViewContainerRef,
@@ -69,94 +69,109 @@ export class DashboardCard {
       this.clearAngularHost(angularHost);
       this.clearElementHost(elementHost.nativeElement);
 
-      if (cfg.type === 'sap-ui') {
-        let sapContainer: { destroy(): void } | null = null;
-        const sapRequire = (
-          window as unknown as { sap?: { ui: { require: SapUiRequire } } }
-        ).sap?.ui?.require;
-
-        if (sapRequire) {
-          sapRequire(
-            ['sap/ui/core/ComponentContainer'],
-            (ComponentContainer) => {
-              const container = new ComponentContainer({
-                name: cfg.component,
-                manifest: true,
-                async: true,
-                settings: cfg.componentInputs ?? {},
-              });
-
-              container.placeAt(elementHost.nativeElement);
-              sapContainer = container;
-            },
-          );
-        } else {
-          console.error(
-            '[DashboardCard] SAP UI5 is not available on window.sap',
-          );
-        }
-
-        onCleanup(() => {
-          sapContainer?.destroy();
-          this.clearElementHost(elementHost.nativeElement);
-        });
-        return;
+      switch (cfg.type) {
+        case CARD_TYPES.SAP_UI:
+          this.mountSapCard(cfg, elementHost.nativeElement, onCleanup);
+          break;
+        case CARD_TYPES.ANGULAR:
+          this.mountAngularCard(cfg, angularHost, onCleanup);
+          break;
+        case CARD_TYPES.WC:
+        default:
+          this.mountWcCard(cfg, elementHost.nativeElement, onCleanup);
+          break;
       }
-
-      const registeredComponent = getRegisteredDashboardCardComponent(
-        cfg.component,
-      );
-
-      if (registeredComponent) {
-        const componentRef = angularHost.createComponent(
-          registeredComponent.componentType,
-        );
-
-        this.applyAngularInputs(
-          componentRef,
-          cfg.component,
-          registeredComponent.inputs,
-          cfg.componentInputs ?? {},
-        );
-        componentRef.changeDetectorRef.detectChanges();
-
-        onCleanup(() => {
-          this.clearAngularHost(angularHost);
-        });
-
-        return;
-      }
-
-      const element = this.renderer.createElement(cfg.component);
-
-      for (const [key, value] of Object.entries(cfg.componentInputs ?? {})) {
-        this.renderer.setProperty(element, key, value);
-      }
-
-      this.renderer.appendChild(elementHost.nativeElement, element);
-
-      onCleanup(() => {
-        this.clearElementHost(elementHost.nativeElement);
-      });
     });
   }
 
-  private applyAngularInputs(
-    componentRef: ComponentRef<unknown>,
-    selector: string,
-    bindings: ReadonlyMap<string, string>,
-    componentInputs: Record<string, unknown>,
+  private mountSapCard(
+    cfg: CardConfig,
+    host: HTMLElement,
+    onCleanup: EffectCleanupRegisterFn,
   ): void {
-    for (const [inputName, value] of Object.entries(componentInputs)) {
-      const templateName = bindings.get(inputName);
+    let sapContainer: { destroy(): void } | null = null;
+    const sapRequire = (
+      window as unknown as { sap?: { ui: { require: SapUiRequire } } }
+    ).sap?.ui?.require;
+
+    if (sapRequire) {
+      sapRequire(['sap/ui/core/ComponentContainer'], (ComponentContainer) => {
+        const container = new ComponentContainer({
+          name: cfg.component,
+          manifest: true,
+          async: true,
+          settings: cfg.componentInputs ?? {},
+        });
+
+        container.placeAt(host);
+        sapContainer = container;
+      });
+    } else {
+      console.error('[DashboardCard] SAP UI5 is not available on window.sap');
+    }
+
+    onCleanup(() => {
+      sapContainer?.destroy();
+      this.clearElementHost(host);
+    });
+  }
+
+  private mountAngularCard(
+    cfg: CardConfig,
+    angularHost: ViewContainerRef,
+    onCleanup: EffectCleanupRegisterFn,
+  ): void {
+    const registeredComponent = getRegisteredDashboardCardComponent(
+      cfg.component,
+    );
+
+    if (!registeredComponent) {
+      console.warn(
+        `[DashboardCard] Angular component "${cfg.component}" is not registered`,
+      );
+      return;
+    }
+
+    const componentRef = angularHost.createComponent(
+      registeredComponent.componentType,
+    );
+
+    for (const [inputName, value] of Object.entries(
+      cfg.componentInputs ?? {},
+    )) {
+      const templateName = registeredComponent.inputs.get(inputName);
 
       if (!templateName) {
-        warnForUnknownDashboardCardInput(selector, inputName);
+        warnForUnknownDashboardCardInput(cfg.component, inputName);
         continue;
       }
 
       componentRef.setInput(templateName, value);
     }
+
+    componentRef.changeDetectorRef.detectChanges();
+
+    onCleanup(() => {
+      this.clearAngularHost(angularHost);
+    });
+  }
+
+  private mountWcCard(
+    cfg: CardConfig,
+    host: HTMLElement,
+    onCleanup: EffectCleanupRegisterFn,
+  ): void {
+    const element = this.renderer.createElement(cfg.component);
+
+    for (const [key, value] of Object.entries(cfg.componentInputs ?? {})) {
+      this.renderer.setProperty(element, key, value);
+    }
+
+    this.renderer.appendChild(host, element);
+
+    onCleanup(() => {
+      this.clearElementHost(host);
+    });
   }
 
   private clearAngularHost(host: ViewContainerRef): void {
