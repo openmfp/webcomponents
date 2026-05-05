@@ -28,14 +28,19 @@
             design="Transparent"
             icon="menu2"
             tooltip="Actions"
-            (click)="toolbarMenuOpen.update(v => !v)"
+            (click)="toolbarMenuOpen.update((v) => !v)"
           ></ui5-button>
           <ui5-menu
             [open]="toolbarMenuOpen()"
             [opener]="menuBtn.element"
             (ui5Open)="toolbarMenuOpen.set(true)"
             (ui5Close)="toolbarMenuOpen.set(false)"
-            (ui5ItemClick)="onMenuItemClick($any($event).detail.item.dataset['action'], $event)"
+            (ui5ItemClick)="
+              onMenuItemClick(
+                $any($event).detail.item.dataset['action'],
+                $event
+              )
+            "
           >
             @for (action of customActions(); track action.action) {
               <ui5-menu-item
@@ -60,7 +65,9 @@
               [icon]="action.icon ?? ''"
               [endIcon]="action?.endIcon"
               [tooltip]="action.tooltip ?? ''"
-              (click)="actionButtonClick.emit({ event: $event, action: action })"
+              (click)="
+                actionButtonClick.emit({ event: $event, action: action })
+              "
               >{{ action.text }}</ui5-button
             >
           }

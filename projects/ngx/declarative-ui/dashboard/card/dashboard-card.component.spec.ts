@@ -135,11 +135,17 @@ describe('DashboardCard', () => {
     beforeEach(() => {
       placeAt = vi.fn();
       destroy = vi.fn();
-      const ComponentContainer = vi.fn(function (this: Record<string, unknown>) {
+      const ComponentContainer = vi.fn(function (
+        this: Record<string, unknown>,
+      ) {
         this['placeAt'] = placeAt;
         this['destroy'] = destroy;
       });
-      sapRequire = vi.fn().mockImplementation((_deps: unknown, cb: (ctor: unknown) => void) => { cb(ComponentContainer); });
+      sapRequire = vi
+        .fn()
+        .mockImplementation((_deps: unknown, cb: (ctor: unknown) => void) => {
+          cb(ComponentContainer);
+        });
 
       (window as unknown as Record<string, unknown>)['sap'] = {
         ui: { require: sapRequire },
@@ -203,7 +209,7 @@ describe('DashboardCard', () => {
 
     it('logs an error when window.sap is not available', () => {
       delete (window as unknown as Record<string, unknown>)['sap'];
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(vi.fn());
       const { fixture } = setup();
 
       fixture.componentRef.setInput('card', {

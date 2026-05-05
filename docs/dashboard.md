@@ -194,7 +194,7 @@ const cards: CardConfig[] = [
 | ---------------- | ----------------- | -------- | ------- | ----------------------------------------------------------- |
 | `config`         | `DashboardConfig` | yes      | —       | Header text and optional background image                   |
 | `sections`       | `SectionConfig[]` | no       | `[]`    | Named dashboard sections rendered above the loose-card grid |
-| `cards`          | `CardConfig[]`    | no       | `[]`    | All cards shown in sections or in the grid                |
+| `cards`          | `CardConfig[]`    | no       | `[]`    | All cards shown in sections or in the grid                  |
 | `availableCards` | `CardConfig[]`    | no       | `[]`    | Card templates that can be added in edit mode               |
 
 ### Outputs
@@ -205,8 +205,8 @@ const cards: CardConfig[] = [
 
 ### Static methods
 
-| Method                       | Description                                                                 |
-| ---------------------------- | --------------------------------------------------------------------------- |
+| Method                        | Description                                                                 |
+| ----------------------------- | --------------------------------------------------------------------------- |
 | `registerAngularComponents()` | Registers standalone Angular card components by their element selector name |
 
 ---
@@ -237,10 +237,10 @@ interface DashboardButtonsSettings {
 }
 ```
 
-| Button | Default `icon` | Default `design` | Default `tooltip` | Default `text` |
-| --- | --- | --- | --- | --- |
-| `editViewButton` | `action-settings` | `Transparent` | `Edit View` | _(empty — icon only)_ |
-| `addCardButton` | _(none)_ | `Default` | _(none)_ | `+ Add Card` |
+| Button           | Default `icon`    | Default `design` | Default `tooltip` | Default `text`        |
+| ---------------- | ----------------- | ---------------- | ----------------- | --------------------- |
+| `editViewButton` | `action-settings` | `Transparent`    | `Edit View`       | _(empty — icon only)_ |
+| `addCardButton`  | _(none)_          | `Default`        | _(none)_          | `+ Add Card`          |
 
 **Example — text-only buttons without icons:**
 
@@ -316,18 +316,18 @@ interface CardConfig {
 }
 ```
 
-For sections, `w` controls the column span while height is determined by the section content. 
-For cards, `w` and `h` control the initial rendered grid span. `x` and `y` persist the loose-card position reported by 
+For sections, `w` controls the column span while height is determined by the section content.
+For cards, `w` and `h` control the initial rendered grid span. `x` and `y` persist the loose-card position reported by
 drag and drop functionality when edit mode is saved. As well in the edit mode the heigh and width of the card can be changed.
 
 `component` and `type` work together to determine how the card is rendered:
 
-| `type`     | Render strategy                                                           |
-| ---------- | ------------------------------------------------------------------------- |
-| `'wc'`     | Creates a custom element tag; sets `componentInputs` as DOM properties    |
-| omitted    | Same as `'wc'`                                                            |
-| `'angular'`| Looks up the Angular registry; warns and renders nothing if not found     |
-| `'sap-ui'` | Mounts via `window.sap.ui.require` + `ComponentContainer`                 |
+| `type`      | Render strategy                                                        |
+| ----------- | ---------------------------------------------------------------------- |
+| `'wc'`      | Creates a custom element tag; sets `componentInputs` as DOM properties |
+| omitted     | Same as `'wc'`                                                         |
+| `'angular'` | Looks up the Angular registry; warns and renders nothing if not found  |
+| `'sap-ui'`  | Mounts via `window.sap.ui.require` + `ComponentContainer`              |
 
 Angular registry support intentionally accepts only single element selectors such as `mfp-visited-service-card`. Attribute selectors like `[my-card]`, class selectors like `.my-card`, and comma-separated selectors are rejected because dashboard card configs use `component` as a tag-like persisted key.
 

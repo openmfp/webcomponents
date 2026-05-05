@@ -4,9 +4,9 @@ export const CARD_TYPES = {
   WC: 'wc',
   ANGULAR: 'angular',
   SAP_UI: 'sap-ui',
-} as const
+} as const;
 
-export type CardsType = typeof CARD_TYPES[keyof typeof CARD_TYPES];
+export type CardsType = (typeof CARD_TYPES)[keyof typeof CARD_TYPES];
 
 export interface CardConfig {
   id: string;
@@ -16,7 +16,7 @@ export interface CardConfig {
   y?: number;
   sectionId?: string;
   component: string;
-  type?: CardsType
+  type?: CardsType;
   componentInputs?: Record<string, unknown>;
   label?: string;
 }
