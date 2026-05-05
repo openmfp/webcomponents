@@ -90,12 +90,15 @@ export class DashboardCard {
     onCleanup: EffectCleanupRegisterFn,
   ): void {
     let sapContainer: { destroy(): void } | null = null;
+    let isDestroyed = false;
     const sapRequire = (
       window as unknown as { sap?: { ui: { require: SapUiRequire } } }
     ).sap?.ui?.require;
 
     if (sapRequire) {
       sapRequire(['sap/ui/core/ComponentContainer'], (ComponentContainer) => {
+        if (isDestroyed) return;
+
         const container = new ComponentContainer({
           name: cfg.component,
           manifest: true,
@@ -111,6 +114,7 @@ export class DashboardCard {
     }
 
     onCleanup(() => {
+      isDestroyed = true;
       sapContainer?.destroy();
       this.clearElementHost(host);
     });

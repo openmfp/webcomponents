@@ -131,13 +131,12 @@ describe('DashboardCard', () => {
     let placeAt: ReturnType<typeof vi.fn>;
     let destroy: ReturnType<typeof vi.fn>;
     let sapRequire: ReturnType<typeof vi.fn>;
+    let ComponentContainer: ReturnType<typeof vi.fn>;
 
     beforeEach(() => {
       placeAt = vi.fn();
       destroy = vi.fn();
-      const ComponentContainer = vi.fn(function (
-        this: Record<string, unknown>,
-      ) {
+      ComponentContainer = vi.fn(function (this: Record<string, unknown>) {
         this['placeAt'] = placeAt;
         this['destroy'] = destroy;
       });
@@ -205,6 +204,34 @@ describe('DashboardCard', () => {
       fixture.detectChanges();
 
       expect(destroy).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not mount a SAP container after the card is cleaned up', () => {
+      const requireResolver: { current?: (ctor: unknown) => void } = {};
+      sapRequire.mockImplementationOnce(
+        (_deps: unknown, cb: (ctor: unknown) => void) => {
+          requireResolver.current = cb;
+        },
+      );
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('card', {
+        id: 'card-1',
+        component: 'my.sap.App',
+        type: 'sap-ui',
+      });
+      fixture.detectChanges();
+
+      fixture.componentRef.setInput('card', {
+        id: 'card-1',
+        component: 'demo-widget',
+      });
+      fixture.detectChanges();
+
+      requireResolver.current?.(ComponentContainer);
+
+      expect(ComponentContainer).not.toHaveBeenCalled();
+      expect(placeAt).not.toHaveBeenCalled();
     });
 
     it('logs an error when window.sap is not available', () => {
