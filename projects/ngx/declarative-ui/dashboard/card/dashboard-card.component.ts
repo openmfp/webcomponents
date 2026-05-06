@@ -1,12 +1,6 @@
-import { CardConfig } from '../models';
-import {
-  getRegisteredDashboardCardComponent,
-  warnForUnknownDashboardCardInput,
-} from './dashboard-card-registry';
+import { CARD_TYPES, CardConfig } from '../models';
 import {
   Component,
-  ComponentRef,
-  ElementRef,
   Renderer2,
   ViewContainerRef,
   ViewEncapsulation,
@@ -18,13 +12,14 @@ import {
   viewChild,
 } from '@angular/core';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
+import { mountSapCard, mountAngularCard, mountWcCard } from './utils';
 
 @Component({
   selector: 'mfp-dashboard-card',
   imports: [Button],
   templateUrl: './dashboard-card.component.html',
   styleUrl: './dashboard-card.component.scss',
-  encapsulation: ViewEncapsulation.ShadowDom,
+  encapsulation: ViewEncapsulation.Emulated,
   host: {
     '[style.grid-column]': 'gridColumn()',
     '[style.grid-row]': 'gridRow()',
@@ -43,82 +38,31 @@ export class DashboardCard {
     return this.createGridTrack(this.card().y, height);
   });
 
-  private angularHost = viewChild('angularHost', { read: ViewContainerRef });
-  private elementHost = viewChild<ElementRef<HTMLElement>>('elementHost');
+  private host = viewChild('elementHost', { read: ViewContainerRef });
   private renderer = inject(Renderer2);
 
   constructor() {
     effect((onCleanup) => {
-      const angularHost = this.angularHost();
-      const elementHost = this.elementHost();
+      const host = this.host();
       const cfg = this.card();
-      if (!angularHost || !elementHost || !cfg.component) return;
+      if (!host || !cfg.component) return;
 
-      this.clearAngularHost(angularHost);
-      this.clearElementHost(elementHost.nativeElement);
+      host.clear();
+      host.element.nativeElement.innerHTML = '';
 
-      const registeredComponent = getRegisteredDashboardCardComponent(
-        cfg.component,
-      );
-
-      if (registeredComponent) {
-        const componentRef = angularHost.createComponent(
-          registeredComponent.componentType,
-        );
-
-        this.applyAngularInputs(
-          componentRef,
-          cfg.component,
-          registeredComponent.inputs,
-          cfg.componentInputs ?? {},
-        );
-        componentRef.changeDetectorRef.detectChanges();
-
-        onCleanup(() => {
-          this.clearAngularHost(angularHost);
-        });
-
-        return;
+      switch (cfg.type) {
+        case CARD_TYPES.SAP_UI:
+          mountSapCard(cfg, host, onCleanup);
+          break;
+        case CARD_TYPES.ANGULAR:
+          mountAngularCard(cfg, host, onCleanup);
+          break;
+        case CARD_TYPES.WC:
+        default:
+          mountWcCard(cfg, host, onCleanup, this.renderer);
+          break;
       }
-
-      const element = this.renderer.createElement(cfg.component);
-
-      for (const [key, value] of Object.entries(cfg.componentInputs ?? {})) {
-        this.renderer.setProperty(element, key, value);
-      }
-
-      this.renderer.appendChild(elementHost.nativeElement, element);
-
-      onCleanup(() => {
-        this.clearElementHost(elementHost.nativeElement);
-      });
     });
-  }
-
-  private applyAngularInputs(
-    componentRef: ComponentRef<unknown>,
-    selector: string,
-    bindings: ReadonlyMap<string, string>,
-    componentInputs: Record<string, unknown>,
-  ): void {
-    for (const [inputName, value] of Object.entries(componentInputs)) {
-      const templateName = bindings.get(inputName);
-
-      if (!templateName) {
-        warnForUnknownDashboardCardInput(selector, inputName);
-        continue;
-      }
-
-      componentRef.setInput(templateName, value);
-    }
-  }
-
-  private clearAngularHost(host: ViewContainerRef): void {
-    host.clear();
-  }
-
-  private clearElementHost(host: HTMLElement): void {
-    host.innerHTML = '';
   }
 
   private createGridTrack(start: number | undefined, span: number): string {

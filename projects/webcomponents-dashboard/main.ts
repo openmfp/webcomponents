@@ -1,6 +1,9 @@
 import { createCustomElement } from '@angular/elements';
 import { createApplication } from '@angular/platform-browser';
 import { Dashboard } from '@openmfp/webcomponents/declarative-ui';
+import { ignoreCustomElements } from '@ui5/webcomponents-base/dist/IgnoreCustomElements.js';
+
+ignoreCustomElements('mfp');
 
 (async () => {
   const app = await createApplication();

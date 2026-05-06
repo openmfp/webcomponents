@@ -1,6 +1,6 @@
 import { ButtonSettings } from '../../models/ui-definition';
 import { AddCardDialog } from '../add-card-dialog/add-card-dialog.component';
-import { addComponentToRegistry } from '../card/dashboard-card-registry';
+import { addComponentToRegistry } from '../card/utils/dashboard-card-registry';
 import { DashboardCard } from '../card/dashboard-card.component';
 import { CardConfig, DashboardConfig, SectionConfig } from '../models';
 import { CELL_HEIGHT, COMPACT_BREAKPOINT } from '../models/constants';
@@ -55,7 +55,7 @@ document.body.classList.add('ui5-content-density-compact');
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
-  encapsulation: ViewEncapsulation.ShadowDom,
+  encapsulation: ViewEncapsulation.None,
   host: {
     '[style.background-image]':
       'config().backgroundImageUrl ? "url(" + config().backgroundImageUrl + ")" : null',

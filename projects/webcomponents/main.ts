@@ -6,6 +6,9 @@ import {
   DeclarativeTable,
   DeclarativeTableCard,
 } from '@openmfp/webcomponents/declarative-ui';
+import { ignoreCustomElements } from '@ui5/webcomponents-base/dist/IgnoreCustomElements.js';
+
+ignoreCustomElements('mfp');
 
 (async () => {
   const app = await createApplication();
