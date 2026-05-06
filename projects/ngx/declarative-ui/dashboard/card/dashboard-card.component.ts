@@ -1,7 +1,6 @@
 import { CARD_TYPES, CardConfig } from '../models';
 import {
   Component,
-  ElementRef,
   Renderer2,
   ViewContainerRef,
   ViewEncapsulation,
@@ -13,9 +12,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
-import { mountSapCard } from './utils/mount-sap-card';
-import { mountAngularCard } from './utils/mount-angular-card';
-import { mountWcCard } from './utils/mount-wc-card';
+import { mountSapCard, mountAngularCard, mountWcCard } from './utils';
 
 @Component({
   selector: 'mfp-dashboard-card',
@@ -41,30 +38,28 @@ export class DashboardCard {
     return this.createGridTrack(this.card().y, height);
   });
 
-  private angularHost = viewChild('angularHost', { read: ViewContainerRef });
-  private elementHost = viewChild<ElementRef<HTMLElement>>('elementHost');
+  private host = viewChild('elementHost', { read: ViewContainerRef });
   private renderer = inject(Renderer2);
 
   constructor() {
     effect((onCleanup) => {
-      const angularHost = this.angularHost();
-      const elementHost = this.elementHost();
+      const host = this.host();
       const cfg = this.card();
-      if (!angularHost || !elementHost || !cfg.component) return;
+      if (!host || !cfg.component) return;
 
-      angularHost.clear();
-      elementHost.nativeElement.innerHTML = '';
+      host.clear();
+      host.element.nativeElement.innerHTML = '';
 
       switch (cfg.type) {
         case CARD_TYPES.SAP_UI:
-          mountSapCard(cfg, elementHost.nativeElement, onCleanup);
+          mountSapCard(cfg, host, onCleanup);
           break;
         case CARD_TYPES.ANGULAR:
-          mountAngularCard(cfg, angularHost, onCleanup);
+          mountAngularCard(cfg, host, onCleanup);
           break;
         case CARD_TYPES.WC:
         default:
-          mountWcCard(cfg, elementHost.nativeElement, onCleanup, this.renderer);
+          mountWcCard(cfg, host, onCleanup, this.renderer);
           break;
       }
     });

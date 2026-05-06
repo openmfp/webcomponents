@@ -1,12 +1,13 @@
-import { EffectCleanupRegisterFn, Renderer2 } from '@angular/core';
+import { EffectCleanupRegisterFn, Renderer2, ViewContainerRef } from '@angular/core';
 import { CardConfig } from '../../models';
 
 export function mountWcCard(
   cfg: CardConfig,
-  host: HTMLElement,
+  container: ViewContainerRef,
   onCleanup: EffectCleanupRegisterFn,
   renderer: Renderer2,
 ): void {
+  const host = container.element.nativeElement;
   const element = renderer.createElement(cfg.component);
 
   for (const [key, value] of Object.entries(cfg.componentInputs ?? {})) {

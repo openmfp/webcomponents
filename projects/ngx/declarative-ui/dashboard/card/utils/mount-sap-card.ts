@@ -1,5 +1,5 @@
-import { EffectCleanupRegisterFn } from '@angular/core';
 import { CardConfig } from '../../models';
+import { EffectCleanupRegisterFn, ViewContainerRef } from '@angular/core';
 
 export type SapUiRequire = (
   deps: string[],
@@ -15,9 +15,11 @@ export type SapUiRequire = (
 
 export function mountSapCard(
   cfg: CardConfig,
-  host: HTMLElement,
+  container: ViewContainerRef,
   onCleanup: EffectCleanupRegisterFn,
 ): void {
+  const host = container.element.nativeElement;
+
   let sapContainer: { destroy(): void } | null = null;
   let isDestroyed = false;
   const sapRequire = (

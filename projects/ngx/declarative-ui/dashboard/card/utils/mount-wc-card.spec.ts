@@ -1,4 +1,4 @@
-import { EffectCleanupRegisterFn, Renderer2 } from '@angular/core';
+import { EffectCleanupRegisterFn, Renderer2, ViewContainerRef } from '@angular/core';
 import { mountWcCard } from './mount-wc-card';
 import { CardConfig } from '../../models';
 
@@ -15,10 +15,11 @@ function makeCleanup(): {
   };
 }
 
-function makeHost(): HTMLElement {
+function makeContainer(): { container: ViewContainerRef; el: HTMLElement } {
   const el = document.createElement('div');
   document.body.appendChild(el);
-  return el;
+  const container = { element: { nativeElement: el } } as unknown as ViewContainerRef;
+  return { container, el };
 }
 
 function makeRenderer(): Renderer2 {
@@ -40,54 +41,54 @@ function makeCfg(overrides: Partial<CardConfig> = {}): CardConfig {
 describe('mountWcCard', () => {
   it('appends the web component element to the host', () => {
     const { onCleanup } = makeCleanup();
-    const host = makeHost();
-    mountWcCard(makeCfg(), host, onCleanup, makeRenderer());
+    const { container, el } = makeContainer();
+    mountWcCard(makeCfg(), container, onCleanup, makeRenderer());
 
-    expect(host.querySelector('demo-widget')).not.toBeNull();
+    expect(el.querySelector('demo-widget')).not.toBeNull();
   });
 
   it('applies componentInputs as properties on the element', () => {
     const { onCleanup } = makeCleanup();
-    const host = makeHost();
+    const { container, el } = makeContainer();
     mountWcCard(
       makeCfg({ componentInputs: { title: 'Pods', count: 5 } }),
-      host,
+      container,
       onCleanup,
       makeRenderer(),
     );
 
-    const el = host.querySelector('demo-widget') as HTMLElement & {
+    const wc = el.querySelector('demo-widget') as HTMLElement & {
       title?: string;
       count?: number;
     };
-    expect(el?.title).toBe('Pods');
-    expect(el?.count).toBe(5);
+    expect(wc?.title).toBe('Pods');
+    expect(wc?.count).toBe(5);
   });
 
   it('renders without errors when componentInputs is omitted', () => {
     const { onCleanup } = makeCleanup();
-    expect(() =>
-      mountWcCard(makeCfg(), makeHost(), onCleanup, makeRenderer()),
-    ).not.toThrow();
+    expect(() => {
+      mountWcCard(makeCfg(), makeContainer().container, onCleanup, makeRenderer());
+    }).not.toThrow();
   });
 
   it('clears the host innerHTML on cleanup', () => {
     const { onCleanup, runCleanup } = makeCleanup();
-    const host = makeHost();
-    mountWcCard(makeCfg(), host, onCleanup, makeRenderer());
+    const { container, el } = makeContainer();
+    mountWcCard(makeCfg(), container, onCleanup, makeRenderer());
 
     runCleanup();
 
-    expect(host.innerHTML).toBe('');
+    expect(el.innerHTML).toBe('');
   });
 
   it('calls renderer.createElement, setProperty and appendChild in order', () => {
     const { onCleanup } = makeCleanup();
-    const host = makeHost();
+    const { container, el } = makeContainer();
     const renderer = makeRenderer();
     mountWcCard(
       makeCfg({ componentInputs: { label: 'test' } }),
-      host,
+      container,
       onCleanup,
       renderer,
     );
@@ -99,7 +100,7 @@ describe('mountWcCard', () => {
       'test',
     );
     expect(renderer.appendChild).toHaveBeenCalledWith(
-      host,
+      el,
       expect.any(HTMLElement),
     );
   });

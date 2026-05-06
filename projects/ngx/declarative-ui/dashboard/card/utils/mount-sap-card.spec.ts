@@ -1,4 +1,4 @@
-import { EffectCleanupRegisterFn } from '@angular/core';
+import { EffectCleanupRegisterFn, ViewContainerRef } from '@angular/core';
 import { mountSapCard } from './mount-sap-card';
 import { CardConfig } from '../../models';
 
@@ -15,10 +15,11 @@ function makeCleanup(): {
   };
 }
 
-function makeHost(): HTMLElement {
+function makeContainer(): { container: ViewContainerRef; el: HTMLElement } {
   const el = document.createElement('div');
   document.body.appendChild(el);
-  return el;
+  const container = { element: { nativeElement: el } } as unknown as ViewContainerRef;
+  return { container, el };
 }
 
 function makeCfg(overrides: Partial<CardConfig> = {}): CardConfig {
@@ -56,7 +57,7 @@ describe('mountSapCard', () => {
 
   it('calls sap.ui.require with ComponentContainer dependency', () => {
     const { onCleanup } = makeCleanup();
-    mountSapCard(makeCfg(), makeHost(), onCleanup);
+    mountSapCard(makeCfg(), makeContainer().container, onCleanup);
 
     expect(sapRequire).toHaveBeenCalledWith(
       ['sap/ui/core/ComponentContainer'],
@@ -68,7 +69,7 @@ describe('mountSapCard', () => {
     const { onCleanup } = makeCleanup();
     mountSapCard(
       makeCfg({ componentInputs: { env: 'prod' } }),
-      makeHost(),
+      makeContainer().container,
       onCleanup,
     );
 
@@ -82,7 +83,7 @@ describe('mountSapCard', () => {
 
   it('falls back to empty settings when componentInputs is omitted', () => {
     const { onCleanup } = makeCleanup();
-    mountSapCard(makeCfg(), makeHost(), onCleanup);
+    mountSapCard(makeCfg(), makeContainer().container, onCleanup);
 
     expect(ComponentContainer).toHaveBeenCalledWith(
       expect.objectContaining({ settings: {} }),
@@ -91,22 +92,22 @@ describe('mountSapCard', () => {
 
   it('calls placeAt with the host element', () => {
     const { onCleanup } = makeCleanup();
-    const host = makeHost();
-    mountSapCard(makeCfg(), host, onCleanup);
+    const { container, el } = makeContainer();
+    mountSapCard(makeCfg(), container, onCleanup);
 
-    expect(placeAt).toHaveBeenCalledWith(host);
+    expect(placeAt).toHaveBeenCalledWith(el);
   });
 
   it('destroys the container and clears the host on cleanup', () => {
     const { onCleanup, runCleanup } = makeCleanup();
-    const host = makeHost();
-    host.innerHTML = '<span>old</span>';
-    mountSapCard(makeCfg(), host, onCleanup);
+    const { container, el } = makeContainer();
+    el.innerHTML = '<span>old</span>';
+    mountSapCard(makeCfg(), container, onCleanup);
 
     runCleanup();
 
     expect(destroy).toHaveBeenCalledTimes(1);
-    expect(host.innerHTML).toBe('');
+    expect(el.innerHTML).toBe('');
   });
 
   it('does not mount the container when cleanup runs before the require callback fires', () => {
@@ -118,7 +119,7 @@ describe('mountSapCard', () => {
     );
 
     const { onCleanup, runCleanup } = makeCleanup();
-    mountSapCard(makeCfg(), makeHost(), onCleanup);
+    mountSapCard(makeCfg(), makeContainer().container, onCleanup);
 
     runCleanup();
     deferred?.(ComponentContainer);
@@ -132,7 +133,7 @@ describe('mountSapCard', () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(vi.fn());
     const { onCleanup } = makeCleanup();
 
-    mountSapCard(makeCfg(), makeHost(), onCleanup);
+    mountSapCard(makeCfg(), makeContainer().container, onCleanup);
 
     expect(consoleSpy).toHaveBeenCalledWith(
       '[DashboardCard] SAP UI5 is not available on window.sap',
