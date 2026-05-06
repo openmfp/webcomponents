@@ -1,4 +1,4 @@
-import { resetDashboardCardRegistry } from '../card/dashboard-card-registry';
+import { resetDashboardCardRegistry } from '../card/utils/dashboard-card-registry';
 import { CardConfig, SectionConfig } from '../models';
 import { Dashboard } from './dashboard.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';

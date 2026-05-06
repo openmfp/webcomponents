@@ -1,6 +1,6 @@
 import { ButtonSettings } from '../../models/ui-definition';
 import { AddCardDialog } from '../add-card-dialog/add-card-dialog.component';
-import { addComponentToRegistry } from '../card/dashboard-card-registry';
+import { addComponentToRegistry } from '../card/utils/dashboard-card-registry';
 import { DashboardCard } from '../card/dashboard-card.component';
 import { CardConfig, DashboardConfig, SectionConfig } from '../models';
 import { CELL_HEIGHT, COMPACT_BREAKPOINT } from '../models/constants';
