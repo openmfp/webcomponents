@@ -35,10 +35,11 @@ export interface TableCardButtonSettings {
 }
 
 export interface TableCardConfig {
-  header: string;
+  header?: string;
   headerTooltip?: string;
   tableConfig: TableConfig;
   buttonSettings?: TableCardButtonSettings;
+  resourcesSearchable?: boolean;
   createResourceFormConfig?: ResourceFormConfig;
   editResourceFormConfig?: ResourceFormConfig;
   deleteResourceConfirmationConfig?: DeleteResourceConfirmationConfig;

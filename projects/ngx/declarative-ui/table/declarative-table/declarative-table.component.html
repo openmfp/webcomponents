@@ -16,8 +16,6 @@
     }
   </ui5-table-header-row>
 
-
-
   @for (item of resources(); let i = $index; track item.id) {
     <ui5-table-row
       [attr.test-id]="'generic-table-row-' + i"
@@ -75,7 +73,11 @@
       }
     </ui5-table-row>
   } @empty {
-    <ui5-illustrated-message name="NoData" slot="noData" test-id="generic-table-view-nodata">
+    <ui5-illustrated-message
+      name="NoData"
+      slot="noData"
+      test-id="generic-table-view-nodata"
+    >
       <span slot="title">No Resources</span>
       <span slot="subtitle">There are currently no items to show.</span>
     </ui5-illustrated-message>
@@ -99,7 +101,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.25rem 0.5rem;
+    padding: 0rem 1rem;
+    min-height: 3rem;
     border-top: 1px solid var(--sapList_BorderColor);
   "
 >

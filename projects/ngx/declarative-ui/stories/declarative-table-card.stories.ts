@@ -139,6 +139,7 @@ const BASE_TABLE_CONFIG: TableConfig = {
 
 const BASE_CONFIG: TableCardConfig = {
   header: 'Pods',
+  resourcesSearchable: true,
   tableConfig: BASE_TABLE_CONFIG,
 };
 

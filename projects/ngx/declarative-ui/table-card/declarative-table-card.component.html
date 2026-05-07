@@ -1,7 +1,7 @@
 <div class="card">
   <div class="card__header">
-    @if (header(); as header) {
-      <div class="card__title">
+    <div class="card__title">
+      @if (header(); as header) {
         {{ header }}
         @if (headerTooltip(); as tooltip) {
           <ui5-icon
@@ -11,28 +11,30 @@
             [accessibleName]="tooltip"
           />
         }
-      </div>
-    }
+      }
+    </div>
     <div class="card__actions">
-      @if (searchExpanded()) {
-        <ui5-input
-          #searchInput
-          [class]="
-            'card__search-input card__search-input--' +
-            (searchCollapsing() ? 'leave' : 'enter')
-          "
-          [formControl]="searchControl"
-          (blur)="onSearchBlur()"
-          (animationend)="onSearchAnimationEnd()"
+      @if (config().resourcesSearchable) {
+        @if (searchExpanded()) {
+          <ui5-input
+            #searchInput
+            [class]="
+              'card__search-input card__search-input--' +
+              (searchCollapsing() ? 'leave' : 'enter')
+            "
+            [formControl]="searchControl"
+            (blur)="onSearchBlur()"
+            (animationend)="onSearchAnimationEnd()"
+          />
+        }
+        <ui5-button
+          class="card__search-btn"
+          design="Transparent"
+          [icon]="searchButtonConfig()?.icon ?? 'search'"
+          [tooltip]="searchButtonConfig()?.tooltip ?? 'Search'"
+          (click)="toggleSearch()"
         />
       }
-      <ui5-button
-        class="card__search-btn"
-        design="Transparent"
-        [icon]="searchButtonConfig()?.icon ?? 'search'"
-        [tooltip]="searchButtonConfig()?.tooltip ?? 'Search'"
-        (click)="toggleSearch()"
-      />
       @if (createFormConfig()) {
         <ui5-button
           class="card__create-btn"
