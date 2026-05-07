@@ -8,7 +8,7 @@ import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
   imports: [DashboardCard, Button],
   templateUrl: './dashboard-section.component.html',
   styleUrl: './dashboard-section.component.scss',
-  encapsulation: ViewEncapsulation.ShadowDom,
+  encapsulation: ViewEncapsulation.Emulated,
   host: {
     '[style.grid-column]': '"span " + (section().w ?? 12)',
   },
