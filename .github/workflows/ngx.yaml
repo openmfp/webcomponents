@@ -1,4 +1,4 @@
-name: ci
+name: openmfp-ngx
 on:
   push:
     branches:
@@ -17,4 +17,6 @@ jobs:
     secrets: inherit
     with:
       publishFromDist: true
-      environment: npmjs:@openmfp/webcomponents
+      workingDirectoryDist: ./dist/ngx
+      artifactPath: dist/ngx
+      environment: npmjs:@openmfp/ngx
