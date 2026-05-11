@@ -304,10 +304,14 @@ interface SectionConfig {
 ```ts
 interface CardConfig {
   id: string;
-  w?: number; // expresed in number of columns up to 12
-  h?: number; // expresed hipotetical number of rows, where a row is 10px high, so the value of 27 translarts to 270 px
+  w?: number; // expressed in number of columns up to 12
+  h?: number; // expressed in hypothetical number of rows, where a row is 10px high, so the value of 27 translates to 270px
   x?: number;
   y?: number;
+  maxH?: number;
+  maxW?: number;
+  minH?: number;
+  minW?: number;
   sectionId?: string;
   component: string;
   type?: 'wc' | 'angular' | 'sap-ui';
@@ -317,8 +321,7 @@ interface CardConfig {
 ```
 
 For sections, `w` controls the column span while height is determined by the section content.
-For cards, `w` and `h` control the initial rendered grid span. `x` and `y` persist the loose-card position reported by
-drag and drop functionality when edit mode is saved. As well in the edit mode the heigh and width of the card can be changed.
+For cards, `w` and `h` control the initial rendered grid span. `x` and `y` persist the loose-card position reported by drag and drop when edit mode is saved. `minH`/`minW` and `maxH`/`maxW` set hard resize bounds enforced by the grid — the user cannot drag a card below the minimum or above the maximum size in edit mode.
 
 `component` and `type` work together to determine how the card is rendered:
 
