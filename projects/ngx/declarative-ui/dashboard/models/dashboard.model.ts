@@ -1,5 +1,8 @@
 import { ButtonSettings } from '../../models/ui-definition';
 
+
+
+
 export const CARD_TYPES = {
   WC: 'wc',
   ANGULAR: 'angular',
@@ -14,6 +17,10 @@ export interface CardConfig {
   h?: number;
   x?: number;
   y?: number;
+  maxH?: number;
+  maxW?: number;
+  minH?: number;
+  minW?: number;
   sectionId?: string;
   component: string;
   type?: CardsType;
