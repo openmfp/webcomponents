@@ -10,13 +10,13 @@ vi.mock('gridstack/dist/angular', async () => {
     await import('@angular/core');
 
   @Component({
-    selector: 'gridstack',
+    selector: 'mfp-gridstack',
     standalone: true,
     template: '<ng-content />',
   })
   class GridstackComponent {
     @Input() options?: unknown;
-    @Output() changeCB = new EventEmitter<unknown>();
+    @Output() readonly changeCB = new EventEmitter<unknown>();
 
     gridstackItems = {
       toArray: () => [],
@@ -24,7 +24,7 @@ vi.mock('gridstack/dist/angular', async () => {
   }
 
   @Component({
-    selector: 'gridstack-item',
+    selector: 'mfp-gridstack-item',
     standalone: true,
     template: '<ng-content />',
   })
@@ -306,6 +306,38 @@ describe('Dashboard', () => {
       },
     ]);
     expect(component.cardDialogOpen()).toBe(false);
+  });
+
+  it('preserves card constraint fields (maxH/maxW/minH/minW) through saveEdit', () => {
+    const { component } = setup();
+    const cards: CardConfig[] = [
+      {
+        id: 'card-1',
+        component: 'mfp-a',
+        x: 0,
+        y: 0,
+        maxH: 4,
+        maxW: 6,
+        minH: 1,
+        minW: 2,
+      },
+    ];
+
+    component.cards.set(cards);
+    component.editMode.set(true);
+    component.saved.subscribe(() => false);
+    component.onOrderChange({
+      nodes: [{ id: 'card-1', x: 1, y: 2 }],
+    } as never);
+
+    component.saveEdit();
+
+    expect(component.cards()[0]).toMatchObject({
+      maxH: 4,
+      maxW: 6,
+      minH: 1,
+      minW: 2,
+    });
   });
 
   it('still closes the add-card dialog when no cards were selected', () => {
