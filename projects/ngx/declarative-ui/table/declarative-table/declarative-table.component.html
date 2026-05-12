@@ -16,7 +16,7 @@
     }
   </ui5-table-header-row>
 
-  @for (item of resources(); let i = $index; track item.id) {
+  @for (item of resources(); let i = $index; track rowTrackBy($index, item)) {
     <ui5-table-row
       [attr.test-id]="'generic-table-row-' + i"
       [class.disabled]="!(item.isAvailable ?? true)"

@@ -10,7 +10,7 @@ type Comp = DeclarativeTable<GenericResource>;
 function setup(opts: {
   columns: TableFieldDefinition[];
   resources?: GenericResource[];
-  trackByProperty?: string;
+  trackByPath?: string;
   totalItemsCount?: number;
   paginationLimit?: number;
   hasMore?: boolean;
@@ -21,7 +21,7 @@ function setup(opts: {
   const component = fixture.componentInstance;
   fixture.componentRef.setInput('columns', opts.columns);
   fixture.componentRef.setInput('resources', opts.resources ?? []);
-  if (opts.trackByProperty !== undefined) fixture.componentRef.setInput('trackByProperty', opts.trackByProperty);
+  if (opts.trackByPath !== undefined) fixture.componentRef.setInput('trackByPath', opts.trackByPath);
   if (opts.totalItemsCount !== undefined) fixture.componentRef.setInput('totalItemsCount', opts.totalItemsCount);
   if (opts.paginationLimit !== undefined) fixture.componentRef.setInput('paginationLimit', opts.paginationLimit);
   if (opts.hasMore !== undefined) fixture.componentRef.setInput('hasMore', opts.hasMore);
@@ -300,6 +300,46 @@ describe('DeclarativeTable', () => {
       expect(cols).toHaveLength(2);
       expect(cols[0].group?.fields).toHaveLength(2);
       expect(cols[1].property).toBe('name');
+    });
+  });
+
+  describe('rowTrackBy', () => {
+    it('returns id field value by default', () => {
+      const { component } = setup({
+        columns: [{ property: 'name' }],
+        resources: [{ id: 'abc', name: 'Alice' }],
+      });
+      const result = component.rowTrackBy(0, { id: 'abc', name: 'Alice' });
+      expect(result).toBe('abc');
+    });
+
+    it('returns value from custom trackByPath', () => {
+      const { component } = setup({
+        columns: [{ property: 'name' }],
+        resources: [{ id: '1', metadata: { name: 'pod-1' } }],
+        trackByPath: 'metadata.name',
+      });
+      const result = component.rowTrackBy(0, { id: '1', metadata: { name: 'pod-1' } });
+      expect(result).toBe('pod-1');
+    });
+
+    it('falls back to index when trackByPath resolves to undefined', () => {
+      const { component } = setup({
+        columns: [{ property: 'name' }],
+        resources: [{ name: 'Alice' }],
+        trackByPath: 'nonexistent',
+      });
+      const result = component.rowTrackBy(3, { name: 'Alice' });
+      expect(result).toBe(3);
+    });
+
+    it('works for resources without an id field', () => {
+      const { component } = setup({
+        columns: [{ property: 'name' }],
+        resources: [{ name: 'Alice' }],
+      });
+      const result = component.rowTrackBy(0, { name: 'Alice' });
+      expect(result).toBe(0);
     });
   });
 });

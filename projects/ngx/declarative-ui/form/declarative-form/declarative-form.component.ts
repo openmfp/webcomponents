@@ -80,7 +80,10 @@ export class DeclarativeForm {
     control.markAsDirty();
 
     if (field.validation === 'onChange') {
-      this.fieldChange.emit({ fieldProperty: field.name, value: control.value });
+      this.fieldChange.emit({
+        fieldProperty: field.name,
+        value: control.value,
+      });
     }
   }
 
@@ -108,6 +111,10 @@ export class DeclarativeForm {
 
   submit(): void {
     this.formSubmit.emit(this.buildOutputValue());
+  }
+
+  clear(): void {
+    this.form.reset();
   }
 
   private rebuildControls(fields: FormFieldDefinition[]): void {
