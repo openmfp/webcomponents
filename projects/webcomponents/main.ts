@@ -32,6 +32,17 @@ ignoreCustomElements('mfp');
       ).ngElementStrategy;
       strategy.componentRef?.instance.submit();
     }
+
+    clear(): void {
+      const strategy = (
+        this as unknown as {
+          ngElementStrategy: {
+            componentRef?: { instance: DeclarativeForm };
+          };
+        }
+      ).ngElementStrategy;
+      strategy.componentRef?.instance.clear();
+    }
   }
   customElements.define('mfp-wc-declarative-form', DeclarativeFormElement);
 

@@ -1,3 +1,14 @@
 export * from './table.model';
 export type { GenericResource } from '../../models/resource';
-export type { ButtonSettings } from '../../models/ui-definition';
+export type {
+  ButtonSettings,
+  ModalSettings,
+  UiSettings,
+  CssRule,
+  CssRuleCondition,
+  FieldDefinition,
+  TableFieldDefinition,
+  ValueCellButtonClickEvent,
+  PropertyField,
+  TransformType,
+} from '../../models/ui-definition';
