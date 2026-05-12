@@ -37,7 +37,7 @@ Include the bundle and set properties via JavaScript. Because the component uses
         { metadata: { name: 'pod-2' }, status: { phase: 'Pending' } },
       ];
 
-      table.trackBy = (item) => item.metadata.name;
+      table.trackByPath = 'metadata.name';
     </script>
   </body>
 </html>
@@ -59,7 +59,7 @@ import { TableFieldDefinition } from '@openmfp/webcomponents';
     <mfp-declarative-table
       [columns]="columns"
       [resources]="resources"
-      [trackBy]="trackBy"
+      [trackByPath]="trackByPath"
       [hasMore]="hasMore"
       [paginationLimit]="pageSize"
       [totalItemsCount]="total"
@@ -75,7 +75,7 @@ export class MyComponent {
     { label: 'Status', property: 'status.phase' },
   ];
   resources = [...];
-  trackBy = (item: any) => item.metadata.name;
+  trackByPath = 'metadata.name';
   hasMore = false;
   pageSize = 10;
   total = 0;
@@ -92,7 +92,7 @@ export class MyComponent {
 |---|---|---|---|---|
 | `columns` | `TableFieldDefinition[]` | yes | — | Column definitions |
 | `resources` | `GenericResource[]` | yes | — | Data rows |
-| `trackBy` | `(item) => string \| number` | yes | — | Unique key function for row identity |
+| `trackByPath` | `string` | no | `'id'` | JSONPath (dot-notation) into each resource used as the row identity key |
 | `totalItemsCount` | `number` | no | — | Total count of all items across pages |
 | `paginationLimit` | `number` | no | `5` | Rows per page shown in the page-size selector |
 | `hasMore` | `boolean` | no | `false` | Show the load-more trigger at the bottom |
@@ -306,9 +306,10 @@ table.addEventListener('paginationLimitChanged', (e) => {
 
 ## Resource shape
 
-Any plain object works as a resource. Two optional fields control table behaviour:
+Any plain object works as a resource. Three optional fields control table behaviour:
 
 | Field | Type | Description |
 |---|---|---|
+| `id` | `string` | Default `trackByPath` target; used as the row identity key unless overridden |
 | `isAvailable` | `boolean` | When `false`, the row is rendered as non-interactive |
 | `accessibleName` | `string` | Accessible label attached to the row element |
