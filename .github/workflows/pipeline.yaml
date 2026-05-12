@@ -1,4 +1,4 @@
-name: pipeline
+name: pipe
 on:
   push:
     branches:
@@ -14,7 +14,7 @@ jobs:
     uses: openmfp/gha/.github/workflows/job-create-version.yml@main
     secrets: inherit
 
-  build-ngx:
+  build:
     uses: openmfp/gha/.github/workflows/job-node-test.yml@main
     secrets: inherit
     with:
