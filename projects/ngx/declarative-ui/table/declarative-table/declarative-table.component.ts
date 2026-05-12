@@ -1,6 +1,7 @@
 import { GenericResource } from '../../models';
 import { TableFieldDefinition, ValueCellButtonClickEvent } from '../models';
 import { processGroupFields } from '../utils/proccess-fields';
+import { getResourceValueByJsonPath } from '../utils/resource-field-by-path';
 import { ValueCell } from '../value-cell/value-cell.component';
 import {
   Component,
@@ -41,6 +42,7 @@ import '@ui5/webcomponents-fiori/dist/illustrations/NoData.js';
 export class DeclarativeTable<T extends GenericResource> {
   columns = input.required<TableFieldDefinition[]>();
   resources = input.required<T[]>();
+  trackByPath = input<string>('id');
 
   totalItemsCount = input<number>();
   paginationLimit = input<number>(5);
@@ -53,5 +55,7 @@ export class DeclarativeTable<T extends GenericResource> {
 
   columnTrackBy = (column: TableFieldDefinition, index: number) =>
     column.property ?? column.value ?? index;
+  rowTrackBy = (_index: number, item: T): unknown =>
+    getResourceValueByJsonPath(item, { property: this.trackByPath() }) ?? _index;
   viewColumns = computed(() => processGroupFields(this.columns()));
 }

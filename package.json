@@ -7,6 +7,7 @@
     "build:ngx": "ng build ngx",
     "build:wc": "ng build webcomponents && ng build webcomponents-dashboard && node scripts/bundle-wc.mjs",
     "build": "npm run build:ngx && npm run build:wc",
+    "build:ngx:watch": "nodemon --ignore dist --ext ts,html,css,scss,json --watch projects/ngx --exec \"npm run build:ngx && yalc publish dist/ngx --push --sig\"",
     "build:watch": "node -e \"require('fs').mkdirSync('dist',{recursive:true})\" && nodemon --ignore dist --ignore public --ext js,yml,yaml,ts,html,css,scss,json,md --exec \"rimraf dist && npm run build && yalc publish dist/ngx --push --sig\"",
     "test": "ng test ngx --watch=false",
     "test:watch": "ng test ngx",
@@ -34,8 +35,8 @@
     "@angular/elements": "^21.2.0",
     "@angular/forms": "^21.2.0",
     "@angular/platform-browser": "^21.2.0",
-    "@fundamental-ngx/ui5-webcomponents": "^0.61.0",
-    "@fundamental-ngx/ui5-webcomponents-fiori": "^0.61.0",
+    "@fundamental-ngx/ui5-webcomponents": "0.59.1",
+    "@fundamental-ngx/ui5-webcomponents-fiori": "0.59.1",
     "jsonpath": "^1.1.1",
     "rxjs": "^7.8.2"
   },
