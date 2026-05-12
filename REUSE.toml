@@ -5,5 +5,5 @@ SPDX-PackageDownloadLocation = "https://github.com/openmfp/webcomponents"
 [[annotations]]
 path = "**"
 precedence = "aggregate"
-SPDX-FileCopyrightText = "2026 openMFP contributors"
+SPDX-FileCopyrightText = "2026 openmfp contributors"
 SPDX-License-Identifier = "Apache-2.0"
