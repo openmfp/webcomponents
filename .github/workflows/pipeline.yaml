@@ -30,7 +30,7 @@ jobs:
 
   publish-ngx:
     if: ${{ (github.head_ref || github.ref) == 'refs/heads/main' }}
-    needs: [createVersion, build-ngx, build-wc]
+    needs: [createVersion, build, build-wc]
     uses: openmfp/gha/.github/workflows/job-node-publish.yml@main
     secrets: inherit
     with:
@@ -43,7 +43,7 @@ jobs:
 
   publish-wc:
     if: ${{ (github.head_ref || github.ref) == 'refs/heads/main' }}
-    needs: [createVersion, build-ngx, build-wc, publish-ngx]
+    needs: [createVersion, build, build-wc, publish-ngx]
     uses: openmfp/gha/.github/workflows/job-node-publish.yml@main
     secrets: inherit
     with:
