@@ -17,6 +17,10 @@
     "format": "prettier . --write --list-different",
     "check-format": "prettier . --check"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/openmfp/webcomponents.git"
+  },
   "engines": {
     "node": ">=20.0.0",
     "npm": ">=10.0.0"
