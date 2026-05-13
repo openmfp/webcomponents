@@ -11,21 +11,36 @@ on:
 
 jobs:
   build:
-    uses: openmfp/gha/.github/workflows/pipeline-node-module.yml@main
+    uses: openmfp/gha/.github/workflows/job-node-test.yml@main
     secrets: inherit
     with:
+      artifactPath: dist
+
+  createVersion:
+    if: ${{ (github.head_ref || github.ref) == 'refs/heads/main' }}
+    uses: openmfp/gha/.github/workflows/job-create-version.yml@main
+    secrets: inherit
+
+  publish-wc:
+    if: ${{ (github.head_ref || github.ref) == 'refs/heads/main' }}
+    needs: [createVersion, build]
+    uses: openmfp/gha/.github/workflows/job-node-publish.yml@main
+    secrets: inherit
+    with:
+      version: ${{ needs.createVersion.outputs.strictVersion }}
       publishFromDist: true
       workingDirectoryDist: ./dist/webcomponents
       artifactPath: dist
+      artifactName: target
       environment: npmjs:@openmfp/webcomponents
 
   publish-ngx:
     if: ${{ (github.head_ref || github.ref) == 'refs/heads/main' }}
-    needs: [build]
+    needs: [createVersion, build, publish-wc]
     uses: openmfp/gha/.github/workflows/job-node-publish.yml@main
     secrets: inherit
     with:
-      version: ${{ needs.build.outputs.strictVersion }}
+      version: ${{ needs.createVersion.outputs.strictVersion }}
       publishFromDist: true
       workingDirectoryDist: ./dist/ngx
       artifactPath: dist
