@@ -23,6 +23,12 @@ jobs:
       artifactPath: dist/webcomponents
       artifactName: target-wc
 
+  build:
+    runs-on: ubuntu-latest
+    needs: [build-ngx, build-wc]
+    steps:
+      - run: echo "All builds passed"
+
   publish-ngx:
     if: ${{ (github.head_ref || github.ref) == 'refs/heads/main' }}
     needs: [createVersion, build-ngx, build-wc]
