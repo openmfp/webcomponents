@@ -39,3 +39,4 @@ jobs:
       artifactPath: dist
       artifactName: target
       environment: npmjs:@openmfp/ngx
+      skipVersionCommit: true
