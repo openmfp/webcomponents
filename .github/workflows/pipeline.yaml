@@ -1,0 +1,41 @@
+name: pipe
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - opened
+      - synchronize
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pipe:
+    uses: openmfp/gha/.github/workflows/pipeline-node-module.yml@main
+    secrets: inherit
+    with:
+      publishFromDist: true
+      workingDirectoryDist: ./dist/webcomponents
+      artifactPath: dist
+      environment: npmjs:@openmfp/webcomponents
+
+  publish-ngx:
+    if: ${{ (github.head_ref || github.ref) == 'refs/heads/main' }}
+    needs: [pipe]
+    uses: openmfp/gha/.github/workflows/job-node-publish.yml@main
+    secrets: inherit
+    with:
+      version: ${{ needs.pipe.outputs.strictVersion }}
+      publishFromDist: true
+      workingDirectoryDist: ./dist/ngx
+      artifactPath: dist
+      artifactName: target
+      environment: npmjs:@openmfp/ngx
