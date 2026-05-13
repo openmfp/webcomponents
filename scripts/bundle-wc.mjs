@@ -68,6 +68,7 @@ const wcPkg = {
   version: rootPkg.version,
   description: rootPkg.description ?? 'OpenMFP web components bundle',
   license: rootPkg.license ?? 'Apache-2.0',
+  repository: rootPkg.repository,
   type: 'module',
   exports: {
     '.': './mfp-webcomponents.js',

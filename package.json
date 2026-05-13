@@ -1,7 +1,6 @@
 {
   "name": "@openmfp/webcomponents",
-  "version": "0.1.0",
-  "private": true,
+  "version": "0.6.8",
   "type": "module",
   "scripts": {
     "build:ngx": "ng build ngx",
@@ -17,6 +16,10 @@
     "lint:fix": "ng lint --fix",
     "format": "prettier . --write --list-different",
     "check-format": "prettier . --check"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/openmfp/webcomponents.git"
   },
   "engines": {
     "node": ">=20.0.0",
