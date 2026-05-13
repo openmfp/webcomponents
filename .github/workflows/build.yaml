@@ -1,0 +1,50 @@
+name: build
+
+on:
+  workflow_call:
+
+jobs:
+  createVersion:
+    if: ${{ (github.head_ref || github.ref) == 'refs/heads/main' }}
+    uses: openmfp/gha/.github/workflows/job-create-version.yml@main
+    secrets: inherit
+
+  build-ngx:
+    uses: openmfp/gha/.github/workflows/job-node-test.yml@main
+    secrets: inherit
+    with:
+      artifactPath: dist/ngx
+      artifactName: target-ngx
+
+  build-wc:
+    uses: openmfp/gha/.github/workflows/job-node-test.yml@main
+    secrets: inherit
+    with:
+      artifactPath: dist/webcomponents
+      artifactName: target-wc
+
+  publish-ngx:
+    if: ${{ (github.head_ref || github.ref) == 'refs/heads/main' }}
+    needs: [createVersion, build-ngx, build-wc]
+    uses: openmfp/gha/.github/workflows/job-node-publish.yml@main
+    secrets: inherit
+    with:
+      version: ${{ needs.createVersion.outputs.strictVersion }}
+      publishFromDist: true
+      workingDirectoryDist: ./dist/ngx
+      artifactPath: dist/ngx
+      artifactName: target-ngx
+      environment: npmjs:@openmfp/ngx
+
+  publish-wc:
+    if: ${{ (github.head_ref || github.ref) == 'refs/heads/main' }}
+    needs: [createVersion, build-ngx, build-wc, publish-ngx]
+    uses: openmfp/gha/.github/workflows/job-node-publish.yml@main
+    secrets: inherit
+    with:
+      version: ${{ needs.createVersion.outputs.strictVersion }}
+      publishFromDist: true
+      workingDirectoryDist: ./dist/webcomponents
+      artifactPath: dist/webcomponents
+      artifactName: target-wc
+      environment: npmjs:@openmfp/webcomponents
