@@ -78,3 +78,6 @@ const wcPkg = {
 };
 writeFileSync(join(dist, 'package.json'), JSON.stringify(wcPkg, null, 2) + '\n');
 console.log('Generated dist/webcomponents/package.json');
+
+copyFileSync(resolve('projects/webcomponents/README.md'), join(dist, 'README.md'));
+console.log('Copied README.md to dist/webcomponents/README.md');

@@ -4,5 +4,6 @@
   "lib": {
     "entryFile": "public-api.ts"
   },
-  "allowedNonPeerDependencies": ["tslib", "gridstack"]
+  "allowedNonPeerDependencies": ["tslib", "gridstack"],
+  "assets": ["README.md"]
 }
