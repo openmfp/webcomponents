@@ -14,6 +14,9 @@ function setup(opts: {
   totalItemsCount?: number;
   paginationLimit?: number;
   hasMore?: boolean;
+  growMode?: 'Scroll' | 'Button' | undefined;
+  loadMoreButtonText?: string;
+  height?: number;
 }): { fixture: Fixture; component: Comp } {
   const fixture: Fixture = TestBed.createComponent(
     DeclarativeTable as unknown as typeof DeclarativeTable<GenericResource>,
@@ -25,6 +28,9 @@ function setup(opts: {
   if (opts.totalItemsCount !== undefined) fixture.componentRef.setInput('totalItemsCount', opts.totalItemsCount);
   if (opts.paginationLimit !== undefined) fixture.componentRef.setInput('paginationLimit', opts.paginationLimit);
   if (opts.hasMore !== undefined) fixture.componentRef.setInput('hasMore', opts.hasMore);
+  if (opts.growMode !== undefined) fixture.componentRef.setInput('growMode', opts.growMode);
+  if (opts.loadMoreButtonText !== undefined) fixture.componentRef.setInput('loadMoreButtonText', opts.loadMoreButtonText);
+  if (opts.height !== undefined) fixture.componentRef.setInput('height', opts.height);
   fixture.detectChanges();
   return { fixture, component };
 }
@@ -340,6 +346,92 @@ describe('DeclarativeTable', () => {
       });
       const result = component.rowTrackBy(0, { name: 'Alice' });
       expect(result).toBe(0);
+    });
+  });
+
+  describe('height input', () => {
+    it('applies height style to ui5-table when height is provided', () => {
+      const { fixture } = setup({
+        columns: [{ property: 'name' }],
+        height: 300,
+      });
+      const tableEl = el(fixture, 'generic-table') as HTMLElement;
+      expect(tableEl.style.height).toBe('300px');
+    });
+
+    it('does not apply height style when height is not provided', () => {
+      const { fixture } = setup({ columns: [{ property: 'name' }] });
+      const tableEl = el(fixture, 'generic-table') as HTMLElement;
+      expect(tableEl.style.height).toBeFalsy();
+    });
+
+    it('accepts height via input signal', () => {
+      const { component } = setup({ columns: [{ property: 'name' }], height: 400 });
+      expect(component.height()).toBe(400);
+    });
+  });
+
+  describe('growMode input', () => {
+    it('defaults to Button', () => {
+      const { component } = setup({ columns: [{ property: 'name' }] });
+      expect(component.growMode()).toBe('Button');
+    });
+
+    it('marks header row sticky when growMode is Scroll and height is set', () => {
+      const { fixture } = setup({
+        columns: [{ property: 'name' }],
+        growMode: 'Scroll',
+        height: 300,
+      });
+      const headerRowEl = root(fixture).querySelector('ui5-table-header-row') as HTMLElement & { sticky: boolean };
+      expect(headerRowEl.sticky).toBe(true);
+    });
+
+    it('header row is not sticky when growMode is Button', () => {
+      const { fixture } = setup({
+        columns: [{ property: 'name' }],
+        height: 300,
+      });
+      const headerRowEl = root(fixture).querySelector('ui5-table-header-row') as HTMLElement & { sticky: boolean };
+      expect(headerRowEl.sticky).toBe(false);
+    });
+
+    it('header row is not sticky when height is not set even if growMode is Scroll', () => {
+      const { fixture } = setup({
+        columns: [{ property: 'name' }],
+        growMode: 'Scroll',
+      });
+      const headerRowEl = root(fixture).querySelector('ui5-table-header-row') as HTMLElement & { sticky: boolean };
+      expect(headerRowEl.sticky).toBe(false);
+    });
+
+    it('passes growMode to ui5-table-growing when hasMore is true', () => {
+      const { fixture } = setup({
+        columns: [{ property: 'name' }],
+        resources: [{ id: '1' }],
+        hasMore: true,
+        growMode: 'Scroll',
+      });
+      const growingDe = fixture.debugElement.query(By.css('ui5-table-growing'));
+      expect(growingDe?.properties?.['mode']).toBe('Scroll');
+    });
+  });
+
+  describe('loadMoreButtonText input', () => {
+    it('defaults to Load More', () => {
+      const { component } = setup({ columns: [{ property: 'name' }] });
+      expect(component.loadMoreButtonText()).toBe('Load More');
+    });
+
+    it('passes custom text to ui5-table-growing when hasMore is true', () => {
+      const { fixture } = setup({
+        columns: [{ property: 'name' }],
+        resources: [{ id: '1' }],
+        hasMore: true,
+        loadMoreButtonText: 'Fetch More',
+      });
+      const growingDe = fixture.debugElement.query(By.css('ui5-table-growing'));
+      expect(growingDe?.properties?.['text']).toBe('Fetch More');
     });
   });
 });

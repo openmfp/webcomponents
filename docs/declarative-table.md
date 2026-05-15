@@ -96,6 +96,9 @@ export class MyComponent {
 | `totalItemsCount` | `number` | no | — | Total count of all items across pages |
 | `paginationLimit` | `number` | no | `5` | Rows per page shown in the page-size selector |
 | `hasMore` | `boolean` | no | `false` | Show the load-more trigger at the bottom |
+| `growMode` | `'Button' \| 'Scroll'` | no | `'Button'` | Load-more strategy: `'Button'` shows a button, `'Scroll'` triggers on scroll |
+| `loadMoreButtonText` | `string` | no | `'Load More'` | Label shown on the load-more button (used when `growMode` is `'Button'`) |
+| `height` | `number` | no | — | Fixed height in pixels. When combined with `growMode: 'Scroll'`, enables scroll-based loading with a sticky header |
 
 ### Outputs / Events
 
@@ -283,12 +286,22 @@ uiSettings: { cssCustomization: { fontStyle: 'italic' } }
 
 ## Pagination
 
-When `hasMore` is `true` a **Load More** trigger appears at the bottom of the table. A page-size selector is always present.
+When `hasMore` is `true` a load-more trigger appears at the bottom of the table. The trigger behaviour is controlled by `growMode`:
+
+- `growMode: 'Button'` (default) — a button labelled with `loadMoreButtonText` is shown. Clicking it fires `loadMoreResources`.
+- `growMode: 'Scroll'` — loading is triggered automatically as the user scrolls. Set `height` to constrain the table height and enable scroll detection; the header row becomes sticky automatically.
+
+A page-size selector is always present.
 
 ```js
+// Button mode (default)
 table.hasMore = true;
-table.totalItemsCount = 100;
-table.paginationLimit = 10;
+table.loadMoreButtonText = 'Load More';
+
+// Scroll mode with a fixed height
+table.growMode = 'Scroll';
+table.height = 400; // pixels
+table.hasMore = true;
 
 table.addEventListener('loadMoreResources', () => {
   fetchNextPage().then((rows) => {

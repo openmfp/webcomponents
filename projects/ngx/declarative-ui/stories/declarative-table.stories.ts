@@ -110,14 +110,12 @@ class DeclarativeTableStory {
   @Input() height?: number;
 
   loadMore(): void {
-    console.log('load');
     const resources = [...this.resources];
     resources.push(...PODS);
     this.resources = resources;
   }
 
   onPageSizeChange(limit: CustomEvent<number>): void {
-    console.log('limit', limit.detail);
     this.paginationLimit = limit.detail;
     this.resources = this.resources.slice(0, this.paginationLimit);
   }
