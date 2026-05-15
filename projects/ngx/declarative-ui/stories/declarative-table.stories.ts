@@ -1,6 +1,7 @@
 import type { GenericResource } from '../models';
+import { DeclarativeTable } from '../table';
 import type { TableFieldDefinition } from '../table/models';
-import { CUSTOM_ELEMENTS_SCHEMA, Component, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
 
 // ---------------------------------------------------------------------------
@@ -82,17 +83,21 @@ const PODS: Pod[] = [
 
 @Component({
   selector: 'mfp-declarative-table-story',
+  imports: [DeclarativeTable],
   template: `
-    <mfp-wc-declarative-table
+    <mfp-declarative-table
       [columns]="columns"
+      [growMode]="growMode"
       [hasMore]="hasMore"
+      [height]="height"
       [paginationLimit]="paginationLimit"
       [resources]="resources"
       [totalItemsCount]="totalItemsCount"
-      [trackByProperty]="trackByProperty"
+      [trackByPath]="trackByProperty"
+      (loadMoreResources)="loadMore()"
+      (paginationLimitChanged)="onPageSizeChange($event)"
     />
   `,
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 class DeclarativeTableStory {
   @Input() columns: TableFieldDefinition[] = [];
@@ -101,6 +106,21 @@ class DeclarativeTableStory {
   @Input() hasMore = false;
   @Input() paginationLimit = 5;
   @Input() totalItemsCount?: number;
+  @Input() growMode: 'Scroll' | 'Button' = 'Scroll';
+  @Input() height?: number;
+
+  loadMore(): void {
+    console.log('load');
+    const resources = [...this.resources];
+    resources.push(...PODS);
+    this.resources = resources;
+  }
+
+  onPageSizeChange(limit: CustomEvent<number>): void {
+    console.log('limit', limit.detail);
+    this.paginationLimit = limit.detail;
+    this.resources = this.resources.slice(0, this.paginationLimit);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -121,6 +141,7 @@ const meta: Meta<DeclarativeTableStory> = {
     hasMore: { control: 'boolean' },
     paginationLimit: { control: 'number' },
     totalItemsCount: { control: 'number' },
+    growMode: { options: ['Scroll', 'Button'] },
   },
   args: {
     resources: PODS,
@@ -195,7 +216,7 @@ export const CellDisplayModes: Story = {
   },
 };
 
-/** Two columns sharing the same group name are merged into one header. */
+// /** Two columns sharing the same group name are merged into one header. */
 export const GroupedColumns: Story = {
   args: {
     columns: [
@@ -215,11 +236,11 @@ export const GroupedColumns: Story = {
   },
 };
 
-/**
- * Group with a space delimiter and labelDisplay — values rendered as blue
- * badge labels, separated by a single space. Also demonstrates the alert
- * display type: a warning icon appears when the field value is falsy.
- */
+// /**
+//  * Group with a space delimiter and labelDisplay — values rendered as blue
+//  * badge labels, separated by a single space. Also demonstrates the alert
+//  * display type: a warning icon appears when the field value is falsy.
+//  */
 export const GroupedWithLabelsAndAlert: Story = {
   args: {
     columns: [
@@ -249,11 +270,11 @@ export const GroupedWithLabelsAndAlert: Story = {
   },
 };
 
-/**
- * `uiSettings.columnWidth` sets the width of the header cell (and thus the
- * whole column). Useful for icon-only columns like `alert` or `boolIcon` where
- * the default `auto` width is wider than necessary.
- */
+// /**
+//  * `uiSettings.columnWidth` sets the width of the header cell (and thus the
+//  * whole column). Useful for icon-only columns like `alert` or `boolIcon` where
+//  * the default `auto` width is wider than necessary.
+//  */
 export const ColumnWidth: Story = {
   args: {
     columns: [
@@ -273,7 +294,7 @@ export const ColumnWidth: Story = {
   },
 };
 
-/** JSONPath expression for deeply nested or array values. */
+// /** JSONPath expression for deeply nested or array values. */
 export const JsonPathExpression: Story = {
   args: {
     columns: [
@@ -285,7 +306,7 @@ export const JsonPathExpression: Story = {
   },
 };
 
-/** Static fallback value shown when the resource field is absent. */
+// /** Static fallback value shown when the resource field is absent. */
 export const StaticFallback: Story = {
   args: {
     columns: [
@@ -295,6 +316,34 @@ export const StaticFallback: Story = {
   },
 };
 
+export const Pagination_Scroll: Story = {
+  args: {
+    columns: [
+      { label: 'Name', property: 'metadata.name' },
+      { label: 'Namespace', property: 'metadata.namespace' },
+      { label: 'Phase', property: 'status.phase' },
+    ] satisfies TableFieldDefinition[],
+    hasMore: true,
+    paginationLimit: 5,
+    totalItemsCount: 20,
+    growMode: 'Scroll',
+    height: 200,
+  },
+};
+
+export const Pagination_Button: Story = {
+  args: {
+    columns: [
+      { label: 'Name', property: 'metadata.name' },
+      { label: 'Namespace', property: 'metadata.namespace' },
+      { label: 'Phase', property: 'status.phase' },
+    ] satisfies TableFieldDefinition[],
+    hasMore: true,
+    paginationLimit: 5,
+    totalItemsCount: 20,
+    growMode: 'Button',
+  },
+};
 /** Load-more pagination trigger. Click "Load More" to fire loadMoreResources. */
 export const Pagination: Story = {
   args: {

@@ -47,6 +47,8 @@ export class DeclarativeTable<T extends GenericResource> {
   totalItemsCount = input<number>();
   paginationLimit = input<number>(5);
   hasMore = input<boolean>(false);
+  growMode = input<'Scroll' | 'Button' | undefined>('Button');
+  height = input<number>();
 
   readonly buttonClick = output<ValueCellButtonClickEvent<T>>();
   readonly tableRowClicked = output<T>();
@@ -56,6 +58,7 @@ export class DeclarativeTable<T extends GenericResource> {
   columnTrackBy = (column: TableFieldDefinition, index: number) =>
     column.property ?? column.value ?? index;
   rowTrackBy = (_index: number, item: T): unknown =>
-    getResourceValueByJsonPath(item, { property: this.trackByPath() }) ?? _index;
+    getResourceValueByJsonPath(item, { property: this.trackByPath() }) ??
+    _index;
   viewColumns = computed(() => processGroupFields(this.columns()));
 }

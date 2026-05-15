@@ -1,5 +1,8 @@
-<ui5-table test-id="generic-table">
-  <ui5-table-header-row slot="headerRow">
+<ui5-table
+  [style.height]="height() ? height() + 'px' : null"
+  [style.overflow-y]="'auto'"
+  test-id="generic-table">
+  <ui5-table-header-row slot="headerRow" [sticky]="growMode() === 'Scroll' && !!height()">
     @for (column of viewColumns(); track columnTrackBy(column, $index)) {
       @if (column.group) {
         <ui5-table-header-cell
@@ -86,9 +89,8 @@
   @if (hasMore()) {
     <ui5-table-growing
       id="growing"
-      mode="Button"
+      [mode]="growMode()"
       slot="features"
-      text="Load more"
       (ui5LoadMore)="loadMoreResources.emit()"
     />
   }

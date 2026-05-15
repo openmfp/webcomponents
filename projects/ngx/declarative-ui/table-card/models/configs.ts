@@ -2,6 +2,11 @@ import { FormFieldDefinition, FormFieldErrors } from '../../form';
 import { ButtonSettings } from '../../models';
 import { TableFieldDefinition } from '../../table';
 
+
+
+
+
+
 export interface ResourceFormConfig {
   fields: FormFieldDefinition[];
   title?: string;
@@ -25,6 +30,8 @@ export interface TableConfig {
   totalItemsCount?: number;
   paginationLimit?: number;
   hasMore?: boolean;
+  height?: number;
+  growMode?: 'Scroll' | 'Button';
 }
 
 export interface TableCardButtonSettings {

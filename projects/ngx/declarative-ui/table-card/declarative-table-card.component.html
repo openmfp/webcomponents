@@ -60,7 +60,9 @@
         (buttonClick)="onButtonClick($event)"
         (tableRowClicked)="tableRowClicked.emit($event)"
         (loadMoreResources)="loadMoreResources.emit()"
-        (paginationLimitChanged)="paginationLimitChanged.emit($event)"
+        (paginationLimitChanged)="paginationLimitChanged.emit($event)"s
+        [growMode]="config.growMode"
+        [height]="config.height"
       />
     }
   </div>
