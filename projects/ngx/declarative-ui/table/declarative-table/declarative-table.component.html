@@ -90,6 +90,7 @@
     <ui5-table-growing
       id="growing"
       [mode]="growMode()"
+      [text]="loadMoreButtonText()"
       slot="features"
       (ui5LoadMore)="loadMoreResources.emit()"
     />

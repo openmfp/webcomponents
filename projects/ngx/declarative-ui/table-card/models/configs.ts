@@ -7,6 +7,11 @@ import { TableFieldDefinition } from '../../table';
 
 
 
+
+
+
+
+
 export interface ResourceFormConfig {
   fields: FormFieldDefinition[];
   title?: string;
@@ -32,6 +37,7 @@ export interface TableConfig {
   hasMore?: boolean;
   height?: number;
   growMode?: 'Scroll' | 'Button';
+  loadMoreButtonText?: string;
 }
 
 export interface TableCardButtonSettings {

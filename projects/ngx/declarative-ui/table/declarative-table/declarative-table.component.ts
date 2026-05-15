@@ -48,6 +48,7 @@ export class DeclarativeTable<T extends GenericResource> {
   paginationLimit = input<number>(5);
   hasMore = input<boolean>(false);
   growMode = input<'Scroll' | 'Button' | undefined>('Button');
+  loadMoreButtonText = input<string | undefined>('Load More');
   height = input<number>();
 
   readonly buttonClick = output<ValueCellButtonClickEvent<T>>();
