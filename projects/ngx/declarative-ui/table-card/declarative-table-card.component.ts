@@ -234,7 +234,9 @@ export class DeclarativeTableCard<T extends GenericResource> {
     if (editButton) {
       actions.push({
         uiSettings: {
+          columnWidth: '90px',
           displayAs: 'button',
+          align: 'end',
           buttonSettings: {
             icon: 'edit',
             design: 'Transparent',
@@ -282,5 +284,4 @@ export class DeclarativeTableCard<T extends GenericResource> {
       {} as Record<string, unknown>,
     );
   }
-
 }
