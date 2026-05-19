@@ -1,4 +1,5 @@
 import type { GenericResource } from '../models';
+import { DeclarativeTable } from '../table';
 import type { TableFieldDefinition } from '../table/models';
 import { CUSTOM_ELEMENTS_SCHEMA, Component, Input } from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
@@ -82,8 +83,9 @@ const PODS: Pod[] = [
 
 @Component({
   selector: 'mfp-declarative-table-story',
+  imports: [DeclarativeTable],
   template: `
-    <mfp-wc-declarative-table
+    <mfp-declarative-table
       [columns]="columns"
       [hasMore]="hasMore"
       [paginationLimit]="paginationLimit"

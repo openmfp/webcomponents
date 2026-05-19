@@ -11,6 +11,7 @@ import type {
 import type { TableFieldDefinition } from '../table/models';
 import { Component, Input } from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
+import '@ui5/webcomponents-icons/dist/detail-view.js';
 
 // ---------------------------------------------------------------------------
 // Sample data
@@ -335,10 +336,125 @@ export const WithAllActions: Story = {
   },
 };
 
+/**
+ * Edit and delete actions alongside a custom action button.
+ * Verifies that the actions column stays narrow and right-aligned even
+ * when additional buttons are present.
+ */
+export const WithCustomActions: Story = {
+  args: {
+    config: {
+      ...BASE_CONFIG,
+      tableConfig: {
+        ...BASE_TABLE_CONFIG,
+        fields: [
+          ...BASE_COLUMNS,
+          {
+            uiSettings: {
+              displayAs: 'button',
+              align: 'end',
+              buttonSettings: {
+                icon: 'detail-view',
+                design: 'Transparent',
+                action: 'view',
+                tooltip: 'View details',
+              },
+            },
+            group: { name: 'actions', label: '', multiline: false },
+          } satisfies TableFieldDefinition,
+        ],
+      },
+      editResourceFormConfig: {
+        fields: POD_EDIT_FORM_FIELDS,
+        title: 'Edit Pod',
+        confirmLabel: 'Save',
+        cancelLabel: 'Cancel',
+      } satisfies ResourceFormConfig,
+      deleteResourceConfirmationConfig: {
+        title: 'Delete Pod?',
+        message:
+          'This action cannot be undone. The pod will be permanently removed.',
+        confirmLabel: 'Delete',
+        cancelLabel: 'Cancel',
+      } satisfies DeleteResourceConfirmationConfig,
+    },
+  },
+};
+
 /** Empty resources array triggers the illustrated empty-state message inside the table. */
 export const EmptyState: Story = {
   args: {
     resources: [],
+  },
+};
+
+/**
+ * Text buttons with arbitrary-length labels. Width is computed automatically
+ * from each button's text length (~0.55rem per character + padding).
+ */
+export const WithTextActions: Story = {
+  args: {
+    config: {
+      ...BASE_CONFIG,
+      buttonSettings: {
+        editButton: { text: 'Edit resource', icon: 'edit', action: 'edit' },
+        deleteButton: {
+          text: 'Delete resource',
+          icon: 'decline',
+          action: 'delete',
+        },
+      },
+      editResourceFormConfig: {
+        fields: POD_EDIT_FORM_FIELDS,
+        title: 'Edit Pod',
+        confirmLabel: 'Save',
+        cancelLabel: 'Cancel',
+      } satisfies ResourceFormConfig,
+      deleteResourceConfirmationConfig: {
+        title: 'Delete Pod?',
+        message: 'This action cannot be undone.',
+        confirmLabel: 'Delete',
+        cancelLabel: 'Cancel',
+      } satisfies DeleteResourceConfirmationConfig,
+    },
+  },
+};
+
+/**
+ * Actions column constrained to 90 px via `columnWidth`.
+ * The width is driven by the first field in the `actions` group — here a custom
+ * detail-view button placed before the auto-generated edit / delete buttons.
+ */
+export const WithNarrowActionsColumn: Story = {
+  args: {
+    config: {
+      ...BASE_CONFIG,
+      tableConfig: {
+        ...BASE_TABLE_CONFIG,
+        fields: [
+          ...BASE_COLUMNS,
+          {
+            uiSettings: {
+              columnWidth: '90px',
+            },
+            group: { name: 'actions', label: '', multiline: false },
+          } satisfies TableFieldDefinition,
+        ],
+      },
+      editResourceFormConfig: {
+        fields: POD_EDIT_FORM_FIELDS,
+        title: 'Edit Pod',
+        confirmLabel: 'Save',
+        cancelLabel: 'Cancel',
+      } satisfies ResourceFormConfig,
+      deleteResourceConfirmationConfig: {
+        title: 'Delete Pod?',
+        message:
+          'This action cannot be undone. The pod will be permanently removed.',
+        confirmLabel: 'Delete',
+        cancelLabel: 'Cancel',
+      } satisfies DeleteResourceConfirmationConfig,
+    },
   },
 };
 
