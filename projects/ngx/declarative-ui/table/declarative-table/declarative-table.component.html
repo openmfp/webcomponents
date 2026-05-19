@@ -3,7 +3,7 @@
     @for (column of viewColumns(); track columnTrackBy(column, $index)) {
       @if (column.group) {
         <ui5-table-header-cell
-          [attr.test-id]="'generic-table-header-' + column.property"
+          [attr.test-id]="'generic-table-header-' + column.group.name"
           [width]="column.uiSettings?.columnWidth ?? 'auto'"
           >{{ column.group.label ?? column.group.name }}</ui5-table-header-cell
         >
@@ -27,10 +27,14 @@
       @for (column of viewColumns(); track columnTrackBy(column, $index)) {
         @if (column.group) {
           <ui5-table-cell
-            [attr.test-id]="'generic-table-cell-' + i + '-' + column.property"
-            [class.multiline]="column.group.multiline ?? true"
+            [attr.test-id]="'generic-table-cell-' + i + '-' + column.group.name"
           >
-          <div class="flex" [style.justifyContent]="column.uiSettings?.align">
+          @let isMultiline = column.group.multiline ?? true;
+          <div
+            class="flex"
+            [style.justifyContent]="isMultiline ? null : column.uiSettings?.align"
+            [style.alignItems]="isMultiline ? column.uiSettings?.align : null"
+            [style.flexDirection]="isMultiline ? 'column' : 'row'">
             @for (
                 field of column.group.fields;
                 let last = $last;
@@ -42,7 +46,7 @@
                     'generic-table-cell-' +
                     i +
                     '-' +
-                    column.property +
+                    column.group.name +
                     '-' +
                     field.property
                   "

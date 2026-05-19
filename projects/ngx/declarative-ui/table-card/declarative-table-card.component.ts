@@ -233,8 +233,8 @@ export class DeclarativeTableCard<T extends GenericResource> {
 
     if (editButton) {
       actions.push({
+        property: 'mfp_edit_action',
         uiSettings: {
-          columnWidth: '90px',
           displayAs: 'button',
           align: 'end',
           buttonSettings: {
@@ -250,7 +250,9 @@ export class DeclarativeTableCard<T extends GenericResource> {
 
     if (deleteButton) {
       actions.push({
+        property: 'mfp_delete_action',
         uiSettings: {
+          align: 'end',
           displayAs: 'button',
           buttonSettings: {
             icon: 'decline',
