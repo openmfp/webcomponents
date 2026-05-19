@@ -114,8 +114,8 @@
       >
       <ui5-select
         style="width: 5rem"
-        (change)="paginationLimitChanged.emit(+$any($event)?.target?.value)"
         [value]="paginationLimit().toString()"
+        (change)="paginationLimitChanged.emit(+$any($event)?.target?.value)"
       >
         <ui5-option value="5">5</ui5-option>
         <ui5-option value="10">10</ui5-option>

@@ -199,9 +199,10 @@ const cards: CardConfig[] = [
 
 ### Outputs
 
-| Output  | Payload                                              | Description                     |
-| ------- | ---------------------------------------------------- | ------------------------------- |
-| `saved` | `{ sections: SectionConfig[]; cards: CardConfig[] }` | Emits when the user saves edits |
+| Output               | Payload                                              | Description                                                      |
+| -------------------- | ---------------------------------------------------- | ---------------------------------------------------------------- |
+| `saved`              | `{ sections: SectionConfig[]; cards: CardConfig[] }` | Emits when the user saves edits                                  |
+| `actionButtonClick`  | `{ event: MouseEvent; action: ButtonSettings }`      | Emits when a custom action button from `config.customActions` is clicked |
 
 ### Static methods
 

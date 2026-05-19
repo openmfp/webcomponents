@@ -29,11 +29,10 @@
             icon="menu2"
             tooltip="Actions"
             (click)="toolbarMenuOpen.update((v) => !v)"
-          ></ui5-button>
+          />
           <ui5-menu
             [open]="toolbarMenuOpen()"
             [opener]="menuBtn.element"
-            (ui5Open)="toolbarMenuOpen.set(true)"
             (ui5Close)="toolbarMenuOpen.set(false)"
             (ui5ItemClick)="
               onMenuItemClick(
@@ -41,29 +40,30 @@
                 $event
               )
             "
+            (ui5Open)="toolbarMenuOpen.set(true)"
           >
             @for (action of customActions(); track action.action) {
               <ui5-menu-item
+                [attr.data-action]="action.action"
                 [icon]="action.icon ?? ''"
                 [text]="action.text ?? ''"
-                [attr.data-action]="action.action"
-              ></ui5-menu-item>
+              />
             }
             @if (config().editable) {
-              <ui5-menu-separator></ui5-menu-separator>
+              <ui5-menu-separator />
               <ui5-menu-item
+                data-action="edit-view"
                 [icon]="editViewButton().icon"
                 [text]="editViewButton().text || 'Edit View'"
-                data-action="edit-view"
-              ></ui5-menu-item>
+              />
             }
           </ui5-menu>
         } @else {
           @for (action of customActions(); track action.action) {
             <ui5-button
               [design]="action.design ?? 'Default'"
-              [icon]="action.icon ?? ''"
               [endIcon]="action?.endIcon"
+              [icon]="action.icon ?? ''"
               [tooltip]="action.tooltip ?? ''"
               (click)="
                 actionButtonClick.emit({ event: $event, action: action })
@@ -91,20 +91,20 @@
   <div class="mfp-sections-container">
     @for (section of sections(); track section.id) {
       <mfp-dashboard-section
-        [section]="section"
         [cards]="sectionCards()(section.id)"
         [columns]="12"
         [editMode]="editMode()"
-        (removeSection)="removeSection(section.id)"
+        [section]="section"
         (removeCard)="removeCard($event)"
+        (removeSection)="removeSection(section.id)"
       />
     }
   </div>
-  <gridstack #grid (changeCB)="onOrderChange($event)" [options]="gridOptions()">
+  <gridstack #grid [options]="gridOptions()" (changeCB)="onOrderChange($event)">
     @for (card of looseCards(); track card.id) {
       <gridstack-item
-        [style.cursor]="editMode() ? 'pointer' : 'auto'"
         [options]="card"
+        [style.cursor]="editMode() ? 'pointer' : 'auto'"
       >
         <mfp-dashboard-card
           [card]="card"
@@ -126,9 +126,9 @@
 </div>
 
 <mfp-add-card-dialog
-  [open]="cardDialogOpen()"
-  [availableCards]="availableCards()"
   [addedCardsIds]="addedCardsIds()"
+  [availableCards]="availableCards()"
+  [open]="cardDialogOpen()"
+  (cancelled)="closeCardPanel()"
   (confirm)="onCardsAdded($event)"
-  (cancel)="closeCardPanel()"
 />

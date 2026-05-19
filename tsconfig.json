@@ -28,6 +28,9 @@
   "exclude": ["vitest.config.ts"],
   "references": [
     {
+      "path": "./projects/ngx/tsconfig.lib.json"
+    },
+    {
       "path": "./projects/ngx/declarative-ui/tsconfig.lib.json"
     },
     {

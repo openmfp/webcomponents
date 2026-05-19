@@ -1,17 +1,21 @@
-<div class="visited-card-wrapper" (click)="click.emit(path())">
+<!-- eslint-disable @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+<div
+  class="visited-card-wrapper"
+  (click)="cardClick.emit(path())"
+>
   <span class="visited-card__type-badge">{{ serviceType() }}</span>
   <ui5-card class="visited-card">
     <ui5-card-header
       slot="header"
-      [titleText]="serviceName()"
-      [subtitleText]="serviceDescription()"
       [interactive]="true"
+      [subtitleText]="serviceDescription()"
+      [titleText]="serviceName()"
     >
       <ui5-icon
+        class="visited-card__icon"
         slot="avatar"
         [name]="serviceIcon()"
-        class="visited-card__icon"
-      ></ui5-icon>
+      />
     </ui5-card-header>
   </ui5-card>
 </div>

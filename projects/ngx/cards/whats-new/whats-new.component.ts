@@ -5,10 +5,10 @@ import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 
 @Component({
   selector: 'mfp-whats-new',
-  templateUrl: './whats-new.component.html',
-  styleUrls: ['./whats-new.component.scss'],
-  encapsulation: ViewEncapsulation.ShadowDom,
   imports: [List, ListItemStandard, Title],
+  templateUrl: './whats-new.component.html',
+  styleUrl: './whats-new.component.scss',
+  encapsulation: ViewEncapsulation.ShadowDom
 })
 export class WhatsNew {
   readonly headlines = [

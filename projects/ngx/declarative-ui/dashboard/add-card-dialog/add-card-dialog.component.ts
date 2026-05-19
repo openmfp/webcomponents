@@ -14,18 +14,18 @@ import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 
 @Component({
   selector: 'mfp-add-card-dialog',
-  templateUrl: './add-card-dialog.component.html',
-  styleUrls: ['./add-card-dialog.component.scss'],
-  encapsulation: ViewEncapsulation.ShadowDom,
   imports: [Button, CheckBox, Dialog, Title],
+  templateUrl: './add-card-dialog.component.html',
+  styleUrl: './add-card-dialog.component.scss',
+  encapsulation: ViewEncapsulation.ShadowDom
 })
 export class AddCardDialog {
   availableCards = input<CardConfig[]>([]);
   addedCardsIds = input<Set<string>>(new Set());
   open = input<boolean>(false);
 
-  confirm = output<CardConfig[]>();
-  cancel = output<void>();
+  readonly confirm = output<CardConfig[]>();
+  readonly cancelled = output<void>();
 
   selectedIds = signal<Set<string>>(new Set());
 
