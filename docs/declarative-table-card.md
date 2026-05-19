@@ -243,3 +243,74 @@ interface TableCardFormState {
 ```
 
 `ResourceFormConfig` is static. Keep runtime errors in `createFormState` / `editFormState`. The submit button is disabled when any entry in `fieldErrors` is truthy.
+
+---
+
+## Actions column
+
+When `editResourceFormConfig` or `deleteResourceConfirmationConfig` is set, the component automatically appends icon buttons to a grouped column named `actions` at the end of the table.
+
+### Customising built-in action buttons
+
+Use `buttonSettings` inside `TableCardConfig` to override the default icon, text, or design of the built-in edit / delete buttons:
+
+```ts
+config: TableCardConfig = {
+  // ...
+  buttonSettings: {
+    editButton:   { text: 'Edit resource',   icon: 'edit',    action: 'edit' },
+    deleteButton: { text: 'Delete resource', icon: 'decline', action: 'delete' },
+  },
+};
+```
+
+`ButtonSettings` fields available for each button:
+
+| Field    | Type     | Description                                                       |
+| -------- | -------- | ----------------------------------------------------------------- |
+| `text`   | `string` | Button label (icon-only when omitted)                             |
+| `icon`   | `string` | UI5 icon name                                                     |
+| `design` | `string` | `'Default'` \| `'Transparent'` \| `'Emphasized'` \| …            |
+| `action` | `string` | Must stay `'edit'` / `'delete'` to keep built-in dialog handling  |
+
+### Adding custom action buttons
+
+Place extra `TableFieldDefinition` entries with `group: { name: 'actions' }` inside `tableConfig.fields`. The component appends the built-in edit / delete buttons after them.
+
+```ts
+tableConfig: {
+  fields: [
+    ...BASE_COLUMNS,
+    {
+      uiSettings: {
+        displayAs: 'button',
+        align: 'end',
+        buttonSettings: { icon: 'detail-view', design: 'Transparent', action: 'view' },
+      },
+      group: { name: 'actions', label: '', multiline: false },
+    },
+  ],
+},
+```
+
+Custom button clicks that are not `'edit'` or `'delete'` are forwarded through the `actionButtonClick` output.
+
+### Controlling the actions column width
+
+The column width is determined by `uiSettings.columnWidth` of the **first** field in the `actions` group (see [grouped columns](./declarative-table.md#grouped-columns)). Place a custom action field first and set `columnWidth` there:
+
+```ts
+tableConfig: {
+  fields: [
+    ...BASE_COLUMNS,
+    {
+      uiSettings: {
+        columnWidth: '90px',   // ← drives the header cell width for the whole group
+      },
+      group: { name: 'actions', label: '', multiline: false },
+    },
+  ],
+},
+```
+
+> **Note:** if only built-in edit / delete buttons are used (no custom field first), the column width defaults to `auto`. Add a field first to gain explicit width control.

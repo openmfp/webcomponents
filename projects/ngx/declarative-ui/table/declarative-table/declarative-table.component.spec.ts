@@ -67,15 +67,14 @@ describe('DeclarativeTable', () => {
       expect(el(fixture, 'generic-table-header-status')).not.toBeNull();
     });
 
-    it('renders group header with group label and test-id from first field property', () => {
+    it('renders group header with group label and test-id from group name', () => {
       const { fixture } = setup({
         columns: [
           { property: 'city', label: 'City', group: { name: 'location', label: 'Location' } },
           { property: 'country', label: 'Country', group: { name: 'location', label: 'Location' } },
         ],
       });
-      // processGroupFields preserves the first field's property as the column property
-      const header = el(fixture, 'generic-table-header-city');
+      const header = el(fixture, 'generic-table-header-location');
       expect(header).not.toBeNull();
       expect(header?.textContent?.trim()).toBe('Location');
     });
@@ -86,7 +85,7 @@ describe('DeclarativeTable', () => {
           { property: 'city', group: { name: 'location' } },
         ],
       });
-      const header = el(fixture, 'generic-table-header-city');
+      const header = el(fixture, 'generic-table-header-location');
       expect(header?.textContent?.trim()).toBe('location');
     });
 
@@ -153,10 +152,9 @@ describe('DeclarativeTable', () => {
   });
 
   describe('group columns', () => {
-    it('renders group cell with sub-field test-ids using first-field property', () => {
-      // processGroupFields: grouped column keeps first field's property ('city')
-      // cell test-id: 'generic-table-cell-{i}-{column.property}-{field.property}'
-      // => 'generic-table-cell-0-city-city' and 'generic-table-cell-0-city-country'
+    it('renders group cell with sub-field test-ids using group name', () => {
+      // cell test-id: 'generic-table-cell-{i}-{column.group.name}-{field.property}'
+      // => 'generic-table-cell-0-location-city' and 'generic-table-cell-0-location-country'
       const { fixture } = setup({
         columns: [
           { property: 'city', group: { name: 'location' } },
@@ -164,8 +162,8 @@ describe('DeclarativeTable', () => {
         ],
         resources: [{ id: '1', city: 'Berlin', country: 'Germany' }],
       });
-      expect(el(fixture, 'generic-table-cell-0-city-city')).not.toBeNull();
-      expect(el(fixture, 'generic-table-cell-0-city-country')).not.toBeNull();
+      expect(el(fixture, 'generic-table-cell-0-location-city')).not.toBeNull();
+      expect(el(fixture, 'generic-table-cell-0-location-country')).not.toBeNull();
     });
 
     it('renders field label inside group cell when label is set', () => {
@@ -175,7 +173,7 @@ describe('DeclarativeTable', () => {
         ],
         resources: [{ id: '1', city: 'Berlin' }],
       });
-      const cell = el(fixture, 'generic-table-cell-0-city-city');
+      const cell = el(fixture, 'generic-table-cell-0-location-city');
       expect(cell?.textContent).toContain('City:');
     });
   });

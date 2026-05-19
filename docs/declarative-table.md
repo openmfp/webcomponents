@@ -210,6 +210,39 @@ Add a copy-to-clipboard icon to any cell:
 { label: 'ID', property: 'metadata.uid', uiSettings: { withCopyButton: true } }
 ```
 
+### Column width
+
+Set an explicit width on a column header cell:
+
+```ts
+{ label: 'Actions', uiSettings: { columnWidth: '10rem' } }
+```
+
+> **UI5 constraint.** The value must be a valid CSS `<length>` — `px`, `rem`, `em`, `%`, or `calc()`. Sizing keywords such as `min-content` and `max-content` are rejected by UI5 and fall back to equal-stretch distribution across all columns.
+
+### Column alignment
+
+Control the horizontal alignment of cell content using `uiSettings.align`. The value maps directly to the CSS `justify-content` property of the cell's flex wrapper.
+
+| Value | Effect |
+|---|---|
+| `'start'` | Left-aligned (default browser behaviour) |
+| `'center'` | Centred |
+| `'end'` | Right-aligned |
+
+```ts
+{
+  uiSettings: {
+    displayAs: 'button',
+    align: 'end',
+    buttonSettings: { icon: 'delete', design: 'Transparent', action: 'delete' },
+  },
+  group: { name: 'actions', label: '' },
+}
+```
+
+For group columns the alignment is driven by the **first** field's `uiSettings.align`.
+
 ### Button cells
 
 ```ts
@@ -253,6 +286,33 @@ columns = [
 ```
 
 The above produces two visible columns: **Full Name** and **Email**.
+
+### Column-level settings via the first field
+
+The **first** field in a group sets the column-level configuration. `uiSettings.columnWidth` controls the `<ui5-table-header-cell>` width; `uiSettings.align` controls `justify-content` of the cell content wrapper. The column header text comes from `group.label` (or `group.name` if omitted) of the first field. These values on subsequent fields in the same group are ignored.
+
+```ts
+columns = [
+  // First field — drives column width and right-alignment for the whole group
+  {
+    uiSettings: {
+      displayAs: 'button',
+      columnWidth: '8rem',
+      align: 'end',
+      buttonSettings: { icon: 'edit', design: 'Transparent', action: 'edit' },
+    },
+    group: { name: 'actions', label: '', multiline: false },
+  },
+  // Second field — uiSettings.columnWidth and uiSettings.align are ignored here
+  {
+    uiSettings: {
+      displayAs: 'button',
+      buttonSettings: { icon: 'decline', design: 'Transparent', action: 'delete' },
+    },
+    group: { name: 'actions', label: '', multiline: false },
+  },
+];
+```
 
 ---
 

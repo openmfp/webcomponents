@@ -6,7 +6,8 @@
     @for (column of viewColumns(); track columnTrackBy(column, $index)) {
       @if (column.group) {
         <ui5-table-header-cell
-          [attr.test-id]="'generic-table-header-' + column.property"
+          [attr.test-id]="'generic-table-header-' + column.group.name"
+          [width]="column.uiSettings?.columnWidth ?? 'auto'"
           >{{ column.group.label ?? column.group.name }}</ui5-table-header-cell
         >
       } @else {
@@ -29,48 +30,56 @@
       @for (column of viewColumns(); track columnTrackBy(column, $index)) {
         @if (column.group) {
           <ui5-table-cell
-            [attr.test-id]="'generic-table-cell-' + i + '-' + column.property"
-            [class.multiline]="column.group.multiline ?? true"
+            [attr.test-id]="'generic-table-cell-' + i + '-' + column.group.name"
           >
+          @let isMultiline = column.group.multiline ?? true;
+          <div
+            class="flex"
+            [style.justifyContent]="isMultiline ? null : column.uiSettings?.align"
+            [style.alignItems]="isMultiline ? column.uiSettings?.align : null"
+            [style.flexDirection]="isMultiline ? 'column' : 'row'">
             @for (
-              field of column.group.fields;
-              let last = $last;
-              track columnTrackBy(field, $index)
-            ) {
-              <span
-                class="group-value"
-                [attr.test-id]="
-                  'generic-table-cell-' +
-                  i +
-                  '-' +
-                  column.property +
-                  '-' +
-                  field.property
-                "
-              >
-                @if (field.label) {
-                  <span>{{ field.label }}: </span>
+                field of column.group.fields;
+                let last = $last;
+                track columnTrackBy(field, $index)
+              ) {
+                <span
+                  class="group-value"
+                  [attr.test-id]="
+                    'generic-table-cell-' +
+                    i +
+                    '-' +
+                    column.group.name +
+                    '-' +
+                    field.property
+                  "
+                >
+                  @if (field.label) {
+                    <span>{{ field.label }}: </span>
+                  }
+                  <mfp-value-cell
+                    [fieldDefinition]="field"
+                    [resource]="item"
+                    (buttonClick)="buttonClick.emit($event)"
+                  />
+                </span>
+                @if (!last && column.group.delimiter) {
+                  <span>{{ column.group.delimiter }}</span>
                 }
-                <mfp-value-cell
-                  [fieldDefinition]="field"
-                  [resource]="item"
-                  (buttonClick)="buttonClick.emit($event)"
-                />
-              </span>
-              @if (!last && column.group.delimiter) {
-                <span>{{ column.group.delimiter }}</span>
               }
-            }
+            </div>
           </ui5-table-cell>
         } @else {
           <ui5-table-cell
             [attr.test-id]="'generic-table-cell-' + i + '-' + column.property"
-          >
-            <mfp-value-cell
-              [fieldDefinition]="column"
-              [resource]="item"
-              (buttonClick)="buttonClick.emit($event)"
-            />
+            >
+            <div class="flex" [style.justifyContent]="column.uiSettings?.align">
+              <mfp-value-cell
+                [fieldDefinition]="column"
+                [resource]="item"
+                (buttonClick)="buttonClick.emit($event)"
+              />
+            </div>
           </ui5-table-cell>
         }
       }
