@@ -1,12 +1,12 @@
 <div class="service-status">
-  <ui5-title level="H5" class="service-status__title">Service Availability</ui5-title>
+  <ui5-title class="service-status__title" level="H5">Service Availability</ui5-title>
   <div class="service-status__list">
     @for (service of services; track service.name) {
       <div class="service-status__item">
-        <ui5-icon name="{{ service.icon }}" class="service-status__icon"></ui5-icon>
+        <ui5-icon class="service-status__icon" [name]="service.icon" />
         <span class="service-status__name">{{ service.name }}</span>
-        <div class="service-status__status {{ statusConfig[service.status].colorClass }}">
-          <ui5-icon name="{{ statusConfig[service.status].icon }}" class="service-status__status-icon"></ui5-icon>
+        <div [class]="'service-status__status ' + statusConfig[service.status].colorClass">
+          <ui5-icon class="service-status__status-icon" [name]="statusConfig[service.status].icon" />
           <span class="service-status__status-label">{{ statusConfig[service.status].label }}</span>
         </div>
       </div>

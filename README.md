@@ -82,7 +82,7 @@ Components can be exported as native web components using Angular Elements, maki
 | `<mfp-declarative-table>` | `<mfp-wc-declarative-table>` | [docs/declarative-table.md](docs/declarative-table.md)           |
 | `<mfp-declarative-form>` | `<mfp-wc-declarative-form>` | [docs/declarative-form.md](docs/declarative-form.md)             |
 | `<mfp-declarative-table-card>` | `<mfp-wc-declarative-table-card>` | [docs/declarative-table-card.md](docs/declarative-table-card.md) |
-| `<mfp-dashboard>` | `<mfp-wc-dashboard>` | [docs/dashboard.md](docs/declarative-dashboard.md)               |
+| `<mfp-dashboard>` | `<mfp-wc-dashboard>` | [docs/dashboard.md](docs/dashboard.md)                           |
 
 ## NeoNephos Foundation
 

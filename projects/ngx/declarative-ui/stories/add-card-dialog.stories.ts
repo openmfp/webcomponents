@@ -20,8 +20,9 @@ const AVAILABLE_CARDS: CardConfig[] = [
   },
 ];
 
+
 @Component({
-  selector: 'add-card-dialog-story',
+  selector: 'mfp-add-card-dialog-story',
   imports: [AddCardDialog],
   template: `
     <ui5-button (click)="open = true">Open Dialog</ui5-button>
@@ -29,7 +30,7 @@ const AVAILABLE_CARDS: CardConfig[] = [
       [addedCardsIds]="addedComponents"
       [availableCards]="availableCards"
       [open]="open"
-      (cancel)="open = false"
+      (cancelled)="open = false"
       (confirm)="onConfirm($event)"
     />
     @if (lastAdded) {

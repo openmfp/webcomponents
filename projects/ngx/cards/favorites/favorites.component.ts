@@ -5,10 +5,10 @@ import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 
 @Component({
   selector: 'mfp-favorites',
-  templateUrl: './favorites.component.html',
-  styleUrls: ['./favorites.component.scss'],
-  encapsulation: ViewEncapsulation.ShadowDom,
   imports: [Button, Icon, Title],
+  templateUrl: './favorites.component.html',
+  styleUrl: './favorites.component.scss',
+  encapsulation: ViewEncapsulation.ShadowDom
 })
 export class Favorites {
   readonly items = [

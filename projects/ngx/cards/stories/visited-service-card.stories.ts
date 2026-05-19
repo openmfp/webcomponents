@@ -4,7 +4,8 @@ import { MessageStrip } from '@fundamental-ngx/ui5-webcomponents/message-strip';
 import type { Meta, StoryObj } from '@storybook/angular';
 
 @Component({
-  selector: 'visited-service-card-story',
+  selector: 'mfp-visited-service-card-story',
+  imports: [MessageStrip, VisitedServiceCard],
   template: `
     <mfp-visited-service-card
       [path]="path"
@@ -12,15 +13,14 @@ import type { Meta, StoryObj } from '@storybook/angular';
       [serviceIcon]="serviceIcon"
       [serviceName]="serviceName"
       [serviceType]="serviceType"
-      (click)="onCardClick()"
+      (cardClick)="onCardClick()"
     />
     @if (clicked) {
       <ui5-message-strip design="Information" style="margin-top: 1rem;">
         Card clicked — would navigate to: {{ path }}
       </ui5-message-strip>
     }
-  `,
-  imports: [MessageStrip, VisitedServiceCard],
+  `
 })
 class VisitedServiceCardStory {
   @Input() serviceType = '';
@@ -28,7 +28,7 @@ class VisitedServiceCardStory {
   @Input() serviceIcon = '';
   @Input() serviceDescription = '';
   @Input() path = '';
-  @Output() click = new EventEmitter<string>();
+  @Output() readonly cardClick = new EventEmitter<string>();
   clicked = false;
   onCardClick() {
     this.clicked = true;
@@ -117,12 +117,12 @@ export const AllCards: Story = {
   render: () => ({
     template: `
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; padding: 1rem;">
-        <visited-service-card-story serviceType="SAP HANA Cloud" serviceName="olc-hana-db" serviceIcon="database" serviceDescription="My Subaccount 1/Space dev" path="/hana/olc-hana-db"></visited-service-card-story>
-        <visited-service-card-story serviceType="Cloud Identity Service" serviceName="Cloud Identity Service" serviceIcon="customer" serviceDescription="My Subaccount 1/Space dev" path="/identity/cloud-identity-service"></visited-service-card-story>
-        <visited-service-card-story serviceType="SAP HANA Cloud" serviceName="olc-hana-db-test" serviceIcon="database" serviceDescription="My Subaccount 1/Space dev" path="/hana/olc-hana-db-test"></visited-service-card-story>
-        <visited-service-card-story serviceType="Application Autoscaler" serviceName="applicationtest" serviceIcon="accelerated" serviceDescription="My Subaccount 2/Space prod" path="/autoscaler/applicationtest"></visited-service-card-story>
-        <visited-service-card-story serviceType="Cloud Identity Service" serviceName="Cloud Identity Service" serviceIcon="customer" serviceDescription="Long text Subaccount 1/Space" path="/identity/cloud-identity-service"></visited-service-card-story>
-        <visited-service-card-story serviceType="Audit Log Service" serviceName="auditlog-name" serviceIcon="log" serviceDescription="My Subaccount 4/Space dev" path="/auditlog/auditlog-name"></visited-service-card-story>
+        <mfp-visited-service-card-story serviceType="SAP HANA Cloud" serviceName="olc-hana-db" serviceIcon="database" serviceDescription="My Subaccount 1/Space dev" path="/hana/olc-hana-db"></mfp-visited-service-card-story>
+        <mfp-visited-service-card-story serviceType="Cloud Identity Service" serviceName="Cloud Identity Service" serviceIcon="customer" serviceDescription="My Subaccount 1/Space dev" path="/identity/cloud-identity-service"></mfp-visited-service-card-story>
+        <mfp-visited-service-card-story serviceType="SAP HANA Cloud" serviceName="olc-hana-db-test" serviceIcon="database" serviceDescription="My Subaccount 1/Space dev" path="/hana/olc-hana-db-test"></mfp-visited-service-card-story>
+        <mfp-visited-service-card-story serviceType="Application Autoscaler" serviceName="applicationtest" serviceIcon="accelerated" serviceDescription="My Subaccount 2/Space prod" path="/autoscaler/applicationtest"></mfp-visited-service-card-story>
+        <mfp-visited-service-card-story serviceType="Cloud Identity Service" serviceName="Cloud Identity Service" serviceIcon="customer" serviceDescription="Long text Subaccount 1/Space" path="/identity/cloud-identity-service"></mfp-visited-service-card-story>
+        <mfp-visited-service-card-story serviceType="Audit Log Service" serviceName="auditlog-name" serviceIcon="log" serviceDescription="My Subaccount 4/Space dev" path="/auditlog/auditlog-name"></mfp-visited-service-card-story>
       </div>
     `,
   }),

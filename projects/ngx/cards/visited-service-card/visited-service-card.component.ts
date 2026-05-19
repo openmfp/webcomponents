@@ -6,10 +6,10 @@ import '@ui5/webcomponents-icons/dist/AllIcons.js';
 
 @Component({
   selector: 'mfp-visited-service-card',
-  templateUrl: './visited-service-card.component.html',
-  styleUrls: ['./visited-service-card.component.scss'],
-  encapsulation: ViewEncapsulation.ShadowDom,
   imports: [Card, CardHeader, Icon],
+  templateUrl: './visited-service-card.component.html',
+  styleUrl: './visited-service-card.component.scss',
+  encapsulation: ViewEncapsulation.ShadowDom,
 })
 export class VisitedServiceCard {
   serviceType = input.required<string>();
@@ -18,5 +18,5 @@ export class VisitedServiceCard {
   serviceIcon = input.required<string>();
   path = input.required<string>();
 
-  click = output<string>();
+  readonly cardClick = output<string>();
 }
