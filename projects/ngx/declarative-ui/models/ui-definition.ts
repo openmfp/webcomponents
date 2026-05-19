@@ -41,6 +41,7 @@ export interface UiSettings {
   cssRules?: CssRule[];
   /** Fixed column width including unit (e.g. `'200px'`, `'20%'`). */
   columnWidth?: string;
+  align?: 'start' | 'center' | 'end';
 }
 
 type KnownButtonActions = 'openInModal' | 'navigate' | 'edit' | 'delete';
