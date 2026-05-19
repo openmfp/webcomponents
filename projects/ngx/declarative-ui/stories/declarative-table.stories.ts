@@ -214,7 +214,7 @@ export const CellDisplayModes: Story = {
   },
 };
 
-// /** Two columns sharing the same group name are merged into one header. */
+/** Two columns sharing the same group name are merged into one header. */
 export const GroupedColumns: Story = {
   args: {
     columns: [
@@ -234,11 +234,11 @@ export const GroupedColumns: Story = {
   },
 };
 
-// /**
-//  * Group with a space delimiter and labelDisplay — values rendered as blue
-//  * badge labels, separated by a single space. Also demonstrates the alert
-//  * display type: a warning icon appears when the field value is falsy.
-//  */
+/**
+ * Group with a space delimiter and labelDisplay — values rendered as blue
+ * badge labels, separated by a single space. Also demonstrates the alert
+ * display type: a warning icon appears when the field value is falsy.
+ */
 export const GroupedWithLabelsAndAlert: Story = {
   args: {
     columns: [
@@ -268,11 +268,11 @@ export const GroupedWithLabelsAndAlert: Story = {
   },
 };
 
-// /**
-//  * `uiSettings.columnWidth` sets the width of the header cell (and thus the
-//  * whole column). Useful for icon-only columns like `alert` or `boolIcon` where
-//  * the default `auto` width is wider than necessary.
-//  */
+/**
+ * `uiSettings.columnWidth` sets the width of the header cell (and thus the
+ * whole column). Useful for icon-only columns like `alert` or `boolIcon` where
+ * the default `auto` width is wider than necessary.
+ */
 export const ColumnWidth: Story = {
   args: {
     columns: [
@@ -304,7 +304,7 @@ export const JsonPathExpression: Story = {
   },
 };
 
-// /** Static fallback value shown when the resource field is absent. */
+/** Static fallback value shown when the resource field is absent. */
 export const StaticFallback: Story = {
   args: {
     columns: [

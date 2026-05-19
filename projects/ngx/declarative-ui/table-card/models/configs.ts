@@ -2,16 +2,6 @@ import { FormFieldDefinition, FormFieldErrors } from '../../form';
 import { ButtonSettings } from '../../models';
 import { TableFieldDefinition } from '../../table';
 
-
-
-
-
-
-
-
-
-
-
 export interface ResourceFormConfig {
   fields: FormFieldDefinition[];
   title?: string;
