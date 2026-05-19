@@ -420,6 +420,44 @@ export const WithTextActions: Story = {
   },
 };
 
+/**
+ * Actions column constrained to 90 px via `columnWidth`.
+ * The width is driven by the first field in the `actions` group — here a custom
+ * detail-view button placed before the auto-generated edit / delete buttons.
+ */
+export const WithNarrowActionsColumn: Story = {
+  args: {
+    config: {
+      ...BASE_CONFIG,
+      tableConfig: {
+        ...BASE_TABLE_CONFIG,
+        fields: [
+          ...BASE_COLUMNS,
+          {
+            uiSettings: {
+              columnWidth: '90px',
+            },
+            group: { name: 'actions', label: '', multiline: false },
+          } satisfies TableFieldDefinition,
+        ],
+      },
+      editResourceFormConfig: {
+        fields: POD_EDIT_FORM_FIELDS,
+        title: 'Edit Pod',
+        confirmLabel: 'Save',
+        cancelLabel: 'Cancel',
+      } satisfies ResourceFormConfig,
+      deleteResourceConfirmationConfig: {
+        title: 'Delete Pod?',
+        message:
+          'This action cannot be undone. The pod will be permanently removed.',
+        confirmLabel: 'Delete',
+        cancelLabel: 'Cancel',
+      } satisfies DeleteResourceConfirmationConfig,
+    },
+  },
+};
+
 /** Shows pagination controls when hasMore is true. */
 export const WithPagination: Story = {
   args: {
