@@ -85,7 +85,7 @@
     </div>
 
     <div class="mfp-dashboard__subheader">
-      <slot name="dashboard-subheader"></slot>
+      <ng-content select="[slot=dashboard-subheader]" />
     </div>
   </div>
   <div class="mfp-sections-container">
