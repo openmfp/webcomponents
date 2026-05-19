@@ -1,4 +1,4 @@
-<section test-id="generic-form" class="form" [formGroup]="form">
+<section class="form" test-id="generic-form" [formGroup]="form">
   @for (field of fields(); track field.name) {
     @let control = form.controls[field.name];
     <div
@@ -6,8 +6,8 @@
       [attr.test-id]="'generic-form-field-container-' + field.name"
     >
       <ui5-label
-        [attr.test-id]="'generic-form-field-label-' + field.name"
         show-colon
+        [attr.test-id]="'generic-form-field-label-' + field.name"
         [required]="field.required"
         >{{ field.label }}</ui5-label
       >
@@ -15,13 +15,13 @@
         <ui5-select
           class="input"
           [attr.test-id]="'generic-form-field-' + field.name"
-          [value]="control.value"
-          (input)="setFormControlValue($event, field)"
-          (change)="setFormControlValue($event, field)"
-          (blur)="onFieldBlur(field)"
-          [required]="field.required"
-          [valueState]="getValueState(field.name)"
           [disabled]="field.disabled"
+          [required]="field.required"
+          [value]="control.value"
+          [valueState]="getValueState(field.name)"
+          (blur)="onFieldBlur(field)"
+          (change)="setFormControlValue($event, field)"
+          (input)="setFormControlValue($event, field)"
         >
           @if (getError(field.name); as error) {
             <div slot="valueStateMessage">{{ error }}</div>
@@ -34,8 +34,8 @@
                 '-option-' +
                 (value || 'empty')
               "
-              [value]="value"
               [selected]="value === control.value"
+              [value]="value"
               >{{ value }}</ui5-option
             >
           }
@@ -44,13 +44,13 @@
         <ui5-input
           class="input"
           [attr.test-id]="'generic-form-field-' + field.name"
+          [disabled]="field.disabled"
+          [required]="field.required"
           [value]="control.value"
+          [valueState]="getValueState(field.name)"
           (blur)="onFieldBlur(field)"
           (change)="setFormControlValue($event, field)"
           (input)="setFormControlValue($event, field)"
-          [required]="field.required"
-          [valueState]="getValueState(field.name)"
-          [disabled]="field.disabled"
         >
           @if (getError(field.name); as error) {
             <div slot="valueStateMessage">{{ error }}</div>

@@ -7,8 +7,8 @@
           <ui5-icon
             class="card__info-icon"
             name="hint"
-            [showTooltip]="true"
             [accessibleName]="tooltip"
+            [showTooltip]="true"
           />
         }
       }
@@ -23,8 +23,8 @@
               (searchCollapsing() ? 'leave' : 'enter')
             "
             [formControl]="searchControl"
-            (blur)="onSearchBlur()"
             (animationend)="onSearchAnimationEnd()"
+            (blur)="onSearchBlur()"
           />
         }
         <ui5-button
@@ -38,8 +38,8 @@
       @if (createFormConfig()) {
         <ui5-button
           class="card__create-btn"
-          [icon]="createButtonConfig()?.icon ?? 'add'"
           [design]="createButtonConfig()?.design ?? 'Transparent'"
+          [icon]="createButtonConfig()?.icon ?? 'add'"
           [tooltip]="createButtonConfig()?.tooltip"
           (click)="createDialogOpen.set(true)"
         >
@@ -53,17 +53,17 @@
     @if (tableConfig(); as config) {
       <mfp-declarative-table
         [columns]="effectiveColumns()"
+        [hasMore]="config.hasMore ?? false"
+        [paginationLimit]="config.paginationLimit ?? 5"
         [resources]="resources()"
         [totalItemsCount]="config.totalItemsCount"
-        [paginationLimit]="config.paginationLimit ?? 5"
-        [hasMore]="config.hasMore ?? false"
         (buttonClick)="onButtonClick($event)"
-        (tableRowClicked)="tableRowClicked.emit($event)"
         (loadMoreResources)="loadMoreResources.emit()"
         (paginationLimitChanged)="paginationLimitChanged.emit($event)"
         [growMode]="config.growMode"
         [height]="config.height"
         [loadMoreButtonText]="config.loadMoreButtonText"
+        (tableRowClicked)="tableRowClicked.emit($event)"
       />
     }
   </div>
@@ -74,19 +74,19 @@
     [open]="createDialogOpen()"
     (ui5BeforeClose)="createDialogOpen.set(false)"
   >
-    <div slot="header" class="dialog__header">
+    <div class="dialog__header" slot="header">
       <ui5-title level="H5">{{ config.title ?? 'Create' }}</ui5-title>
     </div>
     <div class="dialog__body">
       <mfp-declarative-form
         #createForm
-        [fields]="config.fields"
         [fieldErrors]="createFormState().fieldErrors ?? {}"
+        [fields]="config.fields"
         (fieldChange)="onCreateFieldChange($event)"
         (formSubmit)="onCreateSubmit($event)"
       />
     </div>
-    <div slot="footer" class="dialog__footer">
+    <div class="dialog__footer" slot="footer">
       <ui5-button
         design="Emphasized"
         [disabled]="hasErrors(createFormState())"
@@ -106,20 +106,20 @@
     [open]="editDialogOpen()"
     (ui5BeforeClose)="editDialogOpen.set(false)"
   >
-    <div slot="header" class="dialog__header">
+    <div class="dialog__header" slot="header">
       <ui5-title level="H5">{{ config.title ?? 'Edit' }}</ui5-title>
     </div>
     <div class="dialog__body">
       <mfp-declarative-form
         #editForm
+        [fieldErrors]="editFormState().fieldErrors ?? {}"
         [fields]="config.fields"
         [initialValues]="editInitialValue()"
-        [fieldErrors]="editFormState().fieldErrors ?? {}"
         (fieldChange)="onEditFieldChange($event)"
         (formSubmit)="onEditSubmit($event)"
       />
     </div>
-    <div slot="footer" class="dialog__footer">
+    <div class="dialog__footer" slot="footer">
       <ui5-button
         design="Emphasized"
         [disabled]="hasErrors(editFormState())"
@@ -139,7 +139,7 @@
     [open]="deleteDialogOpen()"
     (ui5BeforeClose)="deleteDialogOpen.set(false)"
   >
-    <div slot="header" class="dialog__header">
+    <div class="dialog__header" slot="header">
       <ui5-title level="H5">{{ config.title ?? 'Confirm Delete' }}</ui5-title>
     </div>
     @if (config.message) {
@@ -147,7 +147,7 @@
         <p class="dialog__message">{{ config.message }}</p>
       </div>
     }
-    <div slot="footer" class="dialog__footer">
+    <div class="dialog__footer" slot="footer">
       <ui5-button design="Negative" (click)="onDeleteSubmit()">
         {{ config.confirmLabel ?? 'Delete' }}
       </ui5-button>

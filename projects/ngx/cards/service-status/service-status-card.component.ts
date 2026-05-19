@@ -2,20 +2,25 @@ import { Component, ViewEncapsulation } from '@angular/core';
 import { Icon } from '@fundamental-ngx/ui5-webcomponents/icon';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 
+/** Possible health states for a service. */
 export type ServiceStatusValue = 'operational' | 'degraded' | 'outage' | 'maintenance';
 
+/** A single service entry displayed in the service-status card. */
 export interface ServiceStatusItem {
+  /** Display name of the service. */
   name: string;
+  /** SAP UI5 icon name used as the service icon. */
   icon: string;
+  /** Current health status of the service. */
   status: ServiceStatusValue;
 }
 
 @Component({
   selector: 'mfp-service-status-card',
-  templateUrl: './service-status-card.component.html',
-  styleUrls: ['./service-status-card.component.scss'],
-  encapsulation: ViewEncapsulation.ShadowDom,
   imports: [Icon, Title],
+  templateUrl: './service-status-card.component.html',
+  styleUrl: './service-status-card.component.scss',
+  encapsulation: ViewEncapsulation.ShadowDom
 })
 export class ServiceStatusCard {
   readonly services: ServiceStatusItem[] = [

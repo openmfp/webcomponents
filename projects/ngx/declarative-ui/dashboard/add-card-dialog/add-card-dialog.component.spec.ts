@@ -72,7 +72,7 @@ describe('AddCardDialog', () => {
     const { fixture, component } = setup();
     let emitted = 0;
 
-    component.cancel.subscribe(() => emitted++);
+    component.cancelled.subscribe(() => emitted++);
     fixture.componentRef.setInput('open', true);
     fixture.componentRef.setInput('availableCards', []);
     fixture.detectChanges();

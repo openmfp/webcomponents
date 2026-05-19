@@ -1,8 +1,8 @@
 <div class="whats-new">
-  <ui5-title level="H5" class="whats-new__title">What's New</ui5-title>
-  <ui5-list separators="Inner" class="whats-new__list">
+  <ui5-title class="whats-new__title" level="H5">What's New</ui5-title>
+  <ui5-list class="whats-new__list" separators="Inner">
     @for (item of headlines; track item.title) {
-      <ui5-li icon="{{ item.icon }}" description="{{ item.description }}">
+      <ui5-li [description]="item.description" [icon]="item.icon">
         {{ item.title }}
       </ui5-li>
     }

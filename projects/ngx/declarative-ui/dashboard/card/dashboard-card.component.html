@@ -11,8 +11,8 @@
       </div>
     }
     <div
-      [style.pointer-events]="editMode() ? 'none' : 'auto'"
       class="component-host"
+      [style.pointer-events]="editMode() ? 'none' : 'auto'"
     >
       <div #elementHost></div>
     </div>
@@ -20,8 +20,8 @@
 } @else {
   <div class="card">
     <div
-      [style.pointer-events]="editMode() ? 'none' : 'auto'"
       class="card__body"
+      [style.pointer-events]="editMode() ? 'none' : 'auto'"
     >
       <ng-content />
     </div>
