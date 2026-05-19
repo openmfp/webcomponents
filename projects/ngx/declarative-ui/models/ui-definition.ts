@@ -28,6 +28,7 @@ export interface UiSettings {
   cssCustomization?: Partial<CSSStyleDeclaration>;
   cssRules?: CssRule[];
   columnWidth?: string;
+  align?: 'start' | 'center' | 'end';
 }
 
 type KnownButtonActions = 'openInModal' | 'navigate' | 'edit' | 'delete';
