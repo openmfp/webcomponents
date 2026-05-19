@@ -98,6 +98,10 @@ export const CARDS: CardConfig[] = [
     type: 'angular',
     w: 6,
     h: 21,
+    minW: 3,
+    maxW: 6,
+    minH: 10,
+    maxH: 40,
     component: 'mfp-favorites',
   },
   {

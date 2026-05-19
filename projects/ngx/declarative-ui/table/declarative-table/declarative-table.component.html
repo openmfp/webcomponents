@@ -20,8 +20,8 @@
   @for (item of resources(); let i = $index; track rowTrackBy($index, item)) {
     <ui5-table-row
       [attr.test-id]="'generic-table-row-' + i"
-      [class.disabled]="!(item.isAvailable ?? true)"
-      [interactive]="item.isAvailable ?? true"
+      [class.disabled]="item.isAvailable === false"
+      [interactive]="item.isAvailable !== false"
       (click)="tableRowClicked.emit(item)"
     >
       @for (column of viewColumns(); track columnTrackBy(column, $index)) {
