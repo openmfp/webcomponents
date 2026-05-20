@@ -2,7 +2,7 @@ import {
   FieldDefinition,
   GenericResource,
   ValueCellButtonClickEvent,
-} from '../../models';
+} from '../models';
 import { ValueCell } from './value-cell.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
