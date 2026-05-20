@@ -2,9 +2,9 @@ import {
   FieldDefinition,
   GenericResource,
   ValueCellButtonClickEvent,
-} from '../../models';
-import { evaluateCssRules } from '../utils/cssRules.engine';
-import { getFieldValue } from '../utils/field-definition.utils';
+} from '../models';
+import { evaluateCssRules } from '../table/utils/cssRules.engine';
+import { getFieldValue } from '../table/utils/field-definition.utils';
 import { BooleanValue } from './boolean-value/boolean-value.component';
 import { LinkValue } from './link-value/link-value.component';
 import { SecretValue } from './secret-value/secret-value.component';
