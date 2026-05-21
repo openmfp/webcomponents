@@ -2,7 +2,7 @@ import { GenericResource } from '../../models';
 import { TableFieldDefinition, ValueCellButtonClickEvent } from '../models';
 import { processGroupFields } from '../utils/proccess-fields';
 import { getResourceValueByJsonPath } from '../utils/resource-field-by-path';
-import { ValueCell } from '../value-cell/value-cell.component';
+import { ValueCell } from '../../value-cell/value-cell.component';
 import {
   Component,
   ViewEncapsulation,

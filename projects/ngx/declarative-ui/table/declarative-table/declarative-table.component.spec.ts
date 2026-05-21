@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { DeclarativeTable } from './declarative-table.component';
 import { GenericResource, TableFieldDefinition, ValueCellButtonClickEvent } from '../models';
-import { ValueCell } from '../value-cell/value-cell.component';
+import { ValueCell } from '../../value-cell/value-cell.component';
 
 type Fixture = ComponentFixture<DeclarativeTable<GenericResource>>;
 type Comp = DeclarativeTable<GenericResource>;
