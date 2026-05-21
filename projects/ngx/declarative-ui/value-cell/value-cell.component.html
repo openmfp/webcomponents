@@ -5,7 +5,7 @@
       <mfp-secret-value [isVisible]="isVisible()" [testId]="testId() + '-secret'" [value]="value()" />
       <ui5-icon
         class="toggle-icon"
-        [mode]="'Interactive'"
+        mode="Interactive"
         [accessibleName]="isVisible() ? 'Hide value' : 'Show value'"
         [attr.test-id]="testId() + '-secret-toggle'"
         [name]="isVisible() ? 'hide' : 'show'"
@@ -55,11 +55,11 @@
 @if (withCopyButton()) {
   <ui5-icon
     class="toggle-icon"
-    [mode]="'Interactive'"
-    [design]="copySuccess() ? 'Positive' : 'Default'"
+    mode="Interactive"
     [accessibleName]="copySuccess() ? 'Copied' : 'Copy value'"
-    [name]="copySuccess() ? 'accept' : 'copy'"
     [attr.test-id]="testId() + '-copy'"
+    [design]="copySuccess() ? 'Positive' : 'Default'"
+    [name]="copySuccess() ? 'accept' : 'copy'"
     (click)="copyValue($event)"
   />
 }
