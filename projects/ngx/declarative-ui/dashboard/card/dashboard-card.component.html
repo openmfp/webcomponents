@@ -6,6 +6,7 @@
           class="card__remove"
           design="Default"
           icon="decline"
+          [accessibleName]="'Remove card: ' + (card().label || card().component)"
           (click)="removeCard.emit()"
         />
       </div>

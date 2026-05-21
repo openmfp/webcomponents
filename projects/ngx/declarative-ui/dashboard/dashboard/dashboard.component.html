@@ -15,10 +15,12 @@
       <div class="mfp-dashboard__toolbar">
         @if (editMode()) {
           <ui5-button
+            #addCardBtn
             id="add-card-btn"
             [design]="addCardButton().design"
             [icon]="addCardButton().icon"
             [tooltip]="addCardButton().tooltip"
+            [accessibleName]="addCardButton().text || addCardButton().tooltip || 'Add Card'"
             (click)="openCardPanel()"
             >{{ addCardButton().text }}</ui5-button
           >
@@ -28,6 +30,7 @@
             design="Transparent"
             icon="menu2"
             tooltip="Actions"
+            [accessibleName]="'Actions'"
             (click)="toolbarMenuOpen.update((v) => !v)"
           />
           <ui5-menu
@@ -65,6 +68,7 @@
               [endIcon]="action?.endIcon"
               [icon]="action.icon ?? ''"
               [tooltip]="action.tooltip ?? ''"
+              [accessibleName]="action.text || action.tooltip || action.action"
               (click)="
                 actionButtonClick.emit({ event: $event, action: action })
               "
@@ -76,6 +80,7 @@
               [design]="editViewButton().design"
               [icon]="editViewButton().icon"
               [tooltip]="editViewButton().tooltip"
+              [accessibleName]="editViewButton().text || editViewButton().tooltip || 'Edit View'"
               (click)="enterEditMode()"
               >{{ editViewButton().text }}</ui5-button
             >

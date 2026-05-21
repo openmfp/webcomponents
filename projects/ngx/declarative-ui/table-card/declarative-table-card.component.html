@@ -30,6 +30,7 @@
         <ui5-button
           class="card__search-btn"
           design="Transparent"
+          [accessibleName]="searchButtonConfig()?.tooltip ?? 'Search'"
           [icon]="searchButtonConfig()?.icon ?? 'search'"
           [tooltip]="searchButtonConfig()?.tooltip ?? 'Search'"
           (click)="toggleSearch()"
@@ -38,6 +39,7 @@
       @if (createFormConfig()) {
         <ui5-button
           class="card__create-btn"
+          [accessibleName]="createButtonConfig()?.text || createButtonConfig()?.tooltip || 'Create'"
           [design]="createButtonConfig()?.design ?? 'Transparent'"
           [icon]="createButtonConfig()?.icon ?? 'add'"
           [tooltip]="createButtonConfig()?.tooltip"
@@ -71,6 +73,7 @@
 
 @if (createFormConfig(); as config) {
   <ui5-dialog
+    [accessibleName]="config.title ?? 'Create'"
     [open]="createDialogOpen()"
     (ui5BeforeClose)="createDialogOpen.set(false)"
   >
@@ -103,6 +106,7 @@
 
 @if (editFormConfig(); as config) {
   <ui5-dialog
+    [accessibleName]="config.title ?? 'Edit'"
     [open]="editDialogOpen()"
     (ui5BeforeClose)="editDialogOpen.set(false)"
   >
@@ -136,6 +140,7 @@
 
 @if (deleteConfirmationConfig(); as config) {
   <ui5-dialog
+    [accessibleName]="config.title ?? 'Confirm Delete'"
     [open]="deleteDialogOpen()"
     (ui5BeforeClose)="deleteDialogOpen.set(false)"
   >

@@ -5,6 +5,8 @@
       <mfp-secret-value [isVisible]="isVisible()" [testId]="testId() + '-secret'" [value]="value()" />
       <ui5-icon
         class="toggle-icon"
+        [mode]="'Interactive'"
+        [accessibleName]="isVisible() ? 'Hide value' : 'Show value'"
         [attr.test-id]="testId() + '-secret-toggle'"
         [name]="isVisible() ? 'hide' : 'show'"
         (click)="toggleVisibility($event)"
@@ -37,6 +39,7 @@
   } @else if (displayType === 'button') {
     @let buttonSettings = uiSettings()?.buttonSettings;
     <ui5-button
+      [accessibleName]="buttonSettings?.text || buttonSettings?.tooltip || buttonSettings?.icon || ''"
       [design]="buttonSettings?.design"
       [endIcon]="buttonSettings?.endIcon"
       [icon]="buttonSettings?.icon"
@@ -52,6 +55,8 @@
 @if (withCopyButton()) {
   <ui5-icon
     class="toggle-icon"
+    [mode]="'Interactive'"
+    accessibleName="Copy value"
     name="copy"
     [attr.test-id]="testId() + '-copy'"
     (click)="copyValue($event)"
