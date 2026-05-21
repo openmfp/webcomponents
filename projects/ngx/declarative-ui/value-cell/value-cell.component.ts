@@ -61,6 +61,7 @@ export class ValueCell<T extends GenericResource, F extends FieldDefinition> {
   boolValue = computed(() => this.normalizeBoolean(this.value()));
   stringValue = computed(() => this.normalizeString(this.value()));
   isVisible = signal(false);
+  copySuccess = signal(false);
 
   toggleVisibility(e: Event): void {
     e.stopPropagation();
@@ -101,7 +102,12 @@ export class ValueCell<T extends GenericResource, F extends FieldDefinition> {
 
   public copyValue(event: Event) {
     event.stopPropagation();
-    navigator.clipboard.writeText(this.value() || '');
+    navigator.clipboard.writeText(this.value() || '').then(() => {
+      this.copySuccess.set(true);
+      setTimeout(() => {
+        this.copySuccess.set(false);
+      }, 2000);
+    });
   }
 
   protected buttonClicked(event: MouseEvent) {

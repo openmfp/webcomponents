@@ -56,8 +56,9 @@
   <ui5-icon
     class="toggle-icon"
     [mode]="'Interactive'"
-    accessibleName="Copy value"
-    name="copy"
+    [design]="copySuccess() ? 'Positive' : 'Default'"
+    [accessibleName]="copySuccess() ? 'Copied' : 'Copy value'"
+    [name]="copySuccess() ? 'accept' : 'copy'"
     [attr.test-id]="testId() + '-copy'"
     (click)="copyValue($event)"
   />
