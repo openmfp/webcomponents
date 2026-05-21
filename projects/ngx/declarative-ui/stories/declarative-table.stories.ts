@@ -1,7 +1,7 @@
 import type { GenericResource } from '../models';
 import { DeclarativeTable } from '../table';
 import type { TableFieldDefinition } from '../table/models';
-import { CUSTOM_ELEMENTS_SCHEMA, Component, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
 
 // ---------------------------------------------------------------------------
@@ -87,14 +87,17 @@ const PODS: Pod[] = [
   template: `
     <mfp-declarative-table
       [columns]="columns"
+      [growMode]="growMode"
       [hasMore]="hasMore"
+      [height]="height"
       [paginationLimit]="paginationLimit"
       [resources]="resources"
       [totalItemsCount]="totalItemsCount"
-      [trackByProperty]="trackByProperty"
+      [trackByPath]="trackByProperty"
+      (loadMoreResources)="loadMore()"
+      (paginationLimitChanged)="onPageSizeChange($event)"
     />
   `,
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 class DeclarativeTableStory {
   @Input() columns: TableFieldDefinition[] = [];
@@ -103,6 +106,19 @@ class DeclarativeTableStory {
   @Input() hasMore = false;
   @Input() paginationLimit = 5;
   @Input() totalItemsCount?: number;
+  @Input() growMode: 'Scroll' | 'Button' = 'Scroll';
+  @Input() height?: number;
+
+  loadMore(): void {
+    const resources = [...this.resources];
+    resources.push(...PODS);
+    this.resources = resources;
+  }
+
+  onPageSizeChange(limit: CustomEvent<number>): void {
+    this.paginationLimit = limit.detail;
+    this.resources = this.resources.slice(0, this.paginationLimit);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -123,6 +139,7 @@ const meta: Meta<DeclarativeTableStory> = {
     hasMore: { control: 'boolean' },
     paginationLimit: { control: 'number' },
     totalItemsCount: { control: 'number' },
+    growMode: { options: ['Scroll', 'Button'] },
   },
   args: {
     resources: PODS,
@@ -275,7 +292,7 @@ export const ColumnWidth: Story = {
   },
 };
 
-/** JSONPath expression for deeply nested or array values. */
+// /** JSONPath expression for deeply nested or array values. */
 export const JsonPathExpression: Story = {
   args: {
     columns: [
@@ -297,6 +314,34 @@ export const StaticFallback: Story = {
   },
 };
 
+export const Pagination_Scroll: Story = {
+  args: {
+    columns: [
+      { label: 'Name', property: 'metadata.name' },
+      { label: 'Namespace', property: 'metadata.namespace' },
+      { label: 'Phase', property: 'status.phase' },
+    ] satisfies TableFieldDefinition[],
+    hasMore: true,
+    paginationLimit: 5,
+    totalItemsCount: 20,
+    growMode: 'Scroll',
+    height: 200,
+  },
+};
+
+export const Pagination_Button: Story = {
+  args: {
+    columns: [
+      { label: 'Name', property: 'metadata.name' },
+      { label: 'Namespace', property: 'metadata.namespace' },
+      { label: 'Phase', property: 'status.phase' },
+    ] satisfies TableFieldDefinition[],
+    hasMore: true,
+    paginationLimit: 5,
+    totalItemsCount: 20,
+    growMode: 'Button',
+  },
+};
 /** Load-more pagination trigger. Click "Load More" to fire loadMoreResources. */
 export const Pagination: Story = {
   args: {

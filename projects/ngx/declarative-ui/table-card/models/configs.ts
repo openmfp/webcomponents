@@ -42,6 +42,9 @@ export interface TableConfig {
   paginationLimit?: number;
   /** When `true`, the "Load More" control is shown. */
   hasMore?: boolean;
+  height?: number;
+  growMode?: 'Scroll' | 'Button';
+  loadMoreButtonText?: string;
 }
 
 /** Overrides for the table card's built-in action buttons. */

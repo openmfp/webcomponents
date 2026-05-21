@@ -60,6 +60,9 @@
         (buttonClick)="onButtonClick($event)"
         (loadMoreResources)="loadMoreResources.emit()"
         (paginationLimitChanged)="paginationLimitChanged.emit($event)"
+        [growMode]="config.growMode"
+        [height]="config.height"
+        [loadMoreButtonText]="config.loadMoreButtonText"
         (tableRowClicked)="tableRowClicked.emit($event)"
       />
     }

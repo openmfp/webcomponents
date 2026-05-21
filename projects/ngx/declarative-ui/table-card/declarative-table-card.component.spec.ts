@@ -783,4 +783,34 @@ describe('DeclarativeTableCard', () => {
       expect(cols[0]).toEqual(customColumns[0]);
     });
   });
+
+  // -------------------------------------------------------------------------
+  // 16. TableConfig: growMode / height / loadMoreButtonText pass-through
+  // -------------------------------------------------------------------------
+
+  describe('tableConfig passthrough: growMode, height, loadMoreButtonText', () => {
+    it('exposes growMode via tableConfig signal', () => {
+      const { component } = setup({
+        readConfig: { fields: COLUMNS, growMode: 'Scroll' },
+      });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).tableConfig().growMode).toBe('Scroll');
+    });
+
+    it('exposes height via tableConfig signal', () => {
+      const { component } = setup({
+        readConfig: { fields: COLUMNS, height: 500 },
+      });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).tableConfig().height).toBe(500);
+    });
+
+    it('exposes loadMoreButtonText via tableConfig signal', () => {
+      const { component } = setup({
+        readConfig: { fields: COLUMNS, loadMoreButtonText: 'Show More' },
+      });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).tableConfig().loadMoreButtonText).toBe('Show More');
+    });
+  });
 });

@@ -220,6 +220,16 @@ interface TableCardConfig {
   deleteResourceConfirmationConfig?: DeleteResourceConfirmationConfig;
 }
 
+interface TableConfig {
+  fields: TableFieldDefinition[];
+  totalItemsCount?: number;
+  paginationLimit?: number;
+  hasMore?: boolean;
+  height?: number;           // fixed table height in pixels; enables scrollable body
+  growMode?: 'Button' | 'Scroll'; // default: 'Button'
+  loadMoreButtonText?: string;    // button label when growMode is 'Button'; default: 'Load More'
+}
+
 interface ResourceFormConfig {
   fields: FormFieldDefinition[];
   title?: string;
