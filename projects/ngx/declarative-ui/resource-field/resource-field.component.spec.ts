@@ -342,11 +342,11 @@ describe('ResourceField', () => {
       expect(component.tags()).toEqual(['api', 'backend', 'v2']);
     });
 
-    it('uses custom separator from tagSettings', () => {
+    it('uses custom valueSeparator from tagSettings', () => {
       const { component } = setup(
         {
           property: 'envs',
-          uiSettings: { displayAs: 'tag', tagSettings: { separator: '|' } },
+          uiSettings: { displayAs: 'tag', tagSettings: { valueSeparator: '|' } },
         },
         { envs: 'prod|staging|dev' },
       );

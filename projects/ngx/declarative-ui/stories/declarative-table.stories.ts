@@ -381,7 +381,7 @@ export const ButtonCell: Story = {
 
 /**
  * `displayAs: 'tag'` renders comma-separated strings (or arrays) as `<ui5-tag>` chips.
- * `tagSettings.separator` overrides the default `','` delimiter.
+ * `tagSettings.valueSeparator` overrides the default `','` delimiter.
  * `tagSettings.design` sets the chip colour scheme.
  */
 export const Tags: Story = {
@@ -398,7 +398,7 @@ export const Tags: Story = {
         property: 'environments',
         uiSettings: {
           displayAs: 'tag',
-          tagSettings: { design: 'Information', separator: '|' },
+          tagSettings: { design: 'Information', valueSeparator: '|' },
         },
       },
     ] satisfies TableFieldDefinition[],

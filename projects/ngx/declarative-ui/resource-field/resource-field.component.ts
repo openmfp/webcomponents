@@ -93,7 +93,7 @@ export class ResourceField<T extends GenericResource, F extends FieldDefinition>
       return value.map(v => String(v).trim()).filter(v => v.length > 0);
     }
     if (typeof value === 'string') {
-      const separator = this.uiSettings()?.tagSettings?.separator ?? ',';
+      const separator = this.uiSettings()?.tagSettings?.valueSeparator ?? ',';
       return value.split(separator).map(v => v.trim()).filter(v => v.length > 0);
     }
     return [];

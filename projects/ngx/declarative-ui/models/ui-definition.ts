@@ -21,7 +21,7 @@ export interface TagSettings {
   design?: 'Neutral' | 'Positive' | 'Critical' | 'Negative' | 'Information' | 'Set1' | 'Set2';
   colorScheme?: '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10';
   /** Delimiter used to split a plain-string value into individual tags. Default: `','`. */
-  separator?: string;
+  valueSeparator?: string;
 }
 
 /** Display and interaction settings for a table cell. */

@@ -135,7 +135,7 @@ By default the cell renders its value as plain text. Use `uiSettings.displayAs` 
 | `'alert'`    | Critical alert icon when the value is falsy; empty otherwise   |
 | `'img'`      | `<img>` element using the value as `src`                       |
 | `'button'`   | Action button (requires `buttonSettings`)                      |
-| `'tag'`      | One `<ui5-tag>` chip per value (split by `tagSettings.separator`, default `','`); also accepts an array of values |
+| `'tag'`      | One `<ui5-tag>` chip per value (split by `tagSettings.valueSeparator`, default `','`); also accepts an array of values |
 
 ### Secret
 
@@ -212,7 +212,7 @@ Renders a `<ui5-button>`. A `buttonClick` event fires with `{ event, field, reso
 
 ### Tags
 
-Renders each value as a `<ui5-tag>` chip. String values are split by `tagSettings.separator` (default `','`); array values each become a separate chip. Empty segments are filtered out automatically.
+Renders each value as a `<ui5-tag>` chip. String values are split by `tagSettings.valueSeparator` (default `','`); array values each become a separate chip. Empty segments are filtered out automatically.
 
 ```ts
 // Comma-separated string → three chips
@@ -227,7 +227,7 @@ Renders each value as a `<ui5-tag>` chip. String values are split by `tagSetting
   property: 'environments',
   uiSettings: {
     displayAs: 'tag',
-    tagSettings: { design: 'Information', separator: '|' },
+    tagSettings: { design: 'Information', valueSeparator: '|' },
   },
   // resource value: 'prod|staging'
 }
@@ -338,7 +338,7 @@ import { TagListValue } from '@openmfp/webcomponents';
 | Input        | Type          | Required | Description                                               |
 | ------------ | ------------- | -------- | --------------------------------------------------------- |
 | `tags`       | `string[]`    | yes      | Each string becomes one chip                              |
-| `tagSettings`| `TagSettings` | no       | Controls chip `design`, `colorScheme` (`'1'`–`'10'`, default `'1'`), and `separator` |
+| `tagSettings`| `TagSettings` | no       | Controls chip `design`, `colorScheme` (`'1'`–`'10'`, default `'1'`), and `valueSeparator` |
 | `testId`     | `string`      | no       | `test-id` attribute on the wrapper element (default `'tag-list-value'`) |
 
 ---
