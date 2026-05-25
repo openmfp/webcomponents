@@ -5,6 +5,7 @@ import {
   DeclarativeForm,
   DeclarativeTable,
   DeclarativeTableCard,
+  GenericResource,
 } from '@openmfp/webcomponents/declarative-ui';
 import { ignoreCustomElements } from '@ui5/webcomponents-base/dist/IgnoreCustomElements.js';
 
@@ -26,7 +27,7 @@ ignoreCustomElements('mfp');
       const strategy = (
         this as unknown as {
           ngElementStrategy: {
-            componentRef?: { instance: DeclarativeForm };
+            componentRef?: { instance: DeclarativeForm<GenericResource> };
           };
         }
       ).ngElementStrategy;
@@ -37,7 +38,7 @@ ignoreCustomElements('mfp');
       const strategy = (
         this as unknown as {
           ngElementStrategy: {
-            componentRef?: { instance: DeclarativeForm };
+            componentRef?: { instance: DeclarativeForm<GenericResource> };
           };
         }
       ).ngElementStrategy;

@@ -4,7 +4,7 @@ import { GenericResource } from '../models';
 import { DeclarativeTable } from '../table/declarative-table/declarative-table.component';
 import {
   TableFieldDefinition,
-  ValueCellButtonClickEvent,
+  ResourceFieldButtonClickEvent,
 } from '../table/models';
 import { getResourceValueByJsonPath } from '../table/utils/resource-field-by-path';
 import { TableCardConfig, TableCardFormState } from './models/configs';
@@ -60,7 +60,7 @@ export class DeclarativeTableCard<T extends GenericResource> {
   createFormState = input<TableCardFormState>({});
   editFormState = input<TableCardFormState>({});
 
-  readonly actionButtonClick = output<ValueCellButtonClickEvent<T>>();
+  readonly actionButtonClick = output<ResourceFieldButtonClickEvent<T>>();
   readonly tableRowClicked = output<T>();
   readonly loadMoreResources = output<void>();
   readonly paginationLimitChanged = output<number>();
@@ -71,7 +71,7 @@ export class DeclarativeTableCard<T extends GenericResource> {
     resource: T;
     formChangeEvent: FormFieldChangeEvent;
   }>();
-  readonly createSubmit = output<Record<string, unknown>>();
+  readonly createSubmit = output<T>();
   readonly editSubmit = output<{
     resource: T;
     value: Record<string, unknown>;
@@ -162,7 +162,7 @@ export class DeclarativeTableCard<T extends GenericResource> {
     this.searchState.set('collapsing');
   }
 
-  onButtonClick(event: ValueCellButtonClickEvent<T>): void {
+  onButtonClick(event: ResourceFieldButtonClickEvent<T>): void {
     const action = event.field.uiSettings?.buttonSettings?.action;
     if (action === 'edit' && event.resource) {
       this.pendingResource.set(event.resource);
@@ -202,7 +202,7 @@ export class DeclarativeTableCard<T extends GenericResource> {
     }
   }
 
-  onCreateSubmit(value: Record<string, unknown>): void {
+  onCreateSubmit(value: T): void {
     this.createSubmit.emit(value);
   }
 

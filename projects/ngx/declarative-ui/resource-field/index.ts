@@ -1,4 +1,4 @@
-export * from './value-cell.component';
+export * from './resource-field.component';
 export * from './boolean-value/boolean-value.component';
 export * from './link-value/link-value.component';
 export * from './secret-value/secret-value.component';

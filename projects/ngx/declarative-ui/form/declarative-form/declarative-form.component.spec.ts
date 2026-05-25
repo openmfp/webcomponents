@@ -1,15 +1,26 @@
+import { GenericResource } from '../../models';
 import { FormFieldChangeEvent, FormFieldDefinition } from '../models';
 import { DeclarativeForm } from './declarative-form.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 
 describe('DeclarativeForm', () => {
-  let component: DeclarativeForm;
-  let fixture: ComponentFixture<DeclarativeForm>;
+  let component: DeclarativeForm<GenericResource>;
+  let fixture: ComponentFixture<DeclarativeForm<GenericResource>>;
 
   const testFields: FormFieldDefinition[] = [
-    { name: 'metadata.name', label: 'Name', required: true, validation: 'onChange' },
-    { name: 'metadata.namespace', label: 'Namespace', required: false, validation: 'onBlur' },
+    {
+      name: 'metadata.name',
+      label: 'Name',
+      required: true,
+      validation: 'onChange',
+    },
+    {
+      name: 'metadata.namespace',
+      label: 'Namespace',
+      required: false,
+      validation: 'onBlur',
+    },
     { name: 'metadata.labels', label: 'Labels' },
   ];
 
@@ -135,7 +146,9 @@ describe('DeclarativeForm', () => {
       const emitted: FormFieldChangeEvent[] = [];
       component.fieldChange.subscribe((event) => emitted.push(event));
 
-      const onBlurField = testFields.find((f) => f.name === 'metadata.namespace')!;
+      const onBlurField = testFields.find(
+        (f) => f.name === 'metadata.namespace',
+      )!;
       component.setFormControlValue(
         { target: { value: 'kube-system' } } as unknown as Event,
         onBlurField,
@@ -154,7 +167,9 @@ describe('DeclarativeForm', () => {
       const emitted: FormFieldChangeEvent[] = [];
       component.fieldChange.subscribe((event) => emitted.push(event));
 
-      const onBlurField = testFields.find((f) => f.name === 'metadata.namespace')!;
+      const onBlurField = testFields.find(
+        (f) => f.name === 'metadata.namespace',
+      )!;
       component.setFormControlValue(
         { target: { value: 'kube-system' } } as unknown as Event,
         onBlurField,
@@ -167,7 +182,9 @@ describe('DeclarativeForm', () => {
       const emitted: FormFieldChangeEvent[] = [];
       component.fieldChange.subscribe((event) => emitted.push(event));
 
-      const noValidationField = testFields.find((f) => f.name === 'metadata.labels')!;
+      const noValidationField = testFields.find(
+        (f) => f.name === 'metadata.labels',
+      )!;
       component.setFormControlValue(
         { target: { value: 'some-label' } } as unknown as Event,
         noValidationField,

@@ -21,7 +21,7 @@ export interface TagSettings {
   design?: 'Neutral' | 'Positive' | 'Critical' | 'Negative' | 'Information' | 'Set1' | 'Set2';
   colorScheme?: '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10';
   /** Delimiter used to split a plain-string value into individual tags. Default: `','`. */
-  separator?: string;
+  valueSeparator?: string;
 }
 
 /** Display and interaction settings for a table cell. */
@@ -111,7 +111,7 @@ export interface CssRule {
 }
 
 /** Event payload emitted when a button inside a table cell is clicked. */
-export interface ValueCellButtonClickEvent<T extends GenericResource> {
+export interface ResourceFieldButtonClickEvent<T extends GenericResource> {
   /** Original DOM click event. */
   event: MouseEvent;
   /** The field definition of the button cell that was clicked. */

@@ -7,7 +7,7 @@ export type {
   CssRuleCondition,
   FieldDefinition,
   TableFieldDefinition,
-  ValueCellButtonClickEvent,
+  ResourceFieldButtonClickEvent,
   PropertyField,
   TransformType,
 } from '../../models/ui-definition';

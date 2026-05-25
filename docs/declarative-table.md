@@ -201,7 +201,7 @@ By default a cell renders its value as plain text. Use `uiSettings.displayAs` to
 | `'alert'` | Alert-styled text |
 | `'img'` | `<img>` element using the value as `src` |
 | `'button'` | Action button (requires `buttonSettings`) |
-| `'tag'` | One `<ui5-tag>` chip per value (split by `tagSettings.separator`, default `','`); also accepts an array of values |
+| `'tag'` | One `<ui5-tag>` chip per value (split by `tagSettings.valueSeparator`, default `','`); also accepts an array of values |
 
 ### Copy button
 

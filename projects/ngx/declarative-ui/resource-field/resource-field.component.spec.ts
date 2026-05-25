@@ -1,20 +1,20 @@
 import {
   FieldDefinition,
   GenericResource,
-  ValueCellButtonClickEvent,
+  ResourceFieldButtonClickEvent,
 } from '../models';
-import { ValueCell } from './value-cell.component';
+import { ResourceField } from './resource-field.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-type Fixture = ComponentFixture<ValueCell<GenericResource, FieldDefinition>>;
-type Comp = ValueCell<GenericResource, FieldDefinition>;
+type Fixture = ComponentFixture<ResourceField<GenericResource, FieldDefinition>>;
+type Comp = ResourceField<GenericResource, FieldDefinition>;
 
 function setup(
   field: FieldDefinition,
   resource?: Partial<GenericResource>,
 ): { fixture: Fixture; component: Comp } {
   const fixture: Fixture = TestBed.createComponent(
-    ValueCell as unknown as typeof ValueCell<GenericResource, FieldDefinition>,
+    ResourceField as unknown as typeof ResourceField<GenericResource, FieldDefinition>,
   );
   const component = fixture.componentInstance;
   fixture.componentRef.setInput('fieldDefinition', field);
@@ -36,36 +36,36 @@ function q(fixture: Fixture, selector: string): Element | null {
   ).querySelector(selector);
 }
 
-describe('ValueCell', () => {
+describe('ResourceField', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ValueCell],
+      imports: [ResourceField],
     }).compileComponents();
   });
 
   describe('testId', () => {
     it('is derived from fieldDefinition.property', () => {
       const { component } = setup({ property: 'name' });
-      expect(component.testId()).toBe('value-cell-name');
+      expect(component.testId()).toBe('resource-field-name');
     });
   });
 
   describe('default display', () => {
     it('renders plain string value from resource property', () => {
       const { fixture } = setup({ property: 'status' }, { status: 'Active' });
-      const span = q(fixture, '[test-id="value-cell-status"]');
+      const span = q(fixture, '[test-id="resource-field-status"]');
       expect(span?.textContent?.trim()).toBe('Active');
     });
 
     it('falls back to field.value when no resource is provided', () => {
       const { fixture } = setup({ property: 'status', value: 'fallback' });
-      const span = q(fixture, '[test-id="value-cell-status"]');
+      const span = q(fixture, '[test-id="resource-field-status"]');
       expect(span?.textContent?.trim()).toBe('fallback');
     });
 
     it('renders empty when value is absent', () => {
       const { fixture } = setup({ property: 'missing' }, {});
-      const span = q(fixture, '[test-id="value-cell-missing"]');
+      const span = q(fixture, '[test-id="resource-field-missing"]');
       expect(span?.textContent?.trim()).toBe('');
     });
   });
@@ -139,7 +139,7 @@ describe('ValueCell', () => {
         { property: 'token', uiSettings: { displayAs: 'secret' } },
         { token: 'abc123' },
       );
-      expect(el(fixture, 'value-cell-token-secret')).not.toBeNull();
+      expect(el(fixture, 'resource-field-token-secret')).not.toBeNull();
     });
 
     it('renders toggle icon', () => {
@@ -147,7 +147,7 @@ describe('ValueCell', () => {
         { property: 'token', uiSettings: { displayAs: 'secret' } },
         { token: 'abc123' },
       );
-      expect(el(fixture, 'value-cell-token-secret-toggle')).not.toBeNull();
+      expect(el(fixture, 'resource-field-token-secret-toggle')).not.toBeNull();
     });
 
     it('toggleVisibility flips isVisible', () => {
@@ -169,7 +169,7 @@ describe('ValueCell', () => {
         { property: 'enabled', uiSettings: { displayAs: 'boolIcon' } },
         { enabled: 'true' },
       );
-      expect(el(fixture, 'value-cell-enabled-boolean')).not.toBeNull();
+      expect(el(fixture, 'resource-field-enabled-boolean')).not.toBeNull();
     });
 
     it('does not render boolean-value when value is not boolean-like', () => {
@@ -177,7 +177,7 @@ describe('ValueCell', () => {
         { property: 'status', uiSettings: { displayAs: 'boolIcon' } },
         { status: 'running' },
       );
-      expect(el(fixture, 'value-cell-status-boolean')).toBeNull();
+      expect(el(fixture, 'resource-field-status-boolean')).toBeNull();
     });
   });
 
@@ -187,7 +187,7 @@ describe('ValueCell', () => {
         { property: 'url', uiSettings: { displayAs: 'link' } },
         { url: 'https://example.com' },
       );
-      expect(el(fixture, 'value-cell-url-link')).not.toBeNull();
+      expect(el(fixture, 'resource-field-url-link')).not.toBeNull();
     });
 
     it('does not render link-value for non-URL string', () => {
@@ -195,7 +195,7 @@ describe('ValueCell', () => {
         { property: 'url', uiSettings: { displayAs: 'link' } },
         { url: 'not-a-url' },
       );
-      expect(el(fixture, 'value-cell-url-link')).toBeNull();
+      expect(el(fixture, 'resource-field-url-link')).toBeNull();
     });
   });
 
@@ -205,7 +205,7 @@ describe('ValueCell', () => {
         { property: 'info', uiSettings: { displayAs: 'tooltip' } },
         { info: 'some tooltip text' },
       );
-      expect(el(fixture, 'value-cell-info-tooltip')).not.toBeNull();
+      expect(el(fixture, 'resource-field-info-tooltip')).not.toBeNull();
     });
   });
 
@@ -215,7 +215,7 @@ describe('ValueCell', () => {
         { property: 'flag', uiSettings: { displayAs: 'alert' } },
         { flag: '' },
       );
-      expect(el(fixture, 'value-cell-flag-icon')).not.toBeNull();
+      expect(el(fixture, 'resource-field-flag-icon')).not.toBeNull();
     });
 
     it('does not render alert icon when value is truthy', () => {
@@ -223,7 +223,7 @@ describe('ValueCell', () => {
         { property: 'flag', uiSettings: { displayAs: 'alert' } },
         { flag: 'ok' },
       );
-      expect(el(fixture, 'value-cell-flag-icon')).toBeNull();
+      expect(el(fixture, 'resource-field-flag-icon')).toBeNull();
     });
   });
 
@@ -253,7 +253,7 @@ describe('ValueCell', () => {
         { property: 'token', uiSettings: { withCopyButton: true } },
         { token: 'secret' },
       );
-      expect(el(fixture, 'value-cell-token-copy')).not.toBeNull();
+      expect(el(fixture, 'resource-field-token-copy')).not.toBeNull();
     });
 
     it('does not render copy icon when withCopyButton is false', () => {
@@ -261,7 +261,7 @@ describe('ValueCell', () => {
         { property: 'token', uiSettings: { withCopyButton: false } },
         { token: 'secret' },
       );
-      expect(el(fixture, 'value-cell-token-copy')).toBeNull();
+      expect(el(fixture, 'resource-field-token-copy')).toBeNull();
     });
   });
 
@@ -301,7 +301,7 @@ describe('ValueCell', () => {
       const resource = { action: 'go' };
       const { fixture, component } = setup(field, resource);
 
-      const emitted: ValueCellButtonClickEvent<GenericResource>[] = [];
+      const emitted: ResourceFieldButtonClickEvent<GenericResource>[] = [];
       component.buttonClick.subscribe((e) => emitted.push(e));
 
       const btn = q(fixture, 'ui5-button');
@@ -320,7 +320,7 @@ describe('ValueCell', () => {
         { property: 'labels', uiSettings: { displayAs: 'tag' } },
         { labels: 'api,backend' },
       );
-      expect(el(fixture, 'value-cell-labels-tags')).not.toBeNull();
+      expect(el(fixture, 'resource-field-labels-tags')).not.toBeNull();
     });
 
     it('does not render plain text when displayAs is tag', () => {
@@ -328,7 +328,7 @@ describe('ValueCell', () => {
         { property: 'labels', uiSettings: { displayAs: 'tag' } },
         { labels: 'api,backend' },
       );
-      const span = q(fixture, '[test-id="value-cell-labels"]');
+      const span = q(fixture, '[test-id="resource-field-labels"]');
       expect(span?.textContent?.trim()).not.toBe('api,backend');
     });
   });
@@ -342,11 +342,11 @@ describe('ValueCell', () => {
       expect(component.tags()).toEqual(['api', 'backend', 'v2']);
     });
 
-    it('uses custom separator from tagSettings', () => {
+    it('uses custom valueSeparator from tagSettings', () => {
       const { component } = setup(
         {
           property: 'envs',
-          uiSettings: { displayAs: 'tag', tagSettings: { separator: '|' } },
+          uiSettings: { displayAs: 'tag', tagSettings: { valueSeparator: '|' } },
         },
         { envs: 'prod|staging|dev' },
       );

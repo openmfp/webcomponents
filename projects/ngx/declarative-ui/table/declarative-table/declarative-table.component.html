@@ -57,7 +57,7 @@
                   @if (field.label) {
                     <span>{{ field.label }}: </span>
                   }
-                  <mfp-value-cell
+                  <mfp-resource-field
                     [fieldDefinition]="field"
                     [resource]="item"
                     (buttonClick)="buttonClick.emit($event)"
@@ -74,7 +74,7 @@
             [attr.test-id]="'generic-table-cell-' + i + '-' + column.property"
             >
             <div class="flex" [style.justifyContent]="column.uiSettings?.align">
-              <mfp-value-cell
+              <mfp-resource-field
                 [fieldDefinition]="column"
                 [resource]="item"
                 (buttonClick)="buttonClick.emit($event)"

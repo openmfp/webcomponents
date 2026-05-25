@@ -3,7 +3,7 @@ import {
   ButtonSettings,
   GenericResource,
   TableFieldDefinition,
-  ValueCellButtonClickEvent,
+  ResourceFieldButtonClickEvent,
 } from '../table/models';
 import { DeclarativeTableCard } from './declarative-table-card.component';
 import {
@@ -78,7 +78,7 @@ const DELETE_CONFIG: TableCardDeleteConfig = {
 function makeEvent(
   action: string,
   resource?: GenericResource,
-): ValueCellButtonClickEvent<GenericResource> {
+): ResourceFieldButtonClickEvent<GenericResource> {
   return {
     event: new MouseEvent('click'),
     field: {
@@ -476,7 +476,7 @@ describe('DeclarativeTableCard', () => {
 
     it('forwards other actions via actionButtonClick output', () => {
       const { component } = setup();
-      const emitted: ValueCellButtonClickEvent<GenericResource>[] = [];
+      const emitted: ResourceFieldButtonClickEvent<GenericResource>[] = [];
       component.actionButtonClick.subscribe((e) => emitted.push(e));
 
       const event = makeEvent('navigate', RESOURCES[0]);
