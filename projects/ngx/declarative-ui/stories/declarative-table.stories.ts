@@ -379,6 +379,45 @@ export const ButtonCell: Story = {
   },
 };
 
+/**
+ * `displayAs: 'tag'` renders comma-separated strings (or arrays) as `<ui5-tag>` chips.
+ * `tagSettings.separator` overrides the default `','` delimiter.
+ * `tagSettings.design` sets the chip colour scheme.
+ */
+export const Tags: Story = {
+  args: {
+    columns: [
+      { label: 'Name', property: 'metadata.name' },
+      {
+        label: 'Labels',
+        property: 'labels',
+        uiSettings: { displayAs: 'tag' },
+      },
+      {
+        label: 'Environments',
+        property: 'environments',
+        uiSettings: {
+          displayAs: 'tag',
+          tagSettings: { design: 'Information', separator: '|' },
+        },
+      },
+    ] satisfies TableFieldDefinition[],
+    resources: [
+      {
+        ...PODS[0],
+        labels: 'api,backend,v2',
+        environments: ['prod', 'staging'],
+      },
+      { ...PODS[1], labels: 'worker', environments: 'dev' },
+      {
+        ...PODS[2],
+        labels: 'cache,infra',
+        environments: 'prod|dev|staging',
+      },
+    ],
+  },
+};
+
 /** Empty resources array triggers the illustrated empty-state message. */
 export const EmptyState: Story = {
   args: {

@@ -1,6 +1,6 @@
 # ValueCell
 
-A standalone cell renderer that displays a single field value from a resource object. Supports seven display modes (plain text, secret, boolean icon, link, tooltip, alert, image, button), conditional CSS rules, static CSS overrides, a copy-to-clipboard button, and a label badge mode. Used internally by `DeclarativeTable` and available for direct use in custom layouts.
+A standalone cell renderer that displays a single field value from a resource object. Supports eight display modes (plain text, secret, boolean icon, link, tooltip, alert, image, button, tag), conditional CSS rules, static CSS overrides, a copy-to-clipboard button, and a label badge mode. Used internally by `DeclarativeTable` and available for direct use in custom layouts.
 
 ## Tags
 
@@ -135,6 +135,7 @@ By default the cell renders its value as plain text. Use `uiSettings.displayAs` 
 | `'alert'`    | Critical alert icon when the value is falsy; empty otherwise   |
 | `'img'`      | `<img>` element using the value as `src`                       |
 | `'button'`   | Action button (requires `buttonSettings`)                      |
+| `'tag'`      | One `<ui5-tag>` chip per value (split by `tagSettings.separator`, default `','`); also accepts an array of values |
 
 ### Secret
 
@@ -209,6 +210,36 @@ Renders a `<ui5-button>`. A `buttonClick` event fires with `{ event, field, reso
 }
 ```
 
+### Tags
+
+Renders each value as a `<ui5-tag>` chip. String values are split by `tagSettings.separator` (default `','`); array values each become a separate chip. Empty segments are filtered out automatically.
+
+```ts
+// Comma-separated string → three chips
+{
+  property: 'labels',
+  uiSettings: { displayAs: 'tag' },
+  // resource value: 'api,backend,v2'
+}
+
+// Custom separator
+{
+  property: 'environments',
+  uiSettings: {
+    displayAs: 'tag',
+    tagSettings: { design: 'Information', separator: '|' },
+  },
+  // resource value: 'prod|staging'
+}
+
+// Array value
+{
+  property: 'tags',
+  uiSettings: { displayAs: 'tag' },
+  // resource value: ['prod', 'staging']
+}
+```
+
 ---
 
 ## Copy button
@@ -262,7 +293,7 @@ uiSettings: { cssCustomization: { fontStyle: 'italic' } }
 
 ## Sub-components
 
-`ValueCell` composes three internal components that are also exported from the public API and can be used independently.
+`ValueCell` composes four internal components that are also exported from the public API and can be used independently.
 
 ### `BooleanValue`
 
@@ -306,14 +337,29 @@ import { SecretValue } from '@openmfp/webcomponents';
 
 The masked form renders `*` repeated to the same length as `value` (minimum 8 characters when the value is empty).
 
+### `TagListValue`
+
+Renders an array of strings as `<ui5-tag>` chips in a wrapping flex container.
+
+```ts
+import { TagListValue } from '@openmfp/webcomponents';
+```
+
+| Input        | Type          | Required | Description                                               |
+| ------------ | ------------- | -------- | --------------------------------------------------------- |
+| `tags`       | `string[]`    | yes      | Each string becomes one chip                              |
+| `tagSettings`| `TagSettings` | no       | Controls chip `design` and `colorScheme`                  |
+| `testId`     | `string`      | no       | `test-id` attribute on the wrapper element (default `'tag-list-value'`) |
+
 ---
 
 ## Types
 
 ```ts
 interface UiSettings {
-  displayAs?:       'secret' | 'boolIcon' | 'link' | 'tooltip' | 'alert' | 'img' | 'button';
+  displayAs?:       'secret' | 'boolIcon' | 'link' | 'tooltip' | 'alert' | 'img' | 'button' | 'tag';
   buttonSettings?:  ButtonSettings;
+  tagSettings?:     TagSettings;
   tooltipIcon?:     string;
   withCopyButton?:  boolean;
   labelDisplay?:    boolean;
@@ -321,6 +367,12 @@ interface UiSettings {
   cssRules?:        CssRule[];
   columnWidth?:     string;
   align?:           'start' | 'center' | 'end';
+}
+
+interface TagSettings {
+  design?:      'Neutral' | 'Positive' | 'Critical' | 'Negative' | 'Information' | 'Set1' | 'Set2';
+  colorScheme?: string;  // '1'–'10'
+  separator?:   string;  // default ','
 }
 
 interface ButtonSettings {

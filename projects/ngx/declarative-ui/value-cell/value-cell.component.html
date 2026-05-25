@@ -44,6 +44,12 @@
       (click)="buttonClicked($event)"
       >{{ buttonSettings?.text }}</ui5-button
     >&nbsp;
+  } @else if (displayType === 'tag') {
+    <mfp-tag-list-value
+      [tagSettings]="uiSettings()?.tagSettings"
+      [tags]="tags()"
+      [testId]="testId() + '-tags'"
+    />
   } @else {
     {{ value() }}
   }

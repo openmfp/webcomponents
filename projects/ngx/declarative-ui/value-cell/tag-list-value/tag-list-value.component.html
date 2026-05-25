@@ -1,0 +1,9 @@
+<span class="tag-list" [attr.test-id]="testId()">
+  @for (tag of tags(); track tag) {
+    <ui5-tag
+      [colorScheme]="tagSettings()?.colorScheme"
+      [design]="tagSettings()?.design ?? 'Neutral'"
+      [hideStateIcon]="true"
+    >{{ tag }}</ui5-tag>
+  }
+</span>
