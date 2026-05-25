@@ -7,6 +7,7 @@
       class="section__remove"
       design="Default"
       icon="decline"
+      [accessibleName]="'Remove section: ' + (section().title || section().id)"
       (click)="removeSection.emit()"
     />
   }
