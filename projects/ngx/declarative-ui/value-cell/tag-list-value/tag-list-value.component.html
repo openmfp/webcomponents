@@ -1,5 +1,5 @@
 <span class="tag-list" [attr.test-id]="testId()">
-  @for (tag of tags(); track tag) {
+  @for (tag of tags(); track $index) {
     <ui5-tag
       [colorScheme]="tagSettings()?.colorScheme"
       [design]="tagSettings()?.design ?? 'Neutral'"
