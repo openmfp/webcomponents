@@ -338,7 +338,7 @@ import { TagListValue } from '@openmfp/webcomponents';
 | Input        | Type          | Required | Description                                               |
 | ------------ | ------------- | -------- | --------------------------------------------------------- |
 | `tags`       | `string[]`    | yes      | Each string becomes one chip                              |
-| `tagSettings`| `TagSettings` | no       | Controls chip `design` and `colorScheme`                  |
+| `tagSettings`| `TagSettings` | no       | Controls chip `design`, `colorScheme` (`'1'`–`'10'`, default `'1'`), and `separator` |
 | `testId`     | `string`      | no       | `test-id` attribute on the wrapper element (default `'tag-list-value'`) |
 
 ---
@@ -360,7 +360,7 @@ interface UiSettings {
 
 interface TagSettings {
   design?:      'Neutral' | 'Positive' | 'Critical' | 'Negative' | 'Information' | 'Set1' | 'Set2';
-  colorScheme?: string;  // '1'–'10'
+  colorScheme?: '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10';  // default '1'
   separator?:   string;  // default ','
 }
 
