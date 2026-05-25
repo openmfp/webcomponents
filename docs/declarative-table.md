@@ -1,6 +1,6 @@
 # DeclarativeTable
 
-A data table web component that renders rows and columns from a declarative column definition. Supports pagination, grouped columns, conditional cell styling, and multiple cell display modes (plain text, link, boolean icon, secret, tooltip, button, image).
+A data table web component that renders rows and columns from a declarative column definition. Supports pagination, grouped columns, conditional cell styling, and multiple cell display modes (plain text, link, boolean icon, secret, tooltip, button, image, tag).
 
 ## Tags
 
@@ -201,6 +201,7 @@ By default a cell renders its value as plain text. Use `uiSettings.displayAs` to
 | `'alert'` | Alert-styled text |
 | `'img'` | `<img>` element using the value as `src` |
 | `'button'` | Action button (requires `buttonSettings`) |
+| `'tag'` | One `<ui5-tag>` chip per value (split by `tagSettings.separator`, default `','`); also accepts an array of values |
 
 ### Copy button
 

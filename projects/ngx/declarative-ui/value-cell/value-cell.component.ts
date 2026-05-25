@@ -8,6 +8,7 @@ import { getFieldValue } from '../table/utils/field-definition.utils';
 import { BooleanValue } from './boolean-value/boolean-value.component';
 import { LinkValue } from './link-value/link-value.component';
 import { SecretValue } from './secret-value/secret-value.component';
+import { TagListValue } from './tag-list-value/tag-list-value.component';
 import {
   CUSTOM_ELEMENTS_SCHEMA,
   ChangeDetectionStrategy,
@@ -24,7 +25,7 @@ import '@ui5/webcomponents-icons/dist/AllIcons.js';
 
 @Component({
   selector: 'mfp-value-cell',
-  imports: [Icon, BooleanValue, LinkValue, SecretValue, Button],
+  imports: [Icon, BooleanValue, LinkValue, SecretValue, Button, TagListValue],
   templateUrl: './value-cell.component.html',
   styleUrl: './value-cell.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -43,7 +44,6 @@ export class ValueCell<T extends GenericResource, F extends FieldDefinition> {
   uiSettings = computed(() => this.fieldDefinition().uiSettings);
   displayAs = computed(() => this.uiSettings()?.displayAs);
   withCopyButton = computed(() => this.uiSettings()?.withCopyButton);
-  labelDisplay = computed(() => this.uiSettings()?.labelDisplay);
   cssCustomization = computed(() => this.uiSettings()?.cssCustomization);
   tooltipIcon = computed(() => this.uiSettings()?.tooltipIcon);
   cssRules = computed(() =>
@@ -60,6 +60,7 @@ export class ValueCell<T extends GenericResource, F extends FieldDefinition> {
 
   boolValue = computed(() => this.normalizeBoolean(this.value()));
   stringValue = computed(() => this.normalizeString(this.value()));
+  tags = computed(() => this.normalizeTagsArray(this.value()));
   isVisible = signal(false);
 
   toggleVisibility(e: Event): void {
@@ -84,6 +85,17 @@ export class ValueCell<T extends GenericResource, F extends FieldDefinition> {
     }
 
     return value;
+  }
+
+  private normalizeTagsArray(value: unknown): string[] {
+    if (Array.isArray(value)) {
+      return value.map(v => String(v).trim()).filter(v => v.length > 0);
+    }
+    if (typeof value === 'string') {
+      const separator = this.uiSettings()?.tagSettings?.separator ?? ',';
+      return value.split(separator).map(v => v.trim()).filter(v => v.length > 0);
+    }
+    return [];
   }
 
   private checkValidUrl(value: string | undefined): boolean {

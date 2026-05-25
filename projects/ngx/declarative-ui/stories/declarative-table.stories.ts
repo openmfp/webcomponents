@@ -235,17 +235,17 @@ export const GroupedColumns: Story = {
 };
 
 /**
- * Group with a space delimiter and labelDisplay — values rendered as blue
- * badge labels, separated by a single space. Also demonstrates the alert
- * display type: a warning icon appears when the field value is falsy.
+ * Group with a space delimiter and tag display — values rendered as ui5-tag
+ * chips, separated by a single space. Also demonstrates the alert display
+ * type: a warning icon appears when the field value is falsy.
  */
-export const GroupedWithLabelsAndAlert: Story = {
+export const GroupedWithTagsAndAlert: Story = {
   args: {
     columns: [
       { label: 'Name', property: 'metadata.name' },
       {
         property: 'spec.nodeName',
-        uiSettings: { labelDisplay: true },
+        uiSettings: { displayAs: 'tag' },
         group: {
           name: 'placement',
           label: 'Placement',
@@ -255,7 +255,7 @@ export const GroupedWithLabelsAndAlert: Story = {
       },
       {
         property: 'spec.image',
-        uiSettings: { labelDisplay: true },
+        uiSettings: { displayAs: 'tag' },
         group: { name: 'placement' },
       },
       {
@@ -376,6 +376,45 @@ export const ButtonCell: Story = {
         },
       },
     ] satisfies TableFieldDefinition[],
+  },
+};
+
+/**
+ * `displayAs: 'tag'` renders comma-separated strings (or arrays) as `<ui5-tag>` chips.
+ * `tagSettings.separator` overrides the default `','` delimiter.
+ * `tagSettings.design` sets the chip colour scheme.
+ */
+export const Tags: Story = {
+  args: {
+    columns: [
+      { label: 'Name', property: 'metadata.name' },
+      {
+        label: 'Labels',
+        property: 'labels',
+        uiSettings: { displayAs: 'tag' },
+      },
+      {
+        label: 'Environments',
+        property: 'environments',
+        uiSettings: {
+          displayAs: 'tag',
+          tagSettings: { design: 'Information', separator: '|' },
+        },
+      },
+    ] satisfies TableFieldDefinition[],
+    resources: [
+      {
+        ...PODS[0],
+        labels: 'api,backend,v2',
+        environments: ['prod', 'staging'],
+      },
+      { ...PODS[1], labels: 'worker', environments: 'dev' },
+      {
+        ...PODS[2],
+        labels: 'cache,infra',
+        environments: 'prod|dev|staging',
+      },
+    ],
   },
 };
 

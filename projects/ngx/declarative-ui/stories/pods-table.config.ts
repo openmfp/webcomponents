@@ -103,12 +103,12 @@ export const TABLE_COLUMNS: TableFieldDefinition[] = [
   },
   {
     property: 'spec.image',
-    uiSettings: { labelDisplay: true },
+    uiSettings: { displayAs: 'tag' },
     group: { name: 'placement', label: 'Placement', delimiter: ' ' },
   },
   {
     property: 'spec.nodeName',
-    uiSettings: { labelDisplay: true },
+    uiSettings: { displayAs: 'tag' },
     group: { name: 'placement' },
   },
   {
