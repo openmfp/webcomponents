@@ -8,10 +8,12 @@ import { DashboardSection } from '../section/dashboard-section.component';
 import {
   Component,
   ElementRef,
+  Injector,
   OnDestroy,
   OnInit,
   Type,
   ViewEncapsulation,
+  afterNextRender,
   computed,
   inject,
   input,
@@ -84,8 +86,10 @@ export class Dashboard implements OnInit, OnDestroy {
   private sectionsSnapshot: SectionConfig[] = [];
   private cardsSnapshot: CardConfig[] = [];
   private gridStackItems = viewChild.required<GridstackComponent>('grid');
+  private addCardBtn = viewChild<Button>('addCardBtn');
   private resizeObserver?: ResizeObserver;
   private readonly hostEl = inject(ElementRef<HTMLElement>);
+  private readonly injector = inject(Injector);
 
   protected gridOptions = computed(
     (): GridStackOptions => ({
@@ -168,6 +172,9 @@ export class Dashboard implements OnInit, OnDestroy {
     this.sectionsSnapshot = [...this.sections()];
     this.cardsSnapshot = [...this.cards()];
     this.editMode.set(true);
+    afterNextRender(() => {
+      this.addCardBtn()?.element.focus();
+    }, { injector: this.injector });
   }
 
   saveEdit(): void {

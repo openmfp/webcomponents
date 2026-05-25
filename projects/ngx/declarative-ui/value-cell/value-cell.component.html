@@ -1,10 +1,12 @@
 @let displayType = displayAs();
-<span [attr.test-id]="testId()" [class.label-value]="labelDisplay()" [style]="cssStyles()">
+<span [attr.test-id]="testId()" [style]="cssStyles()">
   @if (displayType === 'secret') {
     <span class="secret-value-container">
       <mfp-secret-value [isVisible]="isVisible()" [testId]="testId() + '-secret'" [value]="value()" />
       <ui5-icon
         class="toggle-icon"
+        mode="Interactive"
+        [accessibleName]="isVisible() ? 'Hide value' : 'Show value'"
         [attr.test-id]="testId() + '-secret-toggle'"
         [name]="isVisible() ? 'hide' : 'show'"
         (click)="toggleVisibility($event)"
@@ -37,6 +39,7 @@
   } @else if (displayType === 'button') {
     @let buttonSettings = uiSettings()?.buttonSettings;
     <ui5-button
+      [accessibleName]="buttonSettings?.text || buttonSettings?.tooltip || buttonSettings?.icon || ''"
       [design]="buttonSettings?.design"
       [endIcon]="buttonSettings?.endIcon"
       [icon]="buttonSettings?.icon"
@@ -44,6 +47,12 @@
       (click)="buttonClicked($event)"
       >{{ buttonSettings?.text }}</ui5-button
     >&nbsp;
+  } @else if (displayType === 'tag') {
+    <mfp-tag-list-value
+      [tagSettings]="uiSettings()?.tagSettings"
+      [tags]="tags()"
+      [testId]="testId() + '-tags'"
+    />
   } @else {
     {{ value() }}
   }
@@ -52,8 +61,11 @@
 @if (withCopyButton()) {
   <ui5-icon
     class="toggle-icon"
-    name="copy"
+    mode="Interactive"
+    [accessibleName]="copySuccess() ? 'Copied' : 'Copy value'"
     [attr.test-id]="testId() + '-copy'"
+    [design]="copySuccess() ? 'Positive' : 'Default'"
+    [name]="copySuccess() ? 'accept' : 'copy'"
     (click)="copyValue($event)"
   />
 }

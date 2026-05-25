@@ -1,7 +1,7 @@
 <ui5-table
+  test-id="generic-table"
   [style.height]="height() ? height() + 'px' : null"
-  [style.overflow-y]="'auto'"
-  test-id="generic-table">
+  [style.overflow-y]="'auto'">
   <ui5-table-header-row slot="headerRow" [sticky]="growMode() === 'Scroll' && !!height()">
     @for (column of viewColumns(); track columnTrackBy(column, $index)) {
       @if (column.group) {
@@ -35,9 +35,9 @@
           @let isMultiline = column.group.multiline ?? true;
           <div
             class="flex"
-            [style.justifyContent]="isMultiline ? null : column.uiSettings?.align"
             [style.alignItems]="isMultiline ? column.uiSettings?.align : null"
-            [style.flexDirection]="isMultiline ? 'column' : 'row'">
+            [style.flexDirection]="isMultiline ? 'column' : 'row'"
+            [style.justifyContent]="isMultiline ? null : column.uiSettings?.align">
             @for (
                 field of column.group.fields;
                 let last = $last;
@@ -64,7 +64,7 @@
                   />
                 </span>
                 @if (!last && column.group.delimiter) {
-                  <span>{{ column.group.delimiter }}</span>
+                  <span class="delimiter">{{ column.group.delimiter }}</span>
                 }
               }
             </div>
@@ -98,9 +98,9 @@
   @if (hasMore()) {
     <ui5-table-growing
       id="growing"
+      slot="features"
       [mode]="growMode()"
       [text]="loadMoreButtonText()"
-      slot="features"
       (ui5LoadMore)="loadMoreResources.emit()"
     />
   }
