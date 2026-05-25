@@ -26,8 +26,6 @@ export interface TagSettings {
 
 /** Display and interaction settings for a table cell. */
 export interface UiSettings {
-  /** When `true`, renders the cell value as a styled badge (blue pill). */
-  labelDisplay?: boolean;
   /** How the cell value is rendered. Defaults to plain text when omitted. */
   displayAs?:
     | 'secret'

@@ -44,7 +44,6 @@ export class ValueCell<T extends GenericResource, F extends FieldDefinition> {
   uiSettings = computed(() => this.fieldDefinition().uiSettings);
   displayAs = computed(() => this.uiSettings()?.displayAs);
   withCopyButton = computed(() => this.uiSettings()?.withCopyButton);
-  labelDisplay = computed(() => this.uiSettings()?.labelDisplay);
   cssCustomization = computed(() => this.uiSettings()?.cssCustomization);
   tooltipIcon = computed(() => this.uiSettings()?.tooltipIcon);
   cssRules = computed(() =>

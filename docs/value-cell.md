@@ -254,16 +254,6 @@ The icon appears beside the rendered value. Clicking it writes the resolved valu
 
 ---
 
-## Label badge
-
-Wrap the value in a styled blue badge pill:
-
-```ts
-{ property: 'metadata.namespace', uiSettings: { labelDisplay: true } }
-```
-
----
-
 ## Conditional cell styling (`cssRules`)
 
 Apply inline styles to the cell when its value meets a condition:
@@ -362,7 +352,6 @@ interface UiSettings {
   tagSettings?:     TagSettings;
   tooltipIcon?:     string;
   withCopyButton?:  boolean;
-  labelDisplay?:    boolean;
   cssCustomization?: Partial<CSSStyleDeclaration>;
   cssRules?:        CssRule[];
   columnWidth?:     string;
