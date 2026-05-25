@@ -1,5 +1,5 @@
 @let displayType = displayAs();
-<span [attr.test-id]="testId()" [class.label-value]="labelDisplay()" [style]="cssStyles()">
+<span [attr.test-id]="testId()" [style]="cssStyles()">
   @if (displayType === 'secret') {
     <span class="secret-value-container">
       <mfp-secret-value [isVisible]="isVisible()" [testId]="testId() + '-secret'" [value]="value()" />
@@ -47,6 +47,12 @@
       (click)="buttonClicked($event)"
       >{{ buttonSettings?.text }}</ui5-button
     >&nbsp;
+  } @else if (displayType === 'tag') {
+    <mfp-tag-list-value
+      [tagSettings]="uiSettings()?.tagSettings"
+      [tags]="tags()"
+      [testId]="testId() + '-tags'"
+    />
   } @else {
     {{ value() }}
   }

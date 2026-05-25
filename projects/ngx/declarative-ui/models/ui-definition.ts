@@ -16,10 +16,16 @@ export interface PropertyField {
   transform?: TransformType[];
 }
 
+/** Appearance settings for tag chip rendering. */
+export interface TagSettings {
+  design?: 'Neutral' | 'Positive' | 'Critical' | 'Negative' | 'Information' | 'Set1' | 'Set2';
+  colorScheme?: '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10';
+  /** Delimiter used to split a plain-string value into individual tags. Default: `','`. */
+  separator?: string;
+}
+
 /** Display and interaction settings for a table cell. */
 export interface UiSettings {
-  /** When `true`, renders the cell value as a styled badge (blue pill). */
-  labelDisplay?: boolean;
   /** How the cell value is rendered. Defaults to plain text when omitted. */
   displayAs?:
     | 'secret'
@@ -28,9 +34,12 @@ export interface UiSettings {
     | 'tooltip'
     | 'alert'
     | 'img'
-    | 'button';
+    | 'button'
+    | 'tag';
   /** Button appearance and action — only used when `displayAs` is `'button'`. */
   buttonSettings?: ButtonSettings;
+  /** Tag chip configuration — only used when `displayAs` is `'tag'`. */
+  tagSettings?: TagSettings;
   /** SAP UI5 icon name shown as the tooltip trigger icon. */
   tooltipIcon?: string;
   /** When `true`, a copy-to-clipboard button is rendered next to the value. */

@@ -313,4 +313,76 @@ describe('ValueCell', () => {
       expect(emitted[0].resource).toEqual(resource);
     });
   });
+
+  describe('displayAs: tag', () => {
+    it('renders mfp-tag-list-value component', () => {
+      const { fixture } = setup(
+        { property: 'labels', uiSettings: { displayAs: 'tag' } },
+        { labels: 'api,backend' },
+      );
+      expect(el(fixture, 'value-cell-labels-tags')).not.toBeNull();
+    });
+
+    it('does not render plain text when displayAs is tag', () => {
+      const { fixture } = setup(
+        { property: 'labels', uiSettings: { displayAs: 'tag' } },
+        { labels: 'api,backend' },
+      );
+      const span = q(fixture, '[test-id="value-cell-labels"]');
+      expect(span?.textContent?.trim()).not.toBe('api,backend');
+    });
+  });
+
+  describe('normalizeTagsArray', () => {
+    it('splits comma-separated string into trimmed array', () => {
+      const { component } = setup(
+        { property: 'labels', uiSettings: { displayAs: 'tag' } },
+        { labels: 'api, backend , v2' },
+      );
+      expect(component.tags()).toEqual(['api', 'backend', 'v2']);
+    });
+
+    it('uses custom separator from tagSettings', () => {
+      const { component } = setup(
+        {
+          property: 'envs',
+          uiSettings: { displayAs: 'tag', tagSettings: { separator: '|' } },
+        },
+        { envs: 'prod|staging|dev' },
+      );
+      expect(component.tags()).toEqual(['prod', 'staging', 'dev']);
+    });
+
+    it('filters out empty segments', () => {
+      const { component } = setup(
+        { property: 'labels', uiSettings: { displayAs: 'tag' } },
+        { labels: 'api,,backend,' },
+      );
+      expect(component.tags()).toEqual(['api', 'backend']);
+    });
+
+    it('converts array values to string array', () => {
+      const { component } = setup(
+        { property: 'items', uiSettings: { displayAs: 'tag' } },
+        { items: ['prod', 'staging'] },
+      );
+      expect(component.tags()).toEqual(['prod', 'staging']);
+    });
+
+    it('returns empty array for non-string non-array value', () => {
+      const { component } = setup(
+        { property: 'count', uiSettings: { displayAs: 'tag' } },
+        { count: 42 },
+      );
+      expect(component.tags()).toEqual([]);
+    });
+
+    it('returns empty array when value is absent', () => {
+      const { component } = setup(
+        { property: 'missing', uiSettings: { displayAs: 'tag' } },
+        {},
+      );
+      expect(component.tags()).toEqual([]);
+    });
+  });
 });
