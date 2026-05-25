@@ -1,3 +1,4 @@
+import { GenericResource } from '../../models';
 import {
   FormFieldChangeEvent,
   FormFieldDefinition,
@@ -30,13 +31,13 @@ import { Select } from '@fundamental-ngx/ui5-webcomponents/select';
   styleUrl: './declarative-form.component.scss',
   encapsulation: ViewEncapsulation.ShadowDom,
 })
-export class DeclarativeForm {
+export class DeclarativeForm<T extends GenericResource> {
   readonly fields = input.required<FormFieldDefinition[]>();
-  readonly initialValues = input<Record<string, unknown>>({});
+  readonly initialValues = input<T>({} as T);
   readonly fieldErrors = input<FormFieldErrors>({});
 
   readonly fieldChange = output<FormFieldChangeEvent>();
-  readonly formSubmit = output<Record<string, unknown>>();
+  readonly formSubmit = output<T>();
 
   readonly form: FormGroup;
 
@@ -154,8 +155,8 @@ export class DeclarativeForm {
     this.form.updateValueAndValidity({ emitEvent: false });
   }
 
-  private buildOutputValue(): Record<string, unknown> {
-    const result: Record<string, unknown> = {};
+  private buildOutputValue(): T {
+    const result = {} as T;
 
     for (const key of Object.keys(this.form.controls)) {
       setPropertyByPath(result, key, this.form.controls[key].value);

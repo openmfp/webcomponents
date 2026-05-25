@@ -71,7 +71,7 @@ export class DeclarativeTableCard<T extends GenericResource> {
     resource: T;
     formChangeEvent: FormFieldChangeEvent;
   }>();
-  readonly createSubmit = output<Record<string, unknown>>();
+  readonly createSubmit = output<T>();
   readonly editSubmit = output<{
     resource: T;
     value: Record<string, unknown>;
@@ -202,7 +202,7 @@ export class DeclarativeTableCard<T extends GenericResource> {
     }
   }
 
-  onCreateSubmit(value: Record<string, unknown>): void {
+  onCreateSubmit(value: T): void {
     this.createSubmit.emit(value);
   }
 
