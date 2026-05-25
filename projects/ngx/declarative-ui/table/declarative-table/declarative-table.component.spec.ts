@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { DeclarativeTable } from './declarative-table.component';
-import { GenericResource, TableFieldDefinition, ValueCellButtonClickEvent } from '../models';
-import { ValueCell } from '../../value-cell/value-cell.component';
+import { GenericResource, TableFieldDefinition, ResourceFieldButtonClickEvent } from '../models';
+import { ResourceField } from '../../resource-field/resource-field.component';
 
 type Fixture = ComponentFixture<DeclarativeTable<GenericResource>>;
 type Comp = DeclarativeTable<GenericResource>;
@@ -199,7 +199,7 @@ describe('DeclarativeTable', () => {
   });
 
   describe('buttonClick output', () => {
-    it('bubbles buttonClick from value-cell', () => {
+    it('bubbles buttonClick from resource-field', () => {
       const field: TableFieldDefinition = {
         property: 'action',
         uiSettings: { displayAs: 'button', buttonSettings: { text: 'Go', action: 'navigate' } },
@@ -210,16 +210,16 @@ describe('DeclarativeTable', () => {
         resources: [resource],
       });
 
-      const emitted: ValueCellButtonClickEvent<GenericResource>[] = [];
+      const emitted: ResourceFieldButtonClickEvent<GenericResource>[] = [];
       component.buttonClick.subscribe((e) => emitted.push(e));
 
-      // The button lives inside value-cell's shadow root, unreachable via DOM
-      // querySelector in jsdom. Get the ValueCell instance directly
+      // The button lives inside resource-field's shadow root, unreachable via DOM
+      // querySelector in jsdom. Get the ResourceField instance directly
       // and invoke its buttonClicked method to test the event chain.
-      const valueCellDe = fixture.debugElement.query(By.directive(ValueCell));
-      const valueCellComp: ValueCell<GenericResource, TableFieldDefinition> = valueCellDe.componentInstance;
+      const resourceFieldDe = fixture.debugElement.query(By.directive(ResourceField));
+      const resourceFieldComp: ResourceField<GenericResource, TableFieldDefinition> = resourceFieldDe.componentInstance;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- accessing protected method for testing
-      (valueCellComp as any).buttonClicked(new MouseEvent('click'));
+      (resourceFieldComp as any).buttonClicked(new MouseEvent('click'));
       fixture.detectChanges();
 
       expect(emitted).toHaveLength(1);

@@ -1,8 +1,8 @@
 import { GenericResource } from '../../models';
-import { TableFieldDefinition, ValueCellButtonClickEvent } from '../models';
+import { TableFieldDefinition, ResourceFieldButtonClickEvent } from '../models';
 import { processGroupFields } from '../utils/proccess-fields';
 import { getResourceValueByJsonPath } from '../utils/resource-field-by-path';
-import { ValueCell } from '../../value-cell/value-cell.component';
+import { ResourceField } from '../../resource-field/resource-field.component';
 import {
   Component,
   ViewEncapsulation,
@@ -30,7 +30,7 @@ import '@ui5/webcomponents-fiori/dist/illustrations/NoData.js';
     TableHeaderCell,
     TableHeaderRow,
     TableRow,
-    ValueCell,
+    ResourceField,
     Select,
     Option,
     TableGrowing,
@@ -51,7 +51,7 @@ export class DeclarativeTable<T extends GenericResource> {
   loadMoreButtonText = input<string | undefined>('Load More');
   height = input<number>();
 
-  readonly buttonClick = output<ValueCellButtonClickEvent<T>>();
+  readonly buttonClick = output<ResourceFieldButtonClickEvent<T>>();
   readonly tableRowClicked = output<T>();
   readonly loadMoreResources = output<void>();
   readonly paginationLimitChanged = output<number>();

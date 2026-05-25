@@ -1,7 +1,7 @@
 import {
   FieldDefinition,
   GenericResource,
-  ValueCellButtonClickEvent,
+  ResourceFieldButtonClickEvent,
 } from '../models';
 import { evaluateCssRules } from '../table/utils/cssRules.engine';
 import { getFieldValue } from '../table/utils/field-definition.utils';
@@ -24,18 +24,18 @@ import { Icon } from '@fundamental-ngx/ui5-webcomponents/icon';
 import '@ui5/webcomponents-icons/dist/AllIcons.js';
 
 @Component({
-  selector: 'mfp-value-cell',
+  selector: 'mfp-resource-field',
   imports: [Icon, BooleanValue, LinkValue, SecretValue, Button, TagListValue],
-  templateUrl: './value-cell.component.html',
-  styleUrl: './value-cell.component.scss',
+  templateUrl: './resource-field.component.html',
+  styleUrl: './resource-field.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.ShadowDom,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class ValueCell<T extends GenericResource, F extends FieldDefinition> {
+export class ResourceField<T extends GenericResource, F extends FieldDefinition> {
   fieldDefinition = input.required<F>();
   resource = input<T>();
-  readonly buttonClick = output<ValueCellButtonClickEvent<T>>();
+  readonly buttonClick = output<ResourceFieldButtonClickEvent<T>>();
 
   value = computed(() =>
     getFieldValue(this.fieldDefinition(), this.resource()),
@@ -56,7 +56,7 @@ export class ValueCell<T extends GenericResource, F extends FieldDefinition> {
 
   isBoolLike = computed(() => this.boolValue() !== undefined);
   isUrlValue = computed(() => this.checkValidUrl(this.stringValue()));
-  testId = computed(() => `value-cell-${this.fieldDefinition().property}`);
+  testId = computed(() => `resource-field-${this.fieldDefinition().property}`);
 
   boolValue = computed(() => this.normalizeBoolean(this.value()));
   stringValue = computed(() => this.normalizeString(this.value()));

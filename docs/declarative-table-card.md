@@ -193,7 +193,7 @@ export class MyComponent {
 | `tableRowClicked`        | `T`                                               | Emits when a table row is clicked                            |
 | `loadMoreResources`      | -                                                 | Emits when the user triggers load more                       |
 | `paginationLimitChanged` | `number`                                          | Emits when the user changes page size                        |
-| `actionButtonClick`      | `ValueCellButtonClickEvent<T>`                    | Emits for row-action buttons other than built-in edit/delete |
+| `actionButtonClick`      | `ResourceFieldButtonClickEvent<T>`                    | Emits for row-action buttons other than built-in edit/delete |
 
 ### Methods
 

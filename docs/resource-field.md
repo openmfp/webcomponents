@@ -1,27 +1,27 @@
-# ValueCell
+# ResourceField
 
-A standalone cell renderer that displays a single field value from a resource object. Supports eight display modes (plain text, secret, boolean icon, link, tooltip, alert, image, button, tag), conditional CSS rules, static CSS overrides, a copy-to-clipboard button, and a label badge mode. Used internally by `DeclarativeTable` and available for direct use in custom layouts.
+A standalone field renderer that displays a single field value from a resource object. Supports eight display modes (plain text, secret, boolean icon, link, tooltip, alert, image, button, tag), conditional CSS rules, static CSS overrides, a copy-to-clipboard button, and a label badge mode. Used internally by `DeclarativeTable` and available for direct use in custom layouts.
 
 ## Tags
 
 | Usage             | Tag               |
 | ----------------- | ----------------- |
-| Angular component | `<mfp-value-cell>` |
+| Angular component | `<mfp-resource-field>` |
 
-> `ValueCell` is an Angular-only component. It is not shipped as a standalone web component bundle.
+> `ResourceField` is an Angular-only component. It is not shipped as a standalone web component bundle.
 
 ---
 
 ## Usage as an Angular component
 
 ```ts
-import { ValueCell } from '@openmfp/webcomponents';
+import { ResourceField } from '@openmfp/webcomponents';
 import { FieldDefinition } from '@openmfp/webcomponents';
 
 @Component({
-  imports: [ValueCell],
+  imports: [ResourceField],
   template: `
-    <mfp-value-cell
+    <mfp-resource-field
       [fieldDefinition]="field"
       [resource]="resource"
       (buttonClick)="onButtonClick($event)"
@@ -32,7 +32,7 @@ export class MyComponent {
   field: FieldDefinition = { property: 'status.phase' };
   resource = { status: { phase: 'Running' } };
 
-  onButtonClick(event: ValueCellButtonClickEvent<typeof this.resource>) {
+  onButtonClick(event: ResourceFieldButtonClickEvent<typeof this.resource>) {
     console.log(event.field, event.resource);
   }
 }
@@ -46,17 +46,17 @@ export class MyComponent {
 
 | Input             | Type              | Required | Default | Description                                            |
 | ----------------- | ----------------- | -------- | ------- | ------------------------------------------------------ |
-| `fieldDefinition` | `FieldDefinition` | yes      | —       | Describes how to resolve and display the cell value    |
-| `resource`        | `GenericResource` | no       | —       | The data object from which the cell value is resolved  |
+| `fieldDefinition` | `FieldDefinition` | yes      | —       | Describes how to resolve and display the field value    |
+| `resource`        | `GenericResource` | no       | —       | The data object from which the field value is resolved  |
 
 ### Outputs / Events
 
 | Event         | Payload                         | Description                                              |
 | ------------- | ------------------------------- | -------------------------------------------------------- |
-| `buttonClick` | `ValueCellButtonClickEvent<T>`  | Fires when the cell is rendered as a button and clicked  |
+| `buttonClick` | `ResourceFieldButtonClickEvent<T>`  | Fires when the cell is rendered as a button and clicked  |
 
 ```ts
-interface ValueCellButtonClickEvent<T extends GenericResource> {
+interface ResourceFieldButtonClickEvent<T extends GenericResource> {
   event:    MouseEvent;
   field:    FieldDefinition;
   resource: T | undefined;
@@ -78,7 +78,7 @@ interface FieldDefinition {
 }
 ```
 
-### Resolving the cell value
+### Resolving the field value
 
 Values are resolved in this order:
 
@@ -163,7 +163,7 @@ Renders the value as a clickable `<ui5-link>` when the value is a valid URL. Fal
 
 ### Tooltip
 
-Renders a SAP UI5 info icon whose tooltip text is the cell value. The icon defaults to `hint`; override it with `tooltipIcon`.
+Renders a SAP UI5 info icon whose tooltip text is the field value. The icon defaults to `hint`; override it with `tooltipIcon`.
 
 ```ts
 {
@@ -283,7 +283,7 @@ uiSettings: { cssCustomization: { fontStyle: 'italic' } }
 
 ## Sub-components
 
-`ValueCell` composes four internal components that are also exported from the public API and can be used independently.
+`ResourceField` composes four internal components that are also exported from the public API and can be used independently.
 
 ### `BooleanValue`
 

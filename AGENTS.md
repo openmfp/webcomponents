@@ -88,7 +88,7 @@ webcomponents/
 │   │   └── declarative-ui/
 │   │       ├── dashboard/             # Dashboard, DashboardCard, DashboardSection, AddCardDialog
 │   │       ├── form/                  # DeclarativeForm (with submit() method)
-│   │       ├── table/                 # DeclarativeTable, ValueCell (boolean, link, secret)
+│   │       ├── table/                 # DeclarativeTable, ResourceField (boolean, link, secret, tag-list)
 │   │       └── table-card/            # DeclarativeTableCard (with dialog lifecycle methods)
 │   ├── webcomponents/
 │   │   └── main.ts                    # registers all custom elements

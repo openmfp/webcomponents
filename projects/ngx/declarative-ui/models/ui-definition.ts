@@ -111,7 +111,7 @@ export interface CssRule {
 }
 
 /** Event payload emitted when a button inside a table cell is clicked. */
-export interface ValueCellButtonClickEvent<T extends GenericResource> {
+export interface ResourceFieldButtonClickEvent<T extends GenericResource> {
   /** Original DOM click event. */
   event: MouseEvent;
   /** The field definition of the button cell that was clicked. */
