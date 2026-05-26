@@ -175,6 +175,7 @@ const meta: Meta<Dashboard> = {
     cards: { control: 'object' },
     availableCards: { control: 'object' },
     actionButtonClick: { action: 'actionButtonClick' },
+    saved: { action: 'saved' },
   },
   args: {
     config: SAMPLE_CONFIG,
@@ -184,7 +185,7 @@ const meta: Meta<Dashboard> = {
   },
   render: (args) => ({
     props: args,
-    template: `<mfp-dashboard [config]="config" [sections]="sections" [cards]="cards" [availableCards]="availableCards" (actionButtonClick)="actionButtonClick($event)" />`,
+    template: `<mfp-dashboard [config]="config" [sections]="sections" [cards]="cards" [availableCards]="availableCards" (actionButtonClick)="actionButtonClick($event)" (saved)="saved($event)" />`,
   }),
 };
 

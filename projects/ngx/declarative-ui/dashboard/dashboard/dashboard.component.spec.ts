@@ -168,8 +168,8 @@ describe('Dashboard', () => {
       () => ({
         gridstackItems: {
           toArray: () => [
-            { options: { id: 'card-1', x: 4, y: 2 } },
-            { options: { id: 'card-2', x: 1, y: 3 } },
+            { options: { id: 'card-1', x: 4, y: 2, w: 6, h: 20 } },
+            { options: { id: 'card-2', x: 1, y: 3, w: 4, h: 10 } },
           ],
         },
       });
@@ -184,8 +184,8 @@ describe('Dashboard', () => {
     expect(
       (component as unknown as { cardsSnapshot: CardConfig[] }).cardsSnapshot,
     ).toEqual(cards);
-    expect(component.cardsPosition.get('card-1')).toEqual({ x: 4, y: 2 });
-    expect(component.cardsPosition.get('card-2')).toEqual({ x: 1, y: 3 });
+    expect(component.cardsPosition.get('card-1')).toEqual({ x: 4, y: 2, w: 6, h: 20 });
+    expect(component.cardsPosition.get('card-2')).toEqual({ x: 1, y: 3, w: 4, h: 10 });
   });
 
   it('emits the saved payload and persists the latest order on save', () => {
@@ -198,8 +198,8 @@ describe('Dashboard', () => {
     component.cards.set(cards);
     component.editMode.set(true);
     component.saved.subscribe((value) => emitted.push(value));
-    component.onOrderChange({
-      nodes: [{ id: 'card-1', x: 7, y: 5 }],
+    component.onGridChange({
+      nodes: [{ id: 'card-1', x: 7, y: 5, w: 8, h: 30 }],
     } as never);
 
     component.saveEdit();
@@ -207,10 +207,28 @@ describe('Dashboard', () => {
     expect(emitted).toEqual([
       {
         sections,
-        cards: [{ id: 'card-1', component: 'mfp-a', x: 7, y: 5 }],
+        cards: [{ id: 'card-1', component: 'mfp-a', x: 7, y: 5, w: 8, h: 30 }],
       },
     ]);
-    expect(component.cardsPosition.get('card-1')).toEqual({ x: 7, y: 5 });
+    expect(component.cardsPosition.get('card-1')).toEqual({ x: 7, y: 5, w: 8, h: 30 });
+    expect(component.editMode()).toBe(false);
+  });
+
+  it('emits updated w and h in the saved payload when a card is resized', () => {
+    const { component } = setup();
+    const cards: CardConfig[] = [{ id: 'card-1', component: 'mfp-a', w: 6, h: 20 }];
+    const emitted: { sections: SectionConfig[]; cards: CardConfig[] }[] = [];
+
+    component.cards.set(cards);
+    component.editMode.set(true);
+    component.saved.subscribe((value) => emitted.push(value));
+    component.onGridChange({
+      nodes: [{ id: 'card-1', x: 0, y: 0, w: 3, h: 10 }],
+    } as never);
+
+    component.saveEdit();
+
+    expect(emitted[0].cards[0]).toMatchObject({ id: 'card-1', w: 3, h: 10 });
     expect(component.editMode()).toBe(false);
   });
 
@@ -329,7 +347,7 @@ describe('Dashboard', () => {
     component.cards.set(cards);
     component.editMode.set(true);
     component.saved.subscribe(() => false);
-    component.onOrderChange({
+    component.onGridChange({
       nodes: [{ id: 'card-1', x: 1, y: 2 }],
     } as never);
 

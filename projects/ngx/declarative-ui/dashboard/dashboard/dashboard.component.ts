@@ -132,7 +132,10 @@ export class Dashboard implements OnInit, OnDestroy {
     return (sectionId: string) => all.filter((c) => c.sectionId === sectionId);
   });
 
-  cardsPosition = new Map<string, { x?: number; y?: number }>();
+  cardsPosition = new Map<
+    string,
+    { x?: number; y?: number; w?: number; h?: number }
+  >();
   looseCards = linkedSignal(() => this.cards().filter((c) => !c.sectionId));
 
   private newGridStackNodes: GridStackNode[] = [];
@@ -186,7 +189,13 @@ export class Dashboard implements OnInit, OnDestroy {
       sections: this.sections(),
       cards: this.cards().map((c) => {
         const pos = this.cardsPosition.get(c.id);
-        return { ...c, x: pos?.x, y: pos?.y };
+        return {
+          ...c,
+          x: pos?.x,
+          y: pos?.y,
+          w: pos?.w ?? c.w,
+          h: pos?.h ?? c.h,
+        };
       }),
     });
     this.editMode.set(false);
@@ -230,14 +239,19 @@ export class Dashboard implements OnInit, OnDestroy {
     this.closeCardPanel();
   }
 
-  onOrderChange(event: nodesCB): void {
+  onGridChange(event: nodesCB): void {
     this.newGridStackNodes = event.nodes;
   }
 
   private saveCardsPosition(items: GridStackNode[]): void {
     items.forEach((node) => {
       if (node.id) {
-        this.cardsPosition.set(node.id, { x: node.x, y: node.y });
+        this.cardsPosition.set(node.id, {
+          x: node.x,
+          y: node.y,
+          w: node.w,
+          h: node.h,
+        });
       }
     });
   }
