@@ -1,7 +1,7 @@
 import { ButtonSettings } from '../../models/ui-definition';
-import { EditCardsDialog } from '../edit-cards-dialog/edit-cards-dialog.component';
-import { addComponentToRegistry } from '../card/utils/dashboard-card-registry';
 import { DashboardCard } from '../card/dashboard-card.component';
+import { addComponentToRegistry } from '../card/utils/dashboard-card-registry';
+import { EditCardsDialog } from '../edit-cards-dialog/edit-cards-dialog.component';
 import { CardConfig, DashboardConfig, SectionConfig } from '../models';
 import { CELL_HEIGHT, COMPACT_BREAKPOINT } from '../models/constants';
 import { DashboardSection } from '../section/dashboard-section.component';
@@ -172,9 +172,12 @@ export class Dashboard implements OnInit, OnDestroy {
     this.sectionsSnapshot = [...this.sections()];
     this.cardsSnapshot = [...this.cards()];
     this.editMode.set(true);
-    afterNextRender(() => {
-      this.addCardBtn()?.element.focus();
-    }, { injector: this.injector });
+    afterNextRender(
+      () => {
+        this.addCardBtn()?.element.focus();
+      },
+      { injector: this.injector },
+    );
   }
 
   saveEdit(): void {
