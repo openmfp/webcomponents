@@ -322,7 +322,7 @@ interface CardConfig {
 ```
 
 For sections, `w` controls the column span while height is determined by the section content.
-For cards, `w` and `h` control the initial rendered grid span. `x` and `y` persist the loose-card position reported by drag and drop when edit mode is saved. `minH`/`minW` and `maxH`/`maxW` set hard resize bounds enforced by the grid — the user cannot drag a card below the minimum or above the maximum size in edit mode.
+For cards, `w` and `h` control the initial rendered grid span. When edit mode is saved, `x`, `y`, `w`, and `h` are all persisted in the `saved` event payload — resizing a card updates its dimensions and dragging updates its position. `minH`/`minW` and `maxH`/`maxW` set hard resize bounds enforced by the grid — the user cannot drag a card below the minimum or above the maximum size in edit mode.
 
 `component` and `type` work together to determine how the card is rendered:
 

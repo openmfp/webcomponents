@@ -1,7 +1,7 @@
 import { ButtonSettings } from '../../models/ui-definition';
 import { AddCardDialog } from '../add-card-dialog/add-card-dialog.component';
-import { addComponentToRegistry } from '../card/utils/dashboard-card-registry';
 import { DashboardCard } from '../card/dashboard-card.component';
+import { addComponentToRegistry } from '../card/utils/dashboard-card-registry';
 import { CardConfig, DashboardConfig, SectionConfig } from '../models';
 import { CELL_HEIGHT, COMPACT_BREAKPOINT } from '../models/constants';
 import { DashboardSection } from '../section/dashboard-section.component';
@@ -132,7 +132,10 @@ export class Dashboard implements OnInit, OnDestroy {
     return (sectionId: string) => all.filter((c) => c.sectionId === sectionId);
   });
 
-  cardsPosition = new Map<string, { x?: number; y?: number }>();
+  cardsPosition = new Map<
+    string,
+    { x?: number; y?: number; w?: number; h?: number }
+  >();
   looseCards = linkedSignal(() => this.cards().filter((c) => !c.sectionId));
 
   private newGridStackNodes: GridStackNode[] = [];
@@ -172,9 +175,12 @@ export class Dashboard implements OnInit, OnDestroy {
     this.sectionsSnapshot = [...this.sections()];
     this.cardsSnapshot = [...this.cards()];
     this.editMode.set(true);
-    afterNextRender(() => {
-      this.addCardBtn()?.element.focus();
-    }, { injector: this.injector });
+    afterNextRender(
+      () => {
+        this.addCardBtn()?.element.focus();
+      },
+      { injector: this.injector },
+    );
   }
 
   saveEdit(): void {
@@ -183,7 +189,13 @@ export class Dashboard implements OnInit, OnDestroy {
       sections: this.sections(),
       cards: this.cards().map((c) => {
         const pos = this.cardsPosition.get(c.id);
-        return { ...c, x: pos?.x, y: pos?.y };
+        return {
+          ...c,
+          x: pos?.x,
+          y: pos?.y,
+          w: pos?.w ?? c.w,
+          h: pos?.h ?? c.h,
+        };
       }),
     });
     this.editMode.set(false);
@@ -231,14 +243,19 @@ export class Dashboard implements OnInit, OnDestroy {
     this.closeCardPanel();
   }
 
-  onOrderChange(event: nodesCB): void {
+  onGridChange(event: nodesCB): void {
     this.newGridStackNodes = event.nodes;
   }
 
   private saveCardsPosition(items: GridStackNode[]): void {
     items.forEach((node) => {
       if (node.id) {
-        this.cardsPosition.set(node.id, { x: node.x, y: node.y });
+        this.cardsPosition.set(node.id, {
+          x: node.x,
+          y: node.y,
+          w: node.w,
+          h: node.h,
+        });
       }
     });
   }

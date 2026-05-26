@@ -105,7 +105,7 @@
       />
     }
   </div>
-  <gridstack #grid [options]="gridOptions()" (changeCB)="onOrderChange($event)">
+  <gridstack #grid [options]="gridOptions()" (removedCB)="onGridChange($event)" (addedCB)="onGridChange($event)" (changeCB)="onGridChange($event)">
     @for (card of looseCards(); track card.id) {
       <gridstack-item
         [options]="card"
