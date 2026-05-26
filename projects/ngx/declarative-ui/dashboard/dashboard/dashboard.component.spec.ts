@@ -305,14 +305,17 @@ describe('Dashboard', () => {
     component.cards.set([{ id: 'card-1', component: 'mfp-a' }]);
     component.cardDialogOpen.set(true);
 
-    component.onCardsAdded([
-      {
-        id: 'template-card',
-        component: 'mfp-b',
-        label: 'Table',
-        componentInputs: { size: 'L' },
-      },
-    ]);
+    component.onCardsEdited({
+      added: [
+        {
+          id: 'template-card',
+          component: 'mfp-b',
+          label: 'Table',
+          componentInputs: { size: 'L' },
+        },
+      ],
+      removed: [],
+    });
 
     expect(component.cards()).toEqual([
       { id: 'card-1', component: 'mfp-a' },
@@ -358,15 +361,30 @@ describe('Dashboard', () => {
     });
   });
 
-  it('still closes the add-card dialog when no cards were selected', () => {
+  it('still closes the panel when no changes are made', () => {
     const { component } = setup();
 
     component.cardDialogOpen.set(true);
     component.cards.set([{ id: 'card-1', component: 'mfp-a' }]);
 
-    component.onCardsAdded([]);
+    component.onCardsEdited({ added: [], removed: [] });
 
     expect(component.cards()).toEqual([{ id: 'card-1', component: 'mfp-a' }]);
+    expect(component.cardDialogOpen()).toBe(false);
+  });
+
+  it('removes cards by id and closes the panel when onCardsEdited receives removed ids', () => {
+    const { component } = setup();
+
+    component.cards.set([
+      { id: 'card-1', component: 'mfp-a' },
+      { id: 'card-2', component: 'mfp-b' },
+    ]);
+    component.cardDialogOpen.set(true);
+
+    component.onCardsEdited({ added: [], removed: ['card-1'] });
+
+    expect(component.cards()).toEqual([{ id: 'card-2', component: 'mfp-b' }]);
     expect(component.cardDialogOpen()).toBe(false);
   });
 });

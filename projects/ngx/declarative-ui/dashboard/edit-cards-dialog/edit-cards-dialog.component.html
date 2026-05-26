@@ -1,0 +1,25 @@
+<ui5-dialog [open]="open()" (ui5BeforeClose)="cancelled.emit()">
+  <div class="edit-cards-dialog__header" slot="header">
+    <ui5-title level="H5">Edit Cards</ui5-title>
+  </div>
+  <div class="edit-cards-dialog">
+    <ui5-list noDataText="No cards available." selectionMode="None" separators="Inner">
+      @for (ac of availableCards(); track ac.id) {
+        <ui5-li-custom [accessibleName]="ac.label || ac.component">
+          <div class="edit-cards-dialog__list-item">
+            <span>{{ ac.label || ac.component }}</span>
+            <ui5-switch
+              [accessibleName]="ac.label || ac.component"
+              [checked]="selectedIds().has(ac.id)"
+              (ui5Change)="toggle(ac.id)"
+            />
+          </div>
+        </ui5-li-custom>
+      }
+    </ui5-list>
+  </div>
+  <div class="edit-cards-dialog__footer" slot="footer">
+    <ui5-button design="Emphasized" (click)="confirmSave()">Save</ui5-button>
+    <ui5-button design="Transparent" (click)="cancelled.emit()">Cancel</ui5-button>
+  </div>
+</ui5-dialog>

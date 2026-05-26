@@ -17,7 +17,7 @@
           <ui5-button
             #addCardBtn
             id="add-card-btn"
-            [accessibleName]="addCardButton().text || addCardButton().tooltip || 'Add Card'"
+            [accessibleName]="addCardButton().text || addCardButton().tooltip || 'Edit Cards'"
             [design]="addCardButton().design"
             [icon]="addCardButton().icon"
             [tooltip]="addCardButton().tooltip"
@@ -130,10 +130,10 @@
   }
 </div>
 
-<mfp-add-card-dialog
+<mfp-edit-cards-dialog
   [addedCardsIds]="addedCardsIds()"
   [availableCards]="availableCards()"
   [open]="cardDialogOpen()"
   (cancelled)="closeCardPanel()"
-  (confirm)="onCardsAdded($event)"
+  (confirm)="onCardsEdited($event)"
 />
