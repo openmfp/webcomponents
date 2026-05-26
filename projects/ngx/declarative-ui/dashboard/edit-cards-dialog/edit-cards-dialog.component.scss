@@ -1,0 +1,29 @@
+:host {
+  display: contents;
+}
+
+.edit-cards-dialog {
+  margin: -1rem;
+  min-width: 300px;
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    padding: 0.75rem 1rem;
+  }
+
+  &__list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+}
+
+.edit-cards-dialog__footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+  gap: 0.5rem;
+}
