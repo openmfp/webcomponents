@@ -204,6 +204,27 @@ const cards: CardConfig[] = [
 | `saved`              | `{ sections: SectionConfig[]; cards: CardConfig[] }` | Emits when the user saves edits                                  |
 | `actionButtonClick`  | `{ event: MouseEvent; action: ButtonSettings }`      | Emits when a custom action button from `config.customActions` is clicked |
 
+---
+
+## EditCardsDialog
+
+The `EditCardsDialog` component (`mfp-edit-cards-dialog`) is rendered inside the dashboard when edit mode is active and the user clicks the **Edit Cards** toolbar button. It shows all `availableCards` as a list of toggle switches — cards already on the dashboard start toggled on.
+
+### Inputs
+
+| Input            | Type           | Default      | Description                              |
+| ---------------- | -------------- | ------------ | ---------------------------------------- |
+| `availableCards` | `CardConfig[]` | `[]`         | Full list of cards the user may add/remove |
+| `addedCardsIds`  | `Set<string>`  | `new Set()`  | IDs of cards currently on the dashboard  |
+| `open`           | `boolean`      | `false`      | Controls dialog visibility               |
+
+### Outputs
+
+| Output      | Payload                                         | Description                                           |
+| ----------- | ----------------------------------------------- | ----------------------------------------------------- |
+| `confirm`   | `{ added: CardConfig[]; removed: string[] }`    | Emits the diff when the user clicks **Save**          |
+| `cancelled` | `void`                                          | Emits when the user clicks **Cancel** or presses Esc  |
+
 ### Static methods
 
 | Method                        | Description                                                                 |
@@ -238,10 +259,10 @@ interface DashboardButtonsSettings {
 }
 ```
 
-| Button           | Default `icon`    | Default `design` | Default `tooltip` | Default `text`        |
-| ---------------- | ----------------- | ---------------- | ----------------- | --------------------- |
+| Button           | Default `icon`    | Default `design` | Default `tooltip` | Default `text`  |
+| ---------------- | ----------------- | ---------------- | ----------------- | --------------- |
 | `editViewButton` | `action-settings` | `Transparent`    | `Edit View`       | _(empty — icon only)_ |
-| `addCardButton`  | _(none)_          | `Default`        | _(none)_          | `+ Add Card`          |
+| `addCardButton`  | _(none)_          | `Default`        | _(none)_          | `Edit Cards`    |
 
 **Example — text-only buttons without icons:**
 
@@ -257,7 +278,7 @@ const config: DashboardConfig = {
       tooltip: '',
     },
     addCardButton: {
-      text: 'Add Card',
+      text: 'Edit Cards',
       icon: '',
       design: 'Emphasized',
       tooltip: '',

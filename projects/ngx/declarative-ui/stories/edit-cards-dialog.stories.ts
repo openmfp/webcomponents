@@ -1,4 +1,4 @@
-import { AddCardDialog } from '../dashboard/add-card-dialog/add-card-dialog.component';
+import { EditCardsDialog } from '../dashboard/edit-cards-dialog/edit-cards-dialog.component';
 import type { CardConfig } from '../dashboard/models';
 import { Component, Input } from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
@@ -20,43 +20,49 @@ const AVAILABLE_CARDS: CardConfig[] = [
   },
 ];
 
-
 @Component({
-  selector: 'mfp-add-card-dialog-story',
-  imports: [AddCardDialog],
+  selector: 'mfp-edit-cards-dialog-story',
+  imports: [EditCardsDialog],
   template: `
     <ui5-button (click)="open = true">Open Dialog</ui5-button>
-    <mfp-add-card-dialog
+    <mfp-edit-cards-dialog
       [addedCardsIds]="addedComponents"
       [availableCards]="availableCards"
       [open]="open"
       (cancelled)="open = false"
       (confirm)="onConfirm($event)"
     />
-    @if (lastAdded) {
+    @if (lastMessage) {
       <ui5-message-strip design="Positive" style="margin-top: 1rem;">
-        Added: {{ lastAdded }}
+        {{ lastMessage }}
       </ui5-message-strip>
     }
   `,
 })
-class AddCardDialogStory {
+class EditCardsDialogStory {
   @Input() availableCards: CardConfig[] = AVAILABLE_CARDS;
   @Input() addedComponents: Set<string> = new Set<string>();
 
   open = false;
-  lastAdded = '';
+  lastMessage = '';
 
-  onConfirm(cards: CardConfig[]): void {
+  onConfirm(event: { added: CardConfig[]; removed: string[] }): void {
     this.open = false;
-    this.lastAdded = cards.map((c) => c.label || c.component).join(', ');
-    setTimeout(() => (this.lastAdded = ''), 3000);
+    const parts: string[] = [];
+    if (event.added.length) {
+      parts.push(`Added: ${event.added.map((c) => c.label || c.component).join(', ')}`);
+    }
+    if (event.removed.length) {
+      parts.push(`Removed: ${event.removed.join(', ')}`);
+    }
+    this.lastMessage = parts.join(' | ');
+    setTimeout(() => (this.lastMessage = ''), 3000);
   }
 }
 
-const meta: Meta<AddCardDialogStory> = {
-  title: 'Declarative UI / AddCardDialog',
-  component: AddCardDialogStory,
+const meta: Meta<EditCardsDialogStory> = {
+  title: 'Declarative UI / EditCardsDialog',
+  component: EditCardsDialogStory,
   tags: ['autodocs'],
   parameters: {
     layout: 'padded',
@@ -68,7 +74,7 @@ const meta: Meta<AddCardDialogStory> = {
 };
 
 export default meta;
-type Story = StoryObj<AddCardDialogStory>;
+type Story = StoryObj<EditCardsDialogStory>;
 
 export const NoneAdded: Story = {
   args: {

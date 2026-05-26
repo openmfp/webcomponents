@@ -1,5 +1,5 @@
 import { ButtonSettings } from '../../models/ui-definition';
-import { AddCardDialog } from '../add-card-dialog/add-card-dialog.component';
+import { EditCardsDialog } from '../edit-cards-dialog/edit-cards-dialog.component';
 import { addComponentToRegistry } from '../card/utils/dashboard-card-registry';
 import { DashboardCard } from '../card/dashboard-card.component';
 import { CardConfig, DashboardConfig, SectionConfig } from '../models';
@@ -45,7 +45,7 @@ document.body.classList.add('ui5-content-density-compact');
   imports: [
     GridstackComponent,
     GridstackItemComponent,
-    AddCardDialog,
+    EditCardsDialog,
     DashboardSection,
     DashboardCard,
     Button,
@@ -123,7 +123,7 @@ export class Dashboard implements OnInit, OnDestroy {
     icon: '',
     design: 'Default' as const,
     tooltip: '',
-    text: '+ Add Card',
+    text: 'Edit Cards',
     ...this.config().buttonsSettings?.addCardButton,
   }));
 
@@ -219,15 +219,11 @@ export class Dashboard implements OnInit, OnDestroy {
     this.cardDialogOpen.set(false);
   }
 
-  onCardsAdded(cards: CardConfig[]): void {
-    if (cards.length > 0) {
-      this.cards.update((list) => [
-        ...list,
-        ...cards.map((ac) => ({
-          ...ac,
-        })),
-      ]);
-    }
+  onCardsEdited(event: { added: CardConfig[]; removed: string[] }): void {
+    this.cards.update((list) => {
+      const withoutRemoved = list.filter((c) => !event.removed.includes(c.id));
+      return [...withoutRemoved, ...event.added.map((ac) => ({ ...ac }))];
+    });
     this.closeCardPanel();
   }
 
