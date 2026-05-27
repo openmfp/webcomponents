@@ -55,10 +55,10 @@
     @if (tableConfig(); as config) {
       <mfp-declarative-table
         [columns]="effectiveColumns()"
-        [growMode]="config.growMode"
+        [growMode]="config.growMode ?? 'Button'"
         [hasMore]="config.hasMore ?? false"
         [height]="config.height"
-        [loadMoreButtonText]="config.loadMoreButtonText"
+        [loadMoreButtonText]="config.loadMoreButtonText ?? 'Load More'"
         [paginationLimit]="config.paginationLimit ?? 5"
         [resources]="resources()"
         [totalItemsCount]="config.totalItemsCount"
