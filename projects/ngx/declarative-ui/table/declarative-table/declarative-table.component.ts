@@ -1,8 +1,8 @@
 import { GenericResource } from '../../models';
-import { TableFieldDefinition, ResourceFieldButtonClickEvent } from '../models';
+import { ResourceField } from '../../resource-field/resource-field.component';
+import { ResourceFieldButtonClickEvent, TableFieldDefinition } from '../models';
 import { processGroupFields } from '../utils/proccess-fields';
 import { getResourceValueByJsonPath } from '../utils/resource-field-by-path';
-import { ResourceField } from '../../resource-field/resource-field.component';
 import {
   Component,
   ViewEncapsulation,
@@ -47,8 +47,8 @@ export class DeclarativeTable<T extends GenericResource> {
   totalItemsCount = input<number>();
   paginationLimit = input<number>(5);
   hasMore = input<boolean>(false);
-  growMode = input<'Scroll' | 'Button' | undefined>('Button');
-  loadMoreButtonText = input<string | undefined>('Load More');
+  growMode = input<'Scroll' | 'Button'>('Button');
+  loadMoreButtonText = input<string>('Load More');
   height = input<number>();
 
   readonly buttonClick = output<ResourceFieldButtonClickEvent<T>>();
