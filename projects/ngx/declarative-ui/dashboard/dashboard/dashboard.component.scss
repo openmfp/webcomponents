@@ -14,7 +14,7 @@ mfp-wc-dashboard {
 }
 
 .mfp-dashboard {
-  padding: var(--sapShell_Space_XL, calc(3rem - 10px));
+  padding: calc(var(--sapShell_Space_XL, 3rem) - 10px);
 }
 
 .mfp-sections-container {
@@ -90,18 +90,18 @@ mfp-wc-dashboard {
 
 @media screen and (min-width: 0px) and (max-width: 599px) {
   .mfp-dashboard {
-    padding: var(--sapShell_Space_S, calc(1023px - 10px));
+    padding: calc(var(--sapShell_Space_S, 1rem) - 10px);
   }
 }
 
 @media screen and (min-width: 600px) and (max-width: 1023px) {
   .mfp-dashboard {
-    padding: var(--sapShell_Space_M, calc(2rem - 10px));
+    padding: calc(var(--sapShell_Space_M, 2rem) - 10px);
   }
 }
 
 @media screen and (min-width: 1024px) and (max-width: 1439px) {
   .mfp-dashboard {
-    padding: var(--sapShell_Space_L, calc(2rem - 10px));
+    padding: calc(var(--sapShell_Space_L, 2rem) - 10px);
   }
 }
