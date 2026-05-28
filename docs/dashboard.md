@@ -248,6 +248,8 @@ interface DashboardConfig {
 }
 ```
 
+`title` and `description` accept plain strings or HTML markup. Safe HTML tags (e.g. `<b>`, `<em>`, `<a>`) are rendered; dangerous content such as `<script>` tags is stripped automatically. The title is rendered as an `<h3>` heading and the description as an `<h5>` heading.
+
 ### `DashboardButtonSettings`
 
 Controls the appearance of the two built-in toolbar buttons. Both fields accept a `Partial<ButtonSettings>` that is **merged on top of the defaults** — any property you omit keeps its default value.
@@ -255,14 +257,14 @@ Controls the appearance of the two built-in toolbar buttons. Both fields accept 
 ```ts
 interface DashboardButtonsSettings {
   editViewButton?: Partial<ButtonSettings>;
-  addCardButton?: Partial<ButtonSettings>;
+  editCardsButton?: Partial<ButtonSettings>;
 }
 ```
 
-| Button           | Default `icon`    | Default `design` | Default `tooltip` | Default `text`  |
-| ---------------- | ----------------- | ---------------- | ----------------- | --------------- |
-| `editViewButton` | `action-settings` | `Transparent`    | `Edit View`       | _(empty — icon only)_ |
-| `addCardButton`  | _(none)_          | `Default`        | _(none)_          | `Edit Cards`    |
+| Button            | Default `icon`    | Default `design` | Default `tooltip` | Default `text`  |
+| ----------------- | ----------------- | ---------------- | ----------------- | --------------- |
+| `editViewButton`  | `action-settings` | `Transparent`    | `Edit View`       | _(empty — icon only)_ |
+| `editCardsButton` | _(none)_          | `Default`        | _(none)_          | `Edit Cards`    |
 
 **Example — text-only buttons without icons:**
 
@@ -277,7 +279,7 @@ const config: DashboardConfig = {
       design: 'Default',
       tooltip: '',
     },
-    addCardButton: {
+    editCardsButton: {
       text: 'Edit Cards',
       icon: '',
       design: 'Emphasized',
