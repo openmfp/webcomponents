@@ -115,15 +115,15 @@ describe('Dashboard', () => {
     editButton?.dispatchEvent(new Event('click'));
     fixture.detectChanges();
 
-    const addCardButton = root(fixture).querySelector('#add-card-btn');
+    const editCardsButton = root(fixture).querySelector('#edit-cards-btn');
 
     expect(component.editMode()).toBe(true);
-    expect(addCardButton).not.toBeNull();
+    expect(editCardsButton).not.toBeNull();
     expect(
       root(fixture).querySelectorAll('.mfp-dashboard__edit-bar ui5-button'),
     ).toHaveLength(2);
 
-    addCardButton?.dispatchEvent(new Event('click'));
+    editCardsButton?.dispatchEvent(new Event('click'));
     fixture.detectChanges();
 
     expect(component.cardDialogOpen()).toBe(true);
@@ -386,5 +386,109 @@ describe('Dashboard', () => {
 
     expect(component.cards()).toEqual([{ id: 'card-2', component: 'mfp-b' }]);
     expect(component.cardDialogOpen()).toBe(false);
+  });
+
+  describe('title and description rendering', () => {
+    it('renders title inside a ui5-title with level H3', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('config', { title: 'My Dashboard' });
+      fixture.detectChanges();
+
+      const titleEl = root(fixture).querySelector('ui5-title[level="H3"]');
+      expect(titleEl).not.toBeNull();
+      expect(titleEl?.textContent?.trim()).toBe('My Dashboard');
+    });
+
+    it('renders description inside a ui5-title with level H5', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('config', {
+        title: 'T',
+        description: 'Platform status',
+      });
+      fixture.detectChanges();
+
+      const descEl = root(fixture).querySelector('ui5-title[level="H5"]');
+      expect(descEl).not.toBeNull();
+      expect(descEl?.textContent?.trim()).toBe('Platform status');
+    });
+
+    it('renders safe HTML markup in the title', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('config', { title: 'Hello <b>World</b>' });
+      fixture.detectChanges();
+
+      const span = root(fixture).querySelector('ui5-title[level="H3"] span');
+      expect(span?.querySelector('b')).not.toBeNull();
+      expect(span?.querySelector('b')?.textContent).toBe('World');
+    });
+
+    it('renders safe HTML markup in the description', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('config', {
+        title: 'T',
+        description: 'Status in <b>real time</b>.',
+      });
+      fixture.detectChanges();
+
+      const span = root(fixture).querySelector('ui5-title[level="H5"] span');
+      expect(span?.querySelector('b')).not.toBeNull();
+      expect(span?.querySelector('b')?.textContent).toBe('real time');
+    });
+
+    it('strips dangerous script tags from the title', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('config', {
+        title: 'Safe<script>alert(1)</script>',
+      });
+      fixture.detectChanges();
+
+      const span = root(fixture).querySelector('ui5-title[level="H3"] span');
+      expect(span?.querySelector('script')).toBeNull();
+      expect(span?.textContent).toContain('Safe');
+    });
+
+    it('strips dangerous script tags from the description', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('config', {
+        title: 'T',
+        description: 'Info<script>alert(1)</script>',
+      });
+      fixture.detectChanges();
+
+      const span = root(fixture).querySelector('ui5-title[level="H5"] span');
+      expect(span?.querySelector('script')).toBeNull();
+      expect(span?.textContent).toContain('Info');
+    });
+
+    it('does not render the description block when description is absent', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('config', { title: 'T' });
+      fixture.detectChanges();
+
+      expect(root(fixture).querySelector('ui5-title[level="H5"]')).toBeNull();
+    });
+  });
+
+  describe('editCardsButton', () => {
+    it('uses buttonsSettings.editCardsButton overrides', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', {
+        title: 'T',
+        buttonsSettings: {
+          editCardsButton: { text: 'Add Card', design: 'Emphasized' },
+        },
+      });
+
+      expect(component.editCardsButton().text).toBe('Add Card');
+      expect(component.editCardsButton().design).toBe('Emphasized');
+    });
   });
 });

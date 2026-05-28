@@ -11,6 +11,7 @@ import {
   Injector,
   OnDestroy,
   OnInit,
+  SecurityContext,
   Type,
   ViewEncapsulation,
   afterNextRender,
@@ -23,11 +24,11 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 import { Menu } from '@fundamental-ngx/ui5-webcomponents/menu';
 import { MenuItem } from '@fundamental-ngx/ui5-webcomponents/menu-item';
 import { MenuSeparator } from '@fundamental-ngx/ui5-webcomponents/menu-separator';
-import { Text } from '@fundamental-ngx/ui5-webcomponents/text';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 import '@ui5/webcomponents-icons/dist/action-settings.js';
 import '@ui5/webcomponents-icons/dist/menu2.js';
@@ -53,7 +54,6 @@ document.body.classList.add('ui5-content-density-compact');
     MenuItem,
     MenuSeparator,
     Title,
-    Text,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
@@ -86,10 +86,25 @@ export class Dashboard implements OnInit, OnDestroy {
   private sectionsSnapshot: SectionConfig[] = [];
   private cardsSnapshot: CardConfig[] = [];
   private gridStackItems = viewChild.required<GridstackComponent>('grid');
-  private addCardBtn = viewChild<Button>('addCardBtn');
+  private addCardBtn = viewChild<Button>('editCardsBtn');
   private resizeObserver?: ResizeObserver;
   private readonly hostEl = inject(ElementRef<HTMLElement>);
   private readonly injector = inject(Injector);
+  private readonly sanitizer = inject(DomSanitizer);
+
+  protected safeTitle = computed((): SafeHtml => {
+    const clean =
+      this.sanitizer.sanitize(SecurityContext.HTML, this.config().title) ?? '';
+    return this.sanitizer.bypassSecurityTrustHtml(clean);
+  });
+
+  protected safeDescription = computed((): SafeHtml | null => {
+    const desc = this.config().description;
+    if (!desc) return null;
+
+    const clean = this.sanitizer.sanitize(SecurityContext.HTML, desc) ?? '';
+    return this.sanitizer.bypassSecurityTrustHtml(clean);
+  });
 
   protected gridOptions = computed(
     (): GridStackOptions => ({
@@ -122,12 +137,12 @@ export class Dashboard implements OnInit, OnDestroy {
     ...this.config().buttonsSettings?.editViewButton,
   }));
 
-  addCardButton = computed(() => ({
+  editCardsButton = computed(() => ({
     icon: '',
     design: 'Default' as const,
     tooltip: '',
     text: 'Edit Cards',
-    ...this.config().buttonsSettings?.addCardButton,
+    ...this.config().buttonsSettings?.editCardsButton,
   }));
 
   sectionCards = computed(() => {

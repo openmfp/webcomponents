@@ -38,7 +38,7 @@ const CUSTOM_ACTIONS: ButtonSettings[] = [
 const SAMPLE_CONFIG: DashboardConfig = {
   title: 'System Overview',
   description:
-    'Monitor your platform metrics, traffic and service health in real time.',
+    'Monitor your platform metrics, traffic and service health in <b>real time</b>.',
   backgroundImageUrl: '/background-lightblue.png',
   customActions: CUSTOM_ACTIONS,
   editable: true,
@@ -292,7 +292,7 @@ export const CustomButtonSettings: Story = {
           design: 'Default',
           tooltip: '',
         },
-        addCardButton: {
+        editCardsButton: {
           text: 'Add Card',
           icon: '',
           design: 'Emphasized',

@@ -1,5 +1,8 @@
 import { ButtonSettings } from '../../models/ui-definition';
 
+
+
+
 export const CARD_TYPES = {
   WC: 'wc',
   ANGULAR: 'angular',
@@ -65,7 +68,7 @@ export interface DashboardButtonsSettings {
   /** Partial override merged on top of the Edit View button defaults. */
   editViewButton?: Partial<ButtonSettings>;
   /** Partial override merged on top of the Add Card button defaults. */
-  addCardButton?: Partial<ButtonSettings>;
+  editCardsButton?: Partial<ButtonSettings>;
 }
 
 /** Top-level configuration for the `<mfp-dashboard>` component. */

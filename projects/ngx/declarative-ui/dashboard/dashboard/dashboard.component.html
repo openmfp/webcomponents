@@ -3,26 +3,28 @@
     <div class="mfp-dashboard__topbar-row">
       <div class="mfp-dashboard__header">
         @if (config().title) {
-          <ui5-title level="H2" size="H2" wrapping-type="Normal">{{
-            config().title
-          }}</ui5-title>
+          <ui5-title level="H3" size="H3" wrapping-type="Normal">
+            <span [innerHTML]="safeTitle()"></span>
+          </ui5-title>
         }
         @if (config().description) {
-          <ui5-text>{{ config().description }}</ui5-text>
+          <ui5-title level="H5" size="H5" wrapping-type="Normal">
+            <span class="mfp-dashboard__description" [innerHTML]="safeDescription()"></span>
+          </ui5-title>
         }
       </div>
 
       <div class="mfp-dashboard__toolbar">
         @if (editMode()) {
           <ui5-button
-            #addCardBtn
-            id="add-card-btn"
-            [accessibleName]="addCardButton().text || addCardButton().tooltip || 'Edit Cards'"
-            [design]="addCardButton().design"
-            [icon]="addCardButton().icon"
-            [tooltip]="addCardButton().tooltip"
+            #editCardsBtn
+            id="edit-cards-btn"
+            [accessibleName]="editCardsButton().text || editCardsButton().tooltip || 'Edit Cards'"
+            [design]="editCardsButton().design"
+            [icon]="editCardsButton().icon"
+            [tooltip]="editCardsButton().tooltip"
             (click)="openCardPanel()"
-            >{{ addCardButton().text }}</ui5-button
+            >{{ editCardsButton().text }}</ui5-button
           >
         } @else if (compactToolbar()) {
           <ui5-button
