@@ -67,7 +67,7 @@ export interface SectionConfig {
 export interface DashboardButtonsSettings {
   /** Partial override merged on top of the Edit View button defaults. */
   editViewButton?: Partial<ButtonSettings>;
-  /** Partial override merged on top of the Add Card button defaults. */
+  /** Partial override merged on top of the Edit Cards button defaults. */
   editCardsButton?: Partial<ButtonSettings>;
 }
 
