@@ -31,7 +31,8 @@
   height: 100%;
   overflow: visible;
   isolation: isolate;
-  padding: 0 0.5rem;
+  padding-inline-start: var(--mfp_cardContainerPadding, 10px);
+  padding-inline-end: var(--mfp_cardContainerPadding, 10px);
 }
 
 .component-host {

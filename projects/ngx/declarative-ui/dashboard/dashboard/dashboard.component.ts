@@ -96,6 +96,9 @@ export class Dashboard implements OnInit, OnDestroy {
       cellHeight: CELL_HEIGHT,
       disableResize: !this.editMode(),
       disableDrag: !this.editMode(),
+      marginBottom: 0,
+      marginLeft: 0,
+      marginRight: 0,
       columnOpts: {
         breakpointForWindow: true,
         breakpoints: [
