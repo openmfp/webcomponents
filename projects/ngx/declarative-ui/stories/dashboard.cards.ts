@@ -75,7 +75,7 @@ export const CARDS: CardConfig[] = [
   {
     id: 'table-pods',
     w: 12,
-    h: 37,
+    h: 35,
     component: 'mfp-wc-declarative-table-card',
     componentInputs: {
       config: TABLE_CARD_CONFIG,
@@ -89,7 +89,7 @@ export const CARDS: CardConfig[] = [
     label: "What's New",
     type: 'angular',
     w: 6,
-    h: 57,
+    h: 55,
     component: 'mfp-whats-new',
   },
   {
@@ -97,7 +97,7 @@ export const CARDS: CardConfig[] = [
     label: 'Favorites',
     type: 'angular',
     w: 6,
-    h: 21,
+    h: 20,
     minW: 3,
     maxW: 6,
     minH: 10,
@@ -109,7 +109,7 @@ export const CARDS: CardConfig[] = [
     label: 'Service Status',
     type: 'angular',
     w: 6,
-    h: 30,
+    h: 28,
     component: 'mfp-service-status-card',
   },
 ];
