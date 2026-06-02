@@ -283,4 +283,105 @@ describe('EditCardsDialog', () => {
       expect(buttons[1].textContent?.trim()).toBe('Cancel');
     });
   });
+
+  describe('keyboard tab traversal', () => {
+    function tabEvent(target: HTMLElement, shiftKey = false): KeyboardEvent {
+      const event = new KeyboardEvent('keydown', {
+        key: 'Tab',
+        shiftKey,
+        bubbles: true,
+        cancelable: true,
+      });
+      Object.defineProperty(event, 'currentTarget', { value: target });
+      return event;
+    }
+
+    it('moves focus from a list item into its switch on Tab', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('availableCards', [CARD_A, CARD_B]);
+      fixture.componentRef.setInput('open', true);
+      fixture.detectChanges();
+
+      const item = root(fixture).querySelectorAll<HTMLElement>('ui5-li-custom')[0];
+      const sw = item.querySelector<HTMLElement>('ui5-switch')!;
+      const focusSpy = vi.spyOn(sw, 'focus');
+
+      const event = tabEvent(item);
+      component.onItemKeydown(event, CARD_A.id);
+
+      expect(event.defaultPrevented).toBe(true);
+      expect(focusSpy).toHaveBeenCalled();
+    });
+
+    it('does not redirect Shift+Tab from a list item (so focus exits the list)', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('availableCards', [CARD_A]);
+      fixture.componentRef.setInput('open', true);
+      fixture.detectChanges();
+
+      const item = root(fixture).querySelector<HTMLElement>('ui5-li-custom')!;
+      const sw = item.querySelector<HTMLElement>('ui5-switch')!;
+      const focusSpy = vi.spyOn(sw, 'focus');
+
+      const event = tabEvent(item, true);
+      component.onItemKeydown(event, CARD_A.id);
+
+      expect(event.defaultPrevented).toBe(false);
+      expect(focusSpy).not.toHaveBeenCalled();
+    });
+
+    it('moves focus from a switch to the next list item on Tab', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('availableCards', [CARD_A, CARD_B]);
+      fixture.componentRef.setInput('open', true);
+      fixture.detectChanges();
+
+      const items = root(fixture).querySelectorAll<HTMLElement>('ui5-li-custom');
+      const sw = items[0].querySelector<HTMLElement>('ui5-switch')!;
+      const focusSpy = vi.spyOn(items[1], 'focus');
+
+      const event = tabEvent(sw);
+      component.onSwitchKeydown(event, CARD_A.id);
+
+      expect(event.defaultPrevented).toBe(true);
+      expect(focusSpy).toHaveBeenCalled();
+    });
+
+    it('lets Tab fall through when the switch is on the last item', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('availableCards', [CARD_A, CARD_B]);
+      fixture.componentRef.setInput('open', true);
+      fixture.detectChanges();
+
+      const items = root(fixture).querySelectorAll<HTMLElement>('ui5-li-custom');
+      const lastSwitch = items[1].querySelector<HTMLElement>('ui5-switch')!;
+
+      const event = tabEvent(lastSwitch);
+      component.onSwitchKeydown(event, CARD_B.id);
+
+      expect(event.defaultPrevented).toBe(false);
+    });
+
+    it('moves focus from a switch back to its list item on Shift+Tab', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('availableCards', [CARD_A, CARD_B]);
+      fixture.componentRef.setInput('open', true);
+      fixture.detectChanges();
+
+      const items = root(fixture).querySelectorAll<HTMLElement>('ui5-li-custom');
+      const sw = items[1].querySelector<HTMLElement>('ui5-switch')!;
+      const focusSpy = vi.spyOn(items[1], 'focus');
+
+      const event = tabEvent(sw, true);
+      component.onSwitchKeydown(event, CARD_B.id);
+
+      expect(event.defaultPrevented).toBe(true);
+      expect(focusSpy).toHaveBeenCalled();
+    });
+  });
 });

@@ -1,8 +1,10 @@
 import { CardConfig } from '../models';
 import {
   Component,
+  ElementRef,
   ViewEncapsulation,
   effect,
+  inject,
   input,
   output,
   signal,
@@ -22,6 +24,8 @@ import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
   encapsulation: ViewEncapsulation.ShadowDom,
 })
 export class EditCardsDialog {
+  private readonly host = inject(ElementRef<HTMLElement>);
+
   availableCards = input<CardConfig[]>([]);
   addedCardsIds = input<Set<string>>(new Set());
   open = input<boolean>(false);
@@ -54,6 +58,51 @@ export class EditCardsDialog {
       }
       return next;
     });
+  }
+
+  /**
+   * Tab moves focus across the switches directly, skipping the wrapping
+   * ui5-li-custom rows. Past the last switch Tab goes to the first footer
+   * button; before the first switch Shift+Tab goes to the last footer button.
+   * The dialog's native focus trap takes care of cycling from the buttons
+   * back into the list.
+   */
+  onSwitchKeydown(event: KeyboardEvent, _id: string): void {
+    if (event.key !== 'Tab') {
+      return;
+    }
+    const root: ParentNode =
+      this.host.nativeElement.shadowRoot ?? this.host.nativeElement;
+    const switches = Array.from(
+      root.querySelectorAll('ui5-switch'),
+    ) as HTMLElement[];
+    const buttons = Array.from(
+      root.querySelectorAll('ui5-button'),
+    ) as HTMLElement[];
+    const currentIndex = switches.indexOf(event.currentTarget as HTMLElement);
+    if (currentIndex === -1) {
+      return;
+    }
+    if (event.shiftKey) {
+      const prev = switches[currentIndex - 1];
+      if (prev) {
+        event.preventDefault();
+        event.stopPropagation();
+        prev.focus();
+      }
+      // First switch: let Shift+Tab fall through so the dialog's focus trap
+      // wraps to the last footer button.
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    const next = switches[currentIndex + 1];
+    if (next) {
+      next.focus();
+      return;
+    }
+    // Last switch: hand off to the first footer button.
+    buttons[0]?.focus();
   }
 
   confirmSave(): void {
