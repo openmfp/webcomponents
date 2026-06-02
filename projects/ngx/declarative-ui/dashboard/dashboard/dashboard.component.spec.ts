@@ -491,4 +491,144 @@ describe('Dashboard', () => {
       expect(component.editCardsButton().design).toBe('Emphasized');
     });
   });
+
+  describe('hasUnsavedChanges indicator', () => {
+    function configureFor(component: Dashboard) {
+      (
+        component as unknown as { gridStackItems: () => unknown }
+      ).gridStackItems = () => ({
+        gridstackItems: { toArray: () => [] },
+      });
+    }
+
+    it('is false when not in edit mode', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', { title: 'Operations' });
+      configureFor(component);
+      fixture.detectChanges();
+
+      expect(component.hasUnsavedChanges()).toBe(false);
+    });
+
+    it('is false right after entering edit mode without any modifications', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', { title: 'Operations' });
+      configureFor(component);
+      fixture.detectChanges();
+
+      component.enterEditMode();
+
+      expect(component.editMode()).toBe(true);
+      expect(component.hasUnsavedChanges()).toBe(false);
+    });
+
+    it('flips to true when sections change while in edit mode', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', { title: 'Operations' });
+      component.sections.set([{ id: 'alpha', title: 'Alpha' }]);
+      configureFor(component);
+      fixture.detectChanges();
+
+      component.enterEditMode();
+      expect(component.hasUnsavedChanges()).toBe(false);
+
+      component.sections.set([{ id: 'beta', title: 'Beta' }]);
+      expect(component.hasUnsavedChanges()).toBe(true);
+    });
+
+    it('flips to true when cards change while in edit mode', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', { title: 'Operations' });
+      component.cards.set([{ id: 'c1', component: 'mfp-a' }]);
+      configureFor(component);
+      fixture.detectChanges();
+
+      component.enterEditMode();
+      expect(component.hasUnsavedChanges()).toBe(false);
+
+      component.removeCard('c1');
+      expect(component.hasUnsavedChanges()).toBe(true);
+    });
+
+    it('flips to true when the gridstack reports a change while in edit mode', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', { title: 'Operations' });
+      configureFor(component);
+      fixture.detectChanges();
+
+      component.enterEditMode();
+      expect(component.hasUnsavedChanges()).toBe(false);
+
+      component.onGridChange({ nodes: [{ id: 'c1', x: 1, y: 1 }] } as any);
+      expect(component.hasUnsavedChanges()).toBe(true);
+    });
+
+    it('ignores grid change events fired outside edit mode', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', { title: 'Operations' });
+      configureFor(component);
+      fixture.detectChanges();
+
+      component.onGridChange({ nodes: [{ id: 'c1', x: 1, y: 1 }] } as any);
+
+      expect(component.hasUnsavedChanges()).toBe(false);
+    });
+
+    it('resets to false after saveEdit', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', { title: 'Operations' });
+      configureFor(component);
+      fixture.detectChanges();
+
+      component.enterEditMode();
+      component.sections.set([{ id: 'new', title: 'New' }]);
+      expect(component.hasUnsavedChanges()).toBe(true);
+
+      component.saveEdit();
+
+      expect(component.editMode()).toBe(false);
+      expect(component.hasUnsavedChanges()).toBe(false);
+    });
+
+    it('resets to false after cancelEdit', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', { title: 'Operations' });
+      component.sections.set([{ id: 'alpha', title: 'Alpha' }]);
+      configureFor(component);
+      fixture.detectChanges();
+
+      component.enterEditMode();
+      component.sections.set([{ id: 'beta', title: 'Beta' }]);
+      expect(component.hasUnsavedChanges()).toBe(true);
+
+      component.cancelEdit();
+
+      expect(component.editMode()).toBe(false);
+      expect(component.hasUnsavedChanges()).toBe(false);
+    });
+
+    it('renders the indicator only when there are unsaved changes', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', { title: 'Operations' });
+      configureFor(component);
+      fixture.detectChanges();
+
+      expect(
+        root(fixture).querySelector('.mfp-dashboard__unsaved-changes'),
+      ).toBeNull();
+
+      component.enterEditMode();
+      component.sections.set([{ id: 'beta', title: 'Beta' }]);
+      fixture.detectChanges();
+
+      const indicator = root(fixture).querySelector(
+        '.mfp-dashboard__unsaved-changes',
+      ) as HTMLElement | null;
+      expect(indicator).not.toBeNull();
+      expect(indicator!.textContent).toContain('Unsaved Changes');
+      expect(
+        indicator!.querySelector('ui5-icon[name="user-edit"]'),
+      ).not.toBeNull();
+    });
+  });
 });

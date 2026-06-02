@@ -1,8 +1,12 @@
 <ui5-table
   test-id="generic-table"
   [style.height]="height() ? height() + 'px' : null"
-  [style.overflow-y]="'auto'">
-  <ui5-table-header-row slot="headerRow" [sticky]="growMode() === 'Scroll' && !!height()">
+  [style.overflow-y]="'auto'"
+>
+  <ui5-table-header-row
+    slot="headerRow"
+    [sticky]="growMode() === 'Scroll' && !!height()"
+  >
     @for (column of viewColumns(); track columnTrackBy(column, $index)) {
       @if (column.group) {
         <ui5-table-header-cell
@@ -32,13 +36,16 @@
           <ui5-table-cell
             [attr.test-id]="'generic-table-cell-' + i + '-' + column.group.name"
           >
-          @let isMultiline = column.group.multiline ?? true;
-          <div
-            class="flex"
-            [style.alignItems]="isMultiline ? column.uiSettings?.align : null"
-            [style.flexDirection]="isMultiline ? 'column' : 'row'"
-            [style.justifyContent]="isMultiline ? null : column.uiSettings?.align">
-            @for (
+            @let isMultiline = column.group.multiline ?? true;
+            <div
+              class="flex"
+              [style.alignItems]="isMultiline ? column.uiSettings?.align : null"
+              [style.flexDirection]="isMultiline ? 'column' : 'row'"
+              [style.justifyContent]="
+                isMultiline ? null : column.uiSettings?.align
+              "
+            >
+              @for (
                 field of column.group.fields;
                 let last = $last;
                 track columnTrackBy(field, $index)
@@ -72,7 +79,7 @@
         } @else {
           <ui5-table-cell
             [attr.test-id]="'generic-table-cell-' + i + '-' + column.property"
-            >
+          >
             <div class="flex" [style.justifyContent]="column.uiSettings?.align">
               <mfp-resource-field
                 [fieldDefinition]="column"
@@ -131,6 +138,7 @@
       >
         <ui5-option value="5">5</ui5-option>
         <ui5-option value="10">10</ui5-option>
+        <ui5-option value="10">20</ui5-option>
         <ui5-option value="50">50</ui5-option>
         <ui5-option value="100">100</ui5-option>
       </ui5-select>

@@ -59,6 +59,35 @@ mfp-wc-dashboard {
   gap: 0.25rem;
 }
 
+.mfp-dashboard__title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.mfp-dashboard__unsaved-changes {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.mfp-dashboard__unsaved-changes-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--sapContent_MarkerIconColor);
+}
+
+.mfp-dashboard__unsaved-changes-text {
+  color: var(--sapContent_LabelColor);
+  text-shadow: 0 0 2px var(--sapContent_ContrastTextShadow, #fff);
+  font-family: var(--sapFontFamily);
+  font-size: var(--sapFontSize, 14px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
 .mfp-dashboard__description {
   font-weight: normal;
   font-family: var(--sapFontFamily);

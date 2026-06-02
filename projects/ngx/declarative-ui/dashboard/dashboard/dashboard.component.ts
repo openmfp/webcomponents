@@ -26,12 +26,14 @@ import {
 } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
+import { Icon } from '@fundamental-ngx/ui5-webcomponents/icon';
 import { Menu } from '@fundamental-ngx/ui5-webcomponents/menu';
 import { MenuItem } from '@fundamental-ngx/ui5-webcomponents/menu-item';
 import { MenuSeparator } from '@fundamental-ngx/ui5-webcomponents/menu-separator';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 import '@ui5/webcomponents-icons/dist/action-settings.js';
 import '@ui5/webcomponents-icons/dist/menu2.js';
+import '@ui5/webcomponents-icons/dist/user-edit.js';
 import { GridStackNode, GridStackOptions } from 'gridstack';
 import {
   GridstackComponent,
@@ -50,6 +52,7 @@ document.body.classList.add('ui5-content-density-compact');
     DashboardSection,
     DashboardCard,
     Button,
+    Icon,
     Menu,
     MenuItem,
     MenuSeparator,
@@ -82,6 +85,27 @@ export class Dashboard implements OnInit, OnDestroy {
   editMode = signal(false);
   compactToolbar = signal(false);
   toolbarMenuOpen = signal(false);
+
+  /** True once the user has dragged/resized any grid item while in edit mode. */
+  private gridDirty = signal(false);
+
+  /** JSON snapshots of sections/cards taken on entering edit mode, used to detect changes. */
+  private sectionsSnapshotJson = '';
+  private cardsSnapshotJson = '';
+
+  /**
+   * True when the user is in edit mode AND has made any change (sections/cards
+   * mutated, or grid items moved/resized). Resets when entering edit mode and
+   * after save/cancel.
+   */
+  hasUnsavedChanges = computed(() => {
+    if (!this.editMode()) return false;
+    if (this.gridDirty()) return true;
+    return (
+      JSON.stringify(this.sections()) !== this.sectionsSnapshotJson ||
+      JSON.stringify(this.cards()) !== this.cardsSnapshotJson
+    );
+  });
 
   private sectionsSnapshot: SectionConfig[] = [];
   private cardsSnapshot: CardConfig[] = [];
@@ -192,6 +216,9 @@ export class Dashboard implements OnInit, OnDestroy {
 
     this.sectionsSnapshot = [...this.sections()];
     this.cardsSnapshot = [...this.cards()];
+    this.sectionsSnapshotJson = JSON.stringify(this.sections());
+    this.cardsSnapshotJson = JSON.stringify(this.cards());
+    this.gridDirty.set(false);
     this.editMode.set(true);
     afterNextRender(
       () => {
@@ -216,6 +243,7 @@ export class Dashboard implements OnInit, OnDestroy {
         };
       }),
     });
+    this.gridDirty.set(false);
     this.editMode.set(false);
   }
 
@@ -228,6 +256,7 @@ export class Dashboard implements OnInit, OnDestroy {
       }),
     );
     this.cardDialogOpen.set(false);
+    this.gridDirty.set(false);
     this.editMode.set(false);
   }
 
@@ -259,6 +288,9 @@ export class Dashboard implements OnInit, OnDestroy {
 
   onGridChange(event: nodesCB): void {
     this.newGridStackNodes = event.nodes;
+    if (this.editMode()) {
+      this.gridDirty.set(true);
+    }
   }
 
   private saveCardsPosition(items: GridStackNode[]): void {

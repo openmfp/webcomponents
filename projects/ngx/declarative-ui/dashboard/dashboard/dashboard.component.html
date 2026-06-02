@@ -2,11 +2,25 @@
   <div class="mfp-dashboard__topbar">
     <div class="mfp-dashboard__topbar-row">
       <div class="mfp-dashboard__header">
-        @if (config().title) {
-          <ui5-title level="H3" size="H3" wrapping-type="Normal">
-            <span [innerHTML]="safeTitle()"></span>
-          </ui5-title>
-        }
+        <div class="mfp-dashboard__title-row">
+          @if (config().title) {
+            <ui5-title level="H3" size="H3" wrapping-type="Normal">
+              <span [innerHTML]="safeTitle()"></span>
+            </ui5-title>
+          }
+          @if (hasUnsavedChanges()) {
+            <div class="mfp-dashboard__unsaved-changes" role="status">
+              <ui5-icon
+                class="mfp-dashboard__unsaved-changes-icon"
+                name="user-edit"
+                accessible-name="Unsaved Changes"
+              />
+              <span class="mfp-dashboard__unsaved-changes-text"
+                >Unsaved Changes</span
+              >
+            </div>
+          }
+        </div>
         @if (config().description) {
           <ui5-title level="H5" size="H5" wrapping-type="Normal">
             <span class="mfp-dashboard__description" [innerHTML]="safeDescription()"></span>
