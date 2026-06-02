@@ -1,0 +1,30 @@
+:host {
+  display: contents;
+}
+
+.discard-changes-dialog {
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+  }
+
+  &__icon {
+    color: var(--sapCriticalColor, #e76500);
+  }
+
+  &__body {
+    padding: 1rem 0;
+    min-width: 320px;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+    gap: 0.5rem;
+  }
+}

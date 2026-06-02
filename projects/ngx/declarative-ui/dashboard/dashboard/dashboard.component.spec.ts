@@ -257,6 +257,10 @@ describe('Dashboard', () => {
     component.cardDialogOpen.set(true);
 
     component.cancelEdit();
+    // Unsaved changes were present, so cancelEdit opens the discard popup
+    // instead of reverting. Confirm the discard to actually revert.
+    expect(component.discardDialogOpen()).toBe(true);
+    component.confirmDiscard();
 
     expect(component.sections()).toEqual(sections);
     expect(component.cards()).toEqual([
@@ -265,6 +269,76 @@ describe('Dashboard', () => {
     ]);
     expect(component.cardDialogOpen()).toBe(false);
     expect(component.editMode()).toBe(false);
+  });
+
+  describe('discard-changes confirmation', () => {
+    it('opens the discard popup instead of reverting when cancelEdit is called with unsaved changes', () => {
+      const { component } = setup();
+      component.sections.set([{ id: 'alpha', title: 'Alpha' }]);
+      (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
+        () => ({ gridstackItems: { toArray: () => [] } });
+
+      component.enterEditMode();
+      component.sections.set([{ id: 'beta', title: 'Beta' }]);
+
+      component.cancelEdit();
+
+      expect(component.discardDialogOpen()).toBe(true);
+      // No revert yet — user has not confirmed.
+      expect(component.editMode()).toBe(true);
+      expect(component.sections()).toEqual([{ id: 'beta', title: 'Beta' }]);
+    });
+
+    it('reverts immediately when cancelEdit is called without unsaved changes', () => {
+      const { component } = setup();
+      component.sections.set([{ id: 'alpha', title: 'Alpha' }]);
+      (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
+        () => ({ gridstackItems: { toArray: () => [] } });
+
+      component.enterEditMode();
+
+      component.cancelEdit();
+
+      expect(component.discardDialogOpen()).toBe(false);
+      expect(component.editMode()).toBe(false);
+    });
+
+    it('confirmDiscard reverts the snapshot and closes the popup', () => {
+      const { component } = setup();
+      const sections: SectionConfig[] = [{ id: 'alpha', title: 'Alpha' }];
+      component.sections.set(sections);
+      (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
+        () => ({ gridstackItems: { toArray: () => [] } });
+
+      component.enterEditMode();
+      component.sections.set([{ id: 'beta', title: 'Beta' }]);
+      component.cancelEdit();
+      expect(component.discardDialogOpen()).toBe(true);
+
+      component.confirmDiscard();
+
+      expect(component.discardDialogOpen()).toBe(false);
+      expect(component.sections()).toEqual(sections);
+      expect(component.editMode()).toBe(false);
+    });
+
+    it('cancelDiscard closes the popup and keeps the user in edit mode with their changes', () => {
+      const { component } = setup();
+      component.sections.set([{ id: 'alpha', title: 'Alpha' }]);
+      (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
+        () => ({ gridstackItems: { toArray: () => [] } });
+
+      component.enterEditMode();
+      component.sections.set([{ id: 'beta', title: 'Beta' }]);
+      component.cancelEdit();
+      expect(component.discardDialogOpen()).toBe(true);
+
+      component.cancelDiscard();
+
+      expect(component.discardDialogOpen()).toBe(false);
+      expect(component.editMode()).toBe(true);
+      expect(component.sections()).toEqual([{ id: 'beta', title: 'Beta' }]);
+    });
   });
 
   it('removes sections together with their cards and removes loose cards by id', () => {
@@ -602,6 +676,9 @@ describe('Dashboard', () => {
       expect(component.hasUnsavedChanges()).toBe(true);
 
       component.cancelEdit();
+      // cancelEdit now defers the revert behind the discard popup when there
+      // are unsaved changes; confirming finishes the cancel.
+      component.confirmDiscard();
 
       expect(component.editMode()).toBe(false);
       expect(component.hasUnsavedChanges()).toBe(false);

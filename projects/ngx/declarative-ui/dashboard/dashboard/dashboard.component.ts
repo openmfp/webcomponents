@@ -1,6 +1,7 @@
 import { ButtonSettings } from '../../models/ui-definition';
 import { DashboardCard } from '../card/dashboard-card.component';
 import { addComponentToRegistry } from '../card/utils/dashboard-card-registry';
+import { DiscardChangesDialog } from '../discard-changes-dialog/discard-changes-dialog.component';
 import { EditCardsDialog } from '../edit-cards-dialog/edit-cards-dialog.component';
 import { CardConfig, DashboardConfig, SectionConfig } from '../models';
 import { CELL_HEIGHT, COMPACT_BREAKPOINT } from '../models/constants';
@@ -48,6 +49,7 @@ document.body.classList.add('ui5-content-density-compact');
   imports: [
     GridstackComponent,
     GridstackItemComponent,
+    DiscardChangesDialog,
     EditCardsDialog,
     DashboardSection,
     DashboardCard,
@@ -150,6 +152,7 @@ export class Dashboard implements OnInit, OnDestroy {
   );
 
   cardDialogOpen = signal(false);
+  discardDialogOpen = signal(false);
   customActions = computed(() => this.config().customActions ?? []);
   addedCardsIds = computed(() => new Set(this.cards().map((c) => c.id)));
 
@@ -248,6 +251,31 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   cancelEdit(): void {
+    if (this.hasUnsavedChanges()) {
+      this.discardDialogOpen.set(true);
+      return;
+    }
+    this.discardEdit();
+  }
+
+  /**
+   * Confirms abandoning unsaved edit-mode changes: closes the discard popup
+   * and reverts sections/cards to the snapshot taken on entering edit mode.
+   */
+  confirmDiscard(): void {
+    this.discardDialogOpen.set(false);
+    this.discardEdit();
+  }
+
+  /**
+   * Cancels the discard popup and keeps the user in edit mode with their
+   * pending changes intact.
+   */
+  cancelDiscard(): void {
+    this.discardDialogOpen.set(false);
+  }
+
+  private discardEdit(): void {
     this.sections.set(this.sectionsSnapshot);
     this.cards.set(
       this.cardsSnapshot.map((c) => {

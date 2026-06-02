@@ -153,3 +153,9 @@
   (cancelled)="closeCardPanel()"
   (confirm)="onCardsEdited($event)"
 />
+
+<mfp-discard-changes-dialog
+  [open]="discardDialogOpen()"
+  (cancelled)="cancelDiscard()"
+  (confirm)="confirmDiscard()"
+/>
