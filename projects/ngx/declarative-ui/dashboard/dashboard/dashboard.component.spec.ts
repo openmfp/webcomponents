@@ -708,4 +708,154 @@ describe('Dashboard', () => {
       ).not.toBeNull();
     });
   });
+
+  describe('navigation guard (requestNavigation)', () => {
+    function enterEditWithDirty(component: Dashboard): void {
+      component.sections.set([{ id: 'alpha', title: 'Alpha' }]);
+      (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
+        () => ({ gridstackItems: { toArray: () => [] } });
+      component.enterEditMode();
+      // Make the snapshot diverge so hasUnsavedChanges() flips to true.
+      component.sections.set([{ id: 'beta', title: 'Beta' }]);
+    }
+
+    it('runs the proceed callback synchronously and returns true when there are no unsaved changes', () => {
+      const { component } = setup();
+      let ran = 0;
+
+      const result = component.requestNavigation(() => ran++);
+
+      expect(result).toBe(true);
+      expect(ran).toBe(1);
+      expect(component.unsavedNavDialogOpen()).toBe(false);
+    });
+
+    it('queues the navigation and opens the unsaved-changes dialog when there are unsaved changes', () => {
+      const { component } = setup();
+      enterEditWithDirty(component);
+      let ran = 0;
+
+      const result = component.requestNavigation(() => ran++);
+
+      expect(result).toBe(false);
+      expect(ran).toBe(0);
+      expect(component.unsavedNavDialogOpen()).toBe(true);
+    });
+
+    it('Save persists the changes, closes the dialog, and runs the queued navigation', () => {
+      const { component } = setup();
+      enterEditWithDirty(component);
+      let ran = 0;
+      let savedPayload: unknown = null;
+      component.saved.subscribe((p) => (savedPayload = p));
+
+      component.requestNavigation(() => ran++);
+      component.onUnsavedNavSave();
+
+      expect(component.unsavedNavDialogOpen()).toBe(false);
+      expect(component.editMode()).toBe(false);
+      expect(savedPayload).not.toBeNull();
+      expect(ran).toBe(1);
+    });
+
+    it('Discard reverts the snapshot, closes the dialog, and runs the queued navigation', () => {
+      const { component } = setup();
+      const original: SectionConfig[] = [{ id: 'alpha', title: 'Alpha' }];
+      component.sections.set(original);
+      (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
+        () => ({ gridstackItems: { toArray: () => [] } });
+      component.enterEditMode();
+      component.sections.set([{ id: 'beta', title: 'Beta' }]);
+      let ran = 0;
+
+      component.requestNavigation(() => ran++);
+      component.onUnsavedNavDiscard();
+
+      expect(component.unsavedNavDialogOpen()).toBe(false);
+      expect(component.editMode()).toBe(false);
+      expect(component.sections()).toEqual(original);
+      expect(ran).toBe(1);
+    });
+
+    it('Cancel closes the dialog, drops the queued navigation, and keeps the user in edit mode', () => {
+      const { component } = setup();
+      enterEditWithDirty(component);
+      let ran = 0;
+
+      component.requestNavigation(() => ran++);
+      component.onUnsavedNavCancel();
+
+      expect(component.unsavedNavDialogOpen()).toBe(false);
+      expect(component.editMode()).toBe(true);
+      expect(ran).toBe(0);
+    });
+
+    it('a fresh requestNavigation replaces an already-pending one (the new callback wins on Save)', () => {
+      const { component } = setup();
+      enterEditWithDirty(component);
+      let firstRan = 0;
+      let secondRan = 0;
+
+      component.requestNavigation(() => firstRan++);
+      component.requestNavigation(() => secondRan++);
+      component.onUnsavedNavSave();
+
+      expect(firstRan).toBe(0);
+      expect(secondRan).toBe(1);
+    });
+  });
+
+  describe('beforeunload listener', () => {
+    it('preventDefault is called when there are unsaved changes', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', { title: 'Operations' });
+      fixture.detectChanges();
+      component.sections.set([{ id: 'alpha', title: 'Alpha' }]);
+      (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
+        () => ({ gridstackItems: { toArray: () => [] } });
+      component.enterEditMode();
+      component.sections.set([{ id: 'beta', title: 'Beta' }]);
+
+      const event = new Event('beforeunload', { cancelable: true });
+      const preventSpy = vi.spyOn(event, 'preventDefault');
+
+      window.dispatchEvent(event);
+
+      expect(preventSpy).toHaveBeenCalled();
+    });
+
+    it('preventDefault is NOT called when there are no unsaved changes', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', { title: 'Operations' });
+      fixture.detectChanges();
+      // Not in edit mode → hasUnsavedChanges() returns false unconditionally.
+      void component;
+
+      const event = new Event('beforeunload', { cancelable: true });
+      const preventSpy = vi.spyOn(event, 'preventDefault');
+
+      window.dispatchEvent(event);
+
+      expect(preventSpy).not.toHaveBeenCalled();
+    });
+
+    it('removes the listener on destroy', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', { title: 'Operations' });
+      fixture.detectChanges();
+      component.sections.set([{ id: 'alpha', title: 'Alpha' }]);
+      (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
+        () => ({ gridstackItems: { toArray: () => [] } });
+      component.enterEditMode();
+      component.sections.set([{ id: 'beta', title: 'Beta' }]);
+
+      fixture.destroy();
+
+      const event = new Event('beforeunload', { cancelable: true });
+      const preventSpy = vi.spyOn(event, 'preventDefault');
+      window.dispatchEvent(event);
+
+      expect(preventSpy).not.toHaveBeenCalled();
+    });
+  });
 });

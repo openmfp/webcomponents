@@ -204,6 +204,22 @@ const cards: CardConfig[] = [
 | `saved`              | `{ sections: SectionConfig[]; cards: CardConfig[] }` | Emits when the user saves edits                                  |
 | `actionButtonClick`  | `{ event: MouseEvent; action: ButtonSettings }`      | Emits when a custom action button from `config.customActions` is clicked |
 
+### Public methods
+
+| Method                                            | Returns   | Description                                                                                                  |
+| ------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------ |
+| `requestNavigation(proceed: () => void)`          | `boolean` | Framework-agnostic navigation guard — see [Unsaved-changes guard](#unsaved-changes-guard).                  |
+| `Dashboard.registerAngularComponents(types[])`    | `void`    | Static — registers standalone Angular card components by their element selector name.                       |
+
+### Reactive state
+
+| Signal                  | Type                  | Description                                                                                                                                |
+| ----------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `hasUnsavedChanges()`   | `computed<boolean>`   | `true` while the user is in edit mode AND has changed sections, cards, or grid positions. Resets after save / discard.                     |
+| `editMode()`            | `signal<boolean>`     | `true` while the user is in the dashboard's edit mode.                                                                                     |
+| `unsavedNavDialogOpen()`| `signal<boolean>`     | `true` while the unsaved-changes navigation popup is shown. Driven by `requestNavigation()`; consumers normally don't read it directly.    |
+| `discardDialogOpen()`   | `signal<boolean>`     | `true` while the discard-confirmation popup (Cancel button on the edit-bar) is shown.                                                      |
+
 ---
 
 ## EditCardsDialog
@@ -230,6 +246,194 @@ The `EditCardsDialog` component (`mfp-edit-cards-dialog`) is rendered inside the
 | Method                        | Description                                                                 |
 | ----------------------------- | --------------------------------------------------------------------------- |
 | `registerAngularComponents()` | Registers standalone Angular card components by their element selector name |
+
+---
+
+## Unsaved-changes guard
+
+When the user enters edit mode and starts changing the layout — toggling cards, dragging tiles, resizing, removing sections — the dashboard surfaces three independent confirmation paths so unsaved work is never lost silently:
+
+1. **Edit-bar Cancel** — clicking the Cancel button on the in-page edit toolbar with unsaved changes opens the [`DiscardChangesDialog`](#discardchangesdialog) (two buttons: Discard / Cancel).
+2. **Closing the tab / typing a new URL** — a `beforeunload` listener triggers the browser's native generic confirmation prompt. Browsers do **not** allow custom HTML or button labels here; it's a security boundary, not a design choice.
+3. **In-app navigation** — when the host app routes the user to a different page (Angular Router, Luigi, plain `<a href>`, history popstate, anything), the dashboard exposes a public method that opens a custom three-button popup ([`UnsavedChangesDialog`](#unsavedchangesdialog)) and resumes navigation only on Save or Discard.
+
+The first two are wired automatically as soon as `<mfp-dashboard>` is mounted — no consumer code is required. The third needs one line of glue per navigation hook the host app uses.
+
+### `dashboard.requestNavigation(proceed)` — the integration API
+
+The dashboard library is **framework-independent**: it does not import `@angular/router`, `@luigi-project/client`, or any other navigation framework. Instead, the consumer app calls a single method on the dashboard instance from inside whatever navigation hook it has, and lets the dashboard decide whether to allow, queue, or drop the navigation:
+
+```ts
+const proceeded: boolean = dashboard.requestNavigation(() => {
+  // Your real navigation logic. Anything goes — router.navigateByUrl,
+  // LuigiClient.linkManager().navigate, window.location.href = ...
+});
+```
+
+Behaviour:
+
+| Dashboard state              | What `requestNavigation` does                                                  | Return value |
+| ---------------------------- | ------------------------------------------------------------------------------ | ------------ |
+| No unsaved changes           | Calls `proceed()` synchronously. The host can navigate immediately.            | `true`       |
+| Unsaved changes              | Opens `UnsavedChangesDialog` and stores `proceed` as a pending callback. Host **must NOT** navigate. | `false`      |
+
+If the user picks…
+
+| Button in `UnsavedChangesDialog` | What the dashboard does                                                                                              |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| **Save**                         | Persists changes (emits `saved`), exits edit mode, then runs the queued `proceed()` callback.                        |
+| **Discard**                      | Reverts to the snapshot taken on entering edit mode, exits edit mode, then runs the queued `proceed()` callback.     |
+| **Cancel**                       | Closes the popup and **drops** the pending callback. The user stays on the page in edit mode with their work intact. |
+
+A second `requestNavigation()` call while a request is already pending replaces the older callback — Cancel always means "stay here", so losing the older queued navigation is the right outcome.
+
+### Wiring examples
+
+The same `requestNavigation()` works from any navigation entry point. Typical wirings:
+
+#### Angular Router (`CanDeactivate` guard)
+
+```ts
+import { CanDeactivateFn } from '@angular/router';
+import { Dashboard } from '@openmfp/ngx';
+
+export const unsavedDashboardChangesGuard: CanDeactivateFn<{
+  dashboard: Dashboard;
+}> = (component, _current, _snapshot, nextState) => {
+  const proceeded = component.dashboard.requestNavigation(() => {
+    // The dashboard already decided we may go — just navigate.
+    location.assign(nextState.url);
+  });
+  // Return `true` to allow Angular's own pending navigation through; return
+  // `false` to block it (the dashboard's dialog will resume navigation later).
+  return proceeded;
+};
+```
+
+Attach the guard to the route, and expose the dashboard as a `viewChild` on the page component:
+
+```ts
+@Component({
+  imports: [Dashboard],
+  template: `<mfp-dashboard #dashboard ... />`,
+})
+export class DashboardPage {
+  dashboard = viewChild.required(Dashboard);
+}
+```
+
+#### Luigi navigation listener
+
+```ts
+import LuigiClient from '@luigi-project/client';
+
+LuigiClient.addNavigationListener((event) => {
+  const proceeded = dashboard.requestNavigation(() => {
+    LuigiClient.linkManager().navigate(event.params.path);
+  });
+  // Block Luigi's default navigation when we've queued the dialog.
+  return !proceeded;
+});
+```
+
+#### Plain link / button click
+
+```ts
+linkEl.addEventListener('click', (e) => {
+  e.preventDefault();
+  dashboard.requestNavigation(() => {
+    window.location.href = linkEl.href;
+  });
+});
+```
+
+#### Web-component consumers
+
+Because `<mfp-wc-dashboard>` is the same Angular component wrapped as a custom element, the method is reachable on the DOM node:
+
+```js
+const dashboardEl = document.querySelector('mfp-wc-dashboard');
+const proceeded = dashboardEl.requestNavigation(() => {
+  history.pushState(null, '', '/next');
+});
+```
+
+### Showing your own dialog instead
+
+The built-in `UnsavedChangesDialog` covers the common case (Save / Discard / Cancel). If the host app needs a different look, copy, or behaviour, the dashboard exposes the primitives so you can replace the popup entirely:
+
+1. Read the `hasUnsavedChanges()` computed signal in your own navigation interceptor.
+2. If it is `true`, suppress the navigation, render your own dialog (any framework, any styling), and based on the user's choice call one of:
+   - `dashboard.saveEdit()` — persist (fires the `saved` event) and exit edit mode.
+   - The dashboard does not currently expose a public `discardEdit()` method. The simplest way to discard from outside is `dashboard.cancelEdit()` — it opens `DiscardChangesDialog` if there are unsaved changes; you can then drive `confirmDiscard()` programmatically. If you want to discard without any popup at all, prefer skipping the in-app navigation and relying on `requestNavigation()` instead.
+3. If you do want to keep the dashboard in charge of the popup but swap the **dialog UI only**, you can hide the default dialog by overriding its CSS in your shadow-DOM-piercing stylesheet and rendering your own component bound to `unsavedNavDialogOpen()`, then calling `onUnsavedNavSave()`, `onUnsavedNavDiscard()`, or `onUnsavedNavCancel()` from your buttons. The handlers are the same ones the built-in dialog uses, so behaviour stays consistent.
+
+In practice the recommended path is option 1 — drive everything through `requestNavigation()` and let the dashboard's built-in popup handle it. Reach for the lower-level signals only when your visual requirements demand it.
+
+### What the user sees
+
+#### Browser-level (closing tab, typing URL)
+
+The browser's native generic prompt — wording is fixed by the browser:
+
+> _Leave site? Changes you made may not be saved._
+
+This fires only while `hasUnsavedChanges()` is true; the listener is removed when the dashboard is destroyed.
+
+#### In-app navigation — `UnsavedChangesDialog`
+
+Three-button popup driven by `requestNavigation()`:
+
+- Header: warning icon + "Unsaved Changes"
+- Body: "You are leaving this page. Save or discard the changes to proceed. This action cannot be undone."
+- Buttons: **Save** (Emphasized) / **Discard** (Transparent) / **Cancel** (Transparent)
+
+#### Edit-bar Cancel — `DiscardChangesDialog`
+
+Two-button popup shown when the user clicks the Cancel button on the in-page edit toolbar with unsaved changes:
+
+- Header: warning icon + "Discard Changes"
+- Body: "Discard the changes? This action cannot be undone."
+- Buttons: **Discard** (Emphasized) / **Cancel** (Transparent)
+
+---
+
+## DiscardChangesDialog
+
+`<mfp-discard-changes-dialog>` — confirmation popup the dashboard pops when the user clicks Cancel on the edit-bar with unsaved changes. It is rendered automatically by `<mfp-dashboard>`; the standalone component is exported so it can be reused outside the dashboard if you need the same confirmation pattern elsewhere.
+
+### Inputs
+
+| Input  | Type      | Default | Description                |
+| ------ | --------- | ------- | -------------------------- |
+| `open` | `boolean` | `false` | Controls dialog visibility |
+
+### Outputs
+
+| Output      | Payload | Description                                                                |
+| ----------- | ------- | -------------------------------------------------------------------------- |
+| `confirm`   | `void`  | Emits when the user clicks **Discard**                                     |
+| `cancelled` | `void`  | Emits when the user clicks **Cancel** or closes the dialog (Esc / overlay) |
+
+---
+
+## UnsavedChangesDialog
+
+`<mfp-unsaved-changes-dialog>` — three-button popup the dashboard pops when an in-app navigation is intercepted via `requestNavigation()`. Like `DiscardChangesDialog`, the component is exported standalone and can be reused.
+
+### Inputs
+
+| Input  | Type      | Default | Description                |
+| ------ | --------- | ------- | -------------------------- |
+| `open` | `boolean` | `false` | Controls dialog visibility |
+
+### Outputs
+
+| Output      | Payload | Description                                                                |
+| ----------- | ------- | -------------------------------------------------------------------------- |
+| `save`      | `void`  | Emits when the user clicks **Save**                                        |
+| `discard`   | `void`  | Emits when the user clicks **Discard**                                     |
+| `cancelled` | `void`  | Emits when the user clicks **Cancel** or closes the dialog (Esc / overlay) |
 
 ---
 

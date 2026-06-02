@@ -1,0 +1,19 @@
+<ui5-dialog [open]="open()" (ui5BeforeClose)="cancelled.emit()">
+  <div class="unsaved-changes-dialog__header" slot="header">
+    <ui5-icon
+      class="unsaved-changes-dialog__icon"
+      name="alert"
+      accessible-name="Warning"
+    />
+    <ui5-title level="H5">Unsaved Changes</ui5-title>
+  </div>
+  <div class="unsaved-changes-dialog__body">
+    You are leaving this page. Save or discard the changes to proceed. This
+    action cannot be undone.
+  </div>
+  <div class="unsaved-changes-dialog__footer" slot="footer">
+    <ui5-button design="Emphasized" (click)="save.emit()">Save</ui5-button>
+    <ui5-button design="Transparent" (click)="discard.emit()">Discard</ui5-button>
+    <ui5-button design="Transparent" (click)="cancelled.emit()">Cancel</ui5-button>
+  </div>
+</ui5-dialog>

@@ -159,3 +159,10 @@
   (cancelled)="cancelDiscard()"
   (confirm)="confirmDiscard()"
 />
+
+<mfp-unsaved-changes-dialog
+  [open]="unsavedNavDialogOpen()"
+  (cancelled)="onUnsavedNavCancel()"
+  (discard)="onUnsavedNavDiscard()"
+  (save)="onUnsavedNavSave()"
+/>
