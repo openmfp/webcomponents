@@ -4,17 +4,17 @@
   </div>
   <div class="edit-cards-dialog">
     <ui5-list noDataText="No cards available." selectionMode="None" separators="Inner">
-      @for (ac of availableCards(); track ac.id) {
+      @for (availableCard of availableCards(); track availableCard.id) {
         <ui5-li-custom
-          [accessibleName]="ac.label || ac.component"
+          [accessibleName]="availableCard.label || availableCard.component"
         >
           <div class="edit-cards-dialog__list-item">
-            <span>{{ ac.label || ac.component }}</span>
+            <span>{{ availableCard.label || availableCard.component }}</span>
             <ui5-switch
-              [accessibleName]="ac.label || ac.component"
-              [checked]="selectedIds().has(ac.id)"
-              (ui5Change)="toggle(ac.id)"
-              (keydown)="onSwitchKeydown($event, ac.id)"
+              [accessibleName]="availableCard.label || availableCard.component"
+              [checked]="selectedIds().has(availableCard.id)"
+              (ui5Change)="toggle(availableCard.id)"
+              (keydown)="onSwitchKeydown($event, availableCard.id)"
             />
           </div>
         </ui5-li-custom>

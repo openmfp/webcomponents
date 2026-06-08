@@ -1,10 +1,5 @@
-<ui5-dialog [open]="open()" (ui5BeforeClose)="cancelled.emit()">
+<ui5-dialog [open]="open()" state="Critical" (ui5BeforeClose)="cancelled.emit()">
   <div class="discard-changes-dialog__header" slot="header">
-    <ui5-icon
-      class="discard-changes-dialog__icon"
-      name="alert"
-      accessible-name="Warning"
-    />
     <ui5-title level="H5">Discard Changes</ui5-title>
   </div>
   <div class="discard-changes-dialog__body">
