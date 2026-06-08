@@ -21,14 +21,15 @@ describe('UnsavedChangesDialog', () => {
   });
 
   describe('template', () => {
-    it('renders the warning icon, title, body and three buttons in the right order', () => {
+    it('renders the title, body and three buttons in the right order', () => {
       const { fixture } = setup();
 
       fixture.componentRef.setInput('open', true);
       fixture.detectChanges();
 
       const r = root(fixture);
-      expect(r.querySelector('ui5-icon')?.getAttribute('name')).toBe('alert');
+      expect(r.querySelector('ui5-icon')).toBeNull();
+      expect(r.querySelector('ui5-dialog')?.getAttribute('state')).toBe('Critical');
       expect(r.querySelector('ui5-title')?.textContent?.trim()).toBe(
         'Unsaved Changes',
       );

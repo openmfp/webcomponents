@@ -21,14 +21,15 @@ describe('DiscardChangesDialog', () => {
   });
 
   describe('template', () => {
-    it('renders the warning icon, title, body and both buttons', () => {
+    it('renders the title, body and both buttons', () => {
       const { fixture } = setup();
 
       fixture.componentRef.setInput('open', true);
       fixture.detectChanges();
 
       const r = root(fixture);
-      expect(r.querySelector('ui5-icon')?.getAttribute('name')).toBe('alert');
+      expect(r.querySelector('ui5-icon')).toBeNull();
+      expect(r.querySelector('ui5-dialog')?.getAttribute('state')).toBe('Critical');
       expect(r.querySelector('ui5-title')?.textContent?.trim()).toBe(
         'Discard Changes',
       );
