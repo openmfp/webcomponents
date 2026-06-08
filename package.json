@@ -58,7 +58,7 @@
     "@types/jsonpath": "0.2.4",
     "@types/node": "24.12.4",
     "@vitest/coverage-v8": "4.1.7",
-    "concurrently": "10.0.0",
+    "concurrently": "10.0.1",
     "eslint": "9.39.4",
     "jsdom": "29.1.1",
     "ng-packagr": "^21.1.0",
