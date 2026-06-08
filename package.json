@@ -57,7 +57,7 @@
     "@storybook/angular": "10.3.6",
     "@types/jsonpath": "0.2.4",
     "@types/node": "24.12.4",
-    "@vitest/coverage-v8": "4.1.7",
+    "@vitest/coverage-v8": "4.1.8",
     "concurrently": "10.0.1",
     "eslint": "9.39.4",
     "jsdom": "29.1.1",
@@ -68,7 +68,7 @@
     "storybook": "10.3.6",
     "typescript": "5.9.3",
     "typescript-eslint": "^8.33.0",
-    "vitest": "4.1.7",
+    "vitest": "4.1.8",
     "wait-on": "9.0.10"
   },
   "overrides": {
