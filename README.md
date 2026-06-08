@@ -67,6 +67,8 @@ npm run storybook
 npm run build:storybook
 ```
 
+Once running, open Storybook at [http://localhost:6006/](http://localhost:6006/).
+
 ### Code Quality
 
 ```bash
