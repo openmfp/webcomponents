@@ -1,5 +1,5 @@
 import { PropertyField, TransformType } from '../../models';
-import jsonpath from 'jsonpath';
+import { JSONPath } from 'jsonpath-plus';
 
 export const getResourceValueByJsonPath = <T>(
   resource: T,
@@ -22,7 +22,17 @@ export const getResourceValueByJsonPath = <T>(
   }
 
   const prefix = property.startsWith('$.') ? '' : '$.';
-  const queryResult = jsonpath.query(resource, `${prefix}${property}`);
+  // jsonpath-plus's `JSONPath` is overloaded: by default `resultType: 'value'`
+  // returns an array of matched values, but the TS overload defaults to
+  // returning a `JSONPathClass` unless we pin `<T>` to the array shape.
+  // The `json` parameter is typed as a concrete JSON-shape union; the generic
+  // `T` of this function is unconstrained, so we cast at the boundary. The
+  // returned array is `any[]` (matching jsonpath's old typing) so the
+  // downstream `value[field.propertyField.key]` access keeps compiling.
+  const queryResult = JSONPath<any[]>({
+    path: `${prefix}${property}`,
+    json: resource as object,
+  });
   const value = queryResult.length ? queryResult[0] : undefined;
 
   if (value && field.propertyField) {
