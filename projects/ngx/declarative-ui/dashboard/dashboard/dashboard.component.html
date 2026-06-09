@@ -129,6 +129,7 @@
       <ng-content select="[slot=dashboard-subheader]" />
     </div>
   </div>
+
   <div class="mfp-sections-container">
     @for (section of sections(); track section.id) {
       <mfp-dashboard-section
@@ -141,6 +142,7 @@
       />
     }
   </div>
+
   <gridstack #grid [options]="gridOptions()" (addedCB)="onGridChange($event)" (changeCB)="onGridChange($event)" (removedCB)="onGridChange($event)">
     @for (card of looseCards(); track card.id) {
       <gridstack-item
