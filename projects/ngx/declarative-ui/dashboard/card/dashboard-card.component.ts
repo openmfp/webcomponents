@@ -12,11 +12,13 @@ import {
   viewChild,
 } from '@angular/core';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
+import { Icon } from '@fundamental-ngx/ui5-webcomponents/icon';
+import '@ui5/webcomponents-icons/dist/resize-corner.js';
 import { mountSapCard, mountAngularCard, mountWcCard } from './utils';
 
 @Component({
   selector: 'mfp-dashboard-card',
-  imports: [Button],
+  imports: [Button, Icon],
   templateUrl: './dashboard-card.component.html',
   styleUrl: './dashboard-card.component.scss',
   encapsulation: ViewEncapsulation.Emulated,
