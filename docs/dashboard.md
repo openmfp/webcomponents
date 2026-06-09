@@ -449,6 +449,7 @@ interface DashboardConfig {
   buttonsSettings?: DashboardButtonsSettings;
   customActions?: ButtonSettings[];
   editable?: boolean;
+  editButtonFirst?: boolean;
 }
 ```
 
@@ -494,6 +495,29 @@ const config: DashboardConfig = {
 ```
 
 The compact toolbar (viewport width < 726 px) collapses all actions into a burger menu. The Edit View menu item always uses the configured `icon` and falls back to the text `'Edit View'` when no `text` override is set.
+
+#### Toolbar button order — `editButtonFirst`
+
+By default the **Edit View** button is rendered _after_ all `customActions` (in both the normal toolbar and the compact burger menu). Set `editButtonFirst: true` on the `DashboardConfig` to flip that order so Edit View is rendered _before_ the custom actions:
+
+```ts
+const config: DashboardConfig = {
+  title: 'Platform Overview',
+  editable: true,
+  editButtonFirst: true,
+  customActions: [
+    { action: 'export', text: 'Export', icon: 'download' },
+    { action: 'share',  text: 'Share',  icon: 'share' },
+  ],
+};
+```
+
+| `editButtonFirst` | Resulting toolbar order                          |
+| ----------------- | ------------------------------------------------ |
+| `false` (default) | _custom actions_ → Edit View                     |
+| `true`            | Edit View → _custom actions_                     |
+
+The flag has no effect when `editable` is `false` (the Edit View button is not rendered at all). In the compact burger menu, the menu separator between Edit View and the custom actions is only inserted when there is at least one custom action to separate from.
 
 ### `ButtonSettings`
 

@@ -61,6 +61,16 @@
             "
             (ui5Open)="toolbarMenuOpen.set(true)"
           >
+            @if (config().editButtonFirst && config().editable) {
+              <ui5-menu-item
+                data-action="edit-view"
+                [icon]="editViewButton().icon"
+                [text]="editViewButton().text || 'Edit View'"
+              />
+              @if (customActions().length) {
+                <ui5-menu-separator />
+              }
+            }
             @for (action of customActions(); track action.action) {
               <ui5-menu-item
                 [attr.data-action]="action.action"
@@ -68,7 +78,7 @@
                 [text]="action.text ?? ''"
               />
             }
-            @if (config().editable) {
+            @if (!config().editButtonFirst && config().editable) {
               <ui5-menu-separator />
               <ui5-menu-item
                 data-action="edit-view"
@@ -78,6 +88,16 @@
             }
           </ui5-menu>
         } @else {
+          @if (config().editButtonFirst && config().editable) {
+            <ui5-button
+              [accessibleName]="editViewButton().text || editViewButton().tooltip || 'Edit View'"
+              [design]="editViewButton().design"
+              [icon]="editViewButton().icon"
+              [tooltip]="editViewButton().tooltip"
+              (click)="enterEditMode()"
+              >{{ editViewButton().text }}</ui5-button
+            >
+          }
           @for (action of customActions(); track action.action) {
             <ui5-button
               [accessibleName]="action.text || action.tooltip || action.action"
@@ -91,7 +111,7 @@
               >{{ action.text }}</ui5-button
             >
           }
-          @if (config().editable) {
+          @if (!config().editButtonFirst && config().editable) {
             <ui5-button
               [accessibleName]="editViewButton().text || editViewButton().tooltip || 'Edit View'"
               [design]="editViewButton().design"

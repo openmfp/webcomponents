@@ -85,4 +85,6 @@ export interface DashboardConfig {
   customActions?: ButtonSettings[];
   /** When `true`, shows the Edit View button in the toolbar, allowing the user to enter edit mode. */
   editable?: boolean;
+  /** When `true`, the Edit View button is rendered before the custom actions instead of after. Defaults to `false`. */
+  editButtonFirst?: boolean;
 }

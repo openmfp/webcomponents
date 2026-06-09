@@ -18,6 +18,7 @@ import {
   ViewEncapsulation,
   afterNextRender,
   computed,
+  effect,
   inject,
   input,
   linkedSignal,
@@ -85,6 +86,7 @@ export class Dashboard implements OnInit, OnDestroy {
     event: MouseEvent;
     action: ButtonSettings;
   }>();
+  readonly unsavedChangesChange = output<boolean>();
 
   editMode = signal(false);
   compactToolbar = signal(false);
@@ -198,6 +200,10 @@ export class Dashboard implements OnInit, OnDestroy {
   looseCards = linkedSignal(() => this.cards().filter((c) => !c.sectionId));
 
   private newGridStackNodes: GridStackNode[] = [];
+
+  constructor() {
+    effect(() => this.unsavedChangesChange.emit(this.hasUnsavedChanges()));
+  }
 
   ngOnInit(): void {
     this.resizeObserver = new ResizeObserver((entries) => {
