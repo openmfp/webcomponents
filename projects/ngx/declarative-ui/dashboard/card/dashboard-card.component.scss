@@ -34,6 +34,10 @@
   padding-inline-start: var(--mfp_cardContainerPadding, 10px);
   padding-inline-end: var(--mfp_cardContainerPadding, 10px);
 
+  &--editing {
+    cursor: grab;
+  }
+
   &--editing:hover {
     --sapTile_BorderColor: var(--sapHighlightColor, #0070f2);
     --sapGroup_ContentBorderColor: var(--sapHighlightColor, #0070f2);
@@ -42,6 +46,13 @@
   &--editing:hover .card__resize-indicator {
     opacity: 1;
   }
+}
+
+// Gridstack adds .ui-draggable-dragging to the <gridstack-item> wrapping this
+// card while a drag is active. Override the open-palm `grab` cursor with the
+// closed-fist `grabbing` cursor for the duration of the drag.
+:host-context(.ui-draggable-dragging) .component-card--editing {
+  cursor: grabbing !important;
 }
 
 .component-host {

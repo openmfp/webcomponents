@@ -145,3 +145,15 @@ mfp-wc-dashboard {
     padding: calc(var(--sapShell_Space_L, 2rem) - 10px);
   }
 }
+
+// While Gridstack is dragging an item, force the grabbing (closed-fist) cursor
+// across the whole grid. Gridstack 12 sets `pointer-events: none` on the drag
+// helper (see node_modules/gridstack/dist/dd-draggable.js:316) which prevents
+// it from setting its own cursor — the maintainer's TODO comment on the next
+// line confirms this is a known browser limitation. As a substitute, Gridstack
+// adds `.grid-stack-dragging` to the grid host for the duration of the drag,
+// which is the official hook for global drag styling.
+.grid-stack.grid-stack-dragging,
+.grid-stack.grid-stack-dragging * {
+  cursor: grabbing !important;
+}
