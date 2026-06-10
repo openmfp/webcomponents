@@ -55,6 +55,18 @@
   cursor: grabbing !important;
 }
 
+// Keep the edit-mode highlight (blue border + resize-corner icon) visible on
+// the dragged card. The browser stops firing :hover events during a drag, so
+// we re-apply the same styles using the same Gridstack hook used for cursor.
+:host-context(.ui-draggable-dragging) .component-card--editing {
+  --sapTile_BorderColor: var(--sapHighlightColor, #0070f2);
+  --sapGroup_ContentBorderColor: var(--sapHighlightColor, #0070f2);
+}
+
+:host-context(.ui-draggable-dragging) .component-card--editing .card__resize-indicator {
+  opacity: 1;
+}
+
 .component-host {
   position: relative;
   height: 100%;
