@@ -144,6 +144,15 @@ export class Dashboard implements OnInit, OnDestroy {
       marginBottom: 0,
       marginLeft: 0,
       marginRight: 0,
+      // Use our own .card__resize-indicator (the blue chevron rendered inside
+      // each card in edit mode) as the resize handle, instead of Gridstack's
+      // generated grey-arrow handle. Documented in DDResizeOpt.element
+      // (gridstack/dist/types.d.ts:376). The element must have pointer-events
+      // enabled for resize-drag to start — see card SCSS where this is set
+      // in edit mode only, so view-mode interactions are unaffected.
+      resizable: {
+        element: '.card__resize-indicator',
+      },
       columnOpts: {
         breakpoints: [
           { w: 4000, c: 14, layout: 'compact' },

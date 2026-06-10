@@ -85,6 +85,15 @@
   z-index: 9;
 }
 
+// In edit mode, this element doubles as Gridstack's resize handle (wired via
+// gridOptions.resizable.element). Pointer events must be enabled so the
+// resize drag can start; the south-east cursor mirrors what Gridstack would
+// otherwise apply on its own .ui-resizable-se handle.
+.component-card--editing .card__resize-indicator {
+  pointer-events: auto;
+  cursor: se-resize;
+}
+
 .card {
   position: relative;
   display: flex;

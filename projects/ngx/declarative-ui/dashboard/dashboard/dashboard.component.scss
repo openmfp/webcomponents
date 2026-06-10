@@ -157,3 +157,12 @@ mfp-wc-dashboard {
 .grid-stack.grid-stack-dragging * {
   cursor: grabbing !important;
 }
+
+// Suppress the small grey diagonal-arrow SVG Gridstack draws inside its corner
+// resize handles (see node_modules/gridstack/dist/gridstack.min.css — the
+// .ui-resizable-{ne,nw,se,sw} rules embed an inline data: URI). The handle
+// hit area stays interactive; we surface our own .card__resize-indicator
+// inside the card as the edit-mode hint instead.
+.grid-stack-item > .ui-resizable-handle {
+  background-image: none !important;
+}
