@@ -16,7 +16,7 @@
       <span class="section__title">{{ section().title }}</span>
     </div>
   }
-  <div class="section__grid" [style.--cols]="columns()">
+  <div class="section__grid" [style.--cols]="columns() ?? null">
     @for (card of cards(); track card.id) {
       <mfp-dashboard-card
         [card]="card"

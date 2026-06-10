@@ -1,3 +1,4 @@
+@use '../models/breakpoints' as bp;
 @import 'gridstack/dist/gridstack.min.css';
 
 mfp-dashboard,
@@ -16,22 +17,24 @@ mfp-wc-dashboard {
 
 .mfp-dashboard {
   padding: calc(var(--sapShell_Space_XL, 3rem) - 10px);
+  // Acts as the inline-size query container for everything below. The
+  // `.mfp-sections-container` grid then reacts to *this element's* width
+  // instead of the viewport, which matches Gridstack (whose breakpoints also
+  // measure the grid element by default — see DashboardConfig.allowedWidths
+  // discussion / GridStackOptions.columnOpts.breakpointForWindow).
+  container-type: inline-size;
+  container-name: mfp-dashboard;
 }
 
 .mfp-sections-container {
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
   grid-auto-rows: auto;
   align-content: start;
   gap: 1rem;
 
-  @media (max-width: 726px) {
-    grid-template-columns: 1fr;
-  }
-
-  @media (min-width: 727px) and (max-width: 1200px) {
-    grid-template-columns: repeat(8, 1fr);
-  }
+  // Column track count comes from ../models/_breakpoints.scss — same source
+  // of truth used by .section__grid below and by Gridstack's columnOpts.
+  @include bp.dashboard-grid-columns;
 }
 
 .mfp-dashboard__topbar {
@@ -50,7 +53,7 @@ mfp-wc-dashboard {
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0px 10px;
+  padding: 0 10px;
 }
 
 .mfp-dashboard__header {
@@ -123,7 +126,7 @@ mfp-wc-dashboard {
   padding: 7px 16px;
   background: var(--sapPageFooter_Background, white);
   border-radius: var(--sapElement_BorderCornerRadius, 12px);
-  box-shadow: 0px 0px 0px 1px rgba(34, 53, 72, 0.48), 0px 2px 8px 0px rgba(34, 53, 72, 0.3);
+  box-shadow: 0 0 0 1px rgba(34, 53, 72, 0.48), 0 2px 8px 0 rgba(34, 53, 72, 0.3);
   box-sizing: border-box;
   overflow: hidden;
 }

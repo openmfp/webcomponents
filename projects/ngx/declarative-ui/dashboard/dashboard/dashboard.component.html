@@ -145,7 +145,6 @@
     @for (section of sections(); track section.id) {
       <mfp-dashboard-section
         [cards]="sectionCards()(section.id)"
-        [columns]="12"
         [editMode]="editMode()"
         [section]="section"
         (removeCard)="removeCard($event)"
