@@ -1,6 +1,6 @@
-import { ButtonSettings } from '../../models/ui-definition';
+import { ButtonSettings } from '../../models';
 import { DashboardCard } from '../card/dashboard-card.component';
-import { addComponentToRegistry } from '../card/utils/dashboard-card-registry';
+import { addComponentToRegistry } from '../card/utils';
 import { DiscardChangesDialog } from '../discard-changes-dialog/discard-changes-dialog.component';
 import { EditCardsDialog } from '../edit-cards-dialog/edit-cards-dialog.component';
 import { CardConfig, DashboardConfig, SectionConfig } from '../models';
@@ -146,8 +146,8 @@ export class Dashboard implements OnInit, OnDestroy {
       marginRight: 0,
       columnOpts: {
         breakpoints: [
-          { w: 4000, c: 14, layout: 'none' },
-          { w: 1439, c: 12, layout: 'none' },
+          { w: 4000, c: 14, layout: 'compact' },
+          { w: 1439, c: 12, layout: 'compact' },
           { w: 1023, c: 8, layout: 'compact' },
           { w: 599, c: 4, layout: 'list' },
         ],
