@@ -1,5 +1,5 @@
 @if (card().component) {
-  <div class="component-card">
+  <div class="component-card" [class.component-card--editing]="editMode()">
     @if (editMode()) {
       <div class="remove-wrapper">
         <ui5-button
@@ -16,6 +16,14 @@
       [style.pointer-events]="editMode() ? 'none' : 'auto'"
     >
       <div #elementHost></div>
+      @if (editMode()) {
+        <ui5-icon
+          class="card__resize-indicator"
+          name="resize-corner"
+          accessible-name="Resizable"
+          aria-hidden="true"
+        />
+      }
     </div>
   </div>
 } @else {

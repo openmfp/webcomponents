@@ -33,10 +33,33 @@
   isolation: isolate;
   padding-inline-start: var(--mfp_cardContainerPadding, 10px);
   padding-inline-end: var(--mfp_cardContainerPadding, 10px);
+
+  &--editing:hover {
+    --sapTile_BorderColor: var(--sapHighlightColor, #0070f2);
+    --sapGroup_ContentBorderColor: var(--sapHighlightColor, #0070f2);
+  }
+
+  &--editing:hover .card__resize-indicator {
+    opacity: 1;
+  }
 }
 
 .component-host {
+  position: relative;
   height: 100%;
+}
+
+.card__resize-indicator {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 1rem;
+  height: 1rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms ease-out;
+  color: var(--sapHighlightColor, #0070f2);
+  z-index: 9;
 }
 
 .card {
