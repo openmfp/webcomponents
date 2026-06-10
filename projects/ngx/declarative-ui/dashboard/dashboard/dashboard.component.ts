@@ -3,10 +3,10 @@ import { DashboardCard } from '../card/dashboard-card.component';
 import { addComponentToRegistry } from '../card/utils/dashboard-card-registry';
 import { DiscardChangesDialog } from '../discard-changes-dialog/discard-changes-dialog.component';
 import { EditCardsDialog } from '../edit-cards-dialog/edit-cards-dialog.component';
-import { UnsavedChangesDialog } from '../unsaved-changes-dialog/unsaved-changes-dialog.component';
 import { CardConfig, DashboardConfig, SectionConfig } from '../models';
 import { CELL_HEIGHT, COMPACT_BREAKPOINT } from '../models/constants';
 import { DashboardSection } from '../section/dashboard-section.component';
+import { UnsavedChangesDialog } from '../unsaved-changes-dialog/unsaved-changes-dialog.component';
 import {
   Component,
   ElementRef,
@@ -145,11 +145,11 @@ export class Dashboard implements OnInit, OnDestroy {
       marginLeft: 0,
       marginRight: 0,
       columnOpts: {
-        breakpointForWindow: true,
         breakpoints: [
-          { w: 1440, c: 12, layout: 'none' },
-          { w: 1024, c: 8, layout: 'compact' },
-          { w: 600, c: 1, layout: 'list' },
+          { w: 4000, c: 14, layout: 'none' },
+          { w: 1439, c: 12, layout: 'none' },
+          { w: 1023, c: 8, layout: 'compact' },
+          { w: 599, c: 4, layout: 'list' },
         ],
       },
     }),
