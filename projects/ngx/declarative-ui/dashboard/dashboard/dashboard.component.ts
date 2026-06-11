@@ -3,8 +3,12 @@ import { DashboardCard } from '../card/dashboard-card.component';
 import { addComponentToRegistry } from '../card/utils';
 import { DiscardChangesDialog } from '../discard-changes-dialog/discard-changes-dialog.component';
 import { EditCardsDialog } from '../edit-cards-dialog/edit-cards-dialog.component';
-import { CardConfig, DashboardConfig, SectionConfig } from '../models';
-import { DASHBOARD_BREAKPOINTS } from '../models';
+import {
+  CardConfig,
+  DASHBOARD_BREAKPOINTS,
+  DashboardConfig,
+  SectionConfig,
+} from '../models';
 import { CELL_HEIGHT, COMPACT_BREAKPOINT } from '../models/constants';
 import { DashboardSection } from '../section/dashboard-section.component';
 import { UnsavedChangesDialog } from '../unsaved-changes-dialog/unsaved-changes-dialog.component';
