@@ -33,8 +33,24 @@ describe('EditCardsDialog', () => {
       fixture.componentRef.setInput('availableCards', []);
       fixture.detectChanges();
 
-      const list = root(fixture).querySelector('ui5-list');
-      expect(list?.getAttribute('noDataText')).toBe('No cards available.');
+      const list = root(fixture).querySelector(
+        'ui5-list',
+      ) as (HTMLElement & { noDataText?: string }) | null;
+      expect(list?.noDataText).toBe('No cards available.');
+    });
+
+    it('uses a custom no-data text when noDataText input is set', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('open', true);
+      fixture.componentRef.setInput('availableCards', []);
+      fixture.componentRef.setInput('noDataText', 'Keine Karten verfügbar.');
+      fixture.detectChanges();
+
+      const list = root(fixture).querySelector(
+        'ui5-list',
+      ) as (HTMLElement & { noDataText?: string }) | null;
+      expect(list?.noDataText).toBe('Keine Karten verfügbar.');
     });
   });
 

@@ -9,8 +9,8 @@ import { DiscardChangesDialog } from '../dashboard/discard-changes-dialog/discar
     <ui5-button design="Negative" (click)="open = true">Open Dialog</ui5-button>
     <mfp-discard-changes-dialog
       [open]="open"
-      (confirm)="onConfirm()"
       (cancelled)="open = false"
+      (confirm)="onConfirm()"
     />
     @if (lastMessage) {
       <ui5-message-strip design="Negative" style="margin-top: 1rem;">

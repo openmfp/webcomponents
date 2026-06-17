@@ -37,6 +37,9 @@ export class DashboardSection {
    */
   columns = input<number | undefined>(undefined);
   editMode = input<boolean>(false);
+  removeSectionLabel = input<string>('Remove section');
+  removeCardLabel = input<string>('Remove card');
+  resizableLabel = input<string>('Resizable');
   readonly removeSection = output<void>();
   readonly removeCard = output<string>();
 }

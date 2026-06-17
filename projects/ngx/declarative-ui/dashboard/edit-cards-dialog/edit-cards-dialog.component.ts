@@ -29,6 +29,10 @@ export class EditCardsDialog {
   availableCards = input<CardConfig[]>([]);
   addedCardsIds = input<Set<string>>(new Set());
   open = input<boolean>(false);
+  headerText = input<string>('Edit Cards');
+  noDataText = input<string>('No cards available.');
+  saveLabel = input<string>('Save');
+  cancelLabel = input<string>('Cancel');
 
   readonly confirm = output<{ added: CardConfig[]; removed: string[] }>();
   readonly cancelled = output<void>();

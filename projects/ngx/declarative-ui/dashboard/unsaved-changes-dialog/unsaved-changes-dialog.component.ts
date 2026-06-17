@@ -1,7 +1,6 @@
 import { Component, ViewEncapsulation, input, output } from '@angular/core';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 import { Dialog } from '@fundamental-ngx/ui5-webcomponents/dialog';
-import { Icon } from '@fundamental-ngx/ui5-webcomponents/icon';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 import '@ui5/webcomponents-icons/dist/alert.js';
 
@@ -17,13 +16,20 @@ import '@ui5/webcomponents-icons/dist/alert.js';
  */
 @Component({
   selector: 'mfp-unsaved-changes-dialog',
-  imports: [Button, Dialog, Icon, Title],
+  imports: [Button, Dialog, Title],
   templateUrl: './unsaved-changes-dialog.component.html',
   styleUrl: './unsaved-changes-dialog.component.scss',
   encapsulation: ViewEncapsulation.ShadowDom,
 })
 export class UnsavedChangesDialog {
   open = input<boolean>(false);
+  headerText = input<string>('Unsaved Changes');
+  bodyText = input<string>(
+    'You are leaving this page. Save or discard the changes to proceed. This action cannot be undone.',
+  );
+  saveLabel = input<string>('Save');
+  discardLabel = input<string>('Discard');
+  cancelLabel = input<string>('Cancel');
 
   readonly save = output<void>();
   readonly discard = output<void>();

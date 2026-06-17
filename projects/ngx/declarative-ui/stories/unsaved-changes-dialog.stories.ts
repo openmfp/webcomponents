@@ -9,12 +9,12 @@ import { UnsavedChangesDialog } from '../dashboard/unsaved-changes-dialog/unsave
     <ui5-button design="Emphasized" (click)="open = true">Open Dialog</ui5-button>
     <mfp-unsaved-changes-dialog
       [open]="open"
-      (save)="onSave()"
-      (discard)="onDiscard()"
       (cancelled)="open = false"
+      (discard)="onDiscard()"
+      (save)="onSave()"
     />
     @if (lastMessage) {
-      <ui5-message-strip [design]="lastMessageDesign" style="margin-top: 1rem;">
+      <ui5-message-strip style="margin-top: 1rem;" [design]="lastMessageDesign">
         {{ lastMessage }}
       </ui5-message-strip>
     }

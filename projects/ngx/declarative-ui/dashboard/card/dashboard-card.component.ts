@@ -30,6 +30,8 @@ import { mountSapCard, mountAngularCard, mountWcCard } from './utils';
 export class DashboardCard {
   card = input.required<CardConfig>();
   editMode = input<boolean>(false);
+  removeCardLabel = input<string>('Remove card');
+  resizableLabel = input<string>('Resizable');
   readonly removeCard = output<void>();
   protected readonly gridColumn = computed(() => {
     const width = this.card().w ?? 12;

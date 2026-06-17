@@ -26,9 +26,7 @@ import type { Breakpoint } from 'gridstack';
 type LayoutStrategy = 'compact' | 'list' | 'none';
 
 /** Single source of truth for grid + section breakpoints (TypeScript half). */
-export const DASHBOARD_BREAKPOINTS: ReadonlyArray<
-  Readonly<Required<Pick<Breakpoint, 'w' | 'c'>> & { layout: LayoutStrategy }>
-> = [
+export const DASHBOARD_BREAKPOINTS: readonly Readonly<Required<Pick<Breakpoint, 'w' | 'c'>> & { layout: LayoutStrategy }>[] = [
   { w: 4000, c: 14, layout: 'compact' },
   { w: 1439, c: 12, layout: 'compact' },
   { w: 1023, c: 8, layout: 'compact' },

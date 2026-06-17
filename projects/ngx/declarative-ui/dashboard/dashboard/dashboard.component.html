@@ -13,11 +13,11 @@
               <ui5-icon
                 class="mfp-dashboard__unsaved-changes-icon"
                 name="user-edit"
-                accessible-name="Unsaved Changes"
+                [accessibleName]="i18n.getTranslation('unsavedChanges')"
               />
-              <span class="mfp-dashboard__unsaved-changes-text"
-                >Unsaved Changes</span
-              >
+              <span class="mfp-dashboard__unsaved-changes-text">{{
+                i18n.getTranslation('unsavedChanges')
+              }}</span>
             </div>
           }
         </div>
@@ -39,7 +39,7 @@
             [accessibleName]="
               editCardsButton().text ||
               editCardsButton().tooltip ||
-              'Edit Cards'
+              i18n.getTranslation('editCards')
             "
             [design]="editCardsButton().design"
             [icon]="editCardsButton().icon"
@@ -50,10 +50,10 @@
         } @else if (compactToolbar()) {
           <ui5-button
             #menuBtn
-            accessibleName="Actions"
             design="Transparent"
             icon="menu2"
-            tooltip="Actions"
+            [accessibleName]="i18n.getTranslation('actions')"
+            [tooltip]="i18n.getTranslation('actions')"
             (click)="toolbarMenuOpen.update((v) => !v)"
           />
           <ui5-menu
@@ -72,7 +72,7 @@
               <ui5-menu-item
                 data-action="edit-view"
                 [icon]="editViewButton().icon"
-                [text]="editViewButton().text || 'Edit View'"
+                [text]="editViewButton().text || i18n.getTranslation('editView')"
               />
               @if (customActions().length) {
                 <ui5-menu-separator />
@@ -90,7 +90,7 @@
               <ui5-menu-item
                 data-action="edit-view"
                 [icon]="editViewButton().icon"
-                [text]="editViewButton().text || 'Edit View'"
+                [text]="editViewButton().text || i18n.getTranslation('editView')"
               />
             }
           </ui5-menu>
@@ -98,7 +98,9 @@
           @if (config().editButtonFirst && config().editable) {
             <ui5-button
               [accessibleName]="
-                editViewButton().text || editViewButton().tooltip || 'Edit View'
+                editViewButton().text ||
+                editViewButton().tooltip ||
+                i18n.getTranslation('editView')
               "
               [design]="editViewButton().design"
               [icon]="editViewButton().icon"
@@ -123,7 +125,9 @@
           @if (!config().editButtonFirst && config().editable) {
             <ui5-button
               [accessibleName]="
-                editViewButton().text || editViewButton().tooltip || 'Edit View'
+                editViewButton().text ||
+                editViewButton().tooltip ||
+                i18n.getTranslation('editView')
               "
               [design]="editViewButton().design"
               [icon]="editViewButton().icon"
@@ -146,6 +150,9 @@
       <mfp-dashboard-section
         [cards]="sectionCards()(section.id)"
         [editMode]="editMode()"
+        [removeCardLabel]="i18n.getTranslation('removeCard')"
+        [removeSectionLabel]="i18n.getTranslation('removeSection')"
+        [resizableLabel]="i18n.getTranslation('resizable')"
         [section]="section"
         (removeCard)="removeCard($event)"
         (removeSection)="removeSection(section.id)"
@@ -165,6 +172,8 @@
         <mfp-dashboard-card
           [card]="card"
           [editMode]="editMode()"
+          [removeCardLabel]="i18n.getTranslation('removeCard')"
+          [resizableLabel]="i18n.getTranslation('resizable')"
           (removeCard)="removeCard($any(card.id))"
         />
       </gridstack-item>
@@ -173,10 +182,12 @@
 
   @if (editMode()) {
     <div class="mfp-dashboard__edit-bar">
-      <ui5-button design="Emphasized" (click)="saveEdit()">Save</ui5-button>
-      <ui5-button design="Transparent" (click)="cancelEdit()"
-        >Cancel</ui5-button
-      >
+      <ui5-button design="Emphasized" (click)="saveEdit()">{{
+        i18n.getTranslation('save')
+      }}</ui5-button>
+      <ui5-button design="Transparent" (click)="cancelEdit()">{{
+        i18n.getTranslation('cancel')
+      }}</ui5-button>
     </div>
   }
 </div>
@@ -184,19 +195,32 @@
 <mfp-edit-cards-dialog
   [addedCardsIds]="addedCardsIds()"
   [availableCards]="availableCards()"
+  [cancelLabel]="i18n.getTranslation('cancel')"
+  [headerText]="i18n.getTranslation('editCards')"
+  [noDataText]="i18n.getTranslation('noCardsAvailable')"
   [open]="cardDialogOpen()"
+  [saveLabel]="i18n.getTranslation('save')"
   (cancelled)="closeCardPanel()"
   (confirm)="onCardsEdited($event)"
 />
 
 <mfp-discard-changes-dialog
+  [bodyText]="i18n.getTranslation('discardConfirmBody')"
+  [cancelLabel]="i18n.getTranslation('cancel')"
+  [confirmLabel]="i18n.getTranslation('discard')"
+  [headerText]="i18n.getTranslation('discardChanges')"
   [open]="discardDialogOpen()"
   (cancelled)="cancelDiscard()"
   (confirm)="confirmDiscard()"
 />
 
 <mfp-unsaved-changes-dialog
+  [bodyText]="i18n.getTranslation('unsavedNavBody')"
+  [cancelLabel]="i18n.getTranslation('cancel')"
+  [discardLabel]="i18n.getTranslation('discard')"
+  [headerText]="i18n.getTranslation('unsavedChanges')"
   [open]="unsavedNavDialogOpen()"
+  [saveLabel]="i18n.getTranslation('save')"
   (cancelled)="onUnsavedNavCancel()"
   (discard)="onUnsavedNavDiscard()"
   (save)="onUnsavedNavSave()"
