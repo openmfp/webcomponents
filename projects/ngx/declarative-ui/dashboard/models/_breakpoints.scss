@@ -10,7 +10,7 @@
 // applied at that breakpoint. Ordered ascending by `w` so it's easy to read
 // off as a series of (max-width, columns) pairs.
 $dashboard-breakpoints: (
-  (599, 4),
+  (599, 1),
   (1023, 8),
   (1439, 12),
   // Above 1439: 14 columns. Implemented as the default (no @container rule);
@@ -23,7 +23,7 @@ $dashboard-bp-md: 1023px;
 $dashboard-bp-lg: 1439px;
 
 /// Column counts at each breakpoint.
-$dashboard-cols-sm: 4;
+$dashboard-cols-sm: 1;
 $dashboard-cols-md: 8;
 $dashboard-cols-lg: 12;
 $dashboard-cols-xl: 14;

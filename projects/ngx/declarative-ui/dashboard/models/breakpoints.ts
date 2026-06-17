@@ -17,7 +17,6 @@
 // The two are kept in sync by hand (no codegen). A SCSS-from-TS generator
 // would remove this hazard but is out of scope here.
 // ─────────────────────────────────────────────────────────────────────────────
-
 import type { Breakpoint } from 'gridstack';
 
 /**
@@ -33,5 +32,5 @@ export const DASHBOARD_BREAKPOINTS: ReadonlyArray<
   { w: 4000, c: 14, layout: 'compact' },
   { w: 1439, c: 12, layout: 'compact' },
   { w: 1023, c: 8, layout: 'compact' },
-  { w: 599, c: 4, layout: 'list' },
+  { w: 599, c: 1, layout: 'list' },
 ] as const;
