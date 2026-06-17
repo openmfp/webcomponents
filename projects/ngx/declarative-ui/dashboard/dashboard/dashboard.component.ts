@@ -3,7 +3,11 @@ import { DashboardCard } from '../card/dashboard-card.component';
 import { addComponentToRegistry } from '../card/utils';
 import { DiscardChangesDialog } from '../discard-changes-dialog/discard-changes-dialog.component';
 import { EditCardsDialog } from '../edit-cards-dialog/edit-cards-dialog.component';
-import { DashboardI18nService, DashboardLanguage } from '../i18n';
+import {
+  DASHBOARD_I18N_KEYS,
+  DashboardI18nService,
+  DashboardLanguage,
+} from '../i18n';
 import {
   CardConfig,
   DASHBOARD_BREAKPOINTS,
@@ -130,6 +134,7 @@ export class Dashboard implements OnInit, OnDestroy {
   private readonly injector = inject(Injector);
   private readonly sanitizer = inject(DomSanitizer);
   protected readonly i18n = inject(DashboardI18nService);
+  protected readonly i18nKeys = DASHBOARD_I18N_KEYS;
 
   protected safeTitle = computed((): SafeHtml => {
     const clean =
@@ -182,7 +187,7 @@ export class Dashboard implements OnInit, OnDestroy {
   editViewButton = computed(() => ({
     icon: 'action-settings',
     design: 'Transparent' as const,
-    tooltip: this.i18n.getTranslation('editView'),
+    tooltip: this.i18n.getTranslation(DASHBOARD_I18N_KEYS.EDIT_VIEW),
     text: '',
     ...this.config().buttonsSettings?.editViewButton,
   }));
@@ -191,7 +196,7 @@ export class Dashboard implements OnInit, OnDestroy {
     icon: '',
     design: 'Default' as const,
     tooltip: '',
-    text: this.i18n.getTranslation('editCards'),
+    text: this.i18n.getTranslation(DASHBOARD_I18N_KEYS.EDIT_CARDS),
     ...this.config().buttonsSettings?.editCardsButton,
   }));
 
@@ -209,7 +214,9 @@ export class Dashboard implements OnInit, OnDestroy {
   private newGridStackNodes: GridStackNode[] = [];
 
   constructor() {
-    effect(() => { this.unsavedChangesChange.emit(this.hasUnsavedChanges()); });
+    effect(() => {
+      this.unsavedChangesChange.emit(this.hasUnsavedChanges());
+    });
     effect(() => {
       this.i18n.language.set(this.language());
     });
