@@ -1,12 +1,17 @@
-import { ButtonSettings } from '../../models/ui-definition';
+import { ButtonSettings } from '../../models';
 import { DashboardCard } from '../card/dashboard-card.component';
-import { addComponentToRegistry } from '../card/utils/dashboard-card-registry';
+import { addComponentToRegistry } from '../card/utils';
 import { DiscardChangesDialog } from '../discard-changes-dialog/discard-changes-dialog.component';
 import { EditCardsDialog } from '../edit-cards-dialog/edit-cards-dialog.component';
-import { UnsavedChangesDialog } from '../unsaved-changes-dialog/unsaved-changes-dialog.component';
-import { CardConfig, DashboardConfig, SectionConfig } from '../models';
+import {
+  CardConfig,
+  DASHBOARD_BREAKPOINTS,
+  DashboardConfig,
+  SectionConfig,
+} from '../models';
 import { CELL_HEIGHT, COMPACT_BREAKPOINT } from '../models/constants';
 import { DashboardSection } from '../section/dashboard-section.component';
+import { UnsavedChangesDialog } from '../unsaved-changes-dialog/unsaved-changes-dialog.component';
 import {
   Component,
   ElementRef,
@@ -139,18 +144,16 @@ export class Dashboard implements OnInit, OnDestroy {
   protected gridOptions = computed(
     (): GridStackOptions => ({
       cellHeight: CELL_HEIGHT,
+      sizeToContent: true,
       disableResize: !this.editMode(),
       disableDrag: !this.editMode(),
       marginBottom: 0,
       marginLeft: 0,
       marginRight: 0,
       columnOpts: {
-        breakpointForWindow: true,
-        breakpoints: [
-          { w: 1440, c: 12, layout: 'none' },
-          { w: 1024, c: 8, layout: 'compact' },
-          { w: 600, c: 1, layout: 'list' },
-        ],
+        // Source of truth: ../models/breakpoints.ts (paired with
+        // ../models/_breakpoints.scss for the section grid's container queries).
+        breakpoints: [...DASHBOARD_BREAKPOINTS],
       },
     }),
   );

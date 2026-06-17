@@ -1,0 +1,58 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// MUST MATCH: ./breakpoints.ts
+//
+// SCSS half of the shared dashboard breakpoint table. Consumed by
+// dashboard.component.scss for @container queries on .mfp-sections-container.
+// Keep these values identical to DASHBOARD_BREAKPOINTS in breakpoints.ts.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Each breakpoint's max-width (in px) and the corresponding column count
+// applied at that breakpoint. Ordered ascending by `w` so it's easy to read
+// off as a series of (max-width, columns) pairs.
+$dashboard-breakpoints: (
+  (599, 1),
+  (1023, 8),
+  (1439, 12),
+  // Above 1439: 14 columns. Implemented as the default (no @container rule);
+  // the 4000 ceiling exists in the TS table for Gridstack's benefit only.
+);
+
+/// Convenience accessors for the four breakpoint widths used by the grid.
+$dashboard-bp-sm: 599px;
+$dashboard-bp-md: 1023px;
+$dashboard-bp-lg: 1439px;
+
+/// Column counts at each breakpoint.
+$dashboard-cols-sm: 1;
+$dashboard-cols-md: 8;
+$dashboard-cols-lg: 12;
+$dashboard-cols-xl: 14;
+
+/// Emit `grid-template-columns: repeat(N, 1fr)` rules wrapped in @container
+/// queries against the `mfp-dashboard` named container. Every dashboard grid
+/// (the section-laying-out one and each section's card-laying-out one) calls
+/// this so the column counts stay aligned.
+///
+/// `$override` lets a caller substitute a CSS variable in front of each value
+/// (used by .section__grid to honour an explicit `--cols` override before
+/// falling back to the responsive default).
+@mixin dashboard-grid-columns($override: null) {
+  $sm: if($override, var($override, #{$dashboard-cols-sm}), $dashboard-cols-sm);
+  $md: if($override, var($override, #{$dashboard-cols-md}), $dashboard-cols-md);
+  $lg: if($override, var($override, #{$dashboard-cols-lg}), $dashboard-cols-lg);
+  $xl: if($override, var($override, #{$dashboard-cols-xl}), $dashboard-cols-xl);
+
+  grid-template-columns: repeat(#{$xl}, 1fr);
+
+  @container mfp-dashboard (max-width: #{$dashboard-bp-sm}) {
+    grid-template-columns: repeat(#{$sm}, 1fr);
+  }
+
+  @container mfp-dashboard (min-width: #{$dashboard-bp-sm + 1px}) and (max-width: #{$dashboard-bp-md}) {
+    grid-template-columns: repeat(#{$md}, 1fr);
+  }
+
+  @container mfp-dashboard (min-width: #{$dashboard-bp-md + 1px}) and (max-width: #{$dashboard-bp-lg}) {
+    grid-template-columns: repeat(#{$lg}, 1fr);
+  }
+}

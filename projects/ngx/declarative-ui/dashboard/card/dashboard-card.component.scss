@@ -34,6 +34,10 @@
   padding-inline-start: var(--mfp_cardContainerPadding, 10px);
   padding-inline-end: var(--mfp_cardContainerPadding, 10px);
 
+  &--editing {
+    cursor: grab;
+  }
+
   &--editing:hover {
     --sapTile_BorderColor: var(--sapHighlightColor, #0070f2);
     --sapGroup_ContentBorderColor: var(--sapHighlightColor, #0070f2);
@@ -44,6 +48,25 @@
   }
 }
 
+// Gridstack adds .ui-draggable-dragging to the <gridstack-item> wrapping this
+// card while a drag is active. Override the open-palm `grab` cursor with the
+// closed-fist `grabbing` cursor for the duration of the drag.
+:host-context(.ui-draggable-dragging) .component-card--editing {
+  cursor: grabbing !important;
+}
+
+// Keep the edit-mode highlight (blue border + resize-corner icon) visible on
+// the dragged card. The browser stops firing :hover events during a drag, so
+// we re-apply the same styles using the same Gridstack hook used for cursor.
+:host-context(.ui-draggable-dragging) .component-card--editing {
+  --sapTile_BorderColor: var(--sapHighlightColor, #0070f2);
+  --sapGroup_ContentBorderColor: var(--sapHighlightColor, #0070f2);
+}
+
+:host-context(.ui-draggable-dragging) .component-card--editing .card__resize-indicator {
+  opacity: 1;
+}
+
 .component-host {
   position: relative;
   height: 100%;
@@ -51,7 +74,11 @@
 
 .card__resize-indicator {
   position: absolute;
-  right: 4px;
+  // Anchored to the .component-card edges. The card has horizontal padding
+  // (--mfp_cardContainerPadding, default 10px), so we pull the chevron back
+  // by that much to land inside the visible card surface rather than the
+  // padding gutter.
+  right: calc(var(--mfp_cardContainerPadding, 10px) + 4px);
   bottom: 4px;
   width: 1rem;
   height: 1rem;

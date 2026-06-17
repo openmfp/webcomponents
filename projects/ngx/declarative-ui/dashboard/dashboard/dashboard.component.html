@@ -23,7 +23,10 @@
         </div>
         @if (config().description) {
           <ui5-title level="H5" size="H5" wrapping-type="Normal">
-            <span class="mfp-dashboard__description" [innerHTML]="safeDescription()"></span>
+            <span
+              class="mfp-dashboard__description"
+              [innerHTML]="safeDescription()"
+            ></span>
           </ui5-title>
         }
       </div>
@@ -33,7 +36,11 @@
           <ui5-button
             #editCardsBtn
             id="edit-cards-btn"
-            [accessibleName]="editCardsButton().text || editCardsButton().tooltip || 'Edit Cards'"
+            [accessibleName]="
+              editCardsButton().text ||
+              editCardsButton().tooltip ||
+              'Edit Cards'
+            "
             [design]="editCardsButton().design"
             [icon]="editCardsButton().icon"
             [tooltip]="editCardsButton().tooltip"
@@ -90,7 +97,9 @@
         } @else {
           @if (config().editButtonFirst && config().editable) {
             <ui5-button
-              [accessibleName]="editViewButton().text || editViewButton().tooltip || 'Edit View'"
+              [accessibleName]="
+                editViewButton().text || editViewButton().tooltip || 'Edit View'
+              "
               [design]="editViewButton().design"
               [icon]="editViewButton().icon"
               [tooltip]="editViewButton().tooltip"
@@ -113,7 +122,9 @@
           }
           @if (!config().editButtonFirst && config().editable) {
             <ui5-button
-              [accessibleName]="editViewButton().text || editViewButton().tooltip || 'Edit View'"
+              [accessibleName]="
+                editViewButton().text || editViewButton().tooltip || 'Edit View'
+              "
               [design]="editViewButton().design"
               [icon]="editViewButton().icon"
               [tooltip]="editViewButton().tooltip"
@@ -134,7 +145,6 @@
     @for (section of sections(); track section.id) {
       <mfp-dashboard-section
         [cards]="sectionCards()(section.id)"
-        [columns]="12"
         [editMode]="editMode()"
         [section]="section"
         (removeCard)="removeCard($event)"
@@ -143,12 +153,15 @@
     }
   </div>
 
-  <gridstack #grid [options]="gridOptions()" (addedCB)="onGridChange($event)" (changeCB)="onGridChange($event)" (removedCB)="onGridChange($event)">
+  <gridstack
+    #grid
+    [options]="gridOptions()"
+    (addedCB)="onGridChange($event)"
+    (changeCB)="onGridChange($event)"
+    (removedCB)="onGridChange($event)"
+  >
     @for (card of looseCards(); track card.id) {
-      <gridstack-item
-        [options]="card"
-        [style.cursor]="editMode() ? 'pointer' : 'auto'"
-      >
+      <gridstack-item [options]="card">
         <mfp-dashboard-card
           [card]="card"
           [editMode]="editMode()"
