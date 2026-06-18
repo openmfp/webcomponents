@@ -1,4 +1,4 @@
-@use '../models/breakpoints' as bp;
+@use '../constants/breakpoints' as bp;
 @import 'gridstack/dist/gridstack.min.css';
 
 mfp-dashboard,
@@ -32,7 +32,7 @@ mfp-wc-dashboard {
   align-content: start;
   gap: 1rem;
 
-  // Column track count comes from ../models/_breakpoints.scss — same source
+  // Column track count comes from ../constants/_breakpoints.scss — same source
   // of truth used by .section__grid below and by Gridstack's columnOpts.
   @include bp.dashboard-grid-columns;
 }

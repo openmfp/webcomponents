@@ -7,7 +7,11 @@
       class="section__remove"
       design="Default"
       icon="decline"
-      [accessibleName]="'Remove section: ' + (section().title || section().id)"
+      [accessibleName]="
+        i18n.getTranslation(i18nKeys.REMOVE_SECTION) +
+        ': ' +
+        (section().title || section().id)
+      "
       (click)="removeSection.emit()"
     />
   }

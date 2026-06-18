@@ -1,4 +1,5 @@
 import { CardConfig } from '../models';
+import { DashboardI18nService } from '../i18n';
 import { EditCardsDialog } from './edit-cards-dialog.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
@@ -22,6 +23,7 @@ describe('EditCardsDialog', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [EditCardsDialog],
+      providers: [DashboardI18nService],
     }).compileComponents();
   });
 
@@ -33,8 +35,10 @@ describe('EditCardsDialog', () => {
       fixture.componentRef.setInput('availableCards', []);
       fixture.detectChanges();
 
-      const list = root(fixture).querySelector('ui5-list');
-      expect(list?.getAttribute('noDataText')).toBe('No cards available.');
+      const list = root(fixture).querySelector(
+        'ui5-list',
+      ) as (HTMLElement & { noDataText?: string }) | null;
+      expect(list?.noDataText).toBe('No cards available.');
     });
   });
 

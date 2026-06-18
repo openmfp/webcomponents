@@ -1,15 +1,19 @@
 import { ButtonSettings } from '../../models';
 import { DashboardCard } from '../card/dashboard-card.component';
 import { addComponentToRegistry } from '../card/utils';
+import {
+  CELL_HEIGHT,
+  COMPACT_BREAKPOINT,
+  DASHBOARD_BREAKPOINTS,
+} from '../constants';
 import { DiscardChangesDialog } from '../discard-changes-dialog/discard-changes-dialog.component';
 import { EditCardsDialog } from '../edit-cards-dialog/edit-cards-dialog.component';
 import {
-  CardConfig,
-  DASHBOARD_BREAKPOINTS,
-  DashboardConfig,
-  SectionConfig,
-} from '../models';
-import { CELL_HEIGHT, COMPACT_BREAKPOINT } from '../models/constants';
+  DASHBOARD_I18N_KEYS,
+  DashboardI18nService,
+  DashboardLanguage,
+} from '../i18n';
+import { CardConfig, DashboardConfig, SectionConfig } from '../models';
 import { DashboardSection } from '../section/dashboard-section.component';
 import { UnsavedChangesDialog } from '../unsaved-changes-dialog/unsaved-changes-dialog.component';
 import {
@@ -70,6 +74,7 @@ document.body.classList.add('ui5-content-density-compact');
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
+  providers: [DashboardI18nService],
   encapsulation: ViewEncapsulation.None,
   host: {
     '[style.background-image]':
@@ -85,6 +90,7 @@ export class Dashboard implements OnInit, OnDestroy {
   sections = model<SectionConfig[]>([]);
   cards = model<CardConfig[]>([]);
   availableCards = input<CardConfig[]>([]);
+  language = input<DashboardLanguage>('en');
 
   readonly saved = output<{ sections: SectionConfig[]; cards: CardConfig[] }>();
   readonly actionButtonClick = output<{
@@ -126,6 +132,8 @@ export class Dashboard implements OnInit, OnDestroy {
   private readonly hostEl = inject(ElementRef<HTMLElement>);
   private readonly injector = inject(Injector);
   private readonly sanitizer = inject(DomSanitizer);
+  protected readonly i18n = inject(DashboardI18nService);
+  protected readonly i18nKeys = DASHBOARD_I18N_KEYS;
 
   protected safeTitle = computed((): SafeHtml => {
     const clean =
@@ -178,7 +186,7 @@ export class Dashboard implements OnInit, OnDestroy {
   editViewButton = computed(() => ({
     icon: 'action-settings',
     design: 'Transparent' as const,
-    tooltip: 'Edit View',
+    tooltip: this.i18n.getTranslation(DASHBOARD_I18N_KEYS.EDIT_VIEW),
     text: '',
     ...this.config().buttonsSettings?.editViewButton,
   }));
@@ -187,7 +195,7 @@ export class Dashboard implements OnInit, OnDestroy {
     icon: '',
     design: 'Default' as const,
     tooltip: '',
-    text: 'Edit Cards',
+    text: this.i18n.getTranslation(DASHBOARD_I18N_KEYS.EDIT_CARDS),
     ...this.config().buttonsSettings?.editCardsButton,
   }));
 
@@ -205,7 +213,12 @@ export class Dashboard implements OnInit, OnDestroy {
   private newGridStackNodes: GridStackNode[] = [];
 
   constructor() {
-    effect(() => this.unsavedChangesChange.emit(this.hasUnsavedChanges()));
+    effect(() => {
+      this.unsavedChangesChange.emit(this.hasUnsavedChanges());
+    });
+    effect(() => {
+      this.i18n.language.set(this.language());
+    });
   }
 
   ngOnInit(): void {

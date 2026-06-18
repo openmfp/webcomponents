@@ -1,0 +1,16 @@
+{
+  "unsavedChanges": "Nicht gespeicherte Änderungen",
+  "editCards": "Karten bearbeiten",
+  "editView": "Ansicht bearbeiten",
+  "actions": "Aktionen",
+  "save": "Speichern",
+  "cancel": "Abbrechen",
+  "discard": "Verwerfen",
+  "discardChanges": "Änderungen verwerfen",
+  "discardConfirmBody": "Änderungen verwerfen? Diese Aktion kann nicht rückgängig gemacht werden.",
+  "unsavedNavBody": "Sie verlassen diese Seite. Speichern oder verwerfen Sie die Änderungen, um fortzufahren. Diese Aktion kann nicht rückgängig gemacht werden.",
+  "noCardsAvailable": "Keine Karten verfügbar.",
+  "removeSection": "Bereich entfernen",
+  "removeCard": "Karte entfernen",
+  "resizable": "Größenveränderbar"
+}

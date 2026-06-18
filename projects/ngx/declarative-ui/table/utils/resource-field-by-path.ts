@@ -29,6 +29,7 @@ export const getResourceValueByJsonPath = <T>(
   // `T` of this function is unconstrained, so we cast at the boundary. The
   // returned array is `any[]` (matching jsonpath's old typing) so the
   // downstream `value[field.propertyField.key]` access keeps compiling.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const queryResult = JSONPath<any[]>({
     path: `${prefix}${property}`,
     json: resource as object,

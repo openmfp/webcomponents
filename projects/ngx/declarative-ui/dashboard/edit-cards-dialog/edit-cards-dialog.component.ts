@@ -1,4 +1,5 @@
 import { CardConfig } from '../models';
+import { DASHBOARD_I18N_KEYS, DashboardI18nService } from '../i18n';
 import {
   Component,
   ElementRef,
@@ -25,6 +26,8 @@ import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 })
 export class EditCardsDialog {
   private readonly host = inject(ElementRef<HTMLElement>);
+  protected readonly i18n = inject(DashboardI18nService);
+  protected readonly i18nKeys = DASHBOARD_I18N_KEYS;
 
   availableCards = input<CardConfig[]>([]);
   addedCardsIds = input<Set<string>>(new Set());

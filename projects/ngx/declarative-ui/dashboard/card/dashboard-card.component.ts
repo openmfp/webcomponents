@@ -15,6 +15,7 @@ import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 import { Icon } from '@fundamental-ngx/ui5-webcomponents/icon';
 import '@ui5/webcomponents-icons/dist/resize-corner.js';
 import { mountSapCard, mountAngularCard, mountWcCard } from './utils';
+import { DASHBOARD_I18N_KEYS, DashboardI18nService } from '../i18n';
 
 @Component({
   selector: 'mfp-dashboard-card',
@@ -31,6 +32,8 @@ export class DashboardCard {
   card = input.required<CardConfig>();
   editMode = input<boolean>(false);
   readonly removeCard = output<void>();
+  protected readonly i18n = inject(DashboardI18nService);
+  protected readonly i18nKeys = DASHBOARD_I18N_KEYS;
   protected readonly gridColumn = computed(() => {
     const width = this.card().w ?? 12;
     return this.createGridTrack(this.card().x, width);

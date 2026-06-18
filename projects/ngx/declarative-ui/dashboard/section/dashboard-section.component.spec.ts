@@ -1,5 +1,6 @@
 import { DashboardCard } from '../card/dashboard-card.component';
 import { DashboardSection } from './dashboard-section.component';
+import { DashboardI18nService } from '../i18n';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
@@ -19,6 +20,7 @@ describe('DashboardSection', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DashboardSection],
+      providers: [DashboardI18nService],
     }).compileComponents();
   });
 

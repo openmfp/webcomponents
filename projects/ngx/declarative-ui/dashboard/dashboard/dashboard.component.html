@@ -13,11 +13,11 @@
               <ui5-icon
                 class="mfp-dashboard__unsaved-changes-icon"
                 name="user-edit"
-                accessible-name="Unsaved Changes"
+                [accessibleName]="i18n.getTranslation(i18nKeys.UNSAVED_CHANGES)"
               />
-              <span class="mfp-dashboard__unsaved-changes-text"
-                >Unsaved Changes</span
-              >
+              <span class="mfp-dashboard__unsaved-changes-text">{{
+                i18n.getTranslation(i18nKeys.UNSAVED_CHANGES)
+              }}</span>
             </div>
           }
         </div>
@@ -39,7 +39,7 @@
             [accessibleName]="
               editCardsButton().text ||
               editCardsButton().tooltip ||
-              'Edit Cards'
+              i18n.getTranslation(i18nKeys.EDIT_CARDS)
             "
             [design]="editCardsButton().design"
             [icon]="editCardsButton().icon"
@@ -50,10 +50,10 @@
         } @else if (compactToolbar()) {
           <ui5-button
             #menuBtn
-            accessibleName="Actions"
             design="Transparent"
             icon="menu2"
-            tooltip="Actions"
+            [accessibleName]="i18n.getTranslation(i18nKeys.ACTIONS)"
+            [tooltip]="i18n.getTranslation(i18nKeys.ACTIONS)"
             (click)="toolbarMenuOpen.update((v) => !v)"
           />
           <ui5-menu
@@ -72,7 +72,10 @@
               <ui5-menu-item
                 data-action="edit-view"
                 [icon]="editViewButton().icon"
-                [text]="editViewButton().text || 'Edit View'"
+                [text]="
+                  editViewButton().text ||
+                  i18n.getTranslation(i18nKeys.EDIT_VIEW)
+                "
               />
               @if (customActions().length) {
                 <ui5-menu-separator />
@@ -90,7 +93,10 @@
               <ui5-menu-item
                 data-action="edit-view"
                 [icon]="editViewButton().icon"
-                [text]="editViewButton().text || 'Edit View'"
+                [text]="
+                  editViewButton().text ||
+                  i18n.getTranslation(i18nKeys.EDIT_VIEW)
+                "
               />
             }
           </ui5-menu>
@@ -98,7 +104,9 @@
           @if (config().editButtonFirst && config().editable) {
             <ui5-button
               [accessibleName]="
-                editViewButton().text || editViewButton().tooltip || 'Edit View'
+                editViewButton().text ||
+                editViewButton().tooltip ||
+                i18n.getTranslation(i18nKeys.EDIT_VIEW)
               "
               [design]="editViewButton().design"
               [icon]="editViewButton().icon"
@@ -123,7 +131,9 @@
           @if (!config().editButtonFirst && config().editable) {
             <ui5-button
               [accessibleName]="
-                editViewButton().text || editViewButton().tooltip || 'Edit View'
+                editViewButton().text ||
+                editViewButton().tooltip ||
+                i18n.getTranslation(i18nKeys.EDIT_VIEW)
               "
               [design]="editViewButton().design"
               [icon]="editViewButton().icon"
@@ -173,10 +183,12 @@
 
   @if (editMode()) {
     <div class="mfp-dashboard__edit-bar">
-      <ui5-button design="Emphasized" (click)="saveEdit()">Save</ui5-button>
-      <ui5-button design="Transparent" (click)="cancelEdit()"
-        >Cancel</ui5-button
-      >
+      <ui5-button design="Emphasized" (click)="saveEdit()">{{
+        i18n.getTranslation(i18nKeys.SAVE)
+      }}</ui5-button>
+      <ui5-button design="Transparent" (click)="cancelEdit()">{{
+        i18n.getTranslation(i18nKeys.CANCEL)
+      }}</ui5-button>
     </div>
   }
 </div>
