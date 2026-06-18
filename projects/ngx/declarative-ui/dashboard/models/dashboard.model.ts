@@ -1,8 +1,5 @@
 import { ButtonSettings } from '../../models/ui-definition';
 
-
-
-
 export const CARD_TYPES = {
   WC: 'wc',
   ANGULAR: 'angular',

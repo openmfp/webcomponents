@@ -1,6 +1,11 @@
 import { ButtonSettings } from '../../models';
 import { DashboardCard } from '../card/dashboard-card.component';
 import { addComponentToRegistry } from '../card/utils';
+import {
+  CELL_HEIGHT,
+  COMPACT_BREAKPOINT,
+  DASHBOARD_BREAKPOINTS,
+} from '../constants';
 import { DiscardChangesDialog } from '../discard-changes-dialog/discard-changes-dialog.component';
 import { EditCardsDialog } from '../edit-cards-dialog/edit-cards-dialog.component';
 import {
@@ -8,13 +13,7 @@ import {
   DashboardI18nService,
   DashboardLanguage,
 } from '../i18n';
-import {
-  CardConfig,
-  DASHBOARD_BREAKPOINTS,
-  DashboardConfig,
-  SectionConfig,
-} from '../models';
-import { CELL_HEIGHT, COMPACT_BREAKPOINT } from '../models/constants';
+import { CardConfig, DashboardConfig, SectionConfig } from '../models';
 import { DashboardSection } from '../section/dashboard-section.component';
 import { UnsavedChangesDialog } from '../unsaved-changes-dialog/unsaved-changes-dialog.component';
 import {
