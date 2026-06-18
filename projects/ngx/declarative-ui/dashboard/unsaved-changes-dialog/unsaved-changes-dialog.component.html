@@ -1,13 +1,13 @@
 <ui5-dialog state="Critical" [open]="open()" (ui5BeforeClose)="cancelled.emit()">
   <div class="unsaved-changes-dialog__header" slot="header">
-    <ui5-title level="H5">{{ headerText() }}</ui5-title>
+    <ui5-title level="H5">{{ i18n.getTranslation(i18nKeys.UNSAVED_CHANGES) }}</ui5-title>
   </div>
   <div class="unsaved-changes-dialog__body">
-    {{ bodyText() }}
+    {{ i18n.getTranslation(i18nKeys.UNSAVED_NAV_BODY) }}
   </div>
   <div class="unsaved-changes-dialog__footer" slot="footer">
-    <ui5-button design="Emphasized" (click)="save.emit()">{{ saveLabel() }}</ui5-button>
-    <ui5-button design="Transparent" (click)="discard.emit()">{{ discardLabel() }}</ui5-button>
-    <ui5-button design="Transparent" (click)="cancelled.emit()">{{ cancelLabel() }}</ui5-button>
+    <ui5-button design="Emphasized" (click)="save.emit()">{{ i18n.getTranslation(i18nKeys.SAVE) }}</ui5-button>
+    <ui5-button design="Transparent" (click)="discard.emit()">{{ i18n.getTranslation(i18nKeys.DISCARD) }}</ui5-button>
+    <ui5-button design="Transparent" (click)="cancelled.emit()">{{ i18n.getTranslation(i18nKeys.CANCEL) }}</ui5-button>
   </div>
 </ui5-dialog>

@@ -1,4 +1,5 @@
 import { DiscardChangesDialog } from './discard-changes-dialog.component';
+import { DashboardI18nService } from '../i18n';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 type Fixture = ComponentFixture<DiscardChangesDialog>;
@@ -17,6 +18,7 @@ describe('DiscardChangesDialog', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DiscardChangesDialog],
+      providers: [DashboardI18nService],
     }).compileComponents();
   });
 

@@ -1,4 +1,5 @@
-import { Component, ViewEncapsulation, input, output } from '@angular/core';
+import { Component, ViewEncapsulation, inject, input, output } from '@angular/core';
+import { DASHBOARD_I18N_KEYS, DashboardI18nService } from '../i18n';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 import { Dialog } from '@fundamental-ngx/ui5-webcomponents/dialog';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
@@ -22,14 +23,10 @@ import '@ui5/webcomponents-icons/dist/alert.js';
   encapsulation: ViewEncapsulation.ShadowDom,
 })
 export class UnsavedChangesDialog {
+  protected readonly i18n = inject(DashboardI18nService);
+  protected readonly i18nKeys = DASHBOARD_I18N_KEYS;
+
   open = input<boolean>(false);
-  headerText = input<string>('Unsaved Changes');
-  bodyText = input<string>(
-    'You are leaving this page. Save or discard the changes to proceed. This action cannot be undone.',
-  );
-  saveLabel = input<string>('Save');
-  discardLabel = input<string>('Discard');
-  cancelLabel = input<string>('Cancel');
 
   readonly save = output<void>();
   readonly discard = output<void>();

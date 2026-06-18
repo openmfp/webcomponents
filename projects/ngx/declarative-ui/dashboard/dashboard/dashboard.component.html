@@ -201,32 +201,19 @@
 <mfp-edit-cards-dialog
   [addedCardsIds]="addedCardsIds()"
   [availableCards]="availableCards()"
-  [cancelLabel]="i18n.getTranslation(i18nKeys.CANCEL)"
-  [headerText]="i18n.getTranslation(i18nKeys.EDIT_CARDS)"
-  [noDataText]="i18n.getTranslation(i18nKeys.NO_CARDS_AVAILABLE)"
   [open]="cardDialogOpen()"
-  [saveLabel]="i18n.getTranslation(i18nKeys.SAVE)"
   (cancelled)="closeCardPanel()"
   (confirm)="onCardsEdited($event)"
 />
 
 <mfp-discard-changes-dialog
-  [bodyText]="i18n.getTranslation(i18nKeys.DISCARD_CONFIRM_BODY)"
-  [cancelLabel]="i18n.getTranslation(i18nKeys.CANCEL)"
-  [confirmLabel]="i18n.getTranslation(i18nKeys.DISCARD)"
-  [headerText]="i18n.getTranslation(i18nKeys.DISCARD_CHANGES)"
   [open]="discardDialogOpen()"
   (cancelled)="cancelDiscard()"
   (confirm)="confirmDiscard()"
 />
 
 <mfp-unsaved-changes-dialog
-  [bodyText]="i18n.getTranslation(i18nKeys.UNSAVED_NAV_BODY)"
-  [cancelLabel]="i18n.getTranslation(i18nKeys.CANCEL)"
-  [discardLabel]="i18n.getTranslation(i18nKeys.DISCARD)"
-  [headerText]="i18n.getTranslation(i18nKeys.UNSAVED_CHANGES)"
   [open]="unsavedNavDialogOpen()"
-  [saveLabel]="i18n.getTranslation(i18nKeys.SAVE)"
   (cancelled)="onUnsavedNavCancel()"
   (discard)="onUnsavedNavDiscard()"
   (save)="onUnsavedNavSave()"
