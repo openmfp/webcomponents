@@ -8,7 +8,7 @@
       design="Default"
       icon="decline"
       [accessibleName]="
-        removeSectionLabel() +
+        i18n.getTranslation(i18nKeys.REMOVE_SECTION) +
         ': ' +
         (section().title || section().id)
       "
@@ -25,8 +25,6 @@
       <mfp-dashboard-card
         [card]="card"
         [editMode]="editMode() && section().editable !== false"
-        [removeCardLabel]="removeCardLabel()"
-        [resizableLabel]="resizableLabel()"
         (removeCard)="removeCard.emit($any(card.id))"
       />
     }

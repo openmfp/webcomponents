@@ -7,7 +7,7 @@
           design="Default"
           icon="decline"
           [accessibleName]="
-            removeCardLabel() +
+            i18n.getTranslation(i18nKeys.REMOVE_CARD) +
             ': ' +
             (card().label || card().component)
           "
@@ -18,7 +18,7 @@
         aria-hidden="true"
         class="card__resize-indicator"
         name="resize-corner"
-        [accessibleName]="resizableLabel()"
+        [accessibleName]="i18n.getTranslation(i18nKeys.RESIZABLE)"
       />
     }
     <div

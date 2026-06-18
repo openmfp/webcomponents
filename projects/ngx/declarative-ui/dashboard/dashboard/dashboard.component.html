@@ -156,9 +156,6 @@
       <mfp-dashboard-section
         [cards]="sectionCards()(section.id)"
         [editMode]="editMode()"
-        [removeCardLabel]="i18n.getTranslation(i18nKeys.REMOVE_CARD)"
-        [removeSectionLabel]="i18n.getTranslation(i18nKeys.REMOVE_SECTION)"
-        [resizableLabel]="i18n.getTranslation(i18nKeys.RESIZABLE)"
         [section]="section"
         (removeCard)="removeCard($event)"
         (removeSection)="removeSection(section.id)"
@@ -178,8 +175,6 @@
         <mfp-dashboard-card
           [card]="card"
           [editMode]="editMode()"
-          [removeCardLabel]="i18n.getTranslation(i18nKeys.REMOVE_CARD)"
-          [resizableLabel]="i18n.getTranslation(i18nKeys.RESIZABLE)"
           (removeCard)="removeCard($any(card.id))"
         />
       </gridstack-item>
