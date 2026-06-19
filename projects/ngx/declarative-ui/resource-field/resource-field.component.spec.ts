@@ -385,4 +385,46 @@ describe('ResourceField', () => {
       expect(component.tags()).toEqual([]);
     });
   });
+
+  describe('displayValue / valueRules', () => {
+    it('equals the raw value when valueRules is not set', () => {
+      const { fixture } = setup({ property: 'score' }, { score: '42' });
+      const span = q(fixture, '[test-id="resource-field-score"]');
+      expect(span?.textContent?.trim()).toBe('42');
+    });
+
+    it('equals the matching rule then when a rule matches', () => {
+      const { fixture } = setup(
+        {
+          property: 'score',
+          uiSettings: {
+            valueRules: [
+              { if: { condition: 'lessThan', value: '20' }, then: 'Low' },
+              { if: { condition: 'lessThan', value: '60' }, then: 'Medium' },
+              { if: { condition: 'greaterThanOrEqual', value: '60' }, then: 'High' },
+            ],
+          },
+        },
+        { score: '10' },
+      );
+      const span = q(fixture, '[test-id="resource-field-score"]');
+      expect(span?.textContent?.trim()).toBe('Low');
+    });
+
+    it('equals the raw value when rules are present but none match', () => {
+      const { fixture } = setup(
+        {
+          property: 'score',
+          uiSettings: {
+            valueRules: [
+              { if: { condition: 'equals', value: 'Running' }, then: 'Active' },
+            ],
+          },
+        },
+        { score: 'Pending' },
+      );
+      const span = q(fixture, '[test-id="resource-field-score"]');
+      expect(span?.textContent?.trim()).toBe('Pending');
+    });
+  });
 });

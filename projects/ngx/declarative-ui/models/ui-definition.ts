@@ -48,6 +48,8 @@ export interface UiSettings {
   cssCustomization?: Partial<CSSStyleDeclaration>;
   /** Conditional CSS rules evaluated against the cell value at render time. */
   cssRules?: CssRule[];
+  /** Conditional value rules evaluated at render time. First match replaces the displayed value; raw value shown when none match. */
+  valueRules?: ValueRule[];
   /** Fixed column width including unit (e.g. `'200px'`, `'20%'`). */
   columnWidth?: string;
   align?: 'start' | 'center' | 'end';
@@ -92,8 +94,8 @@ export interface ModalSettings {
   height?: string;
 }
 
-/** Comparison operator used in a conditional CSS rule. */
-export type CssRuleCondition =
+/** Comparison operator used in conditional CSS and value rules. */
+export type RuleCondition =
   | 'equals'
   | 'notEquals'
   | 'greaterThan'
@@ -105,9 +107,17 @@ export type CssRuleCondition =
 /** Conditional CSS rule: applies `styles` to the cell when `if` evaluates to `true`. */
 export interface CssRule {
   /** Condition evaluated against the cell's string value. */
-  if: { condition: CssRuleCondition; value: string };
+  if: { condition: RuleCondition; value: string };
   /** CSS properties applied when the condition is met. */
   styles: Partial<CSSStyleDeclaration>;
+}
+
+/** Conditional value rule: when `if` evaluates to `true`, the cell renders `then` instead of the raw value. First match wins. */
+export interface ValueRule {
+  /** Condition evaluated against the cell's string value. */
+  if: { condition: RuleCondition; value: string };
+  /** Display string used when the condition is met. */
+  then: string;
 }
 
 /** Event payload emitted when a button inside a table cell is clicked. */

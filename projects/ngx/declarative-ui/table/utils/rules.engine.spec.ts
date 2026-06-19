@@ -1,11 +1,12 @@
-import { CssRule, CssRuleCondition } from '../../models';
+import { CssRule, RuleCondition, ValueRule } from '../../models';
 import {
-  cssRuleResolver,
   evaluateCssRules,
+  evaluateValueRules,
   parseStringValue,
-} from './cssRules.engine';
+  ruleResolver,
+} from './rules.engine';
 
-describe('cssRules.engine', () => {
+describe('rules.engine', () => {
   describe('parseStringValue', () => {
     it('returns boolean for true and false strings', () => {
       expect(parseStringValue('true')).toBe(true);
@@ -21,7 +22,7 @@ describe('cssRules.engine', () => {
     });
   });
 
-  describe('cssRuleResolver', () => {
+  describe('ruleResolver', () => {
     it('handles equality and inequality comparisons', () => {
       const equalsRule: CssRule = {
         if: { condition: 'equals', value: '10' },
@@ -32,9 +33,9 @@ describe('cssRules.engine', () => {
         styles: {},
       };
 
-      expect(cssRuleResolver(equalsRule, '10')).toBe(true);
-      expect(cssRuleResolver(notEqualsRule, 'on')).toBe(true);
-      expect(cssRuleResolver(notEqualsRule, 'off')).toBe(false);
+      expect(ruleResolver(equalsRule, '10')).toBe(true);
+      expect(ruleResolver(notEqualsRule, 'on')).toBe(true);
+      expect(ruleResolver(notEqualsRule, 'off')).toBe(false);
     });
 
     it('handles numeric comparisons', () => {
@@ -55,10 +56,10 @@ describe('cssRules.engine', () => {
         styles: {},
       };
 
-      expect(cssRuleResolver(greaterThanRule, '5')).toBe(true);
-      expect(cssRuleResolver(greaterThanOrEqualRule, '3')).toBe(true);
-      expect(cssRuleResolver(lessThanRule, '2')).toBe(true);
-      expect(cssRuleResolver(lessThanOrEqualRule, '3')).toBe(true);
+      expect(ruleResolver(greaterThanRule, '5')).toBe(true);
+      expect(ruleResolver(greaterThanOrEqualRule, '3')).toBe(true);
+      expect(ruleResolver(lessThanRule, '2')).toBe(true);
+      expect(ruleResolver(lessThanOrEqualRule, '3')).toBe(true);
     });
 
     it('checks containment for strings and arrays', () => {
@@ -71,14 +72,14 @@ describe('cssRules.engine', () => {
         styles: {},
       };
 
-      expect(cssRuleResolver(stringContainsRule, 'hello world')).toBe(true);
+      expect(ruleResolver(stringContainsRule, 'hello world')).toBe(true);
       expect(
-        cssRuleResolver(arrayContainsRule, [
+        ruleResolver(arrayContainsRule, [
           'blue',
           'green',
         ] as unknown as string),
       ).toBe(true);
-      expect(cssRuleResolver(stringContainsRule, 'hello')).toBe(false);
+      expect(ruleResolver(stringContainsRule, 'hello')).toBe(false);
     });
 
     it('returns false for contains when value is not string or array', () => {
@@ -87,16 +88,16 @@ describe('cssRules.engine', () => {
         styles: {},
       };
 
-      expect(cssRuleResolver(rule, '123')).toBe(false);
+      expect(ruleResolver(rule, '123')).toBe(false);
     });
 
     it('returns false for unsupported conditions', () => {
       const rule: CssRule = {
-        if: { condition: 'unknown' as CssRuleCondition, value: 'x' },
+        if: { condition: 'unknown' as RuleCondition, value: 'x' },
         styles: {},
       };
 
-      expect(cssRuleResolver(rule, 'value')).toBe(false);
+      expect(ruleResolver(rule, 'value')).toBe(false);
     });
   });
 
@@ -141,6 +142,45 @@ describe('cssRules.engine', () => {
         backgroundColor: 'yellow',
         borderColor: 'black',
       });
+    });
+  });
+
+  describe('evaluateValueRules', () => {
+    it('returns the original value when rules is undefined', () => {
+      expect(evaluateValueRules('Active', undefined)).toBe('Active');
+    });
+
+    it('returns the original value when rules is an empty array', () => {
+      expect(evaluateValueRules('Active', [])).toBe('Active');
+    });
+
+    it('returns the first matching rule then (first-match-wins)', () => {
+      const rules: ValueRule[] = [
+        { if: { condition: 'equals', value: 'x' }, then: 'First' },
+        { if: { condition: 'equals', value: 'x' }, then: 'Second' },
+      ];
+
+      expect(evaluateValueRules('x', rules)).toBe('First');
+    });
+
+    it('returns the original value when no rule matches', () => {
+      const rules: ValueRule[] = [
+        { if: { condition: 'equals', value: 'Running' }, then: 'Active' },
+      ];
+
+      expect(evaluateValueRules('Pending', rules)).toBe('Pending');
+    });
+
+    it('maps activity-score ranges to labels', () => {
+      const rules: ValueRule[] = [
+        { if: { condition: 'lessThan', value: '20' }, then: 'Low' },
+        { if: { condition: 'lessThan', value: '60' }, then: 'Medium' },
+        { if: { condition: 'greaterThanOrEqual', value: '60' }, then: 'High' },
+      ];
+
+      expect(evaluateValueRules('10', rules)).toBe('Low');
+      expect(evaluateValueRules('35', rules)).toBe('Medium');
+      expect(evaluateValueRules('72', rules)).toBe('High');
     });
   });
 });

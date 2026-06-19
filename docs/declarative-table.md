@@ -1,6 +1,6 @@
 # DeclarativeTable
 
-A data table web component that renders rows and columns from a declarative column definition. Supports pagination, grouped columns, conditional cell styling, and multiple cell display modes (plain text, link, boolean icon, secret, tooltip, button, image, tag).
+A data table web component that renders rows and columns from a declarative column definition. Supports pagination, grouped columns, conditional cell styling, value mapping, and multiple cell display modes (plain text, link, boolean icon, secret, tooltip, button, image, tag).
 
 ## Tags
 
@@ -341,6 +341,31 @@ Available conditions: `equals`, `notEquals`, `greaterThan`, `greaterThanOrEqual`
 
 ```ts
 uiSettings: { cssCustomization: { fontStyle: 'italic' } }
+```
+
+---
+
+## Value rules (`valueRules`)
+
+Map a cell's raw value to a display string. The first matching rule wins; when no rule matches the raw value is shown unchanged.
+
+```ts
+{
+  label: 'Activity',
+  property: 'metrics.score',
+  uiSettings: {
+    valueRules: [
+      { if: { condition: 'lessThan',           value: '20' }, then: 'Low'    },
+      { if: { condition: 'lessThan',           value: '60' }, then: 'Medium' },
+      { if: { condition: 'greaterThanOrEqual', value: '60' }, then: 'High'   },
+    ],
+    cssRules: [
+      { if: { condition: 'lessThan',           value: '20' }, styles: { color: 'red'       } },
+      { if: { condition: 'greaterThanOrEqual', value: '20' }, styles: { color: 'darkorange' } },
+      { if: { condition: 'greaterThanOrEqual', value: '60' }, styles: { color: 'green'     } },
+    ],
+  },
+}
 ```
 
 ---

@@ -1,4 +1,4 @@
-import { CssRule } from '../../models';
+import { CssRule, RuleCondition, ValueRule } from '../../models';
 
 export const parseStringValue = (value: string) => {
   if (value === 'true') {
@@ -16,8 +16,10 @@ export const parseStringValue = (value: string) => {
   return value;
 };
 
-export const cssRuleResolver = (
-  rule: CssRule,
+interface ConditionRule { if: { condition: RuleCondition; value: string } }
+
+export const ruleResolver = (
+  rule: ConditionRule,
   resourceValue: string,
 ): boolean => {
   const parsedResouceValue = parseStringValue(resourceValue);
@@ -60,10 +62,21 @@ export const evaluateCssRules = (
   }
 
   return rules.reduce((acc, rule) => {
-    const result = cssRuleResolver(rule, value);
+    const result = ruleResolver(rule, value);
     if (result) {
       return { ...acc, ...rule.styles };
     }
     return acc;
   }, {});
+};
+
+export const evaluateValueRules = (
+  value: string,
+  rules?: ValueRule[],
+): string => {
+  if (!rules) return value;
+  for (const rule of rules) {
+    if (ruleResolver(rule, value)) return rule.then;
+  }
+  return value;
 };

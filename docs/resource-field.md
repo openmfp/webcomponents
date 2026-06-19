@@ -1,6 +1,6 @@
 # ResourceField
 
-A standalone field renderer that displays a single field value from a resource object. Supports eight display modes (plain text, secret, boolean icon, link, tooltip, alert, image, button, tag), conditional CSS rules, static CSS overrides, a copy-to-clipboard button, and a label badge mode. Used internally by `DeclarativeTable` and available for direct use in custom layouts.
+A standalone field renderer that displays a single field value from a resource object. Supports eight display modes (plain text, secret, boolean icon, link, tooltip, alert, image, button, tag), conditional CSS rules, value mapping, static CSS overrides, a copy-to-clipboard button, and a label badge mode. Used internally by `DeclarativeTable` and available for direct use in custom layouts.
 
 ## Tags
 
@@ -281,6 +281,30 @@ uiSettings: { cssCustomization: { fontStyle: 'italic' } }
 
 ---
 
+## Value rules (`valueRules`)
+
+Map the field's raw value to a display string. The first matching rule wins; when no rule matches the raw value is shown unchanged.
+
+```ts
+{
+  property: 'metrics.score',
+  uiSettings: {
+    valueRules: [
+      { if: { condition: 'lessThan',           value: '20' }, then: 'Low'    },
+      { if: { condition: 'lessThan',           value: '60' }, then: 'Medium' },
+      { if: { condition: 'greaterThanOrEqual', value: '60' }, then: 'High'   },
+    ],
+    cssRules: [
+      { if: { condition: 'lessThan',           value: '20' }, styles: { color: 'red'       } },
+      { if: { condition: 'greaterThanOrEqual', value: '20' }, styles: { color: 'darkorange' } },
+      { if: { condition: 'greaterThanOrEqual', value: '60' }, styles: { color: 'green'     } },
+    ],
+  },
+}
+```
+
+---
+
 ## Sub-components
 
 `ResourceField` composes four internal components that are also exported from the public API and can be used independently.
@@ -354,6 +378,7 @@ interface UiSettings {
   withCopyButton?:  boolean;
   cssCustomization?: Partial<CSSStyleDeclaration>;
   cssRules?:        CssRule[];
+  valueRules?:      ValueRule[];
   columnWidth?:     string;
   align?:           'start' | 'center' | 'end';
 }
@@ -374,11 +399,16 @@ interface ButtonSettings {
 }
 
 interface CssRule {
-  if:     { condition: CssRuleCondition; value: string };
+  if:     { condition: RuleCondition; value: string };
   styles: Partial<CSSStyleDeclaration>;
 }
 
-type CssRuleCondition =
+interface ValueRule {
+  if:   { condition: RuleCondition; value: string };
+  then: string;
+}
+
+type RuleCondition =
   | 'equals' | 'notEquals'
   | 'greaterThan' | 'greaterThanOrEqual'
   | 'lessThan' | 'lessThanOrEqual'
