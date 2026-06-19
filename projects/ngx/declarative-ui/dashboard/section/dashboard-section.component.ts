@@ -1,7 +1,8 @@
 import { DashboardCard } from '../card/dashboard-card.component';
 import { CardConfig, SectionConfig } from '../models';
-import { Component, ViewEncapsulation, input, output } from '@angular/core';
+import { Component, ViewEncapsulation, inject, input, output } from '@angular/core';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
+import { DASHBOARD_I18N_KEYS, DashboardI18nService } from '../i18n';
 
 @Component({
   selector: 'mfp-dashboard-section',
@@ -37,6 +38,8 @@ export class DashboardSection {
    */
   columns = input<number | undefined>(undefined);
   editMode = input<boolean>(false);
+  protected readonly i18n = inject(DashboardI18nService);
+  protected readonly i18nKeys = DASHBOARD_I18N_KEYS;
   readonly removeSection = output<void>();
   readonly removeCard = output<string>();
 }

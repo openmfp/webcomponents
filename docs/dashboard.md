@@ -196,6 +196,7 @@ const cards: CardConfig[] = [
 | `sections`       | `SectionConfig[]` | no       | `[]`    | Named dashboard sections rendered above the loose-card grid |
 | `cards`          | `CardConfig[]`    | no       | `[]`    | All cards shown in sections or in the grid                  |
 | `availableCards` | `CardConfig[]`    | no       | `[]`    | Card templates that can be added in edit mode               |
+| `language`       | `'en' \| 'de'`    | no       | `'en'`  | Language for the dashboard chrome (toolbar buttons, dialogs, a11y labels). See [Localization](#localization). |
 
 ### Outputs
 
@@ -222,6 +223,61 @@ const cards: CardConfig[] = [
 
 ---
 
+## Localization
+
+The dashboard chrome (toolbar buttons, dialogs, accessibility labels, the **Unsaved Changes** badge) is translated by the dashboard itself. Supported languages: `en` (default) and `de`.
+
+### Angular usage
+
+```html
+<mfp-dashboard [config]="config" [language]="lang" />
+```
+
+### Web-component usage
+
+```js
+const el = document.querySelector('mfp-wc-dashboard');
+el.language = 'de';
+```
+
+The `language` value is forwarded to every nested dashboard component (sections, cards, all three dialogs) via a shared `DashboardI18nService`, so changing it on the dashboard re-renders every chrome label in place.
+
+### Translated keys
+
+| Key                  | English                                                                                                       | German                                                                                                                            |
+| -------------------- | ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `unsavedChanges`     | Unsaved Changes                                                                                               | Nicht gespeicherte Änderungen                                                                                                     |
+| `editCards`          | Edit Cards                                                                                                    | Karten bearbeiten                                                                                                                 |
+| `editView`           | Edit View                                                                                                     | Ansicht bearbeiten                                                                                                                |
+| `actions`            | Actions                                                                                                       | Aktionen                                                                                                                          |
+| `save`               | Save                                                                                                          | Speichern                                                                                                                         |
+| `cancel`             | Cancel                                                                                                        | Abbrechen                                                                                                                         |
+| `discard`            | Discard                                                                                                       | Verwerfen                                                                                                                         |
+| `discardChanges`     | Discard Changes                                                                                               | Änderungen verwerfen                                                                                                              |
+| `discardConfirmBody` | Discard the changes? This action cannot be undone.                                                            | Änderungen verwerfen? Diese Aktion kann nicht rückgängig gemacht werden.                                                          |
+| `unsavedNavBody`     | You are leaving this page. Save or discard the changes to proceed. This action cannot be undone.              | Sie verlassen diese Seite. Speichern oder verwerfen Sie die Änderungen, um fortzufahren. Diese Aktion kann nicht rückgängig gemacht werden. |
+| `noCardsAvailable`   | No cards available.                                                                                           | Keine Karten verfügbar.                                                                                                           |
+| `removeSection`      | Remove section                                                                                                | Bereich entfernen                                                                                                                 |
+| `removeCard`         | Remove card                                                                                                   | Karte entfernen                                                                                                                   |
+| `resizable`          | Resizable                                                                                                     | Größenveränderbar                                                                                                                 |
+
+### What is NOT translated
+
+The dashboard does **not** translate consumer-supplied strings — those are passed through verbatim because the consumer already controls them:
+
+- `config.title` and `config.description`
+- `config.customActions[].text` / `tooltip`
+- `config.buttonsSettings.editViewButton.text` / `tooltip` and the Edit Cards equivalents (overrides win over the translated defaults)
+- Card `label`s shown in the Edit Cards dialog list
+
+Translate these in your application before passing them to the dashboard.
+
+### Standalone dialog reuse
+
+`<mfp-discard-changes-dialog>`, `<mfp-unsaved-changes-dialog>`, and `<mfp-edit-cards-dialog>` are exported on the public API for reuse outside the dashboard. When mounted standalone, each dialog accepts its own `language` input (default falls back to `'en'`); when nested inside `<mfp-dashboard>`, the input is ignored and the dashboard's shared language wins.
+
+---
+
 ## EditCardsDialog
 
 The `EditCardsDialog` component (`mfp-edit-cards-dialog`) is rendered inside the dashboard when edit mode is active and the user clicks the **Edit Cards** toolbar button. It shows all `availableCards` as a list of toggle switches — cards already on the dashboard start toggled on.
@@ -233,6 +289,7 @@ The `EditCardsDialog` component (`mfp-edit-cards-dialog`) is rendered inside the
 | `availableCards` | `CardConfig[]` | `[]`         | Full list of cards the user may add/remove |
 | `addedCardsIds`  | `Set<string>`  | `new Set()`  | IDs of cards currently on the dashboard  |
 | `open`           | `boolean`      | `false`      | Controls dialog visibility               |
+| `language`       | `'en' \| 'de' \| null` | `null` | Optional standalone-only override; ignored when nested in `<mfp-dashboard>`. |
 
 ### Outputs
 
@@ -404,9 +461,10 @@ Two-button popup shown when the user clicks the Cancel button on the in-page edi
 
 ### Inputs
 
-| Input  | Type      | Default | Description                |
-| ------ | --------- | ------- | -------------------------- |
-| `open` | `boolean` | `false` | Controls dialog visibility |
+| Input      | Type                    | Default | Description                                                                  |
+| ---------- | ----------------------- | ------- | ---------------------------------------------------------------------------- |
+| `open`     | `boolean`               | `false` | Controls dialog visibility                                                   |
+| `language` | `'en' \| 'de' \| null`  | `null`  | Optional standalone-only override; ignored when nested in `<mfp-dashboard>`. |
 
 ### Outputs
 
@@ -423,9 +481,10 @@ Two-button popup shown when the user clicks the Cancel button on the in-page edi
 
 ### Inputs
 
-| Input  | Type      | Default | Description                |
-| ------ | --------- | ------- | -------------------------- |
-| `open` | `boolean` | `false` | Controls dialog visibility |
+| Input      | Type                    | Default | Description                                                                  |
+| ---------- | ----------------------- | ------- | ---------------------------------------------------------------------------- |
+| `open`     | `boolean`               | `false` | Controls dialog visibility                                                   |
+| `language` | `'en' \| 'de' \| null`  | `null`  | Optional standalone-only override; ignored when nested in `<mfp-dashboard>`. |
 
 ### Outputs
 

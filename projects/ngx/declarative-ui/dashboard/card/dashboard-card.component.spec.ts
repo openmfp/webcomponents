@@ -1,4 +1,5 @@
 import { DashboardCard } from './dashboard-card.component';
+import { DashboardI18nService } from '../i18n';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 type Fixture = ComponentFixture<DashboardCard>;
@@ -17,6 +18,7 @@ describe('DashboardCard', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DashboardCard],
+      providers: [DashboardI18nService],
     }).compileComponents();
   });
 

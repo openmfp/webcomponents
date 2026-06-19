@@ -7,16 +7,18 @@
           design="Default"
           icon="decline"
           [accessibleName]="
-            'Remove card: ' + (card().label || card().component)
+            i18n.getTranslation(i18nKeys.REMOVE_CARD) +
+            ': ' +
+            (card().label || card().component)
           "
           (click)="removeCard.emit()"
         />
       </div>
       <ui5-icon
+        aria-hidden="true"
         class="card__resize-indicator"
         name="resize-corner"
-        accessible-name="Resizable"
-        aria-hidden="true"
+        [accessibleName]="i18n.getTranslation(i18nKeys.RESIZABLE)"
       />
     }
     <div

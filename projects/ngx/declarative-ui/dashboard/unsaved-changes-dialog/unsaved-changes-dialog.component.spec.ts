@@ -1,4 +1,5 @@
 import { UnsavedChangesDialog } from './unsaved-changes-dialog.component';
+import { DashboardI18nService } from '../i18n';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 type Fixture = ComponentFixture<UnsavedChangesDialog>;
@@ -17,6 +18,7 @@ describe('UnsavedChangesDialog', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [UnsavedChangesDialog],
+      providers: [DashboardI18nService],
     }).compileComponents();
   });
 

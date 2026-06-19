@@ -1,3 +1,4 @@
+import { nodesCB } from 'gridstack/dist/angular';
 import { resetDashboardCardRegistry } from '../card/utils/dashboard-card-registry';
 import { CardConfig, SectionConfig } from '../models';
 import { Dashboard } from './dashboard.component';
@@ -633,7 +634,7 @@ describe('Dashboard', () => {
       component.enterEditMode();
       expect(component.hasUnsavedChanges()).toBe(false);
 
-      component.onGridChange({ nodes: [{ id: 'c1', x: 1, y: 1 }] } as any);
+      component.onGridChange({ nodes: [{ id: 'c1', x: 1, y: 1 }] } as nodesCB);
       expect(component.hasUnsavedChanges()).toBe(true);
     });
 
@@ -643,7 +644,7 @@ describe('Dashboard', () => {
       configureFor(component);
       fixture.detectChanges();
 
-      component.onGridChange({ nodes: [{ id: 'c1', x: 1, y: 1 }] } as any);
+      component.onGridChange({ nodes: [{ id: 'c1', x: 1, y: 1 }] } as nodesCB);
 
       expect(component.hasUnsavedChanges()).toBe(false);
     });
@@ -856,6 +857,49 @@ describe('Dashboard', () => {
       window.dispatchEvent(event);
 
       expect(preventSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('localization (i18n)', () => {
+    it('renders English chrome by default', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', {
+        title: 'Operations',
+        editable: true,
+      });
+      fixture.detectChanges();
+
+      component.enterEditMode();
+      fixture.detectChanges();
+
+      const buttons = Array.from(
+        root(fixture).querySelectorAll('.mfp-dashboard__edit-bar ui5-button'),
+      ) as HTMLElement[];
+      const labels = buttons.map((b) => b.textContent?.trim());
+      expect(labels).toContain('Save');
+      expect(labels).toContain('Cancel');
+    });
+
+    it('renders German chrome when language input is "de"', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', {
+        title: 'Operations',
+        editable: true,
+      });
+      fixture.componentRef.setInput('language', 'de');
+      fixture.detectChanges();
+
+      component.enterEditMode();
+      fixture.detectChanges();
+
+      const buttons = Array.from(
+        root(fixture).querySelectorAll('.mfp-dashboard__edit-bar ui5-button'),
+      ) as HTMLElement[];
+      const labels = buttons.map((b) => b.textContent?.trim());
+      expect(labels).toContain('Speichern');
+      expect(labels).toContain('Abbrechen');
     });
   });
 });

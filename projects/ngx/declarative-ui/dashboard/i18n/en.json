@@ -1,0 +1,16 @@
+{
+  "unsavedChanges": "Unsaved Changes",
+  "editCards": "Edit Cards",
+  "editView": "Edit View",
+  "actions": "Actions",
+  "save": "Save",
+  "cancel": "Cancel",
+  "discard": "Discard",
+  "discardChanges": "Discard Changes",
+  "discardConfirmBody": "Discard the changes? This action cannot be undone.",
+  "unsavedNavBody": "You are leaving this page. Save or discard the changes to proceed. This action cannot be undone.",
+  "noCardsAvailable": "No cards available.",
+  "removeSection": "Remove section",
+  "removeCard": "Remove card",
+  "resizable": "Resizable"
+}

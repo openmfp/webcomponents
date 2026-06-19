@@ -13,6 +13,7 @@
     "target": "ES2022",
     "module": "preserve",
     "strictPropertyInitialization": false,
+    "resolveJsonModule": true,
     "paths": {
       "@openmfp/webcomponents/declarative-ui": [
         "./projects/ngx/declarative-ui/public-api.ts"
