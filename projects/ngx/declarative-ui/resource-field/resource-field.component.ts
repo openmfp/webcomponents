@@ -3,7 +3,7 @@ import {
   GenericResource,
   ResourceFieldButtonClickEvent,
 } from '../models';
-import { evaluateCssRules } from '../table/utils/cssRules.engine';
+import { evaluateCssRules, evaluateValueRules } from '../table/utils/rules.engine';
 import { getFieldValue } from '../table/utils/field-definition.utils';
 import { BooleanValue } from './boolean-value/boolean-value.component';
 import { LinkValue } from './link-value/link-value.component';
@@ -53,6 +53,9 @@ export class ResourceField<T extends GenericResource, F extends FieldDefinition>
     ...this.cssCustomization(),
     ...this.cssRules(),
   }));
+  displayValue = computed(
+    () => evaluateValueRules(this.value() ?? '', this.uiSettings()?.valueRules),
+  );
 
   isBoolLike = computed(() => this.boolValue() !== undefined);
   isUrlValue = computed(() => this.checkValidUrl(this.stringValue()));

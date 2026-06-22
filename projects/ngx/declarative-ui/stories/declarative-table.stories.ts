@@ -168,6 +168,46 @@ export const Basic: Story = {
 };
 
 /**
+ * `valueRules` maps raw numeric (or string) values to human-readable labels.
+ * First match wins; falls back to the raw value when no rule matches.
+ * Here the `activityScore` integer field is mapped to "Low" / "Medium" / "High"
+ * while `cssRules` adds colour coding on the same thresholds.
+ */
+export const ValueRules: Story = {
+  args: {
+    columns: [
+      { label: 'Name', property: 'metadata.name' },
+      {
+        label: 'Activity Score',
+        property: 'activityScore',
+        uiSettings: {
+          valueRules: [
+            { if: { condition: 'lessThan', value: '20' }, then: 'Low' },
+            { if: { condition: 'lessThan', value: '60' }, then: 'Medium' },
+            { if: { condition: 'greaterThanOrEqual', value: '60' }, then: 'High' },
+          ],
+          cssRules: [
+            { if: { condition: 'lessThan', value: '20' }, styles: { color: 'red' } },
+            {
+              if: { condition: 'greaterThanOrEqual', value: '20' },
+              styles: { color: 'darkorange' },
+            },
+            { if: { condition: 'greaterThanOrEqual', value: '60' }, styles: { color: 'green' } },
+          ],
+        },
+      },
+    ] satisfies TableFieldDefinition[],
+    resources: [
+      { ...PODS[0], activityScore: 10 },
+      { ...PODS[1], activityScore: 35 },
+      { ...PODS[2], activityScore: 72 },
+      { ...PODS[3], activityScore: 5 },
+      { ...PODS[4], activityScore: 61 },
+    ],
+  },
+};
+
+/**
  * Boolean icons, secret cell with inline copy button, and conditional colour
  * rules. The copy icon appears next to the masked value on the same line.
  */
