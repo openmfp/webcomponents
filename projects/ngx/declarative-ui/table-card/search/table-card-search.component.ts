@@ -1,3 +1,5 @@
+import { ButtonSettings } from '../../models';
+import { TableCardSearchConfig } from '../models/search-config';
 import {
   CUSTOM_ELEMENTS_SCHEMA,
   ChangeDetectionStrategy,
@@ -20,8 +22,6 @@ import { SearchScope } from '@fundamental-ngx/ui5-webcomponents-fiori/search-sco
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 import '@ui5/webcomponents-icons/dist/search.js';
 import { debounceTime } from 'rxjs';
-import { ButtonSettings } from '../../models';
-import { TableCardSearchConfig } from '../models/search-config';
 
 type SearchState = 'collapsed' | 'expanded' | 'collapsing';
 
@@ -72,7 +72,13 @@ export class TableCardSearch {
       });
 
     effect(() => {
-      this.activeScope.set(this.searchConfig().scopeValue);
+      const config = this.searchConfig();
+      this.activeScope.set(config.scopeValue);
+
+      const nextValue = config.value ?? '';
+      if (this.searchControl.value !== nextValue) {
+        this.searchControl.setValue(nextValue);
+      }
     });
   }
 

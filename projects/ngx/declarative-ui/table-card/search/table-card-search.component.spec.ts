@@ -398,7 +398,45 @@ describe('TableCardSearch', () => {
   });
 
   // -------------------------------------------------------------------------
-  // 8. searchButtonConfig input overrides
+  // 8. searchConfig.value binding
+  // -------------------------------------------------------------------------
+
+  describe('searchConfig.value binding', () => {
+    it('initialises searchControl with config.value on creation', () => {
+      const { component } = setup({ searchConfig: { value: 'initial' } });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).searchControl.value).toBe('initial');
+    });
+
+    it('updates searchControl when searchConfig.value changes', () => {
+      const { fixture, component } = setup({ searchConfig: { value: 'first' } });
+      fixture.componentRef.setInput('searchConfig', { value: 'second' });
+      fixture.detectChanges();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).searchControl.value).toBe('second');
+    });
+
+    it('does not emit searchChanged when config.value is set to the same value', () => {
+      const { fixture, component } = setup({ searchConfig: { alwaysOnDisplay: true } });
+      vi.advanceTimersByTime(300); // flush any pending init emission
+
+      const emitted: unknown[] = [];
+      component.searchChanged.subscribe((e) => emitted.push(e));
+
+      fixture.componentRef.setInput('searchConfig', { alwaysOnDisplay: true, value: 'same' });
+      fixture.detectChanges();
+      vi.advanceTimersByTime(300);
+      emitted.length = 0; // clear first emission
+
+      fixture.componentRef.setInput('searchConfig', { alwaysOnDisplay: true, value: 'same' });
+      fixture.detectChanges();
+      vi.advanceTimersByTime(300);
+      expect(emitted).toHaveLength(0);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // 9. searchButtonConfig input overrides
   // -------------------------------------------------------------------------
 
   describe('searchButtonConfig input', () => {

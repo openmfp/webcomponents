@@ -3,7 +3,7 @@
     class="card__search card__search--inline"
     [accessibleName]="searchConfig().accessibleName"
     [placeholder]="searchConfig().placeholder"
-    [scopeValue]="searchConfig().scopeValue"
+    [scopeValue]="activeScope()"
     [showClearIcon]="searchConfig().showClearIcon ?? true"
     [value]="searchControl.value ?? ''"
     (ui5Input)="onSearchInput($event)"
@@ -24,7 +24,7 @@
         (searchCollapsing() ? 'leave' : 'enter')
       "
       [placeholder]="searchConfig().placeholder"
-      [scopeValue]="searchConfig().scopeValue"
+      [scopeValue]="activeScope()"
       [showClearIcon]="searchConfig().showClearIcon ?? true"
       [value]="searchControl.value ?? ''"
       (animationend)="onSearchAnimationEnd()"
