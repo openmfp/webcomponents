@@ -16,7 +16,6 @@
     <div class="card__actions">
       @if (searchConfig(); as sc) {
         <mfp-table-card-search
-          [searchButtonConfig]="searchButtonConfig()"
           [searchConfig]="sc"
           (scopeChanged)="scopeChanged.emit($event)"
           (searchChanged)="searchChanged.emit($event)"

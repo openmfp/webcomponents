@@ -40,8 +40,6 @@ export interface DeleteResourceConfirmationConfig {
 export interface TableCardButtonSettings {
   /** Partial override for the "Create" button. */
   createButton?: Partial<ButtonSettings>;
-  /** Partial override for the search toggle button. */
-  searchButton?: Partial<ButtonSettings>;
   /** Partial override for the per-row "Edit" button. */
   editButton?: Partial<ButtonSettings>;
   /** Partial override for the per-row "Delete" button. */

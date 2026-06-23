@@ -10,7 +10,7 @@ import type {
   TableConfig,
 } from '../table-card/models/configs';
 import type { TableFieldDefinition } from '../table/models';
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
 import '@ui5/webcomponents-icons/dist/detail-view.js';
 
@@ -156,16 +156,63 @@ const BASE_CONFIG: TableCardConfig = {
       #tableCard
       [config]="config"
       [createFormState]="createFormState"
-      [resources]="resources"
+      [resources]="filteredResources"
       (createFieldChange)="onCreateFieldChange($event)"
       (createSubmit)="onCreateSubmit($event, tableCard)"
+      (scopeChanged)="onScopeChanged($event)"
+      (searchChanged)="onSearchChanged($event)"
+      (searchSubmit)="onSearchSubmit($event)"
     />
   `,
 })
-class DeclarativeTableCardCreateStory {
+class DeclarativeTableCardCreateStory implements OnInit {
   @Input() config!: TableCardConfig;
   @Input() resources: GenericResource[] = [];
   createFormState: TableCardFormState = {};
+
+  searchTerm = '';
+  activeScope: string | undefined = undefined;
+
+  ngOnInit(): void {
+    this.searchTerm = this.config?.searchConfig?.value ?? '';
+    this.activeScope = this.config?.searchConfig?.scopeValue;
+  }
+
+  get filteredResources(): GenericResource[] {
+    const sc = this.config?.searchConfig;
+    if (!sc) return this.resources;
+
+    let result = this.resources as Pod[];
+
+    if (this.activeScope === 'default' || this.activeScope === 'kube-system') {
+      result = result.filter(
+        (pod) => pod.metadata.namespace === this.activeScope,
+      );
+    }
+
+    if (this.searchTerm) {
+      result = result.filter((pod) =>
+        pod.metadata.name.toLowerCase().includes(this.searchTerm.toLowerCase()),
+      );
+    }
+
+    return result as GenericResource[];
+  }
+
+  onSearchChanged(event: { value: string; scope?: string }): void {
+    this.searchTerm = event.value;
+    this.activeScope = event.scope;
+    console.log('[searchChanged]', event);
+  }
+
+  onSearchSubmit(event: { value: string; scope?: string }): void {
+    console.log('[searchSubmit]', event);
+  }
+
+  onScopeChanged(event: { value: string; scope?: string }): void {
+    this.activeScope = event.scope;
+    console.log('[scopeChanged]', event);
+  }
 
   onCreateFieldChange(event: FormFieldChangeEvent): void {
     const fieldErrors: Record<string, string | null> = {
@@ -473,57 +520,20 @@ export const WithPagination: Story = {
   },
 };
 
-// ---------------------------------------------------------------------------
-// Search wrapper component (for stories wiring outputs to console)
-// ---------------------------------------------------------------------------
-
-@Component({
-  selector: 'mfp-declarative-table-card-search-story',
-  imports: [DeclarativeTableCard],
-  template: `
-    <mfp-declarative-table-card
-      [config]="config"
-      [resources]="resources"
-      (scopeChanged)="onScopeChanged($event)"
-      (searchChanged)="onSearchChanged($event)"
-      (searchSubmit)="onSearchSubmit($event)"
-    />
-  `,
-})
-class DeclarativeTableCardSearchStory {
-  @Input() config!: TableCardConfig;
-  @Input() resources: GenericResource[] = [];
-
-  onSearchChanged(event: { value: string; scope?: string }): void {
-    console.log('[searchChanged]', event);
-  }
-
-  onSearchSubmit(event: { value: string; scope?: string }): void {
-    console.log('[searchSubmit]', event);
-  }
-
-  onScopeChanged(event: { value: string; scope?: string }): void {
-    console.log('[scopeChanged]', event);
-  }
-}
-
-type SearchStory = StoryObj<DeclarativeTableCardSearchStory>;
+type SearchStory = StoryObj<DeclarativeTableCardCreateStory>;
 
 /**
- * Search toggle UX: a search icon button reveals `<ui5-search>` on click.
- * Collapsing preserves the entered text — re-expanding restores the in-flight query.
- * Use the built-in clear icon (×) to clear the value.
+ * Search is always visible when `searchConfig` is provided.
+ * The input is pre-filled with `value` from `searchConfig` and the table is
+ * filtered on load. Typing updates the count in real-time (300 ms debounce).
  */
 export const WithSearch: SearchStory = {
-  render: (args) => ({
-    props: args,
-    component: DeclarativeTableCardSearchStory,
-  }),
   args: {
     config: {
       ...BASE_CONFIG,
       searchConfig: {
         placeholder: 'Search pods…',
+        value: 'server',
       } satisfies TableCardSearchConfig,
     },
     resources: PODS,
@@ -531,44 +541,22 @@ export const WithSearch: SearchStory = {
 };
 
 /**
- * `alwaysOnDisplay: true` — `<ui5-search>` is rendered inline in the toolbar with no toggle button.
- */
-export const WithSearchAlwaysOn: SearchStory = {
-  render: (args) => ({
-    props: args,
-    component: DeclarativeTableCardSearchStory,
-  }),
-  args: {
-    config: {
-      ...BASE_CONFIG,
-      searchConfig: {
-        placeholder: 'Search pods…',
-        alwaysOnDisplay: true,
-      } satisfies TableCardSearchConfig,
-    },
-    resources: PODS,
-  },
-};
-
-/**
- * Scopes dropdown lists "All" and "My Contributions" next to the search input.
+ * Scopes dropdown lists namespaces next to the search input.
  * Selecting a scope emits `scopeChanged`; submitting the form emits `searchSubmit`.
  * Both events carry `{ value, scope }`. `searchChanged` fires after 300 ms debounce.
  * Open the Actions tab to observe all three outputs.
  */
 export const WithSearchAndScopes: SearchStory = {
-  render: (args) => ({
-    props: args,
-    component: DeclarativeTableCardSearchStory,
-  }),
   args: {
     config: {
       ...BASE_CONFIG,
       searchConfig: {
         placeholder: 'Search pods…',
+        value: 'api',
         scopes: [
-          { label: 'All', value: 'all' },
-          { label: 'My Contributions', value: 'mine' },
+          { label: 'All namespaces', value: 'all' },
+          { label: 'default', value: 'default' },
+          { label: 'kube-system', value: 'kube-system' },
         ],
         scopeValue: 'all',
       } satisfies TableCardSearchConfig,

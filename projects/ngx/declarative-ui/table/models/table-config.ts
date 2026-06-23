@@ -1,5 +1,7 @@
 import { TableFieldDefinition } from '../../models/ui-definition';
 
+export type { TableFieldDefinition } from '../../models/ui-definition';
+
 /** Configuration for the `mfp-declarative-table` component. */
 export interface TableConfig {
   /** Column definitions. */

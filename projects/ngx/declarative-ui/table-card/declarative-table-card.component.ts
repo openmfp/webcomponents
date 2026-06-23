@@ -103,9 +103,6 @@ export class DeclarativeTableCard<T extends GenericResource> {
   protected createButtonConfig = computed(
     () => this.config().buttonSettings?.createButton,
   );
-  protected searchButtonConfig = computed(
-    () => this.config().buttonSettings?.searchButton,
-  );
   protected effectiveColumns = computed(() => this.addActionsColumn());
   protected editInitialValue = computed(() => {
     const pendingResource = this.pendingResource();

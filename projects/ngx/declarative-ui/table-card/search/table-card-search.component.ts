@@ -1,4 +1,3 @@
-import { ButtonSettings } from '../../models';
 import { TableCardSearchConfig } from '../models/search-config';
 import {
   CUSTOM_ELEMENTS_SCHEMA,
@@ -6,8 +5,6 @@ import {
   Component,
   Injector,
   ViewEncapsulation,
-  afterNextRender,
-  computed,
   effect,
   inject,
   input,
@@ -19,11 +16,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl } from '@angular/forms';
 import { Search } from '@fundamental-ngx/ui5-webcomponents-fiori/search';
 import { SearchScope } from '@fundamental-ngx/ui5-webcomponents-fiori/search-scope';
-import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 import '@ui5/webcomponents-icons/dist/search.js';
 import { debounceTime } from 'rxjs';
-
-type SearchState = 'collapsed' | 'expanded' | 'collapsing';
 
 interface Ui5SearchEventTarget {
   value?: string;
@@ -32,7 +26,7 @@ interface Ui5SearchEventTarget {
 
 @Component({
   selector: 'mfp-table-card-search',
-  imports: [Button, Search, SearchScope],
+  imports: [Search, SearchScope],
   templateUrl: './table-card-search.component.html',
   styleUrl: './table-card-search.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -41,23 +35,14 @@ interface Ui5SearchEventTarget {
 })
 export class TableCardSearch {
   searchConfig = input.required<TableCardSearchConfig>();
-  searchButtonConfig = input<Partial<ButtonSettings> | undefined>(undefined);
 
   readonly searchChanged = output<{ value: string; scope?: string }>();
   readonly searchSubmit = output<{ value: string; scope?: string }>();
   readonly scopeChanged = output<{ value: string; scope?: string }>();
 
-  protected searchState = signal<SearchState>('collapsed');
-  protected searchExpanded = computed(() => this.searchState() !== 'collapsed');
-  protected searchCollapsing = computed(
-    () => this.searchState() === 'collapsing',
-  );
   protected searchControl = new FormControl('');
   protected searchInputRef = viewChild<Search>('searchInput');
   protected activeScope = signal<string | undefined>(undefined);
-  protected alwaysOnDisplay = computed(
-    () => this.searchConfig().alwaysOnDisplay === true,
-  );
 
   private readonly injector = inject(Injector);
 
@@ -80,29 +65,11 @@ export class TableCardSearch {
         this.searchControl.setValue(nextValue);
       }
     });
-  }
 
-  toggleSearch(): void {
-    if (this.alwaysOnDisplay()) {
-      return;
-    }
-    if (this.searchState() === 'expanded') {
-      this.collapseSearch();
-    } else if (this.searchState() === 'collapsed') {
-      this.searchState.set('expanded');
-      afterNextRender(
-        () => {
-          this.searchInputRef()?.elementRef.nativeElement.focus();
-        },
-        { injector: this.injector },
-      );
-    }
-  }
-
-  onSearchAnimationEnd(): void {
-    if (this.searchCollapsing()) {
-      this.searchState.set('collapsed');
-    }
+    // Workaround for ui5-select truncating long scope labels — see https://github.com/UI5/webcomponents/issues/13719
+    setTimeout(() => {
+      this.fixSelectWidth();
+    }, 0);
   }
 
   onSearchInput(event: Event): void {
@@ -128,7 +95,24 @@ export class TableCardSearch {
     });
   }
 
-  private collapseSearch(): void {
-    this.searchState.set('collapsing');
+  private fixSelectWidth(): void {
+    if (!this.searchConfig().scopes?.length) return;
+    const nativeEl = this.searchInputRef()?.elementRef.nativeElement as
+      | HTMLElement
+      | undefined;
+    const ui5Select = nativeEl?.shadowRoot?.querySelector(
+      'ui5-select',
+    ) as HTMLElement | null;
+    if (!ui5Select) return;
+    ui5Select.style.maxWidth = 'none';
+    ui5Select.style.minWidth = 'fit-content';
+    const label = ui5Select.shadowRoot?.querySelector(
+      '.ui5-select-label-root',
+    ) as HTMLElement | null;
+    if (label) {
+      label.style.marginRight = '5px';
+      label.style.overflow = 'visible';
+      label.style.textOverflow = 'clip';
+    }
   }
 }

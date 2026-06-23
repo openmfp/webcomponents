@@ -13,9 +13,12 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    min-height: 3rem;
-    padding: 0 1rem;
+    flex-wrap: wrap;
+    min-height: 2rem;
+    padding: 0.5rem 1rem;
     border-bottom: 1px solid var(--sapGroup_ContentBorderColor, #d9d9d9);
+    gap: 0.5rem;
+    overflow: hidden;
   }
 
   &__title {
@@ -28,12 +31,18 @@
     line-height: normal;
     display: flex;
     align-items: center;
+    flex: 1 0 auto;
+    min-width: 0;
+    overflow: hidden;
   }
 
   &__actions {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    flex: 1 1 300px;
+    min-width: 0;
+    justify-content: flex-end;
   }
 
   &__info-icon {

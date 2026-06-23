@@ -20,7 +20,4 @@ export interface TableCardSearchConfig {
   value?: string;
   /** Scope options shown in the scopes dropdown. Omit or leave empty to render the input without a scope dropdown. */
   scopes?: Scope[];
-  /** When `true`, `<ui5-search>` is always visible in the toolbar.
-   *  When `false` (default), the search is hidden behind a search-toggle icon button; clicking it expands the search and clicking it again (or losing focus on an empty input) collapses the search. Collapse preserves the entered text and active scope — re-expanding restores the in-flight query. Use the built-in clear icon (`showClearIcon`) to clear the value. */
-  alwaysOnDisplay?: boolean;
 }
