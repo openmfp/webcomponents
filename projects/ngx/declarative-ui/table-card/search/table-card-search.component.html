@@ -1,0 +1,48 @@
+@if (alwaysOnDisplay()) {
+  <ui5-search
+    class="card__search card__search--inline"
+    [accessibleName]="searchConfig().accessibleName"
+    [placeholder]="searchConfig().placeholder"
+    [scopeValue]="searchConfig().scopeValue"
+    [showClearIcon]="searchConfig().showClearIcon ?? true"
+    [value]="searchControl.value ?? ''"
+    (ui5Input)="onSearchInput($event)"
+    (ui5ScopeChange)="onSearchScopeChange($event)"
+    (ui5Search)="onSearchSubmit($event)"
+  >
+    @for (s of searchConfig().scopes ?? []; track s.value) {
+      <ui5-search-scope slot="scopes" [text]="s.label" [value]="s.value" />
+    }
+  </ui5-search>
+} @else {
+  @if (searchExpanded()) {
+    <ui5-search
+      #searchInput
+      [accessibleName]="searchConfig().accessibleName"
+      [class]="
+        'card__search card__search--' +
+        (searchCollapsing() ? 'leave' : 'enter')
+      "
+      [placeholder]="searchConfig().placeholder"
+      [scopeValue]="searchConfig().scopeValue"
+      [showClearIcon]="searchConfig().showClearIcon ?? true"
+      [value]="searchControl.value ?? ''"
+      (animationend)="onSearchAnimationEnd()"
+      (ui5Input)="onSearchInput($event)"
+      (ui5ScopeChange)="onSearchScopeChange($event)"
+      (ui5Search)="onSearchSubmit($event)"
+    >
+      @for (s of searchConfig().scopes ?? []; track s.value) {
+        <ui5-search-scope slot="scopes" [text]="s.label" [value]="s.value" />
+      }
+    </ui5-search>
+  }
+  <ui5-button
+    class="card__search-btn"
+    design="Transparent"
+    [accessibleName]="searchButtonConfig()?.tooltip ?? 'Search'"
+    [icon]="searchButtonConfig()?.icon ?? 'search'"
+    [tooltip]="searchButtonConfig()?.tooltip ?? 'Search'"
+    (click)="toggleSearch()"
+  />
+}

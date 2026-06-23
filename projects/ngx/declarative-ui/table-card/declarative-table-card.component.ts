@@ -8,39 +8,22 @@ import {
 } from '../table/models';
 import { getResourceValueByJsonPath } from '../table/utils/resource-field-by-path';
 import { TableCardConfig, TableCardFormState } from './models/configs';
+import { TableCardSearch } from './search/table-card-search.component';
 import {
   CUSTOM_ELEMENTS_SCHEMA,
   ChangeDetectionStrategy,
   Component,
-  Injector,
   ViewEncapsulation,
-  afterNextRender,
   computed,
-  effect,
-  inject,
   input,
   output,
   signal,
-  viewChild,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormControl } from '@angular/forms';
-import { Search } from '@fundamental-ngx/ui5-webcomponents-fiori/search';
-import { SearchScope } from '@fundamental-ngx/ui5-webcomponents-fiori/search-scope';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 import { Dialog } from '@fundamental-ngx/ui5-webcomponents/dialog';
 import { Icon } from '@fundamental-ngx/ui5-webcomponents/icon';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 import '@ui5/webcomponents-icons/dist/add.js';
-import '@ui5/webcomponents-icons/dist/search.js';
-import { debounceTime } from 'rxjs';
-
-type SearchState = 'collapsed' | 'expanded' | 'collapsing';
-
-interface Ui5SearchEventTarget {
-  value?: string;
-  scopeValue?: string;
-}
 
 @Component({
   selector: 'mfp-declarative-table-card',
@@ -51,8 +34,7 @@ interface Ui5SearchEventTarget {
     Title,
     Button,
     Icon,
-    Search,
-    SearchScope,
+    TableCardSearch,
   ],
   templateUrl: './declarative-table-card.component.html',
   styleUrl: './declarative-table-card.component.scss',
@@ -99,15 +81,6 @@ export class DeclarativeTableCard<T extends GenericResource> {
   }>();
   readonly deleteSubmit = output<T>();
 
-  protected searchState = signal<SearchState>('collapsed');
-  protected searchExpanded = computed(() => this.searchState() !== 'collapsed');
-  protected searchCollapsing = computed(
-    () => this.searchState() === 'collapsing',
-  );
-  protected searchControl = new FormControl('');
-  protected searchInputRef = viewChild<Search>('searchInput');
-  protected activeScope = signal<string | undefined>(undefined);
-
   protected createDialogOpen = signal(false);
   protected editDialogOpen = signal(false);
   protected deleteDialogOpen = signal(false);
@@ -118,9 +91,6 @@ export class DeclarativeTableCard<T extends GenericResource> {
   protected header = computed(() => this.config().header);
   protected headerTooltip = computed(() => this.config().headerTooltip);
   protected searchConfig = computed(() => this.config().searchConfig);
-  protected alwaysOnDisplay = computed(
-    () => this.searchConfig()?.alwaysOnDisplay === true,
-  );
   protected createFormConfig = computed(
     () => this.config().createResourceFormConfig,
   );
@@ -146,73 +116,6 @@ export class DeclarativeTableCard<T extends GenericResource> {
 
     return this.buildInitialValues(editConfig.fields, pendingResource);
   });
-
-  private readonly injector = inject(Injector);
-
-  constructor() {
-    this.searchControl.valueChanges
-      .pipe(debounceTime(300), takeUntilDestroyed())
-      .subscribe((value) => {
-        this.searchChanged.emit({
-          value: value ?? '',
-          scope: this.activeScope(),
-        });
-      });
-
-    effect(() => {
-      this.activeScope.set(this.searchConfig()?.scopeValue);
-    });
-  }
-
-  toggleSearch(): void {
-    if (this.alwaysOnDisplay()) {
-      return;
-    }
-    if (this.searchState() === 'expanded') {
-      this.collapseSearch();
-    } else if (this.searchState() === 'collapsed') {
-      this.searchState.set('expanded');
-      afterNextRender(
-        () => {
-          this.searchInputRef()?.elementRef.nativeElement.focus();
-        },
-        { injector: this.injector },
-      );
-    }
-  }
-
-  onSearchAnimationEnd(): void {
-    if (this.searchCollapsing()) {
-      this.searchState.set('collapsed');
-    }
-  }
-
-  onSearchInput(event: Event): void {
-    const target = event.target as Ui5SearchEventTarget | null;
-    this.searchControl.setValue(target?.value ?? '');
-  }
-
-  onSearchSubmit(event: Event): void {
-    const target = event.target as Ui5SearchEventTarget | null;
-    this.searchSubmit.emit({
-      value: target?.value ?? '',
-      scope: target?.scopeValue || undefined,
-    });
-  }
-
-  onSearchScopeChange(event: Event): void {
-    const target = event.target as Ui5SearchEventTarget | null;
-    const scope = target?.scopeValue || undefined;
-    this.activeScope.set(scope);
-    this.scopeChanged.emit({
-      value: this.searchControl.value ?? '',
-      scope,
-    });
-  }
-
-  private collapseSearch(): void {
-    this.searchState.set('collapsing');
-  }
 
   onButtonClick(event: ResourceFieldButtonClickEvent<T>): void {
     const action = event.field.uiSettings?.buttonSettings?.action;
