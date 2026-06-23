@@ -1,4 +1,3 @@
-import { GenericResource } from './resource';
 
 /** Text transformation applied to a field value before display. */
 export type TransformType =
@@ -18,7 +17,14 @@ export interface PropertyField {
 
 /** Appearance settings for tag chip rendering. */
 export interface TagSettings {
-  design?: 'Neutral' | 'Positive' | 'Critical' | 'Negative' | 'Information' | 'Set1' | 'Set2';
+  design?:
+    | 'Neutral'
+    | 'Positive'
+    | 'Critical'
+    | 'Negative'
+    | 'Information'
+    | 'Set1'
+    | 'Set2';
   colorScheme?: '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10';
   /** Delimiter used to split a plain-string value into individual tags. Default: `','`. */
   valueSeparator?: string;
@@ -120,16 +126,6 @@ export interface ValueRule {
   then: string;
 }
 
-/** Event payload emitted when a button inside a table cell is clicked. */
-export interface ResourceFieldButtonClickEvent<T extends GenericResource> {
-  /** Original DOM click event. */
-  event: MouseEvent;
-  /** The field definition of the button cell that was clicked. */
-  field: TableFieldDefinition;
-  /** The data row associated with the clicked button. */
-  resource: T | undefined;
-}
-
 /** Base field definition shared by table columns and form fields. */
 export interface FieldDefinition {
   /** Column header / form label. */
@@ -144,19 +140,4 @@ export interface FieldDefinition {
   value?: string;
   /** Display and interaction configuration for this cell. */
   uiSettings?: UiSettings;
-}
-
-/** Table column definition — extends `FieldDefinition` with optional column grouping. */
-export interface TableFieldDefinition extends FieldDefinition {
-  /** Groups this column visually with adjacent columns that share the same `name`. */
-  group?: {
-    /** Logical group identifier. */
-    name: string;
-    /** Group header label shown above the grouped cells. */
-    label?: string;
-    /** Separator placed between values in the same group cell. */
-    delimiter?: string;
-    /** When `true`, each value is rendered on its own line. */
-    multiline?: boolean;
-  };
 }
