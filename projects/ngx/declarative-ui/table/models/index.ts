@@ -12,3 +12,4 @@ export type {
   PropertyField,
   TransformType,
 } from '../../models/ui-definition';
+export type { TableConfig } from './table-config';

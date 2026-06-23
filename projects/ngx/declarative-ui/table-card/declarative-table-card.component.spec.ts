@@ -11,6 +11,7 @@ import {
   ResourceFormConfig,
   TableCardConfig,
   TableCardFormState,
+  TableCardSearchConfig,
   TableConfig,
 } from './models/configs';
 import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
@@ -103,6 +104,7 @@ function setup(
     deleteConfig?: TableCardDeleteConfig;
     createFormState?: TableCardFormState;
     editFormState?: TableCardFormState;
+    searchConfig?: TableCardSearchConfig;
   } = {},
 ): { fixture: Fixture; component: Comp } {
   const fixture: Fixture = TestBed.createComponent(
@@ -121,6 +123,7 @@ function setup(
       editButton: opts.editConfig?.editButtonSettings,
       deleteButton: opts.deleteConfig?.deleteButtonSettings,
     },
+    searchConfig: opts.searchConfig,
   };
 
   fixture.componentRef.setInput('config', config);
@@ -132,18 +135,37 @@ function setup(
   return { fixture, component };
 }
 
+/** Return the component's shadow root or host element for querying. */
+function root(fixture: Fixture): ShadowRoot | HTMLElement {
+  return fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+}
+
+/**
+ * Create a minimal fake event whose `target` carries `value` / `scopeValue`
+ * properties, as `<ui5-search>` events do.  `Event.target` is read-only in
+ * the browser, so we build a plain object and cast it.
+ */
+function fakeSearchEvent(opts: { value?: string; scopeValue?: string } = {}): Event {
+  return { target: { value: opts.value ?? '', scopeValue: opts.scopeValue } } as unknown as Event;
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
 
 describe('DeclarativeTableCard', () => {
   beforeEach(async () => {
+    vi.useFakeTimers();
     await TestBed.configureTestingModule({
       imports: [
         DeclarativeTableCard as unknown as typeof DeclarativeTableCard<GenericResource>,
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
     }).compileComponents();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   // -------------------------------------------------------------------------
@@ -162,9 +184,7 @@ describe('DeclarativeTableCard', () => {
   describe('DOM: mfp-declarative-table', () => {
     it('renders mfp-declarative-table in the host element', () => {
       const { fixture } = setup();
-      const root: ShadowRoot | HTMLElement =
-        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
-      expect(root.querySelector('mfp-declarative-table')).not.toBeNull();
+      expect(root(fixture).querySelector('mfp-declarative-table')).not.toBeNull();
     });
   });
 
@@ -175,9 +195,7 @@ describe('DeclarativeTableCard', () => {
   describe('header input', () => {
     it('renders the header title when header is provided', () => {
       const { fixture } = setup({ header: 'My Pods' });
-      const root: ShadowRoot | HTMLElement =
-        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
-      const title = root.querySelector('.card__title');
+      const title = root(fixture).querySelector('.card__title');
       expect(title).not.toBeNull();
       expect(title?.textContent?.trim()).toBe('My Pods');
     });
@@ -194,26 +212,22 @@ describe('DeclarativeTableCard', () => {
         headerTooltip: 'Some tooltip',
       });
       fixture.detectChanges();
-      const root: ShadowRoot | HTMLElement =
-        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
-      const icon = root.querySelector('ui5-icon[name="hint"]');
+      const icon = root(fixture).querySelector('ui5-icon[name="hint"]');
       expect(icon).not.toBeNull();
       expect(icon?.getAttribute('accessible-name')).toBe('Some tooltip');
     });
 
     it('does not render info icon when headerTooltip is not provided', () => {
       const { fixture } = setup({ headerTooltip: undefined });
-      const root: ShadowRoot | HTMLElement =
-        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
-      expect(root.querySelector('ui5-icon[name="hint"]')).toBeNull();
+      expect(root(fixture).querySelector('ui5-icon[name="hint"]')).toBeNull();
     });
   });
 
   // -------------------------------------------------------------------------
-  // 5. Search behaviour
+  // 5. Search behaviour — toggle UX and state machine
   // -------------------------------------------------------------------------
 
-  describe('search', () => {
+  describe('search toggle UX', () => {
     it('searchExpanded starts as false', () => {
       const { component } = setup();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -231,44 +245,19 @@ describe('DeclarativeTableCard', () => {
       const { component } = setup();
       component.toggleSearch(); // expand
       component.toggleSearch(); // collapse
-      // searchCollapsing should be set; searchExpanded still true until animation ends
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((component as any).searchCollapsing()).toBe(true);
     });
 
-    it('onSearchBlur() collapses search when value is empty', () => {
-      const { component } = setup();
-      component.toggleSearch();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).searchControl.setValue('');
-      component.onSearchBlur();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).searchCollapsing()).toBe(true);
-    });
-
-    it('onSearchBlur() does not collapse when value is non-empty', () => {
-      const { component } = setup();
-      component.toggleSearch();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).searchControl.setValue('abc');
-      component.onSearchBlur();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).searchCollapsing()).toBe(false);
-    });
-
-    it('onSearchAnimationEnd() resets search state after collapse animation', () => {
+    it('onSearchAnimationEnd() transitions state to collapsed after collapse animation', () => {
       const { component } = setup();
       component.toggleSearch(); // expand
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).searchControl.setValue('query');
       component.toggleSearch(); // start collapsing
       component.onSearchAnimationEnd();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((component as any).searchCollapsing()).toBe(false);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((component as any).searchExpanded()).toBe(false);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).searchControl.value).toBe('');
     });
 
     it('onSearchAnimationEnd() does nothing when not collapsing', () => {
@@ -282,27 +271,453 @@ describe('DeclarativeTableCard', () => {
   });
 
   // -------------------------------------------------------------------------
-  // 6. Create button visibility
+  // 6. searchConfig — rendering
+  // -------------------------------------------------------------------------
+
+  describe('searchConfig rendering', () => {
+    it('does not render ui5-search when searchConfig is absent', () => {
+      const { fixture } = setup();
+      expect(root(fixture).querySelector('ui5-search')).toBeNull();
+    });
+
+    it('does not render the search toggle button when searchConfig is absent', () => {
+      const { fixture } = setup();
+      expect(root(fixture).querySelector('.card__search-btn')).toBeNull();
+    });
+
+    it('renders ui5-search inline when alwaysOnDisplay is true', () => {
+      const { fixture } = setup({
+        searchConfig: { placeholder: 'Search pods…', alwaysOnDisplay: true },
+      });
+      fixture.detectChanges();
+      expect(root(fixture).querySelector('ui5-search')).not.toBeNull();
+    });
+
+    it('does not render the search toggle button when alwaysOnDisplay is true', () => {
+      const { fixture } = setup({
+        searchConfig: { placeholder: 'Search pods…', alwaysOnDisplay: true },
+      });
+      fixture.detectChanges();
+      expect(root(fixture).querySelector('.card__search-btn')).toBeNull();
+    });
+
+    it('renders the search toggle button when alwaysOnDisplay is false', () => {
+      const { fixture } = setup({
+        searchConfig: { placeholder: 'Search pods…' },
+      });
+      fixture.detectChanges();
+      expect(root(fixture).querySelector('.card__search-btn')).not.toBeNull();
+    });
+
+    it('does not render ui5-search before toggle is clicked when alwaysOnDisplay is false', () => {
+      const { fixture } = setup({
+        searchConfig: { placeholder: 'Search pods…' },
+      });
+      fixture.detectChanges();
+      expect(root(fixture).querySelector('ui5-search')).toBeNull();
+    });
+
+    it('renders ui5-search after toggle button is clicked when alwaysOnDisplay is false', () => {
+      const { fixture, component } = setup({
+        searchConfig: { placeholder: 'Search pods…' },
+      });
+      fixture.detectChanges();
+      component.toggleSearch();
+      fixture.detectChanges();
+      expect(root(fixture).querySelector('ui5-search')).not.toBeNull();
+    });
+
+    it('binds placeholder from searchConfig to ui5-search', () => {
+      const { fixture } = setup({
+        searchConfig: { placeholder: 'Search pods…', alwaysOnDisplay: true },
+      });
+      fixture.detectChanges();
+      const search = root(fixture).querySelector('ui5-search');
+      // Angular binds [placeholder] as a property; read via the property
+      expect((search as HTMLElement & { placeholder?: string })?.placeholder).toBe('Search pods…');
+    });
+
+    it('binds accessibleName from searchConfig', () => {
+      const { fixture } = setup({
+        searchConfig: {
+          accessibleName: 'Pod search',
+          alwaysOnDisplay: true,
+        },
+      });
+      fixture.detectChanges();
+      const search = root(fixture).querySelector('ui5-search');
+      expect(
+        (search as HTMLElement & { accessibleName?: string })?.accessibleName,
+      ).toBe('Pod search');
+    });
+
+    it('defaults showClearIcon to true when not specified', () => {
+      const { fixture } = setup({
+        searchConfig: { alwaysOnDisplay: true },
+      });
+      fixture.detectChanges();
+      const search = root(fixture).querySelector('ui5-search');
+      expect(
+        (search as HTMLElement & { showClearIcon?: boolean })?.showClearIcon,
+      ).toBe(true);
+    });
+
+    it('forwards showClearIcon: false when configured', () => {
+      const { fixture } = setup({
+        searchConfig: { alwaysOnDisplay: true, showClearIcon: false },
+      });
+      fixture.detectChanges();
+      const search = root(fixture).querySelector('ui5-search');
+      expect(
+        (search as HTMLElement & { showClearIcon?: boolean })?.showClearIcon,
+      ).toBe(false);
+    });
+
+    it('renders one ui5-search-scope per scopes entry', () => {
+      const { fixture } = setup({
+        searchConfig: {
+          alwaysOnDisplay: true,
+          scopes: [
+            { label: 'All', value: 'all' },
+            { label: 'My Contributions', value: 'mine' },
+          ],
+        },
+      });
+      fixture.detectChanges();
+      const scopes = root(fixture).querySelectorAll('ui5-search-scope');
+      expect(scopes).toHaveLength(2);
+    });
+
+    it('renders zero ui5-search-scope elements when scopes array is empty', () => {
+      const { fixture } = setup({
+        searchConfig: { alwaysOnDisplay: true, scopes: [] },
+      });
+      fixture.detectChanges();
+      expect(root(fixture).querySelectorAll('ui5-search-scope')).toHaveLength(0);
+    });
+
+    it('sets text and value on each ui5-search-scope', () => {
+      const { fixture } = setup({
+        searchConfig: {
+          alwaysOnDisplay: true,
+          scopes: [{ label: 'All', value: 'all' }],
+        },
+      });
+      fixture.detectChanges();
+      const scope = root(fixture).querySelector('ui5-search-scope') as HTMLElement & {
+        text?: string;
+        value?: string;
+      };
+      expect(scope?.text).toBe('All');
+      expect(scope?.value).toBe('all');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // 7. searchConfig — outputs: searchChanged (debounced)
+  // -------------------------------------------------------------------------
+
+  describe('searchConfig: searchChanged output', () => {
+    it('emits searchChanged with { value } after 300ms debounce on ui5Input', () => {
+      const { fixture, component } = setup({
+        searchConfig: { alwaysOnDisplay: true },
+      });
+      fixture.detectChanges();
+
+      const emitted: { value: string; scope?: string }[] = [];
+      component.searchChanged.subscribe((e) => emitted.push(e));
+
+      component.onSearchInput(fakeSearchEvent({ value: 'alpha' }));
+
+      expect(emitted).toHaveLength(0);
+      vi.advanceTimersByTime(300);
+      expect(emitted).toHaveLength(1);
+      expect(emitted[0]).toEqual({ value: 'alpha', scope: undefined });
+    });
+
+    it('does not emit searchChanged before the 300ms debounce elapses', () => {
+      const { fixture, component } = setup({
+        searchConfig: { alwaysOnDisplay: true },
+      });
+      fixture.detectChanges();
+
+      const emitted: unknown[] = [];
+      component.searchChanged.subscribe((e) => emitted.push(e));
+
+      component.onSearchInput(fakeSearchEvent({ value: 'beta' }));
+      vi.advanceTimersByTime(299);
+      expect(emitted).toHaveLength(0);
+    });
+
+    it('includes active scope in searchChanged payload', () => {
+      const { fixture, component } = setup({
+        searchConfig: {
+          alwaysOnDisplay: true,
+          scopes: [
+            { label: 'All', value: 'all' },
+            { label: 'Mine', value: 'mine' },
+          ],
+        },
+      });
+      fixture.detectChanges();
+
+      const emitted: { value: string; scope?: string }[] = [];
+      component.searchChanged.subscribe((e) => emitted.push(e));
+
+      // Change scope first
+      component.onSearchScopeChange(fakeSearchEvent({ value: '', scopeValue: 'mine' }));
+
+      // Then type
+      component.onSearchInput(fakeSearchEvent({ value: 'pod' }));
+      vi.advanceTimersByTime(300);
+
+      expect(emitted[0]).toEqual({ value: 'pod', scope: 'mine' });
+    });
+
+    it('emits searchChanged with empty value after simulated clear icon (ui5Input with empty value)', () => {
+      const { fixture, component } = setup({
+        searchConfig: { alwaysOnDisplay: true },
+      });
+      fixture.detectChanges();
+
+      // Type something first
+      component.onSearchInput(fakeSearchEvent({ value: 'foo' }));
+      vi.advanceTimersByTime(300);
+
+      const emitted: { value: string; scope?: string }[] = [];
+      component.searchChanged.subscribe((e) => emitted.push(e));
+
+      // Simulate clear icon click (fires ui5Input with empty value)
+      component.onSearchInput(fakeSearchEvent({ value: '' }));
+      vi.advanceTimersByTime(300);
+
+      expect(emitted[0]).toEqual({ value: '', scope: undefined });
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // 8. searchConfig — outputs: searchSubmit (synchronous)
+  // -------------------------------------------------------------------------
+
+  describe('searchConfig: searchSubmit output', () => {
+    it('emits searchSubmit synchronously on ui5Search event', () => {
+      const { fixture, component } = setup({
+        searchConfig: { alwaysOnDisplay: true },
+      });
+      fixture.detectChanges();
+
+      const emitted: { value: string; scope?: string }[] = [];
+      component.searchSubmit.subscribe((e) => emitted.push(e));
+
+      component.onSearchSubmit(fakeSearchEvent({ value: 'my-pod' }));
+
+      expect(emitted).toHaveLength(1);
+      expect(emitted[0]).toEqual({ value: 'my-pod', scope: undefined });
+    });
+
+    it('includes scope in searchSubmit when a scope is active', () => {
+      const { component } = setup({
+        searchConfig: { alwaysOnDisplay: true },
+      });
+
+      const emitted: { value: string; scope?: string }[] = [];
+      component.searchSubmit.subscribe((e) => emitted.push(e));
+
+      component.onSearchSubmit(fakeSearchEvent({ value: 'redis', scopeValue: 'all' }));
+
+      expect(emitted[0]).toEqual({ value: 'redis', scope: 'all' });
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // 9. searchConfig — outputs: scopeChanged (synchronous)
+  // -------------------------------------------------------------------------
+
+  describe('searchConfig: scopeChanged output', () => {
+    it('emits scopeChanged synchronously on ui5ScopeChange event', () => {
+      const { component } = setup({
+        searchConfig: { alwaysOnDisplay: true },
+      });
+
+      const emitted: { value: string; scope?: string }[] = [];
+      component.scopeChanged.subscribe((e) => emitted.push(e));
+
+      component.onSearchScopeChange(fakeSearchEvent({ value: '', scopeValue: 'mine' }));
+
+      expect(emitted).toHaveLength(1);
+      expect(emitted[0]).toEqual({ value: '', scope: 'mine' });
+    });
+
+    it('includes in-flight search text in scopeChanged payload', () => {
+      const { component } = setup({
+        searchConfig: { alwaysOnDisplay: true },
+      });
+
+      // Type something
+      component.onSearchInput(fakeSearchEvent({ value: 'cache' }));
+
+      const emitted: { value: string; scope?: string }[] = [];
+      component.scopeChanged.subscribe((e) => emitted.push(e));
+
+      component.onSearchScopeChange(fakeSearchEvent({ value: 'cache', scopeValue: 'all' }));
+
+      expect(emitted[0]).toEqual({ value: 'cache', scope: 'all' });
+    });
+
+    it('updates activeScope after scopeChanged so subsequent searchChanged carries new scope', () => {
+      const { component } = setup({
+        searchConfig: { alwaysOnDisplay: true },
+      });
+
+      // Change scope
+      component.onSearchScopeChange(fakeSearchEvent({ value: '', scopeValue: 'mine' }));
+
+      const emitted: { value: string; scope?: string }[] = [];
+      component.searchChanged.subscribe((e) => emitted.push(e));
+
+      component.onSearchInput(fakeSearchEvent({ value: 'pod' }));
+      vi.advanceTimersByTime(300);
+
+      expect(emitted[0]?.scope).toBe('mine');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // 10. searchConfig — collapse preserves state
+  // -------------------------------------------------------------------------
+
+  describe('collapse preserves search state', () => {
+    it('collapsing does not emit searchChanged synchronously', () => {
+      const { component } = setup({
+        searchConfig: { placeholder: 'Search pods…' },
+      });
+
+      component.toggleSearch(); // expand
+
+      component.onSearchInput(fakeSearchEvent({ value: 'alpha' }));
+      vi.advanceTimersByTime(300); // flush debounce
+
+      const emitted: unknown[] = [];
+      component.searchChanged.subscribe((e) => emitted.push(e));
+
+      component.toggleSearch(); // collapse
+      expect(emitted).toHaveLength(0);
+    });
+
+    it('searchControl.value is preserved after collapse animation ends', () => {
+      const { component } = setup({
+        searchConfig: { placeholder: 'Search pods…' },
+      });
+
+      component.toggleSearch(); // expand
+      component.onSearchInput(fakeSearchEvent({ value: 'preserved-query' }));
+
+      component.toggleSearch(); // start collapsing
+      component.onSearchAnimationEnd(); // animation done → collapsed
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).searchControl.value).toBe('preserved-query');
+    });
+
+    it('re-expanding after collapse shows the same searchControl value', () => {
+      const { component } = setup({
+        searchConfig: { placeholder: 'Search pods…' },
+      });
+
+      component.toggleSearch(); // expand
+      component.onSearchInput(fakeSearchEvent({ value: 'in-flight' }));
+      component.toggleSearch(); // start collapsing
+      component.onSearchAnimationEnd(); // collapsed
+
+      component.toggleSearch(); // re-expand
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).searchControl.value).toBe('in-flight');
+    });
+
+    it('active scope is preserved after collapse', () => {
+      const { component } = setup({
+        searchConfig: {
+          placeholder: 'Search pods…',
+          scopes: [{ label: 'Mine', value: 'mine' }],
+        },
+      });
+
+      component.toggleSearch(); // expand
+      component.onSearchScopeChange(fakeSearchEvent({ value: '', scopeValue: 'mine' }));
+      component.toggleSearch(); // collapse
+      component.onSearchAnimationEnd();
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).activeScope()).toBe('mine');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // 11. searchConfig — alwaysOnDisplay: toggleSearch is a no-op
+  // -------------------------------------------------------------------------
+
+  describe('toggleSearch() is a no-op when alwaysOnDisplay is true', () => {
+    it('does not change searchState when alwaysOnDisplay is true', () => {
+      const { component } = setup({
+        searchConfig: { alwaysOnDisplay: true },
+      });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const before = (component as any).searchState();
+      component.toggleSearch();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).searchState()).toBe(before);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // 12. searchConfig — buttonSettings.searchButton overrides
+  // -------------------------------------------------------------------------
+
+  describe('buttonSettings.searchButton overrides', () => {
+    it('applies custom icon to the search toggle button', () => {
+      const fixture: Fixture = TestBed.createComponent(
+        DeclarativeTableCard as unknown as typeof DeclarativeTableCard<GenericResource>,
+      );
+
+      fixture.componentRef.setInput('config', {
+        tableConfig: READ_CONFIG,
+        searchConfig: { placeholder: 'Search pods…' },
+        buttonSettings: {
+          searchButton: { icon: 'filter', tooltip: 'Open filter' },
+        },
+      } satisfies TableCardConfig);
+      fixture.componentRef.setInput('resources', RESOURCES);
+      fixture.componentRef.setInput('createFormState', {});
+      fixture.componentRef.setInput('editFormState', {});
+      fixture.detectChanges();
+
+      const btn = root(fixture).querySelector('.card__search-btn') as HTMLElement & {
+        icon?: string;
+        tooltip?: string;
+      };
+      expect(btn?.icon).toBe('filter');
+      expect(btn?.tooltip).toBe('Open filter');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // 13. Create button visibility
   // -------------------------------------------------------------------------
 
   describe('create button', () => {
     it('create button is absent when createConfig is not provided', () => {
       const { fixture } = setup();
-      const root: ShadowRoot | HTMLElement =
-        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
-      expect(root.querySelector('.card__create-btn')).toBeNull();
+      expect(root(fixture).querySelector('.card__create-btn')).toBeNull();
     });
 
     it('create button is present when createConfig is provided', () => {
       const { fixture } = setup({ createConfig: CREATE_CONFIG });
-      const root: ShadowRoot | HTMLElement =
-        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
-      expect(root.querySelector('.card__create-btn')).not.toBeNull();
+      expect(root(fixture).querySelector('.card__create-btn')).not.toBeNull();
     });
   });
 
   // -------------------------------------------------------------------------
-  // 7. effectiveColumns() computed
+  // 14. effectiveColumns() computed
   // -------------------------------------------------------------------------
 
   describe('effectiveColumns()', () => {
@@ -402,7 +817,7 @@ describe('DeclarativeTableCard', () => {
   });
 
   // -------------------------------------------------------------------------
-  // 8. editInitialValue() computed
+  // 15. editInitialValue() computed
   // -------------------------------------------------------------------------
 
   describe('editInitialValue()', () => {
@@ -432,7 +847,7 @@ describe('DeclarativeTableCard', () => {
   });
 
   // -------------------------------------------------------------------------
-  // 9. onButtonClick()
+  // 16. onButtonClick()
   // -------------------------------------------------------------------------
 
   describe('onButtonClick()', () => {
@@ -504,7 +919,7 @@ describe('DeclarativeTableCard', () => {
   });
 
   // -------------------------------------------------------------------------
-  // 10. form state and submit flow
+  // 17. form state and submit flow
   // -------------------------------------------------------------------------
 
   describe('form state and submit flow', () => {
@@ -614,7 +1029,7 @@ describe('DeclarativeTableCard', () => {
   });
 
   // -------------------------------------------------------------------------
-  // 11. close methods
+  // 18. close methods
   // -------------------------------------------------------------------------
 
   describe('close methods', () => {
@@ -653,7 +1068,7 @@ describe('DeclarativeTableCard', () => {
   });
 
   // -------------------------------------------------------------------------
-  // 12. runtime form state
+  // 19. runtime form state
   // -------------------------------------------------------------------------
 
   describe('runtime form state', () => {
@@ -668,9 +1083,7 @@ describe('DeclarativeTableCard', () => {
       (component as any).createDialogOpen.set(true);
       fixture.detectChanges();
 
-      const root: ShadowRoot | HTMLElement =
-        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
-      const submitButton = root.querySelector(
+      const submitButton = root(fixture).querySelector(
         '.dialog__footer ui5-button[design="Emphasized"]',
       ) as HTMLElement & { disabled: boolean };
 
@@ -686,9 +1099,7 @@ describe('DeclarativeTableCard', () => {
       (component as any).createDialogOpen.set(true);
       fixture.detectChanges();
 
-      const root: ShadowRoot | HTMLElement =
-        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
-      const submitButton = root.querySelector(
+      const submitButton = root(fixture).querySelector(
         '.dialog__footer ui5-button[design="Emphasized"]',
       ) as HTMLElement & { disabled: boolean };
 
@@ -706,9 +1117,7 @@ describe('DeclarativeTableCard', () => {
       (component as any).editDialogOpen.set(true);
       fixture.detectChanges();
 
-      const root: ShadowRoot | HTMLElement =
-        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
-      const submitButton = root.querySelector(
+      const submitButton = root(fixture).querySelector(
         '.dialog__footer ui5-button[design="Emphasized"]',
       ) as HTMLElement & { disabled: boolean };
 
@@ -724,9 +1133,7 @@ describe('DeclarativeTableCard', () => {
       (component as any).editDialogOpen.set(true);
       fixture.detectChanges();
 
-      const root: ShadowRoot | HTMLElement =
-        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
-      const submitButton = root.querySelector(
+      const submitButton = root(fixture).querySelector(
         '.dialog__footer ui5-button[design="Emphasized"]',
       ) as HTMLElement & { disabled: boolean };
 
@@ -735,7 +1142,7 @@ describe('DeclarativeTableCard', () => {
   });
 
   // -------------------------------------------------------------------------
-  // 14. Pass-through outputs
+  // 20. Pass-through outputs
   // -------------------------------------------------------------------------
 
   describe('pass-through outputs', () => {
@@ -759,10 +1166,20 @@ describe('DeclarativeTableCard', () => {
       const { component } = setup();
       expect(typeof component.searchChanged.emit).toBe('function');
     });
+
+    it('exposes searchSubmit output', () => {
+      const { component } = setup();
+      expect(typeof component.searchSubmit.emit).toBe('function');
+    });
+
+    it('exposes scopeChanged output', () => {
+      const { component } = setup();
+      expect(typeof component.scopeChanged.emit).toBe('function');
+    });
   });
 
   // -------------------------------------------------------------------------
-  // 15. readConfig pagination pass-through
+  // 21. readConfig pagination pass-through
   // -------------------------------------------------------------------------
 
   describe('readConfig pagination', () => {
@@ -785,7 +1202,7 @@ describe('DeclarativeTableCard', () => {
   });
 
   // -------------------------------------------------------------------------
-  // 16. TableConfig: growMode / height / loadMoreButtonText pass-through
+  // 22. TableConfig: growMode / height / loadMoreButtonText pass-through
   // -------------------------------------------------------------------------
 
   describe('tableConfig passthrough: growMode, height, loadMoreButtonText', () => {

@@ -63,7 +63,7 @@
     margin-left: 0.5rem;
   }
 
-  &__search-input {
+  &__search {
     transform-origin: right center;
 
     &--enter {
@@ -72,6 +72,11 @@
 
     &--leave {
       animation: slide-out 0.2s ease-in both;
+    }
+
+    &--inline {
+      flex: 1;
+      min-width: 0;
     }
   }
 

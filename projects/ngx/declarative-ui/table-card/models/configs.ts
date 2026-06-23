@@ -1,6 +1,10 @@
 import { FormFieldDefinition, FormFieldErrors } from '../../form';
 import { ButtonSettings } from '../../models';
-import { TableFieldDefinition } from '../../table';
+import { TableConfig } from '../../table/models';
+import { TableCardSearchConfig } from './search-config';
+
+export type { TableConfig } from '../../table/models';
+export type { Scope, TableCardSearchConfig } from './search-config';
 
 /** Configuration for the create/edit resource form rendered inside the table card dialogs. */
 export interface ResourceFormConfig {
@@ -32,21 +36,6 @@ export interface DeleteResourceConfirmationConfig {
   cancelLabel?: string;
 }
 
-/** Configuration for the inner `mfp-declarative-table`. */
-export interface TableConfig {
-  /** Column definitions. */
-  fields: TableFieldDefinition[];
-  /** Total number of items on the server (used by pagination). */
-  totalItemsCount?: number;
-  /** Number of rows per page. */
-  paginationLimit?: number;
-  /** When `true`, the "Load More" control is shown. */
-  hasMore?: boolean;
-  height?: number;
-  growMode?: 'Scroll' | 'Button';
-  loadMoreButtonText?: string;
-}
-
 /** Overrides for the table card's built-in action buttons. */
 export interface TableCardButtonSettings {
   /** Partial override for the "Create" button. */
@@ -69,8 +58,8 @@ export interface TableCardConfig {
   tableConfig: TableConfig;
   /** Overrides for built-in toolbar and row-action buttons. */
   buttonSettings?: TableCardButtonSettings;
-  /** When `true`, shows the search input and button in the card toolbar. */
-  resourcesSearchable?: boolean;
+  /** When set, renders a `<ui5-search>` in the card toolbar. Replaces the previous `resourcesSearchable` flag. */
+  searchConfig?: TableCardSearchConfig;
   /** When set, enables the "Create" button and create dialog. */
   createResourceFormConfig?: ResourceFormConfig;
   /** When set, enables per-row "Edit" button and edit dialog. */

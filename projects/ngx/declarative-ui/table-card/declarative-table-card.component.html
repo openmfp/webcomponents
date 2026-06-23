@@ -14,27 +14,63 @@
       }
     </div>
     <div class="card__actions">
-      @if (config().resourcesSearchable) {
-        @if (searchExpanded()) {
-          <ui5-input
-            #searchInput
-            [class]="
-              'card__search-input card__search-input--' +
-              (searchCollapsing() ? 'leave' : 'enter')
-            "
-            [formControl]="searchControl"
-            (animationend)="onSearchAnimationEnd()"
-            (blur)="onSearchBlur()"
+      @if (searchConfig(); as sc) {
+        @if (alwaysOnDisplay()) {
+          <ui5-search
+            class="card__search card__search--inline"
+            [accessibleName]="sc.accessibleName"
+            [placeholder]="sc.placeholder"
+            [scopeValue]="sc.scopeValue"
+            [showClearIcon]="sc.showClearIcon ?? true"
+            [value]="searchControl.value ?? ''"
+            (ui5Input)="onSearchInput($event)"
+            (ui5ScopeChange)="onSearchScopeChange($event)"
+            (ui5Search)="onSearchSubmit($event)"
+          >
+            @for (s of sc.scopes ?? []; track s.value) {
+              <ui5-search-scope
+                slot="scopes"
+                [text]="s.label"
+                [value]="s.value"
+              />
+            }
+          </ui5-search>
+        } @else {
+          @if (searchExpanded()) {
+            <ui5-search
+              #searchInput
+              [accessibleName]="sc.accessibleName"
+              [class]="
+                'card__search card__search--' +
+                (searchCollapsing() ? 'leave' : 'enter')
+              "
+              [placeholder]="sc.placeholder"
+              [scopeValue]="sc.scopeValue"
+              [showClearIcon]="sc.showClearIcon ?? true"
+              [value]="searchControl.value ?? ''"
+              (animationend)="onSearchAnimationEnd()"
+              (ui5Input)="onSearchInput($event)"
+              (ui5ScopeChange)="onSearchScopeChange($event)"
+              (ui5Search)="onSearchSubmit($event)"
+            >
+              @for (s of sc.scopes ?? []; track s.value) {
+                <ui5-search-scope
+                  slot="scopes"
+                  [text]="s.label"
+                  [value]="s.value"
+                />
+              }
+            </ui5-search>
+          }
+          <ui5-button
+            class="card__search-btn"
+            design="Transparent"
+            [accessibleName]="searchButtonConfig()?.tooltip ?? 'Search'"
+            [icon]="searchButtonConfig()?.icon ?? 'search'"
+            [tooltip]="searchButtonConfig()?.tooltip ?? 'Search'"
+            (click)="toggleSearch()"
           />
         }
-        <ui5-button
-          class="card__search-btn"
-          design="Transparent"
-          [accessibleName]="searchButtonConfig()?.tooltip ?? 'Search'"
-          [icon]="searchButtonConfig()?.icon ?? 'search'"
-          [tooltip]="searchButtonConfig()?.tooltip ?? 'Search'"
-          (click)="toggleSearch()"
-        />
       }
       @if (createFormConfig()) {
         <ui5-button

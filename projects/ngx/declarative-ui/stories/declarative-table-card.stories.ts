@@ -6,6 +6,7 @@ import type {
   ResourceFormConfig,
   TableCardConfig,
   TableCardFormState,
+  TableCardSearchConfig,
   TableConfig,
 } from '../table-card/models/configs';
 import type { TableFieldDefinition } from '../table/models';
@@ -140,7 +141,6 @@ const BASE_TABLE_CONFIG: TableConfig = {
 
 const BASE_CONFIG: TableCardConfig = {
   header: 'Pods',
-  resourcesSearchable: true,
   tableConfig: BASE_TABLE_CONFIG,
 };
 
@@ -470,5 +470,109 @@ export const WithPagination: Story = {
         hasMore: true,
       },
     },
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Search wrapper component (for stories wiring outputs to console)
+// ---------------------------------------------------------------------------
+
+@Component({
+  selector: 'mfp-declarative-table-card-search-story',
+  imports: [DeclarativeTableCard],
+  template: `
+    <mfp-declarative-table-card
+      [config]="config"
+      [resources]="resources"
+      (scopeChanged)="onScopeChanged($event)"
+      (searchChanged)="onSearchChanged($event)"
+      (searchSubmit)="onSearchSubmit($event)"
+    />
+  `,
+})
+class DeclarativeTableCardSearchStory {
+  @Input() config!: TableCardConfig;
+  @Input() resources: GenericResource[] = [];
+
+  onSearchChanged(event: { value: string; scope?: string }): void {
+    console.log('[searchChanged]', event);
+  }
+
+  onSearchSubmit(event: { value: string; scope?: string }): void {
+    console.log('[searchSubmit]', event);
+  }
+
+  onScopeChanged(event: { value: string; scope?: string }): void {
+    console.log('[scopeChanged]', event);
+  }
+}
+
+type SearchStory = StoryObj<DeclarativeTableCardSearchStory>;
+
+/**
+ * Search toggle UX: a search icon button reveals `<ui5-search>` on click.
+ * Collapsing preserves the entered text — re-expanding restores the in-flight query.
+ * Use the built-in clear icon (×) to clear the value.
+ */
+export const WithSearch: SearchStory = {
+  render: (args) => ({
+    props: args,
+    component: DeclarativeTableCardSearchStory,
+  }),
+  args: {
+    config: {
+      ...BASE_CONFIG,
+      searchConfig: {
+        placeholder: 'Search pods…',
+      } satisfies TableCardSearchConfig,
+    },
+    resources: PODS,
+  },
+};
+
+/**
+ * `alwaysOnDisplay: true` — `<ui5-search>` is rendered inline in the toolbar with no toggle button.
+ */
+export const WithSearchAlwaysOn: SearchStory = {
+  render: (args) => ({
+    props: args,
+    component: DeclarativeTableCardSearchStory,
+  }),
+  args: {
+    config: {
+      ...BASE_CONFIG,
+      searchConfig: {
+        placeholder: 'Search pods…',
+        alwaysOnDisplay: true,
+      } satisfies TableCardSearchConfig,
+    },
+    resources: PODS,
+  },
+};
+
+/**
+ * Scopes dropdown lists "All" and "My Contributions" next to the search input.
+ * Selecting a scope emits `scopeChanged`; submitting the form emits `searchSubmit`.
+ * Both events carry `{ value, scope }`. `searchChanged` fires after 300 ms debounce.
+ * Open the Actions tab to observe all three outputs.
+ */
+export const WithSearchAndScopes: SearchStory = {
+  render: (args) => ({
+    props: args,
+    component: DeclarativeTableCardSearchStory,
+  }),
+  args: {
+    config: {
+      ...BASE_CONFIG,
+      searchConfig: {
+        placeholder: 'Search pods…',
+        scopes: [
+          { label: 'All', value: 'all' },
+          { label: 'My Contributions', value: 'mine' },
+        ],
+        scopeValue: 'all',
+      } satisfies TableCardSearchConfig,
+    },
+    resources: PODS,
   },
 };

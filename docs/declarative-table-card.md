@@ -91,6 +91,8 @@ import {
       (editSubmit)="onEditSubmit($event, tableCard)"
       (deleteSubmit)="onDeleteSubmit($event, tableCard)"
       (searchChanged)="onSearch($event)"
+      (searchSubmit)="onSearch($event)"
+      (scopeChanged)="onSearch($event)"
     />
   `,
 })
@@ -164,6 +166,11 @@ export class MyComponent {
     await this.deletePod(pod);
     tableCard.closeDeleteDialog();
   }
+
+  onSearch({ value, scope }: { value: string; scope?: string }): void {
+    // Re-fetch / filter `pods` based on the current search text and scope.
+    this.reloadPods({ query: value, scope });
+  }
 }
 ```
 
@@ -189,7 +196,9 @@ export class MyComponent {
 | `createSubmit`           | `Record<string, unknown>`                         | Fires when the create dialog Save button is clicked          |
 | `editSubmit`             | `{ resource: T; value: Record<string, unknown> }` | Fires when the edit dialog Save button is clicked            |
 | `deleteSubmit`           | `T`                                               | Fires when the delete dialog Delete button is clicked        |
-| `searchChanged`          | `string`                                          | Emits 300 ms after the search input changes                  |
+| `searchChanged`          | `{ value: string; scope?: string }`               | Emits 300 ms after the search input changes; `scope` reflects the currently active scope (if any) |
+| `searchSubmit`           | `{ value: string; scope?: string }`               | Emits synchronously when the user submits the search (Enter or search icon) |
+| `scopeChanged`           | `{ value: string; scope?: string }`               | Emits synchronously when the user picks a different scope from the dropdown; `value` is the current in-flight search text |
 | `tableRowClicked`        | `T`                                               | Emits when a table row is clicked                            |
 | `loadMoreResources`      | -                                                 | Emits when the user triggers load more                       |
 | `paginationLimitChanged` | `number`                                          | Emits when the user changes page size                        |
@@ -211,13 +220,41 @@ Submit events do not close dialogs automatically. Close the dialog after success
 
 ```ts
 interface TableCardConfig {
-  header: string;
+  header?: string;
   headerTooltip?: string;
   tableConfig: TableConfig;
   buttonSettings?: TableCardButtonSettings;
+  searchConfig?: TableCardSearchConfig;
   createResourceFormConfig?: ResourceFormConfig;
   editResourceFormConfig?: ResourceFormConfig;
   deleteResourceConfirmationConfig?: DeleteResourceConfirmationConfig;
+}
+
+/** One option in the `<ui5-search>` scopes dropdown. */
+interface Scope {
+  /** Visible label shown in the dropdown. */
+  label: string;
+  /** Logical value forwarded in `scopeChanged` / `searchSubmit` events. Used by `<ui5-search-scope value>` to match `scopeValue`. */
+  value?: string;
+}
+
+/** Configuration for the `<ui5-search>` element rendered in the table-card header. */
+interface TableCardSearchConfig {
+  /** ARIA name for the search input. */
+  accessibleName?: string;
+  /** Placeholder text shown when the input is empty. */
+  placeholder?: string;
+  /** When `true`, the clear icon is shown inside the input. Default: `true`. */
+  showClearIcon?: boolean;
+  /** Initial / controlled scope `value` (matches one of `scopes[].value`). */
+  scopeValue?: string;
+  /** Initial / controlled search text value. */
+  value?: string;
+  /** Scope options shown in the scopes dropdown. Omit or leave empty to render the input without a scope dropdown. */
+  scopes?: Scope[];
+  /** When `true`, `<ui5-search>` is always visible in the toolbar.
+   *  When `false` (default), the search is hidden behind a search-toggle icon button; clicking it expands the search and clicking it again (or losing focus on an empty input) collapses the search. Collapse preserves the entered text and active scope — re-expanding restores the in-flight query. Use the built-in clear icon (`showClearIcon`) to clear the value. */
+  alwaysOnDisplay?: boolean;
 }
 
 interface TableConfig {
@@ -243,6 +280,97 @@ interface TableCardFormState {
 ```
 
 `ResourceFormConfig` is static. Keep runtime errors in `createFormState` / `editFormState`. The submit button is disabled when any entry in `fieldErrors` is truthy.
+
+> `TableConfig` is declared in `declarative-ui/table` and re-exported from `declarative-ui/table-card`. Importing it from `@openmfp/webcomponents` (the public-api barrel) continues to work unchanged.
+
+---
+
+## Search & Scopes
+
+When `searchConfig` is set on `TableCardConfig`, the card renders a [`<ui5-search>`](https://ui5.github.io/webcomponents/components/fiori/Search/) element in the toolbar. Omit `searchConfig` to hide the search entirely. The previous `resourcesSearchable` boolean has been removed.
+
+### Visibility (`alwaysOnDisplay`)
+
+| `alwaysOnDisplay` | Toolbar UX |
+| ----------------- | ---------- |
+| `true`            | `<ui5-search>` is rendered inline at all times. No toggle button is shown. |
+| `false` (default) | The search is hidden behind a search-toggle icon button. Clicking the button expands the input; clicking it again — or blurring an empty input — collapses it. `buttonSettings.searchButton` overrides the toggle button's icon, text, and design. |
+
+### Collapse preserves state
+
+Collapsing the search (toggle button or blur-on-empty) does **not** clear the entered text or the active scope. Re-expanding the search restores the same in-flight query. To clear the value the user clicks the built-in clear icon inside `<ui5-search>` (`showClearIcon` defaults to `true`), which fires `searchChanged` with an empty `value` through the normal 300 ms debounce.
+
+### Event contract
+
+The host owns data fetching and filtering. The card forwards user actions verbatim:
+
+| Event           | When | Payload |
+| --------------- | ---- | ------- |
+| `searchChanged` | 300 ms after the input value changes (typing or clear icon) | `{ value, scope }` where `scope` is the currently active scope |
+| `searchSubmit`  | User presses Enter or clicks the search icon (synchronous) | `{ value, scope }` |
+| `scopeChanged`  | User picks a different scope from the dropdown (synchronous) | `{ value, scope }` where `value` is the current in-flight search text |
+
+### Example — "My Contributions" / "All" scopes
+
+```ts
+import {
+  DeclarativeTableCard,
+  TableCardConfig,
+} from '@openmfp/webcomponents';
+
+@Component({
+  imports: [DeclarativeTableCard],
+  template: `
+    <mfp-declarative-table-card
+      [config]="config"
+      [resources]="pods"
+      (searchChanged)="onSearchChanged($event)"
+      (searchSubmit)="onSearchSubmit($event)"
+      (scopeChanged)="onScopeChanged($event)"
+    />
+  `,
+})
+export class MyComponent {
+  pods: Pod[] = [];
+
+  config: TableCardConfig = {
+    header: 'Pods',
+    tableConfig: {
+      fields: [
+        { label: 'Name', property: 'metadata.name' },
+        { label: 'Namespace', property: 'metadata.namespace' },
+      ],
+    },
+    searchConfig: {
+      placeholder: 'Search pods…',
+      accessibleName: 'Search pods',
+      scopeValue: 'all',
+      scopes: [
+        { label: 'All', value: 'all' },
+        { label: 'My Contributions', value: 'mine' },
+      ],
+    },
+  };
+
+  onSearchChanged({ value, scope }: { value: string; scope?: string }): void {
+    // Debounced — call your list/search endpoint here.
+    this.reloadPods({ query: value, scope });
+  }
+
+  onSearchSubmit({ value, scope }: { value: string; scope?: string }): void {
+    // Synchronous — fired on Enter or the search icon. Useful for forcing
+    // an immediate refresh that bypasses the 300 ms debounce.
+    this.reloadPods({ query: value, scope });
+  }
+
+  onScopeChanged({ value, scope }: { value: string; scope?: string }): void {
+    // Synchronous — re-fetch using the new scope and the current in-flight text.
+    this.reloadPods({ query: value, scope });
+  }
+}
+```
+
+Set `alwaysOnDisplay: true` on `searchConfig` to skip the toggle UX and render `<ui5-search>` inline. Omit `scopes` (or pass an empty array) to render the input without a scope dropdown.
 
 ---
 
