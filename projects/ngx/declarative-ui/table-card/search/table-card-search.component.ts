@@ -66,6 +66,7 @@ export class TableCardSearch {
     // Workaround for ui5-select truncating long scope labels — see https://github.com/UI5/webcomponents/issues/13719
     setTimeout(() => {
       this.fixSelectWidth();
+      this.fixSearchIconSize();
     }, 0);
   }
 
@@ -108,5 +109,35 @@ export class TableCardSearch {
       label.style.overflow = 'visible';
       label.style.textOverflow = 'clip';
     }
+  }
+
+  /**
+   * Workaround for the ui5 SearchField icon collapsing in some host theme
+   * environments: the rule `.ui5-shell-search-field-icon::part(root){width:1rem;height:1rem}`
+   * lives inside `<ui5-search>`'s own shadow root and is occasionally stripped
+   * by the consumer's theming layer, leaving the icon mispositioned. We append
+   * the missing width/height back into the same shadow root so the icon
+   * renders identically to Storybook regardless of the host environment.
+   */
+  private fixSearchIconSize(): void {
+    const nativeEl = this.searchInputRef()?.elementRef.nativeElement as
+      | HTMLElement
+      | undefined;
+    const shadow = nativeEl?.shadowRoot;
+    if (!shadow) return;
+
+    // Idempotent — only inject once per component instance.
+    const STYLE_ID = 'mfp-search-icon-size-fix';
+    if (shadow.getElementById(STYLE_ID)) return;
+
+    const style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = `
+      .ui5-shell-search-field-icon::part(root) {
+        width: 1rem;
+        height: 1rem;
+      }
+    `;
+    shadow.appendChild(style);
   }
 }
