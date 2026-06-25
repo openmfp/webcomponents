@@ -4,7 +4,7 @@
   [placeholder]="searchConfig().placeholder"
   [scopeValue]="activeScope()?.property"
   [showClearIcon]="searchConfig().showClearIcon ?? true"
-  [value]="searchControl.value ?? ''"
+  [value]="externalValue()"
   (ui5Input)="onSearchInput($event)"
   (ui5ScopeChange)="onSearchScopeChange($event)"
   (ui5Search)="onSearchSubmit($event)"

@@ -43,6 +43,15 @@ export class TableCardSearch {
   protected searchControl = new FormControl('');
   protected searchInputRef = viewChild<Search>('searchInput');
   protected activeScope = signal<Scope | undefined>(undefined);
+  /**
+   * Signal mirror of `searchConfig().value` used as the source of truth for
+   * `[value]` on `<ui5-search>`. Decoupling the template binding from
+   * `searchControl.value` prevents the bound property from snapping the
+   * input back to a stale value during user interactions like clicking the
+   * clear icon — ui5 owns the live displayed value, Angular only writes it
+   * when the parent's config changes.
+   */
+  protected externalValue = signal('');
 
   private readonly injector = inject(Injector);
 
@@ -60,6 +69,7 @@ export class TableCardSearch {
       const nextValue = config.value ?? '';
       if (this.searchControl.value !== nextValue) {
         this.searchControl.setValue(nextValue);
+        this.externalValue.set(nextValue);
       }
     });
 
@@ -68,6 +78,7 @@ export class TableCardSearch {
       this.fixSelectWidth();
       this.fixSearchIconSize();
       this.fixSearchWidth();
+      this.bindNativeInputListener();
     }, 0);
   }
 
@@ -158,5 +169,37 @@ export class TableCardSearch {
     nativeEl.style.minWidth = '150px';
     nativeEl.style.maxWidth = 'calc(20rem + 50px)';
     nativeEl.style.width = '100%';
+  }
+
+  /**
+   * Some ngx wrapper / shadow-DOM event-bubbling edge-cases cause the
+   * Angular `(ui5Input)` binding to miss the synthetic `input` event that
+   * `<ui5-search>` fires when its clear icon is clicked. Bind a native
+   * listener directly on the host element as an immediate, unconditional
+   * path so the clear button always resets the search.
+   *
+   * The event fires for BOTH user typing and clear-icon clicks; reading
+   * `target.value` (which ui5 sets to `""` before firing for clear) tells
+   * us which case we're in. Typing is already handled by `(ui5Input)`'s
+   * debounced flow — we only need to act here when the value is empty so
+   * the clear is instant (no 300ms wait).
+   */
+  private bindNativeInputListener(): void {
+    const nativeEl = this.searchInputRef()?.elementRef.nativeElement as
+      | (HTMLElement & { value?: string })
+      | undefined;
+    if (!nativeEl) return;
+
+    nativeEl.addEventListener('input', () => {
+      const next = nativeEl.value ?? '';
+      if (this.searchControl.value !== next) {
+        this.searchControl.setValue(next);
+      }
+      // Fire the parent notification immediately on clear (skipping the
+      // 300ms debounce that exists for typed input).
+      if (next === '') {
+        this.searchChanged.emit('');
+      }
+    });
   }
 }
