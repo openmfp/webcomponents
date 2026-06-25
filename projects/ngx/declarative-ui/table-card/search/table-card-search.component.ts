@@ -67,6 +67,7 @@ export class TableCardSearch {
     setTimeout(() => {
       this.fixSelectWidth();
       this.fixSearchIconSize();
+      this.fixSearchWidth();
     }, 0);
   }
 
@@ -139,5 +140,23 @@ export class TableCardSearch {
       }
     `;
     shadow.appendChild(style);
+  }
+
+  /**
+   * Workaround for the ui5 SearchField shadow CSS pinning its host to
+   * `min-width: 18rem; max-width: 36rem`. In dense toolbar layouts that
+   * lets the search render almost twice the width it should. We replace
+   * those rules with inline styles on the host so layout behavior lives
+   * in one place (this method).
+   */
+  private fixSearchWidth(): void {
+    const nativeEl = this.searchInputRef()?.elementRef.nativeElement as
+      | HTMLElement
+      | undefined;
+    if (!nativeEl) return;
+    nativeEl.style.flex = '1';
+    nativeEl.style.minWidth = '150px';
+    nativeEl.style.maxWidth = 'calc(20rem + 50px)';
+    nativeEl.style.width = '100%';
   }
 }
