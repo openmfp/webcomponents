@@ -175,7 +175,7 @@ class DeclarativeTableCardCreateStory implements OnInit {
 
   ngOnInit(): void {
     this.searchTerm = this.config?.searchConfig?.value ?? '';
-    this.activeScope = this.config?.searchConfig?.scopeValue;
+    this.activeScope = this.config?.searchConfig?.initialScopeValue?.value;
   }
 
   get filteredResources(): GenericResource[] {
@@ -554,11 +554,15 @@ export const WithSearchAndScopes: SearchStory = {
         placeholder: 'Search pods…',
         value: 'api',
         scopes: [
-          { label: 'All namespaces', value: 'all' },
-          { label: 'default', value: 'default' },
-          { label: 'kube-system', value: 'kube-system' },
+          { label: 'All namespaces', value: 'all', property: 'namespace' },
+          { label: 'default', value: 'default', property: 'namespace' },
+          { label: 'kube-system', value: 'kube-system', property: 'namespace' },
         ],
-        scopeValue: 'all',
+        initialScopeValue: {
+          label: 'All namespaces',
+          value: 'all',
+          property: 'namespace',
+        },
       } satisfies TableCardSearchConfig,
     },
     resources: PODS,
