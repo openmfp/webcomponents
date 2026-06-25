@@ -1,4 +1,4 @@
-import { TableCardSearchConfig } from '../models/search-config';
+import { Scope, TableCardSearchConfig } from '../models/search-config';
 import {
   CUSTOM_ELEMENTS_SCHEMA,
   ChangeDetectionStrategy,
@@ -36,13 +36,13 @@ interface Ui5SearchEventTarget {
 export class TableCardSearch {
   searchConfig = input.required<TableCardSearchConfig>();
 
-  readonly searchChanged = output<{ value: string; scope?: string }>();
-  readonly searchSubmit = output<{ value: string; scope?: string }>();
-  readonly scopeChanged = output<{ value: string; scope?: string }>();
+  readonly searchChanged = output<string | null>();
+  readonly searchSubmit = output<string | null>();
+  readonly scopeChanged = output<Scope | undefined>();
 
   protected searchControl = new FormControl('');
   protected searchInputRef = viewChild<Search>('searchInput');
-  protected activeScope = signal<string | undefined>(undefined);
+  protected activeScope = signal<Scope | undefined>(undefined);
 
   private readonly injector = inject(Injector);
 
@@ -50,15 +50,12 @@ export class TableCardSearch {
     this.searchControl.valueChanges
       .pipe(debounceTime(300), takeUntilDestroyed())
       .subscribe((value) => {
-        this.searchChanged.emit({
-          value: value ?? '',
-          scope: this.activeScope(),
-        });
+        this.searchChanged.emit(value);
       });
 
     effect(() => {
       const config = this.searchConfig();
-      this.activeScope.set(config.scopeValue);
+      this.activeScope.set(config.initialScopeValue);
 
       const nextValue = config.value ?? '';
       if (this.searchControl.value !== nextValue) {
@@ -79,20 +76,17 @@ export class TableCardSearch {
 
   onSearchSubmit(event: Event): void {
     const target = event.target as Ui5SearchEventTarget | null;
-    this.searchSubmit.emit({
-      value: target?.value ?? '',
-      scope: target?.scopeValue || undefined,
-    });
+    this.searchSubmit.emit(target?.value ?? '');
   }
 
   onSearchScopeChange(event: Event): void {
     const target = event.target as Ui5SearchEventTarget | null;
-    const scope = target?.scopeValue || undefined;
+    const scopeProperty = target?.scopeValue || undefined;
+    const scope = this.searchConfig().scopes?.find(
+      (e) => e.property === scopeProperty,
+    );
     this.activeScope.set(scope);
-    this.scopeChanged.emit({
-      value: this.searchControl.value ?? '',
-      scope,
-    });
+    this.scopeChanged.emit(scope);
   }
 
   private fixSelectWidth(): void {

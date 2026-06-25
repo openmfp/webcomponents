@@ -1,0 +1,7 @@
+{
+  "watch": ["projects", "scripts"],
+  "ignore": ["dist", "public", ".angular", "node_modules", "documentation.json"],
+  "ext": "js,yml,yaml,ts,html,css,scss,json,md",
+  "delay": 1000,
+  "exec": "rimraf dist && npm run build:dev && npm run yalc:publish"
+}

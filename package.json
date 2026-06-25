@@ -4,9 +4,12 @@
   "type": "module",
   "scripts": {
     "build:ngx": "ng build ngx",
+    "build:ngx:dev": "ng build ngx --configuration=development",
     "build:wc": "ng build webcomponents && ng build webcomponents-dashboard && node scripts/bundle-wc.mjs",
+    "build:wc:dev": "ng build webcomponents --configuration=development && ng build webcomponents-dashboard --configuration=development && node scripts/bundle-wc.mjs",
     "build": "npm run build:ngx && npm run build:wc",
-    "build:watch": "node -e \"require('fs').mkdirSync('dist',{recursive:true})\" && nodemon --ignore dist --ignore public --ext js,yml,yaml,ts,html,css,scss,json,md --exec \"rimraf dist && npm run build && npm run yalc:publish\"",
+    "build:dev": "npm run build:ngx:dev && npm run build:wc:dev",
+    "build:watch": "node -e \"require('fs').mkdirSync('dist',{recursive:true})\" && nodemon",
     "yalc:publish": "yalc publish dist/ngx --push --sig && yalc publish dist/webcomponents --push --sig",
     "test": "ng test ngx --watch=false",
     "test:watch": "ng test ngx",

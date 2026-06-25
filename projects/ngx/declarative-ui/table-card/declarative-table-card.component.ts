@@ -7,7 +7,7 @@ import {
   TableFieldDefinition,
 } from '../table/models';
 import { getResourceValueByJsonPath } from '../table/utils/resource-field-by-path';
-import { TableCardConfig, TableCardFormState } from './models/configs';
+import { Scope, TableCardConfig, TableCardFormState } from './models/configs';
 import { TableCardSearch } from './search/table-card-search.component';
 import {
   CUSTOM_ELEMENTS_SCHEMA,
@@ -58,17 +58,17 @@ export class DeclarativeTableCard<T extends GenericResource> {
    * Emitted after the user types into the search input, debounced by 300 ms.
    * Carries the current input value and the active scope (if any).
    */
-  readonly searchChanged = output<{ value: string; scope?: string }>();
+  readonly searchChanged = output<string | null>();
   /**
    * Emitted synchronously when the user submits the search (presses Enter or
    * clicks the search icon). Carries the submitted value and the active scope.
    */
-  readonly searchSubmit = output<{ value: string; scope?: string }>();
+  readonly searchSubmit = output<string | null>();
   /**
    * Emitted synchronously when the user selects a different scope in the
    * scopes dropdown. Carries the current in-flight search text and the new scope.
    */
-  readonly scopeChanged = output<{ value: string; scope?: string }>();
+  readonly scopeChanged = output<Scope | undefined>();
   readonly createFieldChange = output<FormFieldChangeEvent>();
   readonly editFieldChange = output<{
     resource: T;
