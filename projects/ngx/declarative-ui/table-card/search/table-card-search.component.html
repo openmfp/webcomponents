@@ -2,14 +2,14 @@
   #searchInput
   [accessibleName]="searchConfig().accessibleName"
   [placeholder]="searchConfig().placeholder"
-  [scopeValue]="activeScope()?.property"
+  [scopeValue]="activeScope()?.id"
   [showClearIcon]="searchConfig().showClearIcon ?? true"
   [value]="externalValue()"
   (ui5Input)="onSearchInput($event)"
   (ui5ScopeChange)="onSearchScopeChange($event)"
   (ui5Search)="onSearchSubmit($event)"
 >
-  @for (s of searchConfig().scopes ?? []; track s.value) {
-    <ui5-search-scope slot="scopes" [text]="s.label" [value]="s.property" />
+  @for (s of searchConfig().scopes ?? []; track s.id) {
+    <ui5-search-scope slot="scopes" [text]="s.label" [value]="s.id" />
   }
 </ui5-search>

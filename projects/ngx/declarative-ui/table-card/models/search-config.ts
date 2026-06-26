@@ -1,5 +1,7 @@
 /** One option in the `<ui5-search>` scopes dropdown. */
 export interface Scope {
+  /** Id of the scope. */
+  id: string;
   /** Visible label shown in the dropdown. */
   label: string;
   /** Logical value forwarded in `scopeChanged` / `searchSubmit` events. Used by `<ui5-search-scope value>` to match `scopeValue`. */

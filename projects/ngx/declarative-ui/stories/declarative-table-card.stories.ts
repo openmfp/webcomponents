@@ -554,11 +554,27 @@ export const WithSearchAndScopes: SearchStory = {
         placeholder: 'Search pods…',
         value: 'api',
         scopes: [
-          { label: 'All namespaces', value: 'all', property: 'namespace' },
-          { label: 'default', value: 'default', property: 'namespace' },
-          { label: 'kube-system', value: 'kube-system', property: 'namespace' },
+          {
+            id: 'all',
+            label: 'All namespaces',
+            value: 'all',
+            property: 'namespace',
+          },
+          {
+            id: 'd',
+            label: 'default',
+            value: 'default',
+            property: 'namespace',
+          },
+          {
+            id: 'ks',
+            label: 'kube-system',
+            value: 'kube-system',
+            property: 'namespace',
+          },
         ],
         initialScopeValue: {
+          id: 'all',
           label: 'All namespaces',
           value: 'all',
           property: 'namespace',

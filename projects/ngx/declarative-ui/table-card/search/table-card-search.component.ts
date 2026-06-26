@@ -94,10 +94,8 @@ export class TableCardSearch {
 
   onSearchScopeChange(event: Event): void {
     const target = event.target as Ui5SearchEventTarget | null;
-    const scopeProperty = target?.scopeValue || undefined;
-    const scope = this.searchConfig().scopes?.find(
-      (e) => e.property === scopeProperty,
-    );
+    const scopeId = target?.scopeValue || undefined;
+    const scope = this.searchConfig().scopes?.find((e) => e.id === scopeId);
     this.activeScope.set(scope);
     this.scopeChanged.emit(scope);
   }
