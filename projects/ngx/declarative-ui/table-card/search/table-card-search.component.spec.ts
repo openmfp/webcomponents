@@ -1,10 +1,23 @@
 import { TableCardSearch } from './table-card-search.component';
-import { TableCardSearchConfig } from '../models/search-config';
+import { Scope, TableCardSearchConfig } from '../models/search-config';
 import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 type Comp = TableCardSearch;
 type Fixture = ComponentFixture<Comp>;
+
+const ALL_SCOPE: Scope = {
+  id: 'all',
+  label: 'All',
+  value: '*',
+  property: 'owner',
+};
+const MINE_SCOPE: Scope = {
+  id: 'mine',
+  label: 'My Contributions',
+  value: 'me',
+  property: 'owner',
+};
 
 function root(fixture: Fixture): ShadowRoot | HTMLElement {
   return fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
@@ -86,10 +99,7 @@ describe('TableCardSearch', () => {
     it('renders one ui5-search-scope per scopes entry', () => {
       const { fixture } = setup({
         searchConfig: {
-          scopes: [
-            { label: 'All', value: 'all' },
-            { label: 'My Contributions', value: 'mine' },
-          ],
+          scopes: [ALL_SCOPE, MINE_SCOPE],
         },
       });
       expect(root(fixture).querySelectorAll('ui5-search-scope')).toHaveLength(2);
@@ -100,15 +110,17 @@ describe('TableCardSearch', () => {
       expect(root(fixture).querySelectorAll('ui5-search-scope')).toHaveLength(0);
     });
 
-    it('sets text and value on each ui5-search-scope', () => {
+    it('sets text from label and value from id on each ui5-search-scope', () => {
       const { fixture } = setup({
-        searchConfig: { scopes: [{ label: 'All', value: 'all' }] },
+        searchConfig: { scopes: [ALL_SCOPE] },
       });
       const scope = root(fixture).querySelector('ui5-search-scope') as HTMLElement & {
         text?: string;
         value?: string;
       };
       expect(scope?.text).toBe('All');
+      // ui5-search-scope's `value` is the scope `id`, used by ui5 to match the
+      // active scopeValue. The Scope.value field is forwarded separately on events.
       expect(scope?.value).toBe('all');
     });
   });
@@ -118,51 +130,29 @@ describe('TableCardSearch', () => {
   // -------------------------------------------------------------------------
 
   describe('searchChanged output', () => {
-    it('emits searchChanged with { value } after 300ms debounce on ui5Input', () => {
+    it('emits searchChanged with the current value after 300ms debounce on ui5Input', () => {
       const { fixture, component } = setup({ searchConfig: {} });
       fixture.detectChanges();
 
-      const emitted: { value: string; scope?: string }[] = [];
+      const emitted: (string | null)[] = [];
       component.searchChanged.subscribe((e) => emitted.push(e));
 
       component.onSearchInput(fakeSearchEvent({ value: 'alpha' }));
       expect(emitted).toHaveLength(0);
       vi.advanceTimersByTime(300);
-      expect(emitted).toHaveLength(1);
-      expect(emitted[0]).toEqual({ value: 'alpha', scope: undefined });
+      expect(emitted).toEqual(['alpha']);
     });
 
     it('does not emit searchChanged before the 300ms debounce elapses', () => {
       const { fixture, component } = setup({ searchConfig: {} });
       fixture.detectChanges();
 
-      const emitted: unknown[] = [];
+      const emitted: (string | null)[] = [];
       component.searchChanged.subscribe((e) => emitted.push(e));
 
       component.onSearchInput(fakeSearchEvent({ value: 'beta' }));
       vi.advanceTimersByTime(299);
       expect(emitted).toHaveLength(0);
-    });
-
-    it('includes active scope in searchChanged payload', () => {
-      const { fixture, component } = setup({
-        searchConfig: {
-          scopes: [
-            { label: 'All', value: 'all' },
-            { label: 'Mine', value: 'mine' },
-          ],
-        },
-      });
-      fixture.detectChanges();
-
-      const emitted: { value: string; scope?: string }[] = [];
-      component.searchChanged.subscribe((e) => emitted.push(e));
-
-      component.onSearchScopeChange(fakeSearchEvent({ value: '', scopeValue: 'mine' }));
-      component.onSearchInput(fakeSearchEvent({ value: 'pod' }));
-      vi.advanceTimersByTime(300);
-
-      expect(emitted[0]).toEqual({ value: 'pod', scope: 'mine' });
     });
 
     it('emits searchChanged with empty value after simulated clear', () => {
@@ -172,13 +162,13 @@ describe('TableCardSearch', () => {
       component.onSearchInput(fakeSearchEvent({ value: 'foo' }));
       vi.advanceTimersByTime(300);
 
-      const emitted: { value: string; scope?: string }[] = [];
+      const emitted: (string | null)[] = [];
       component.searchChanged.subscribe((e) => emitted.push(e));
 
       component.onSearchInput(fakeSearchEvent({ value: '' }));
       vi.advanceTimersByTime(300);
 
-      expect(emitted[0]).toEqual({ value: '', scope: undefined });
+      expect(emitted).toEqual(['']);
     });
   });
 
@@ -191,22 +181,27 @@ describe('TableCardSearch', () => {
       const { fixture, component } = setup({ searchConfig: {} });
       fixture.detectChanges();
 
-      const emitted: { value: string; scope?: string }[] = [];
+      const emitted: (string | null)[] = [];
       component.searchSubmit.subscribe((e) => emitted.push(e));
 
       component.onSearchSubmit(fakeSearchEvent({ value: 'my-pod' }));
-      expect(emitted).toHaveLength(1);
-      expect(emitted[0]).toEqual({ value: 'my-pod', scope: undefined });
+      expect(emitted).toEqual(['my-pod']);
     });
 
-    it('includes scope in searchSubmit when a scope is active', () => {
-      const { component } = setup({ searchConfig: {} });
+    it('forwards the current input value verbatim even when a scope is active', () => {
+      const { component } = setup({
+        searchConfig: { scopes: [ALL_SCOPE] },
+      });
 
-      const emitted: { value: string; scope?: string }[] = [];
+      // Activate a scope first.
+      component.onSearchScopeChange(fakeSearchEvent({ value: '', scopeValue: 'all' }));
+
+      const emitted: (string | null)[] = [];
       component.searchSubmit.subscribe((e) => emitted.push(e));
 
+      // The scope is NOT bundled in the searchSubmit payload (decoupled events).
       component.onSearchSubmit(fakeSearchEvent({ value: 'redis', scopeValue: 'all' }));
-      expect(emitted[0]).toEqual({ value: 'redis', scope: 'all' });
+      expect(emitted).toEqual(['redis']);
     });
   });
 
@@ -215,41 +210,58 @@ describe('TableCardSearch', () => {
   // -------------------------------------------------------------------------
 
   describe('scopeChanged output', () => {
-    it('emits scopeChanged synchronously on ui5ScopeChange event', () => {
-      const { component } = setup({ searchConfig: {} });
+    it('emits the matching Scope object synchronously on ui5ScopeChange event', () => {
+      const { component } = setup({
+        searchConfig: { scopes: [ALL_SCOPE, MINE_SCOPE] },
+      });
 
-      const emitted: { value: string; scope?: string }[] = [];
+      const emitted: (Scope | undefined)[] = [];
       component.scopeChanged.subscribe((e) => emitted.push(e));
 
       component.onSearchScopeChange(fakeSearchEvent({ value: '', scopeValue: 'mine' }));
-      expect(emitted).toHaveLength(1);
-      expect(emitted[0]).toEqual({ value: '', scope: 'mine' });
+      expect(emitted).toEqual([MINE_SCOPE]);
     });
 
-    it('includes in-flight search text in scopeChanged payload', () => {
-      const { component } = setup({ searchConfig: {} });
+    it('emits undefined when the event carries no matching scope id', () => {
+      const { component } = setup({
+        searchConfig: { scopes: [ALL_SCOPE, MINE_SCOPE] },
+      });
 
-      component.onSearchInput(fakeSearchEvent({ value: 'cache' }));
-
-      const emitted: { value: string; scope?: string }[] = [];
+      const emitted: (Scope | undefined)[] = [];
       component.scopeChanged.subscribe((e) => emitted.push(e));
 
-      component.onSearchScopeChange(fakeSearchEvent({ value: 'cache', scopeValue: 'all' }));
-      expect(emitted[0]).toEqual({ value: 'cache', scope: 'all' });
+      component.onSearchScopeChange(fakeSearchEvent({ value: '', scopeValue: 'nonexistent' }));
+      expect(emitted).toEqual([undefined]);
     });
 
-    it('updates activeScope so subsequent searchChanged carries new scope', () => {
-      const { component } = setup({ searchConfig: {} });
+    it('emits undefined when the event omits a scopeValue', () => {
+      const { component } = setup({
+        searchConfig: { scopes: [ALL_SCOPE, MINE_SCOPE] },
+      });
+
+      const emitted: (Scope | undefined)[] = [];
+      component.scopeChanged.subscribe((e) => emitted.push(e));
+
+      component.onSearchScopeChange(fakeSearchEvent({ value: '' }));
+      expect(emitted).toEqual([undefined]);
+    });
+
+    it('subsequent searchChanged is independent of scope (events are decoupled)', () => {
+      const { component } = setup({
+        searchConfig: { scopes: [MINE_SCOPE] },
+      });
 
       component.onSearchScopeChange(fakeSearchEvent({ value: '', scopeValue: 'mine' }));
 
-      const emitted: { value: string; scope?: string }[] = [];
+      const emitted: (string | null)[] = [];
       component.searchChanged.subscribe((e) => emitted.push(e));
 
       component.onSearchInput(fakeSearchEvent({ value: 'pod' }));
       vi.advanceTimersByTime(300);
 
-      expect(emitted[0]?.scope).toBe('mine');
+      // searchChanged carries only the search text; the host correlates scope
+      // and search text from their separate streams.
+      expect(emitted).toEqual(['pod']);
     });
   });
 
@@ -276,7 +288,7 @@ describe('TableCardSearch', () => {
       const { fixture, component } = setup({ searchConfig: {} });
       vi.advanceTimersByTime(300); // flush any pending init emission
 
-      const emitted: unknown[] = [];
+      const emitted: (string | null)[] = [];
       component.searchChanged.subscribe((e) => emitted.push(e));
 
       fixture.componentRef.setInput('searchConfig', { value: 'same' });
