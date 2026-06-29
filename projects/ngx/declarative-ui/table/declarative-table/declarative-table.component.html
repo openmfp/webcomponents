@@ -1,5 +1,5 @@
 <ui5-table
-  test-id="generic-table"
+  data-testid="generic-table"
   [style.height]="height() ? height() + 'px' : null"
   [style.overflow-y]="'auto'"
 >
@@ -10,13 +10,13 @@
     @for (column of viewColumns(); track columnTrackBy(column, $index)) {
       @if (column.group) {
         <ui5-table-header-cell
-          [attr.test-id]="'generic-table-header-' + column.group.name"
+          [attr.data-testid]="'generic-table-header-' + column.group.name"
           [width]="column.uiSettings?.columnWidth ?? 'auto'"
           >{{ column.group.label ?? column.group.name }}</ui5-table-header-cell
         >
       } @else {
         <ui5-table-header-cell
-          [attr.test-id]="'generic-table-header-' + column.property"
+          [attr.data-testid]="'generic-table-header-' + column.property"
           [width]="column.uiSettings?.columnWidth ?? 'auto'"
           >{{ column.label }}</ui5-table-header-cell
         >
@@ -26,7 +26,7 @@
 
   @for (item of resources(); let i = $index; track rowTrackBy($index, item)) {
     <ui5-table-row
-      [attr.test-id]="'generic-table-row-' + i"
+      [attr.data-testid]="'generic-table-row-' + i"
       [class.disabled]="item.isAvailable === false"
       [interactive]="item.isAvailable !== false"
       (click)="tableRowClicked.emit(item)"
@@ -34,7 +34,7 @@
       @for (column of viewColumns(); track columnTrackBy(column, $index)) {
         @if (column.group) {
           <ui5-table-cell
-            [attr.test-id]="'generic-table-cell-' + i + '-' + column.group.name"
+            [attr.data-testid]="'generic-table-cell-' + i + '-' + column.group.name"
           >
             @let isMultiline = column.group.multiline ?? true;
             <div
@@ -52,7 +52,7 @@
               ) {
                 <span
                   class="group-value"
-                  [attr.test-id]="
+                  [attr.data-testid]="
                     'generic-table-cell-' +
                     i +
                     '-' +
@@ -78,7 +78,7 @@
           </ui5-table-cell>
         } @else {
           <ui5-table-cell
-            [attr.test-id]="'generic-table-cell-' + i + '-' + column.property"
+            [attr.data-testid]="'generic-table-cell-' + i + '-' + column.property"
           >
             <div class="flex" [style.justifyContent]="column.uiSettings?.align">
               <mfp-resource-field
@@ -95,7 +95,7 @@
     <ui5-illustrated-message
       name="NoData"
       slot="noData"
-      test-id="generic-table-view-nodata"
+      data-testid="generic-table-view-nodata"
     >
       <span slot="title">No Resources</span>
       <span slot="subtitle">There are currently no items to show.</span>
@@ -105,6 +105,7 @@
   @if (hasMore()) {
     <ui5-table-growing
       id="growing"
+      data-testid="generic-table-growing"
       slot="features"
       [mode]="growMode()"
       [text]="loadMoreButtonText()"
@@ -132,6 +133,7 @@
         >Items per load:</span
       >
       <ui5-select
+        data-testid="generic-table-pagination-select"
         style="width: 5rem"
         [value]="paginationLimit().toString()"
         (change)="paginationLimitChanged.emit(+$any($event)?.target?.value)"

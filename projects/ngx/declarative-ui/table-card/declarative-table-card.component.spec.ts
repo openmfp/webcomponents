@@ -813,4 +813,93 @@ describe('DeclarativeTableCard', () => {
       expect((component as any).tableConfig().loadMoreButtonText).toBe('Show More');
     });
   });
+
+  // -------------------------------------------------------------------------
+  // 17. data-testid attributes
+  // -------------------------------------------------------------------------
+
+  describe('data-testid attributes', () => {
+    it('root card div has data-testid="generic-table-card"', () => {
+      const { fixture } = setup();
+      const shadow: ShadowRoot | HTMLElement =
+        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+      const el = shadow.querySelector('[data-testid="generic-table-card"]');
+      expect(el).not.toBeNull();
+    });
+
+    it('search button has data-testid="generic-table-card-search-btn" when resourcesSearchable is true', () => {
+      const config: TableCardConfig = {
+        header: '',
+        tableConfig: READ_CONFIG,
+        resourcesSearchable: true,
+      };
+      const fixture = TestBed.createComponent(
+        DeclarativeTableCard as unknown as typeof DeclarativeTableCard<GenericResource>,
+      );
+      fixture.componentRef.setInput('config', config);
+      fixture.componentRef.setInput('resources', RESOURCES);
+      fixture.componentRef.setInput('createFormState', {});
+      fixture.componentRef.setInput('editFormState', {});
+      fixture.detectChanges();
+
+      const shadow: ShadowRoot | HTMLElement =
+        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+      const btn = shadow.querySelector('[data-testid="generic-table-card-search-btn"]');
+      expect(btn).not.toBeNull();
+    });
+
+    it('search button is absent when resourcesSearchable is not set', () => {
+      const { fixture } = setup();
+      const shadow: ShadowRoot | HTMLElement =
+        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+      expect(shadow.querySelector('[data-testid="generic-table-card-search-btn"]')).toBeNull();
+    });
+
+    it('create button has data-testid="generic-table-card-create-btn" when createConfig is provided', () => {
+      const { fixture } = setup({ createConfig: CREATE_CONFIG });
+      const shadow: ShadowRoot | HTMLElement =
+        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+      const btn = shadow.querySelector('[data-testid="generic-table-card-create-btn"]');
+      expect(btn).not.toBeNull();
+    });
+
+    it('create button is absent when createConfig is not provided', () => {
+      const { fixture } = setup();
+      const shadow: ShadowRoot | HTMLElement =
+        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+      expect(shadow.querySelector('[data-testid="generic-table-card-create-btn"]')).toBeNull();
+    });
+
+    it('create dialog has data-testid="generic-table-card-create-dialog" when createConfig is provided', () => {
+      const { fixture } = setup({ createConfig: CREATE_CONFIG });
+      const shadow: ShadowRoot | HTMLElement =
+        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+      const dialog = shadow.querySelector('[data-testid="generic-table-card-create-dialog"]');
+      expect(dialog).not.toBeNull();
+    });
+
+    it('create confirm button has data-testid="generic-table-card-create-confirm"', () => {
+      const { fixture, component } = setup({ createConfig: CREATE_CONFIG });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (component as any).createDialogOpen.set(true);
+      fixture.detectChanges();
+
+      const shadow: ShadowRoot | HTMLElement =
+        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+      const btn = shadow.querySelector('[data-testid="generic-table-card-create-confirm"]');
+      expect(btn).not.toBeNull();
+    });
+
+    it('create cancel button has data-testid="generic-table-card-create-cancel"', () => {
+      const { fixture, component } = setup({ createConfig: CREATE_CONFIG });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (component as any).createDialogOpen.set(true);
+      fixture.detectChanges();
+
+      const shadow: ShadowRoot | HTMLElement =
+        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+      const btn = shadow.querySelector('[data-testid="generic-table-card-create-cancel"]');
+      expect(btn).not.toBeNull();
+    });
+  });
 });
