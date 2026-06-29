@@ -37,7 +37,6 @@
     justify-content: space-between;
     min-height: 3rem;
     padding: 0 1rem;
-    border-bottom: 1px solid var(--sapGroup_ContentBorderColor, #d9d9d9);
   }
 
   &__title {
@@ -88,6 +87,100 @@
   &__body {
     flex: 1;
     overflow: auto;
+  }
+
+  // ----------------------------------------------------------------------
+  // Filter-tab strip (rendered above the table when `config.filterTabs` is set)
+  // ----------------------------------------------------------------------
+
+  &__filter-tabs {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    padding: 0 1rem;
+    // Slightly tighter vertical rhythm than the header above it so the strip
+    // reads as part of the table, not a second toolbar row.
+    min-height: 2.5rem;
+  }
+
+  &__filter-strip {
+    display: flex;
+    flex: 1;
+    align-items: stretch;
+    gap: 2.25rem;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    // Hide the native scrollbar; navigation is via the chevron buttons.
+    scrollbar-width: none; // Firefox
+    -ms-overflow-style: none; // legacy IE/Edge
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  &__filter-tab {
+    // Reset button defaults — these tabs render as flat text with an
+    // underline only when active.
+    appearance: none;
+    background: transparent;
+    border: 0;
+    padding: 0.75rem 0;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: var(--Font-Family-sapFontFamily, 72);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--sapTextColor, #1d2d3e);
+    // 3px transparent baseline reserved so active/inactive labels sit on the
+    // same baseline (no vertical jump when toggling).
+    border-bottom: 3px solid transparent;
+    transition:
+      color 0.15s ease,
+      border-color 0.15s ease;
+
+    &:hover:not(.card__filter-tab--active) {
+      color: var(--sapLink_Hover_Color, var(--sapButton_Selected_TextColor, #0070f2));
+    }
+
+    &:focus-visible {
+      outline: 1px solid var(--sapContent_FocusColor, #0070f2);
+      outline-offset: 2px;
+    }
+
+    &--active {
+      color: var(
+        --sapButton_Selected_TextColor,
+        var(--sapButton_IconColor, #0070f2)
+      );
+      border-bottom-color: var(
+        --sapButton_Selected_BorderColor,
+        var(--sapButton_IconColor, #0070f2)
+      );
+    }
+  }
+
+  &__filter-chevron {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    color: var(--sapButton_IconColor, #0070f2);
+    flex: 0 0 auto;
+
+    &--left {
+      margin-right: 0.25rem;
+    }
+    &--right {
+      margin-left: 0.25rem;
+    }
+
+    &:hover {
+      background: var(--sapButton_Lite_Hover_Background, rgba(0, 0, 0, 0.04));
+    }
   }
 }
 

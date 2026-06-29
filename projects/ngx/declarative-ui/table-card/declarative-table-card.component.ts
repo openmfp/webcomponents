@@ -3,19 +3,26 @@ import { DeclarativeForm } from '../form/declarative-form/declarative-form.compo
 import { GenericResource } from '../models';
 import { DeclarativeTable } from '../table/declarative-table/declarative-table.component';
 import {
-  TableFieldDefinition,
   ResourceFieldButtonClickEvent,
+  TableFieldDefinition,
 } from '../table/models';
 import { getResourceValueByJsonPath } from '../table/utils/resource-field-by-path';
-import { TableCardConfig, TableCardFormState } from './models/configs';
+import {
+  FieldFilterDefinition,
+  TableCardConfig,
+  TableCardFormState,
+} from './models/configs';
 import {
   CUSTOM_ELEMENTS_SCHEMA,
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   Injector,
+  OnDestroy,
   ViewEncapsulation,
   afterNextRender,
   computed,
+  effect,
   inject,
   input,
   output,
@@ -30,6 +37,8 @@ import { Icon } from '@fundamental-ngx/ui5-webcomponents/icon';
 import { Input } from '@fundamental-ngx/ui5-webcomponents/input';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 import '@ui5/webcomponents-icons/dist/add.js';
+import '@ui5/webcomponents-icons/dist/navigation-left-arrow.js';
+import '@ui5/webcomponents-icons/dist/navigation-right-arrow.js';
 import '@ui5/webcomponents-icons/dist/search.js';
 import { debounceTime } from 'rxjs';
 
@@ -53,7 +62,9 @@ type SearchState = 'collapsed' | 'expanded' | 'collapsing';
   encapsulation: ViewEncapsulation.ShadowDom,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class DeclarativeTableCard<T extends GenericResource> {
+export class DeclarativeTableCard<
+  T extends GenericResource,
+> implements OnDestroy {
   resources = input.required<T[]>();
 
   config = input.required<TableCardConfig>();
@@ -77,6 +88,7 @@ export class DeclarativeTableCard<T extends GenericResource> {
     value: Record<string, unknown>;
   }>();
   readonly deleteSubmit = output<T>();
+  readonly filterTabChanged = output<FieldFilterDefinition | undefined>();
 
   protected searchState = signal<SearchState>('collapsed');
   protected searchExpanded = computed(() => this.searchState() !== 'collapsed');
@@ -121,7 +133,34 @@ export class DeclarativeTableCard<T extends GenericResource> {
     return this.buildInitialValues(editConfig.fields, pendingResource);
   });
 
+  // ------------------------------------------------------------------------
+  // Filter-tab strip (rendered above the table when `config.filterTabs` is set)
+  // ------------------------------------------------------------------------
+
+  /** Configured filters from the host. */
+  protected filterTabs = computed(() => this.config().filterTabs ?? []);
+  /** Whether the tab strip should render at all. */
+  protected hasFilterTabs = computed(() => this.filterTabs().length > 0);
+  /**
+   * The currently-active filter, or `undefined` for the auto-prepended "All"
+   * tab. Reset whenever the host swaps in a different `filterTabs` array.
+   */
+  protected activeFilterTab = signal<FieldFilterDefinition | undefined>(
+    undefined,
+  );
+  /** True when the auto-prepended "All" tab is the active selection. */
+  protected isAllTabActive = computed(
+    () => this.activeFilterTab() === undefined,
+  );
+  protected filterStripRef =
+    viewChild<ElementRef<HTMLDivElement>>('filterStrip');
+  /** Whether the horizontal-scroll viewport can scroll further in each direction. */
+  protected canScrollLeft = signal(false);
+  protected canScrollRight = signal(false);
+
   private readonly injector = inject(Injector);
+  /** Resize observer driving the chevron-visibility recomputation. */
+  private resizeObserver?: ResizeObserver;
 
   constructor() {
     this.searchControl.valueChanges
@@ -129,6 +168,75 @@ export class DeclarativeTableCard<T extends GenericResource> {
       .subscribe((value) => {
         this.searchChanged.emit(value ?? '');
       });
+
+    // Whenever the host updates the filter list, seed the active selection
+    // from `default: true` (falling back to "All"). Comparing by reference
+    // catches genuine config swaps and ignores in-place CD pulses.
+    effect(() => {
+      const tabs = this.filterTabs();
+      const def = tabs.find((t) => t.default);
+      this.activeFilterTab.set(def);
+      // Recompute scroll state once the new tabs paint.
+      afterNextRender(() => this.recomputeScrollState(), {
+        injector: this.injector,
+      });
+    });
+
+    // Observe the strip size and recompute chevron visibility on resize.
+    afterNextRender(
+      () => {
+        const el = this.filterStripRef()?.nativeElement;
+        if (!el) return;
+        this.resizeObserver = new ResizeObserver(() =>
+          this.recomputeScrollState(),
+        );
+        this.resizeObserver.observe(el);
+        this.recomputeScrollState();
+      },
+      { injector: this.injector },
+    );
+  }
+
+  /**
+   * Reflects the carousel's current `scrollLeft` into signals that drive the
+   * chevron buttons' enabled state. Called on init, on user scroll, and after
+   * any size change.
+   */
+  protected recomputeScrollState(): void {
+    const el = this.filterStripRef()?.nativeElement;
+    if (!el) {
+      this.canScrollLeft.set(false);
+      this.canScrollRight.set(false);
+      return;
+    }
+    const { scrollLeft, scrollWidth, clientWidth } = el;
+    // 1px tolerance — browsers occasionally report fractional pixel widths.
+    this.canScrollLeft.set(scrollLeft > 1);
+    this.canScrollRight.set(scrollLeft + clientWidth < scrollWidth - 1);
+  }
+
+  protected onFilterStripScroll(): void {
+    this.recomputeScrollState();
+  }
+
+  /**
+   * Scrolls the strip by ~70% of its visible width so one filter overlaps
+   * the previous viewport — matches the carousel idiom in SAP and Material.
+   */
+  protected scrollFilterStrip(direction: 'left' | 'right'): void {
+    const el = this.filterStripRef()?.nativeElement;
+    if (!el) return;
+    const delta = el.clientWidth * 0.7 * (direction === 'right' ? 1 : -1);
+    el.scrollBy({ left: delta, behavior: 'smooth' });
+  }
+
+  selectFilterTab(tab: FieldFilterDefinition | undefined): void {
+    this.activeFilterTab.set(tab);
+    this.filterTabChanged.emit(tab);
+  }
+
+  ngOnDestroy(): void {
+    this.resizeObserver?.disconnect();
   }
 
   toggleSearch(): void {

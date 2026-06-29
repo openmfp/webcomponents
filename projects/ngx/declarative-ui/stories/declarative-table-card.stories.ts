@@ -3,6 +3,7 @@ import type { GenericResource } from '../models/resource';
 import { DeclarativeTableCard } from '../table-card/declarative-table-card.component';
 import type {
   DeleteResourceConfirmationConfig,
+  FieldFilterDefinition,
   ResourceFormConfig,
   TableCardConfig,
   TableCardFormState,
@@ -469,6 +470,130 @@ export const WithPagination: Story = {
         paginationLimit: 5,
         hasMore: true,
       },
+    },
+  },
+};
+
+/**
+ * Renders a horizontal filter-tab strip above the table. The component
+ * automatically prepends an "All" tab; `default: true` on one of the tabs
+ * makes it the initially-active selection instead of "All".
+ *
+ * Selecting a tab fires `filterTabChanged` with the picked
+ * `FieldFilterDefinition` (or `undefined` for the "All" tab). The host owns
+ * the actual filtering — this story logs the event to the Actions panel.
+ */
+export const WithFilterTabs: Story = {
+  args: {
+    config: {
+      ...BASE_CONFIG,
+      filterTabs: [
+        {
+          label: 'Running',
+          property: 'status.phase',
+          value: 'Running',
+          default: true,
+        },
+        { label: 'Pending', property: 'status.phase', value: 'Pending' },
+        { label: 'Failed', property: 'status.phase', value: 'Failed' },
+      ] satisfies FieldFilterDefinition[],
+    },
+  },
+};
+
+/**
+ * No filter is marked `default`, so the auto-prepended "All" tab is active
+ * on initial render — meaning no filter is applied.
+ */
+export const WithFilterTabsAllActive: Story = {
+  args: {
+    config: {
+      ...BASE_CONFIG,
+      filterTabs: [
+        { label: 'Running', property: 'status.phase', value: 'Running' },
+        { label: 'Pending', property: 'status.phase', value: 'Pending' },
+        { label: 'Failed', property: 'status.phase', value: 'Failed' },
+      ] satisfies FieldFilterDefinition[],
+    },
+  },
+};
+
+/**
+ * Many filters whose combined width exceeds the card. Left/right chevron
+ * buttons appear at the strip's edges and scroll the viewport in ~70%-of-width
+ * steps; the native scrollbar is hidden. Resize the Storybook viewport to
+ * watch the chevrons appear/disappear as overflow changes.
+ *
+ * The labels mirror the SAP BTP service catalog filter strip the design is
+ * based on.
+ */
+export const WithFilterTabsOverflow: Story = {
+  args: {
+    config: {
+      ...BASE_CONFIG,
+      filterTabs: [
+        {
+          label: 'AI',
+          property: 'category',
+          value: 'ai',
+          default: true,
+        },
+        {
+          label: 'Application Development and Automation',
+          property: 'category',
+          value: 'app-dev-automation',
+        },
+        {
+          label: 'Data and Analysis',
+          property: 'category',
+          value: 'data-analysis',
+        },
+        {
+          label: 'Foundation / Cross Services',
+          property: 'category',
+          value: 'foundation-cross-services',
+        },
+        {
+          label: 'Integration',
+          property: 'category',
+          value: 'integration',
+        },
+        {
+          label: 'Mobile',
+          property: 'category',
+          value: 'mobile',
+        },
+        {
+          label: 'Networking',
+          property: 'category',
+          value: 'networking',
+        },
+        {
+          label: 'Observability',
+          property: 'category',
+          value: 'observability',
+        },
+        {
+          label: 'Runtime',
+          property: 'category',
+          value: 'runtime',
+        },
+        {
+          label: 'Security and Identity',
+          property: 'category',
+          value: 'security-identity',
+        },
+        {
+          label: 'Storage',
+          property: 'category',
+          value: 'storage',
+        },
+        {
+          label: 'User Experience',
+          property: 'category',
+          value: 'ux',
+        },
+      ] satisfies FieldFilterDefinition[],
     },
   },
 };
