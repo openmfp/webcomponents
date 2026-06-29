@@ -1,4 +1,5 @@
 import { EditCardsDialog } from '../dashboard/edit-cards-dialog/edit-cards-dialog.component';
+import { DashboardI18nService } from '../dashboard/i18n';
 import type { CardConfig } from '../dashboard/models';
 import { Component, Input } from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
@@ -23,6 +24,10 @@ const AVAILABLE_CARDS: CardConfig[] = [
 @Component({
   selector: 'mfp-edit-cards-dialog-story',
   imports: [EditCardsDialog],
+  // `DashboardI18nService` is normally provided by `<mfp-dashboard>`. The
+  // dialog is shown here standalone, so we provide the service on the story
+  // wrapper instead — every dialog nested below resolves it from this injector.
+  providers: [DashboardI18nService],
   template: `
     <ui5-button (click)="open = true">Open Dialog</ui5-button>
     <mfp-edit-cards-dialog
