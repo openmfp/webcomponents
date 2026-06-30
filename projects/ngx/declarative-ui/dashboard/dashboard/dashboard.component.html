@@ -1,10 +1,10 @@
-<div class="mfp-dashboard">
+<div class="mfp-dashboard" data-testid="dashboard">
   <div class="mfp-dashboard__topbar">
     <div class="mfp-dashboard__topbar-row">
       <div class="mfp-dashboard__header">
         <div class="mfp-dashboard__title-row">
           @if (config().title) {
-            <ui5-title level="H3" size="H3" wrapping-type="Normal">
+            <ui5-title level="H3" size="H3" wrapping-type="Normal" data-testid="dashboard-title">
               <span [innerHTML]="safeTitle()"></span>
             </ui5-title>
           }
@@ -22,7 +22,7 @@
           }
         </div>
         @if (config().description) {
-          <ui5-title level="H5" size="H5" wrapping-type="Normal">
+          <ui5-title level="H5" size="H5" wrapping-type="Normal" data-testid="dashboard-description">
             <span
               class="mfp-dashboard__description"
               [innerHTML]="safeDescription()"
@@ -36,6 +36,7 @@
           <ui5-button
             #editCardsBtn
             id="edit-cards-btn"
+            data-testid="dashboard-edit-cards-btn"
             [accessibleName]="
               editCardsButton().text ||
               editCardsButton().tooltip ||
@@ -50,6 +51,7 @@
         } @else if (compactToolbar()) {
           <ui5-button
             #menuBtn
+            data-testid="dashboard-toolbar-menu-btn"
             design="Transparent"
             icon="menu2"
             [accessibleName]="i18n.getTranslation(i18nKeys.ACTIONS)"
@@ -57,6 +59,7 @@
             (click)="toolbarMenuOpen.update((v) => !v)"
           />
           <ui5-menu
+            data-testid="dashboard-toolbar-menu"
             [open]="toolbarMenuOpen()"
             [opener]="menuBtn.element"
             (ui5Close)="toolbarMenuOpen.set(false)"
@@ -71,6 +74,7 @@
             @if (config().editButtonFirst && config().editable) {
               <ui5-menu-item
                 data-action="edit-view"
+                data-testid="dashboard-action-edit-view"
                 [icon]="editViewButton().icon"
                 [text]="
                   editViewButton().text ||
@@ -84,6 +88,7 @@
             @for (action of customActions(); track action.action) {
               <ui5-menu-item
                 [attr.data-action]="action.action"
+                [attr.data-testid]="'dashboard-action-' + action.action"
                 [icon]="action.icon ?? ''"
                 [text]="action.text ?? ''"
               />
@@ -92,6 +97,7 @@
               <ui5-menu-separator />
               <ui5-menu-item
                 data-action="edit-view"
+                data-testid="dashboard-action-edit-view"
                 [icon]="editViewButton().icon"
                 [text]="
                   editViewButton().text ||
@@ -103,6 +109,7 @@
         } @else {
           @if (config().editButtonFirst && config().editable) {
             <ui5-button
+              data-testid="dashboard-edit-view-btn"
               [accessibleName]="
                 editViewButton().text ||
                 editViewButton().tooltip ||
@@ -117,6 +124,7 @@
           }
           @for (action of customActions(); track action.action) {
             <ui5-button
+              [attr.data-testid]="'dashboard-action-' + action.action"
               [accessibleName]="action.text || action.tooltip || action.action"
               [design]="action.design ?? 'Default'"
               [endIcon]="action?.endIcon"
@@ -130,6 +138,7 @@
           }
           @if (!config().editButtonFirst && config().editable) {
             <ui5-button
+              data-testid="dashboard-edit-view-btn"
               [accessibleName]="
                 editViewButton().text ||
                 editViewButton().tooltip ||
@@ -165,6 +174,7 @@
 
   <gridstack
     #grid
+    data-testid="dashboard-grid"
     [options]="gridOptions()"
     (addedCB)="onGridChange($event)"
     (changeCB)="onGridChange($event)"
@@ -183,10 +193,10 @@
 
   @if (editMode()) {
     <div class="mfp-dashboard__edit-bar">
-      <ui5-button design="Emphasized" (click)="saveEdit()">{{
+      <ui5-button data-testid="dashboard-save-btn" design="Emphasized" (click)="saveEdit()">{{
         i18n.getTranslation(i18nKeys.SAVE)
       }}</ui5-button>
-      <ui5-button design="Transparent" (click)="cancelEdit()">{{
+      <ui5-button data-testid="dashboard-cancel-btn" design="Transparent" (click)="cancelEdit()">{{
         i18n.getTranslation(i18nKeys.CANCEL)
       }}</ui5-button>
     </div>

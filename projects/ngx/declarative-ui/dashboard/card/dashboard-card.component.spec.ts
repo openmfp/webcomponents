@@ -129,6 +129,51 @@ describe('DashboardCard', () => {
     expect(root(fixture).querySelector('.component-card')).toBeNull();
   });
 
+  describe('data-testid attributes', () => {
+    it('sets data-testid on the component-card wrapper when card has a component', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('card', {
+        id: 'card-42',
+        component: 'demo-widget',
+      });
+      fixture.detectChanges();
+
+      const el = root(fixture).querySelector('.component-card');
+      expect(el).not.toBeNull();
+      expect(el?.getAttribute('data-testid')).toBe('dashboard-card-card-42');
+    });
+
+    it('sets data-testid on the fallback card wrapper when card has no component', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('card', {
+        id: 'card-42',
+        component: '',
+      });
+      fixture.detectChanges();
+
+      const el = root(fixture).querySelector('.card');
+      expect(el).not.toBeNull();
+      expect(el?.getAttribute('data-testid')).toBe('dashboard-card-card-42');
+    });
+
+    it('sets data-testid on the remove button in edit mode', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('card', {
+        id: 'card-42',
+        component: 'demo-widget',
+      });
+      fixture.componentRef.setInput('editMode', true);
+      fixture.detectChanges();
+
+      const btn = root(fixture).querySelector('.card__remove');
+      expect(btn).not.toBeNull();
+      expect(btn?.getAttribute('data-testid')).toBe('dashboard-card-card-42-remove');
+    });
+  });
+
   describe('sap-ui type', () => {
     let placeAt: ReturnType<typeof vi.fn>;
     let destroy: ReturnType<typeof vi.fn>;

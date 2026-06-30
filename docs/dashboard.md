@@ -667,3 +667,68 @@ const cards: CardConfig[] = [
 ```
 
 If `window.sap` is not available when the card is rendered, an error is logged and the card host element is left empty.
+
+---
+
+## Test IDs
+
+All interactive elements carry `data-testid` attributes for reliable E2E targeting. See [docs/test-ids.md](./test-ids.md) for the full naming convention.
+
+### Main component
+
+| Element | `data-testid` | Notes |
+|---|---|---|
+| Root container | `dashboard` | |
+| Title | `dashboard-title` | Present when `config.title` is set |
+| Description | `dashboard-description` | Present when `config.description` is set |
+| Edit-cards button | `dashboard-edit-cards-btn` | Visible in edit mode |
+| Compact menu toggle | `dashboard-toolbar-menu-btn` | Compact toolbar mode only |
+| Compact dropdown menu | `dashboard-toolbar-menu` | |
+| Edit-view menu item | `dashboard-action-edit-view` | Inside compact menu when `config.editable` is true |
+| Custom action (menu item or button) | `dashboard-action-{action}` | `action` = `customAction.action` |
+| Edit-view button | `dashboard-edit-view-btn` | Full toolbar |
+| Grid | `dashboard-grid` | |
+| Save button | `dashboard-save-btn` | Visible in edit mode |
+| Cancel button | `dashboard-cancel-btn` | Visible in edit mode |
+
+### DashboardCard
+
+| Element | `data-testid` | Notes |
+|---|---|---|
+| Card root | `dashboard-card-{id}` | `id` = `card.id` |
+| Remove button | `dashboard-card-{id}-remove` | Visible in edit mode |
+
+### DashboardSection
+
+| Element | `data-testid` | Notes |
+|---|---|---|
+| Section root | `dashboard-section-{id}` | `id` = `section.id` |
+| Remove button | `dashboard-section-{id}-remove` | Edit mode, `section.editable !== false` |
+| Section title | `dashboard-section-{id}-title` | Present when `section.title` is set |
+
+### EditCardsDialog
+
+| Element | `data-testid` | Notes |
+|---|---|---|
+| Dialog | `dashboard-edit-cards-dialog` | |
+| Card row | `dashboard-edit-cards-row-{id}` | `id` = `availableCard.id` |
+| Toggle switch | `dashboard-edit-cards-switch-{id}` | |
+| Save button | `dashboard-edit-cards-save-btn` | |
+| Cancel button | `dashboard-edit-cards-cancel-btn` | |
+
+### DiscardChangesDialog
+
+| Element | `data-testid` |
+|---|---|
+| Dialog | `dashboard-discard-changes-dialog` |
+| Confirm button | `dashboard-discard-changes-confirm-btn` |
+| Cancel button | `dashboard-discard-changes-cancel-btn` |
+
+### UnsavedChangesDialog
+
+| Element | `data-testid` |
+|---|---|
+| Dialog | `dashboard-unsaved-changes-dialog` |
+| Save button | `dashboard-unsaved-changes-save-btn` |
+| Discard button | `dashboard-unsaved-changes-discard-btn` |
+| Cancel button | `dashboard-unsaved-changes-cancel-btn` |

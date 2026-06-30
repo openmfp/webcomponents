@@ -1,20 +1,20 @@
-<section class="form" test-id="generic-form" [formGroup]="form">
+<section class="form" data-testid="generic-form" [formGroup]="form">
   @for (field of fields(); track field.name) {
     @let control = form.controls[field.name];
     <div
       class="inputs"
-      [attr.test-id]="'generic-form-field-container-' + field.name"
+      [attr.data-testid]="'generic-form-field-container-' + field.name"
     >
       <ui5-label
         show-colon
-        [attr.test-id]="'generic-form-field-label-' + field.name"
+        [attr.data-testid]="'generic-form-field-label-' + field.name"
         [required]="field.required"
         >{{ field.label }}</ui5-label
       >
       @if (field.values?.length) {
         <ui5-select
           class="input"
-          [attr.test-id]="'generic-form-field-' + field.name"
+          [attr.data-testid]="'generic-form-field-' + field.name"
           [disabled]="field.disabled"
           [required]="field.required"
           [value]="control.value"
@@ -28,7 +28,7 @@
           }
           @for (value of [''].concat(field.values ?? []); track value) {
             <ui5-option
-              [attr.test-id]="
+              [attr.data-testid]="
                 'generic-form-field-' +
                 field.name +
                 '-option-' +
@@ -43,7 +43,7 @@
       } @else {
         <ui5-input
           class="input"
-          [attr.test-id]="'generic-form-field-' + field.name"
+          [attr.data-testid]="'generic-form-field-' + field.name"
           [disabled]="field.disabled"
           [required]="field.required"
           [value]="control.value"

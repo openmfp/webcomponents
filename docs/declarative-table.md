@@ -412,3 +412,21 @@ Any plain object works as a resource. Three optional fields control table behavi
 | `id` | `string` | Default `trackByPath` target; used as the row identity key unless overridden |
 | `isAvailable` | `boolean` | When `false`, the row is rendered as non-interactive |
 | `accessibleName` | `string` | Accessible label attached to the row element |
+
+---
+
+## Test IDs
+
+All interactive elements carry `data-testid` attributes for reliable E2E targeting. See [docs/test-ids.md](./test-ids.md) for the full naming convention.
+
+| Element | `data-testid` | Notes |
+|---|---|---|
+| Table element | `generic-table` | |
+| Header cell | `generic-table-header-{column}` | `column` = `group.name` or `property` |
+| Row | `generic-table-row-{i}` | `i` = 0-based index |
+| Cell (simple column) | `generic-table-cell-{i}-{property}` | |
+| Cell (grouped column) | `generic-table-cell-{i}-{group}` | `group` = `group.name` |
+| Group sub-value | `generic-table-cell-{i}-{group}-{property}` | |
+| No-data state | `generic-table-view-nodata` | Shown when `resources` is empty |
+| Load-more trigger | `generic-table-growing` | Shown when `hasMore` is true |
+| Page-size select | `generic-table-pagination-select` | Always present |
