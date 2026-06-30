@@ -567,6 +567,54 @@ describe('Dashboard', () => {
     });
   });
 
+  describe('data-testid attributes', () => {
+    it('root div has data-testid="dashboard"', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('config', { title: 'Operations' });
+      fixture.detectChanges();
+
+      const el = root(fixture).querySelector('[data-testid="dashboard"]');
+      expect(el).not.toBeNull();
+    });
+
+    it('save button has data-testid="dashboard-save-btn" in edit mode', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', { title: 'Operations', editable: true });
+      fixture.detectChanges();
+
+      component.editMode.set(true);
+      fixture.detectChanges();
+
+      const btn = root(fixture).querySelector('[data-testid="dashboard-save-btn"]');
+      expect(btn).not.toBeNull();
+    });
+
+    it('cancel button has data-testid="dashboard-cancel-btn" in edit mode', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', { title: 'Operations', editable: true });
+      fixture.detectChanges();
+
+      component.editMode.set(true);
+      fixture.detectChanges();
+
+      const btn = root(fixture).querySelector('[data-testid="dashboard-cancel-btn"]');
+      expect(btn).not.toBeNull();
+    });
+
+    it('save and cancel buttons are absent when not in edit mode', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('config', { title: 'Operations' });
+      fixture.detectChanges();
+
+      expect(root(fixture).querySelector('[data-testid="dashboard-save-btn"]')).toBeNull();
+      expect(root(fixture).querySelector('[data-testid="dashboard-cancel-btn"]')).toBeNull();
+    });
+  });
+
   describe('hasUnsavedChanges indicator', () => {
     function configureFor(component: Dashboard) {
       (

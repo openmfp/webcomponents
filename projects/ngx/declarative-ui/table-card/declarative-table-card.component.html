@@ -1,4 +1,4 @@
-<div class="card">
+<div class="card" data-testid="generic-table-card">
   <div class="card__header">
     <div class="card__title">
       @if (header(); as header) {
@@ -18,6 +18,7 @@
         @if (searchExpanded()) {
           <ui5-input
             #searchInput
+            data-testid="generic-table-card-search-input"
             [class]="
               'card__search-input card__search-input--' +
               (searchCollapsing() ? 'leave' : 'enter')
@@ -29,6 +30,7 @@
         }
         <ui5-button
           class="card__search-btn"
+          data-testid="generic-table-card-search-btn"
           design="Transparent"
           [accessibleName]="searchButtonConfig()?.tooltip ?? 'Search'"
           [icon]="searchButtonConfig()?.icon ?? 'search'"
@@ -39,6 +41,7 @@
       @if (createFormConfig()) {
         <ui5-button
           class="card__create-btn"
+          data-testid="generic-table-card-create-btn"
           [accessibleName]="createButtonConfig()?.text || createButtonConfig()?.tooltip || 'Create'"
           [design]="createButtonConfig()?.design ?? 'Transparent'"
           [icon]="createButtonConfig()?.icon ?? 'add'"
@@ -73,6 +76,7 @@
 
 @if (createFormConfig(); as config) {
   <ui5-dialog
+    data-testid="generic-table-card-create-dialog"
     [accessibleName]="config.title ?? 'Create'"
     [open]="createDialogOpen()"
     (ui5BeforeClose)="createDialogOpen.set(false)"
@@ -91,13 +95,14 @@
     </div>
     <div class="dialog__footer" slot="footer">
       <ui5-button
+        data-testid="generic-table-card-create-confirm"
         design="Emphasized"
         [disabled]="hasErrors(createFormState())"
         (click)="createForm.submit()"
       >
         {{ config.confirmLabel ?? 'Save' }}
       </ui5-button>
-      <ui5-button design="Transparent" (click)="closeCreateDialog()">
+      <ui5-button data-testid="generic-table-card-create-cancel" design="Transparent" (click)="closeCreateDialog()">
         {{ config.cancelLabel ?? 'Cancel' }}
       </ui5-button>
     </div>
@@ -106,6 +111,7 @@
 
 @if (editFormConfig(); as config) {
   <ui5-dialog
+    data-testid="generic-table-card-edit-dialog"
     [accessibleName]="config.title ?? 'Edit'"
     [open]="editDialogOpen()"
     (ui5BeforeClose)="editDialogOpen.set(false)"
@@ -125,13 +131,14 @@
     </div>
     <div class="dialog__footer" slot="footer">
       <ui5-button
+        data-testid="generic-table-card-edit-confirm"
         design="Emphasized"
         [disabled]="hasErrors(editFormState())"
         (click)="editForm.submit()"
       >
         {{ config.confirmLabel ?? 'Edit' }}
       </ui5-button>
-      <ui5-button design="Transparent" (click)="closeEditDialog()">
+      <ui5-button data-testid="generic-table-card-edit-cancel" design="Transparent" (click)="closeEditDialog()">
         {{ config.cancelLabel ?? 'Cancel' }}
       </ui5-button>
     </div>
@@ -140,6 +147,7 @@
 
 @if (deleteConfirmationConfig(); as config) {
   <ui5-dialog
+    data-testid="generic-table-card-delete-dialog"
     [accessibleName]="config.title ?? 'Confirm Delete'"
     [open]="deleteDialogOpen()"
     (ui5BeforeClose)="deleteDialogOpen.set(false)"
@@ -153,10 +161,10 @@
       </div>
     }
     <div class="dialog__footer" slot="footer">
-      <ui5-button design="Negative" (click)="onDeleteSubmit()">
+      <ui5-button data-testid="generic-table-card-delete-confirm" design="Negative" (click)="onDeleteSubmit()">
         {{ config.confirmLabel ?? 'Delete' }}
       </ui5-button>
-      <ui5-button design="Transparent" (click)="closeDeleteDialog()">
+      <ui5-button data-testid="generic-table-card-delete-cancel" design="Transparent" (click)="closeDeleteDialog()">
         {{ config.cancelLabel ?? 'Cancel' }}
       </ui5-button>
     </div>

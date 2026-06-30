@@ -1,5 +1,5 @@
 @let displayType = displayAs();
-<span [attr.test-id]="testId()" [style]="cssStyles()">
+<span [attr.data-testid]="testId()" [style]="cssStyles()">
   @if (displayType === 'secret') {
     <span class="secret-value-container">
       <mfp-secret-value [isVisible]="isVisible()" [testId]="testId() + '-secret'" [value]="value()" />
@@ -7,7 +7,7 @@
         class="toggle-icon"
         mode="Interactive"
         [accessibleName]="isVisible() ? 'Hide value' : 'Show value'"
-        [attr.test-id]="testId() + '-secret-toggle'"
+        [attr.data-testid]="testId() + '-secret-toggle'"
         [name]="isVisible() ? 'hide' : 'show'"
         (click)="toggleVisibility($event)"
       />
@@ -19,7 +19,7 @@
   } @else if (displayType === 'tooltip') {
     <ui5-icon
       [accessibleName]="stringValue()!"
-      [attr.test-id]="testId() + '-tooltip'"
+      [attr.data-testid]="testId() + '-tooltip'"
       [name]="tooltipIcon() ?? 'hint'"
       [showTooltip]="true"
     />
@@ -29,7 +29,7 @@
         design="Critical"
         name="alert"
         [accessibleName]="resource()?.accessibleName ?? ''"
-        [attr.test-id]="testId() + '-icon'"
+        [attr.data-testid]="testId() + '-icon'"
         [showTooltip]="true"
         (click)="$event.stopPropagation()"
       />
@@ -39,6 +39,7 @@
   } @else if (displayType === 'button') {
     @let buttonSettings = uiSettings()?.buttonSettings;
     <ui5-button
+      [attr.data-testid]="testId() + '-button'"
       [accessibleName]="buttonSettings?.text || buttonSettings?.tooltip || buttonSettings?.icon || ''"
       [design]="buttonSettings?.design"
       [endIcon]="buttonSettings?.endIcon"
@@ -63,7 +64,7 @@
     class="toggle-icon"
     mode="Interactive"
     [accessibleName]="copySuccess() ? 'Copied' : 'Copy value'"
-    [attr.test-id]="testId() + '-copy'"
+    [attr.data-testid]="testId() + '-copy'"
     [design]="copySuccess() ? 'Positive' : 'Default'"
     [name]="copySuccess() ? 'accept' : 'copy'"
     (click)="copyValue($event)"
