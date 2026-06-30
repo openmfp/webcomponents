@@ -103,4 +103,64 @@ describe('DashboardSection', () => {
 
     expect(emitted).toEqual(['card-1']);
   });
+
+  describe('data-testid attributes', () => {
+    it('sets data-testid on the root section element', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('section', { id: 'sec-7', title: 'My Section' });
+      fixture.componentRef.setInput('cards', []);
+      fixture.detectChanges();
+
+      const el = root(fixture).querySelector('.section');
+      expect(el).not.toBeNull();
+      expect(el?.getAttribute('data-testid')).toBe('dashboard-section-sec-7');
+    });
+
+    it('sets data-testid on the remove button in editable edit mode', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('section', { id: 'sec-7', title: 'My Section', editable: true });
+      fixture.componentRef.setInput('cards', []);
+      fixture.componentRef.setInput('editMode', true);
+      fixture.detectChanges();
+
+      const btn = root(fixture).querySelector('.section__remove');
+      expect(btn).not.toBeNull();
+      expect(btn?.getAttribute('data-testid')).toBe('dashboard-section-sec-7-remove');
+    });
+
+    it('does not render the remove button data-testid when section is non-editable', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('section', { id: 'sec-7', title: 'My Section', editable: false });
+      fixture.componentRef.setInput('cards', []);
+      fixture.componentRef.setInput('editMode', true);
+      fixture.detectChanges();
+
+      expect(root(fixture).querySelector('.section__remove')).toBeNull();
+    });
+
+    it('sets data-testid on the title span when section has a title', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('section', { id: 'sec-7', title: 'My Section' });
+      fixture.componentRef.setInput('cards', []);
+      fixture.detectChanges();
+
+      const titleEl = root(fixture).querySelector('.section__title');
+      expect(titleEl).not.toBeNull();
+      expect(titleEl?.getAttribute('data-testid')).toBe('dashboard-section-sec-7-title');
+    });
+
+    it('does not render the title span when section has no title', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('section', { id: 'sec-7' });
+      fixture.componentRef.setInput('cards', []);
+      fixture.detectChanges();
+
+      expect(root(fixture).querySelector('.section__title')).toBeNull();
+    });
+  });
 });

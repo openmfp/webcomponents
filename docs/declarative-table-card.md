@@ -208,6 +208,28 @@ Submit events do not close dialogs automatically. Close the dialog after success
 
 ---
 
+## Test IDs
+
+All interactive elements carry `data-testid` attributes for reliable E2E targeting. See [docs/test-ids.md](./test-ids.md) for the full naming convention.
+
+| Element | `data-testid` |
+|---|---|
+| Card root | `generic-table-card` |
+| Search button | `generic-table-card-search-btn` |
+| Search input | `generic-table-card-search-input` |
+| Create button | `generic-table-card-create-btn` |
+| Create dialog | `generic-table-card-create-dialog` |
+| Create confirm button | `generic-table-card-create-confirm` |
+| Create cancel button | `generic-table-card-create-cancel` |
+| Edit dialog | `generic-table-card-edit-dialog` |
+| Edit confirm button | `generic-table-card-edit-confirm` |
+| Edit cancel button | `generic-table-card-edit-cancel` |
+| Delete dialog | `generic-table-card-delete-dialog` |
+| Delete confirm button | `generic-table-card-delete-confirm` |
+| Delete cancel button | `generic-table-card-delete-cancel` |
+
+---
+
 ## Configuration types
 
 ```ts

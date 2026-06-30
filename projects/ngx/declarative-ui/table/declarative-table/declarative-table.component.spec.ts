@@ -40,7 +40,7 @@ function root(fixture: Fixture): ShadowRoot | HTMLElement {
 }
 
 function el(fixture: Fixture, testId: string): Element | null {
-  return root(fixture).querySelector(`[test-id="${testId}"]`);
+  return root(fixture).querySelector(`[data-testid="${testId}"]`);
 }
 
 describe('DeclarativeTable', () => {

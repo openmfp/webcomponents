@@ -27,7 +27,7 @@ function setup(
 function el(fixture: Fixture, testId: string): Element | null {
   return (
     fixture.nativeElement.shadowRoot ?? fixture.nativeElement
-  ).querySelector(`[test-id="${testId}"]`);
+  ).querySelector(`[data-testid="${testId}"]`);
 }
 
 function q(fixture: Fixture, selector: string): Element | null {
@@ -53,19 +53,19 @@ describe('ResourceField', () => {
   describe('default display', () => {
     it('renders plain string value from resource property', () => {
       const { fixture } = setup({ property: 'status' }, { status: 'Active' });
-      const span = q(fixture, '[test-id="resource-field-status"]');
+      const span = q(fixture, '[data-testid="resource-field-status"]');
       expect(span?.textContent?.trim()).toBe('Active');
     });
 
     it('falls back to field.value when no resource is provided', () => {
       const { fixture } = setup({ property: 'status', value: 'fallback' });
-      const span = q(fixture, '[test-id="resource-field-status"]');
+      const span = q(fixture, '[data-testid="resource-field-status"]');
       expect(span?.textContent?.trim()).toBe('fallback');
     });
 
     it('renders empty when value is absent', () => {
       const { fixture } = setup({ property: 'missing' }, {});
-      const span = q(fixture, '[test-id="resource-field-missing"]');
+      const span = q(fixture, '[data-testid="resource-field-missing"]');
       expect(span?.textContent?.trim()).toBe('');
     });
   });
@@ -328,7 +328,7 @@ describe('ResourceField', () => {
         { property: 'labels', uiSettings: { displayAs: 'tag' } },
         { labels: 'api,backend' },
       );
-      const span = q(fixture, '[test-id="resource-field-labels"]');
+      const span = q(fixture, '[data-testid="resource-field-labels"]');
       expect(span?.textContent?.trim()).not.toBe('api,backend');
     });
   });
@@ -389,7 +389,7 @@ describe('ResourceField', () => {
   describe('displayValue / valueRules', () => {
     it('equals the raw value when valueRules is not set', () => {
       const { fixture } = setup({ property: 'score' }, { score: '42' });
-      const span = q(fixture, '[test-id="resource-field-score"]');
+      const span = q(fixture, '[data-testid="resource-field-score"]');
       expect(span?.textContent?.trim()).toBe('42');
     });
 
@@ -407,7 +407,7 @@ describe('ResourceField', () => {
         },
         { score: '10' },
       );
-      const span = q(fixture, '[test-id="resource-field-score"]');
+      const span = q(fixture, '[data-testid="resource-field-score"]');
       expect(span?.textContent?.trim()).toBe('Low');
     });
 
@@ -423,7 +423,7 @@ describe('ResourceField', () => {
         },
         { score: 'Pending' },
       );
-      const span = q(fixture, '[test-id="resource-field-score"]');
+      const span = q(fixture, '[data-testid="resource-field-score"]');
       expect(span?.textContent?.trim()).toBe('Pending');
     });
   });

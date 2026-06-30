@@ -91,7 +91,7 @@ describe('DeclarativeForm', () => {
 
       const shadowRoot = fixture.nativeElement.shadowRoot as ShadowRoot;
       const fieldElement = shadowRoot.querySelector(
-        '[test-id="generic-form-field-metadata.namespace"]',
+        '[data-testid="generic-form-field-metadata.namespace"]',
       );
 
       expect(fieldElement?.tagName.toLowerCase()).toBe('ui5-select');
@@ -109,7 +109,7 @@ describe('DeclarativeForm', () => {
 
       const shadowRoot = fixture.nativeElement.shadowRoot as ShadowRoot;
       const fieldElement = shadowRoot.querySelector(
-        '[test-id="generic-form-field-metadata.namespace"]',
+        '[data-testid="generic-form-field-metadata.namespace"]',
       );
 
       expect(fieldElement?.tagName.toLowerCase()).toBe('ui5-input');

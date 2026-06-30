@@ -6,9 +6,6 @@ import { DashboardI18nService } from '../dashboard/i18n';
 @Component({
   selector: 'mfp-unsaved-changes-dialog-story',
   imports: [UnsavedChangesDialog],
-  // `DashboardI18nService` is normally provided by `<mfp-dashboard>`. The
-  // dialog is shown here standalone, so we provide the service on the story
-  // wrapper instead — every dialog nested below resolves it from this injector.
   providers: [DashboardI18nService],
   template: `
     <ui5-button design="Emphasized" (click)="open = true">Open Dialog</ui5-button>

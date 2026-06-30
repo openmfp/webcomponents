@@ -176,3 +176,26 @@ type FormFieldErrors = Record<string, string | null>;
 - The host validates the received `FormFieldChangeEvent` and updates `fieldErrors`.
 - A field shows `Negative` value state and the error message only when it is dirty or touched and `fieldErrors[field.name]` is a non-empty string.
 - Empty, missing, or `null` errors render as no error.
+
+---
+
+## Test IDs
+
+All interactive elements carry `data-testid` attributes for reliable E2E targeting. See [docs/test-ids.md](./test-ids.md) for the full naming convention.
+
+| Element | `data-testid` | Notes |
+|---|---|---|
+| Form element | `generic-form` | |
+| Field container | `generic-form-field-container-{name}` | `name` = `field.name` (dot notation) |
+| Field label | `generic-form-field-label-{name}` | |
+| Input or select | `generic-form-field-{name}` | `<ui5-input>` or `<ui5-select>` |
+| Select option | `generic-form-field-{name}-option-{value}` | `value` = option string or `empty` for the blank placeholder |
+
+**Example** — a field `{ name: 'metadata.name', label: 'Name' }` renders:
+
+```html
+<div data-testid="generic-form-field-container-metadata.name">
+  <ui5-label data-testid="generic-form-field-label-metadata.name">Name</ui5-label>
+  <ui5-input data-testid="generic-form-field-metadata.name" />
+</div>
+```
