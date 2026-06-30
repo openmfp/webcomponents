@@ -52,57 +52,10 @@
   </div>
 
   @if (hasFilterTabs()) {
-    <div class="card__filter-tabs">
-      @if (canScrollLeft()) {
-        <button
-          type="button"
-          class="card__filter-chevron card__filter-chevron--left"
-          aria-label="Scroll filters left"
-          (click)="scrollFilterStrip('left')"
-        >
-          <ui5-icon name="navigation-left-arrow" />
-        </button>
-      }
-      <div
-        #filterStrip
-        class="card__filter-strip"
-        role="tablist"
-        (scroll)="onFilterStripScroll()"
-      >
-        <button
-          type="button"
-          role="tab"
-          class="card__filter-tab"
-          [class.card__filter-tab--active]="isAllTabActive()"
-          [attr.aria-selected]="isAllTabActive()"
-          (click)="selectFilterTab(undefined)"
-        >
-          All
-        </button>
-        @for (tab of filterTabs(); track tab.property + ':' + tab.value) {
-          <button
-            type="button"
-            role="tab"
-            class="card__filter-tab"
-            [class.card__filter-tab--active]="activeFilterTab() === tab"
-            [attr.aria-selected]="activeFilterTab() === tab"
-            (click)="selectFilterTab(tab)"
-          >
-            {{ tab.label }}
-          </button>
-        }
-      </div>
-      @if (canScrollRight()) {
-        <button
-          type="button"
-          class="card__filter-chevron card__filter-chevron--right"
-          aria-label="Scroll filters right"
-          (click)="scrollFilterStrip('right')"
-        >
-          <ui5-icon name="navigation-right-arrow" />
-        </button>
-      }
-    </div>
+    <mfp-filter-tabs
+      [tabs]="filterTabs()"
+      (tabChanged)="onFilterTabChanged($event)"
+    />
   }
 
   <div class="card__body">

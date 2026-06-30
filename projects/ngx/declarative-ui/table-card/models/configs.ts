@@ -38,9 +38,10 @@ export interface DeleteResourceConfirmationConfig {
  * definition via the `filterTabChanged` output and is responsible for applying
  * the filter to its data set.
  *
- * The component automatically prepends a generic "All" tab whenever
- * `filterTabs` is non-empty — selecting it emits `undefined` to mean "no
- * filter active, show everything".
+ * The strip renders exactly the array of `FieldFilterDefinition` it receives
+ * — no extra "All" / no-filter tab is auto-added. If the host wants such an
+ * option it must author it as a regular filter entry (e.g.
+ * `{ label: 'All', property: '<some-field>', value: '*' }`).
  */
 export interface FieldFilterDefinition {
   /** Visible label rendered as the tab text. */
@@ -49,7 +50,7 @@ export interface FieldFilterDefinition {
   property: string;
   /** Value compared against `property` when the host applies the filter. */
   value: string;
-  /** When `true`, this tab is selected on initial render instead of "All". */
+  /** When `true`, this tab is selected on initial render; otherwise the first tab is. */
   default?: boolean;
 }
 
@@ -100,9 +101,8 @@ export interface TableCardConfig {
   deleteResourceConfirmationConfig?: DeleteResourceConfirmationConfig;
   /**
    * Predefined filters rendered as a horizontal tab strip above the table.
-   * When non-empty, the component automatically prepends an "All" tab that
-   * clears the active filter. Omit (or pass an empty array) to hide the strip
-   * entirely.
+   * Omit (or pass an empty array) to hide the strip entirely. The strip
+   * renders exactly the array as given — no automatic "All" tab is added.
    */
   filterTabs?: FieldFilterDefinition[];
 }

@@ -502,14 +502,24 @@ export const WithFilterTabs: Story = {
 };
 
 /**
- * No filter is marked `default`, so the auto-prepended "All" tab is active
- * on initial render — meaning no filter is applied.
+ * Demonstrates an explicit "All" tab authored as a regular `FieldFilterDefinition`.
+ * The strip no longer auto-prepends one — if you want a "show everything"
+ * option, model it the same way as the others. The host decides how `All`'s
+ * `property` / `value` map to its data layer (here a wildcard).
+ *
+ * `default: true` on the "All" entry makes it the initial selection.
  */
-export const WithFilterTabsAllActive: Story = {
+export const WithExplicitAllTab: Story = {
   args: {
     config: {
       ...BASE_CONFIG,
       filterTabs: [
+        {
+          label: 'All',
+          property: 'status.phase',
+          value: '*',
+          default: true,
+        },
         { label: 'Running', property: 'status.phase', value: 'Running' },
         { label: 'Pending', property: 'status.phase', value: 'Pending' },
         { label: 'Failed', property: 'status.phase', value: 'Failed' },

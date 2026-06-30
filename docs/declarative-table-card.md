@@ -190,7 +190,7 @@ export class MyComponent {
 | `editSubmit`             | `{ resource: T; value: Record<string, unknown> }` | Fires when the edit dialog Save button is clicked            |
 | `deleteSubmit`           | `T`                                               | Fires when the delete dialog Delete button is clicked        |
 | `searchChanged`          | `string`                                          | Emits 300 ms after the search input changes                  |
-| `filterTabChanged`       | `FieldFilterDefinition \| undefined`              | Emits when the user picks a filter tab; `undefined` means the auto-prepended "All" tab is active |
+| `filterTabChanged`       | `FieldFilterDefinition \| undefined`              | Emits when the user picks a filter tab |
 | `tableRowClicked`        | `T`                                               | Emits when a table row is clicked                            |
 | `loadMoreResources`      | -                                                 | Emits when the user triggers load more                       |
 | `paginationLimitChanged` | `number`                                          | Emits when the user changes page size                        |
@@ -230,7 +230,7 @@ interface FieldFilterDefinition {
   property: string;
   /** Value compared against `property` when the host applies the filter. */
   value: string;
-  /** When `true`, this tab is selected on initial render instead of "All". */
+  /** When `true`, this tab is selected on initial render; otherwise the first tab is. */
   default?: boolean;
 }
 
@@ -262,7 +262,7 @@ interface TableCardFormState {
 
 ## Filter tabs
 
-When `filterTabs` is set on `TableCardConfig`, the card renders a horizontal tab strip above the table — one tab per `FieldFilterDefinition`, plus an **auto-prepended "All" tab** that means "no filter is active". Omit `filterTabs` (or pass an empty array) to hide the strip entirely; the card never renders only an "All" tab in isolation.
+When `filterTabs` is set on `TableCardConfig`, the card renders a horizontal tab strip above the table — one tab per `FieldFilterDefinition`. Omit `filterTabs` (or pass an empty array) to hide the strip entirely. The strip does **not** auto-prepend an "All / no filter" tab; if you want one, author it explicitly as a regular filter entry (e.g. `{ label: 'All', property: 'category', value: '*' }`).
 
 ### Visual behavior
 
@@ -277,7 +277,7 @@ When the combined tab width exceeds the card width, the strip becomes a **horizo
 ### Initial selection
 
 - If any `FieldFilterDefinition` has `default: true`, it is the active tab on first render.
-- Otherwise, the auto-prepended "All" tab is active and no filter is applied.
+- Otherwise, the first tab in the array is active.
 
 ### Responding to selection changes
 
@@ -327,7 +327,8 @@ export class MyComponent {
 
   onFilterTabChanged(tab: FieldFilterDefinition | undefined): void {
     if (!tab) {
-      // "All" tab — show everything.
+      // Defensive: the strip only emits user-picked tabs, but the signature
+      // permits `undefined` for forward compatibility. Treat it as "no filter".
       this.visiblePods = this.pods;
       return;
     }
@@ -367,7 +368,7 @@ onFilterTabChanged(tab: FieldFilterDefinition | undefined): void {
 }
 ```
 
-The active tab is owned by the card internally — the host doesn't need to set or reset it. The `default: true` flag is consulted only on initial render; if the host later swaps in a fresh `filterTabs` array, the card re-seeds from `default: true` (falling back to "All") in that new array. The host never has to compute "which tab should be selected".
+The active tab is owned by the card internally — the host doesn't need to set or reset it. The `default: true` flag is consulted only on initial render; if the host later swaps in a fresh `filterTabs` array, the card re-seeds from `default: true` (falling back to the first tab) in that new array. The host never has to compute "which tab should be selected".
 
 ### Notes
 
