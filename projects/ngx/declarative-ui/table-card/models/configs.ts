@@ -101,8 +101,7 @@ export interface TableCardConfig {
   deleteResourceConfirmationConfig?: DeleteResourceConfirmationConfig;
   /**
    * Predefined filters rendered as a horizontal tab strip above the table.
-   * Omit (or pass an empty array) to hide the strip entirely. The strip
-   * renders exactly the array as given — no automatic "All" tab is added.
+   * Omit (or pass an empty array) to hide the strip entirely.
    */
   filterTabs?: FieldFilterDefinition[];
 }
