@@ -320,7 +320,7 @@ import { BooleanValue } from '@openmfp/webcomponents';
 | Input       | Type      | Required | Description                     |
 | ----------- | --------- | -------- | ------------------------------- |
 | `boolValue` | `boolean` | yes      | `true` → check icon, `false` → X icon |
-| `testId`    | `string`  | no       | `test-id` attribute on the icon element |
+| `testId`    | `string`  | no       | `data-testid` attribute on the icon element |
 
 ### `LinkValue`
 
@@ -333,7 +333,7 @@ import { LinkValue } from '@openmfp/webcomponents';
 | Input      | Type     | Required | Description                             |
 | ---------- | -------- | -------- | --------------------------------------- |
 | `urlValue` | `string` | yes      | The URL rendered as the link `href`     |
-| `testId`   | `string` | no       | `test-id` attribute on the link element |
+| `testId`   | `string` | no       | `data-testid` attribute on the link element |
 
 ### `SecretValue`
 
@@ -347,7 +347,7 @@ import { SecretValue } from '@openmfp/webcomponents';
 | ----------- | --------- | -------- | ----------------------------------------------------------------- |
 | `value`     | `string`  | yes      | The string to mask or reveal                                      |
 | `isVisible` | `boolean` | no       | `false` (default) shows asterisks; `true` reveals the plain text  |
-| `testId`    | `string`  | no       | `test-id` attribute on the wrapper element                        |
+| `testId`    | `string`  | no       | `data-testid` attribute on the wrapper element                     |
 
 The masked form renders `*` repeated to the same length as `value` (minimum 8 characters when the value is empty).
 
@@ -363,7 +363,7 @@ import { TagListValue } from '@openmfp/webcomponents';
 | ------------ | ------------- | -------- | --------------------------------------------------------- |
 | `tags`       | `string[]`    | yes      | Each string becomes one chip                              |
 | `tagSettings`| `TagSettings` | no       | Controls chip `design`, `colorScheme` (`'1'`–`'10'`, default `'1'`), and `valueSeparator` |
-| `testId`     | `string`      | no       | `test-id` attribute on the wrapper element (default `'tag-list-value'`) |
+| `testId`     | `string`      | no       | `data-testid` attribute on the wrapper element (default `'tag-list-value'`) |
 
 ---
 
@@ -414,3 +414,32 @@ type RuleCondition =
   | 'lessThan' | 'lessThanOrEqual'
   | 'contains';
 ```
+
+---
+
+## Test IDs
+
+`ResourceField` derives its test ID from `fieldDefinition.property` at runtime. See [docs/test-ids.md](./test-ids.md) for the full naming convention.
+
+| Element | `data-testid` | Condition |
+|---|---|---|
+| Root span | `resource-field-{property}` | Always |
+| Secret value | `resource-field-{property}-secret` | `displayAs: 'secret'` |
+| Show/hide toggle | `resource-field-{property}-secret-toggle` | `displayAs: 'secret'` |
+| Boolean icon | `resource-field-{property}-boolean` | `displayAs: 'boolIcon'`, value is `"true"` or `"false"` |
+| Link | `resource-field-{property}-link` | `displayAs: 'link'`, value is a valid URL |
+| Tooltip icon | `resource-field-{property}-tooltip` | `displayAs: 'tooltip'` |
+| Alert icon | `resource-field-{property}-icon` | `displayAs: 'alert'`, value is falsy |
+| Action button | `resource-field-{property}-button` | `displayAs: 'button'` |
+| Copy icon | `resource-field-{property}-copy` | `uiSettings.withCopyButton: true` |
+| Tag list | `resource-field-{property}-tags` | `displayAs: 'tag'` |
+
+**Example** — a field `{ property: 'status.ready', uiSettings: { displayAs: 'boolIcon' } }` on a resource where the value is `"true"` produces:
+
+```html
+<span data-testid="resource-field-status.ready">
+  <ui5-icon data-testid="resource-field-status.ready-boolean" ... />
+</span>
+```
+
+The `testId` input on sub-components (`BooleanValue`, `LinkValue`, `SecretValue`, `TagListValue`) is the mechanism `ResourceField` uses to set these suffixed IDs. When using sub-components directly, pass the full desired `data-testid` value as the `testId` input.
