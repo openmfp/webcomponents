@@ -2,24 +2,33 @@
   display: contents;
 }
 
+.edit-cards-dialog-container {
+  min-width: 460px;
+  min-height: 400px;
+}
+
 .edit-cards-dialog {
   padding: var(--Container-Spacing-Small, 16px) 0;
   margin: -1rem;
-  min-width: 300px;
 
   &__header {
     display: flex;
     align-items: flex-start;
     justify-content: flex-start;
     width: 100%;
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 0;
   }
 
   &__list-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding-right: 0.25rem;
     width: 100%;
+  }
+
+  &__list-item-container {
+    border-bottom-color: rgb(229, 229, 229);
   }
 }
 

@@ -391,8 +391,18 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   removeCard(id: string): void {
+    const wasLooseCard = this.looseCards().some((c) => c.id === id);
     this.cardsPosition.delete(id);
     this.cards.update((list) => list.filter((c) => c.id !== id));
+
+    if (wasLooseCard) {
+      afterNextRender(
+        () => {
+          this.gridStackItems().grid?.compact('compact', false);
+        },
+        { injector: this.injector },
+      );
+    }
   }
 
   openCardPanel(): void {

@@ -191,17 +191,17 @@
     }
   </gridstack>
 
-  @if (editMode()) {
-    <div class="mfp-dashboard__edit-bar">
-      <ui5-button data-testid="dashboard-save-btn" design="Emphasized" (click)="saveEdit()">{{
-        i18n.getTranslation(i18nKeys.SAVE)
-      }}</ui5-button>
-      <ui5-button data-testid="dashboard-cancel-btn" design="Transparent" (click)="cancelEdit()">{{
-        i18n.getTranslation(i18nKeys.CANCEL)
-      }}</ui5-button>
-    </div>
-  }
 </div>
+@if (editMode()) {
+  <div class="mfp-dashboard__edit-bar">
+    <ui5-button data-testid="dashboard-save-btn" design="Emphasized" (click)="saveEdit()">{{
+      i18n.getTranslation(i18nKeys.SAVE)
+    }}</ui5-button>
+    <ui5-button data-testid="dashboard-cancel-btn" design="Transparent" (click)="cancelEdit()">{{
+      i18n.getTranslation(i18nKeys.CANCEL)
+    }}</ui5-button>
+  </div>
+}
 
 <mfp-edit-cards-dialog
   [addedCardsIds]="addedCardsIds()"
