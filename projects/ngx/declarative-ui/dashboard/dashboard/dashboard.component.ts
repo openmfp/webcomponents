@@ -228,7 +228,9 @@ export class Dashboard implements OnInit, OnDestroy {
       this.backgroundImageHeight.set(null);
       if (!url) return;
       const img = new Image();
-      img.onload = () => { this.backgroundImageHeight.set(img.naturalHeight); };
+      img.onload = () => {
+        this.backgroundImageHeight.set(img.naturalHeight);
+      };
       img.src = url;
       onCleanup(() => {
         img.onload = null;
@@ -286,21 +288,24 @@ export class Dashboard implements OnInit, OnDestroy {
 
   saveEdit(): void {
     this.saveCardsPosition(this.newGridStackNodes);
-    this.saved.emit({
-      sections: this.sections(),
-      cards: this.cards().map((c) => {
-        const pos = this.cardsPosition.get(c.id);
-        return {
-          ...c,
-          x: pos?.x,
-          y: pos?.y,
-          w: pos?.w ?? c.w,
-          h: pos?.h ?? c.h,
-        };
-      }),
+    const savedCards = this.cards().map((c) => {
+      const pos = this.cardsPosition.get(c.id);
+      return {
+        ...c,
+        x: pos?.x,
+        y: pos?.y,
+        w: pos?.w ?? c.w,
+        h: pos?.h ?? c.h,
+      };
     });
     this.gridDirty.set(false);
     this.editMode.set(false);
+
+    this.cards.set(savedCards);
+    this.saved.emit({
+      sections: this.sections(),
+      cards: savedCards,
+    });
   }
 
   cancelEdit(): void {
@@ -311,19 +316,11 @@ export class Dashboard implements OnInit, OnDestroy {
     this.discardEdit();
   }
 
-  /**
-   * Confirms abandoning unsaved edit-mode changes: closes the discard popup
-   * and reverts sections/cards to the snapshot taken on entering edit mode.
-   */
   confirmDiscard(): void {
     this.discardDialogOpen.set(false);
     this.discardEdit();
   }
 
-  /**
-   * Cancels the discard popup and keeps the user in edit mode with their
-   * pending changes intact.
-   */
   cancelDiscard(): void {
     this.discardDialogOpen.set(false);
   }

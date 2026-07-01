@@ -1,8 +1,8 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { nodesCB } from 'gridstack/dist/angular';
 import { resetDashboardCardRegistry } from '../card/utils/dashboard-card-registry';
 import { CardConfig, SectionConfig } from '../models';
 import { Dashboard } from './dashboard.component';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 vi.mock('gridstack', () => ({}));
 
@@ -231,6 +231,38 @@ describe('Dashboard', () => {
 
     expect(emitted[0].cards[0]).toMatchObject({ id: 'card-1', w: 3, h: 10 });
     expect(component.editMode()).toBe(false);
+  });
+
+  it('preserves saved w/h after save-then-re-enter-then-cancel (regression)', () => {
+    const { component } = setup();
+    const cards: CardConfig[] = [{ id: 'card-1', component: 'mfp-a', w: 6, h: 20 }];
+
+    component.cards.set(cards);
+    (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
+      () => ({
+        gridstackItems: {
+          toArray: () => [{ options: { id: 'card-1', x: 0, y: 0, w: 3, h: 10 } }],
+        },
+      });
+
+    component.enterEditMode();
+    component.onGridChange({
+      nodes: [{ id: 'card-1', x: 0, y: 0, w: 3, h: 10 }],
+    } as never);
+
+    const emitted: { sections: SectionConfig[]; cards: CardConfig[] }[] = [];
+    component.saved.subscribe((value) => emitted.push(value));
+    component.saveEdit();
+
+    expect(emitted[0].cards[0]).toMatchObject({ id: 'card-1', w: 3, h: 10 });
+
+    component.enterEditMode();
+
+    component.cancelEdit();
+
+    expect(component.discardDialogOpen()).toBe(false);
+    expect(component.editMode()).toBe(false);
+    expect(component.cards()[0]).toMatchObject({ id: 'card-1', w: 3, h: 10 });
   });
 
   it('restores snapshot data and saved positions when edit mode is cancelled', () => {
