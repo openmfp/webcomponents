@@ -1,0 +1,41 @@
+<div class="filter-tabs">
+  @if (canScrollLeft()) {
+    <button
+      type="button"
+      class="filter-tabs__chevron filter-tabs__chevron--left"
+      aria-label="Scroll filters left"
+      (click)="scroll('left')"
+    >
+      <ui5-icon name="navigation-left-arrow" />
+    </button>
+  }
+  <div
+    #strip
+    class="filter-tabs__strip"
+    role="tablist"
+    (scroll)="onScroll()"
+  >
+    @for (tab of tabs(); track tab.property + ':' + tab.value) {
+      <button
+        type="button"
+        role="tab"
+        class="filter-tabs__tab"
+        [class.filter-tabs__tab--active]="activeTab() === tab"
+        [attr.aria-selected]="activeTab() === tab"
+        (click)="select(tab)"
+      >
+        {{ tab.label }}
+      </button>
+    }
+  </div>
+  @if (canScrollRight()) {
+    <button
+      type="button"
+      class="filter-tabs__chevron filter-tabs__chevron--right"
+      aria-label="Scroll filters right"
+      (click)="scroll('right')"
+    >
+      <ui5-icon name="navigation-right-arrow" />
+    </button>
+  }
+</div>

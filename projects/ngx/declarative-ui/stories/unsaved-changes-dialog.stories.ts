@@ -1,10 +1,12 @@
 import { Component } from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
 import { UnsavedChangesDialog } from '../dashboard/unsaved-changes-dialog/unsaved-changes-dialog.component';
+import { DashboardI18nService } from '../dashboard/i18n';
 
 @Component({
   selector: 'mfp-unsaved-changes-dialog-story',
   imports: [UnsavedChangesDialog],
+  providers: [DashboardI18nService],
   template: `
     <ui5-button design="Emphasized" (click)="open = true">Open Dialog</ui5-button>
     <mfp-unsaved-changes-dialog

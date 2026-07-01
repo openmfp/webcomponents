@@ -1,4 +1,5 @@
 import { EditCardsDialog } from '../dashboard/edit-cards-dialog/edit-cards-dialog.component';
+import { DashboardI18nService } from '../dashboard/i18n';
 import type { CardConfig } from '../dashboard/models';
 import { Component, Input } from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
@@ -23,6 +24,7 @@ const AVAILABLE_CARDS: CardConfig[] = [
 @Component({
   selector: 'mfp-edit-cards-dialog-story',
   imports: [EditCardsDialog],
+  providers: [DashboardI18nService],
   template: `
     <ui5-button (click)="open = true">Open Dialog</ui5-button>
     <mfp-edit-cards-dialog

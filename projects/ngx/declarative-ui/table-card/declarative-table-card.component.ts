@@ -3,11 +3,16 @@ import { DeclarativeForm } from '../form/declarative-form/declarative-form.compo
 import { GenericResource } from '../models';
 import { DeclarativeTable } from '../table/declarative-table/declarative-table.component';
 import {
-  TableFieldDefinition,
   ResourceFieldButtonClickEvent,
+  TableFieldDefinition,
 } from '../table/models';
 import { getResourceValueByJsonPath } from '../table/utils/resource-field-by-path';
-import { TableCardConfig, TableCardFormState } from './models/configs';
+import { FilterTabs } from './filter-tabs/filter-tabs.component';
+import {
+  FieldFilterDefinition,
+  TableCardConfig,
+  TableCardFormState,
+} from './models/configs';
 import {
   CUSTOM_ELEMENTS_SCHEMA,
   ChangeDetectionStrategy,
@@ -40,6 +45,7 @@ type SearchState = 'collapsed' | 'expanded' | 'collapsing';
   imports: [
     DeclarativeTable,
     DeclarativeForm,
+    FilterTabs,
     ReactiveFormsModule,
     Dialog,
     Title,
@@ -77,6 +83,7 @@ export class DeclarativeTableCard<T extends GenericResource> {
     value: Record<string, unknown>;
   }>();
   readonly deleteSubmit = output<T>();
+  readonly filterTabChanged = output<FieldFilterDefinition | undefined>();
 
   protected searchState = signal<SearchState>('collapsed');
   protected searchExpanded = computed(() => this.searchState() !== 'collapsed');
@@ -121,6 +128,11 @@ export class DeclarativeTableCard<T extends GenericResource> {
     return this.buildInitialValues(editConfig.fields, pendingResource);
   });
 
+  /** Filter-tab definitions for the strip rendered above the table. */
+  protected filterTabs = computed(() => this.config().filterTabs ?? []);
+  /** Whether the tab strip should render at all. */
+  protected hasFilterTabs = computed(() => this.filterTabs().length > 0);
+
   private readonly injector = inject(Injector);
 
   constructor() {
@@ -129,6 +141,10 @@ export class DeclarativeTableCard<T extends GenericResource> {
       .subscribe((value) => {
         this.searchChanged.emit(value ?? '');
       });
+  }
+
+  protected onFilterTabChanged(tab: FieldFilterDefinition | undefined): void {
+    this.filterTabChanged.emit(tab);
   }
 
   toggleSearch(): void {

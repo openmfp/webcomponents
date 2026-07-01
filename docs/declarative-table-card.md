@@ -190,6 +190,7 @@ export class MyComponent {
 | `editSubmit`             | `{ resource: T; value: Record<string, unknown> }` | Fires when the edit dialog Save button is clicked            |
 | `deleteSubmit`           | `T`                                               | Fires when the delete dialog Delete button is clicked        |
 | `searchChanged`          | `string`                                          | Emits 300 ms after the search input changes                  |
+| `filterTabChanged`       | `FieldFilterDefinition \| undefined`              | Emits when the user picks a filter tab |
 | `tableRowClicked`        | `T`                                               | Emits when a table row is clicked                            |
 | `loadMoreResources`      | -                                                 | Emits when the user triggers load more                       |
 | `paginationLimitChanged` | `number`                                          | Emits when the user changes page size                        |
@@ -240,6 +241,19 @@ interface TableCardConfig {
   createResourceFormConfig?: ResourceFormConfig;
   editResourceFormConfig?: ResourceFormConfig;
   deleteResourceConfirmationConfig?: DeleteResourceConfirmationConfig;
+  /** Predefined filters rendered as a horizontal tab strip above the table. */
+  filterTabs?: FieldFilterDefinition[];
+}
+
+interface FieldFilterDefinition {
+  /** Visible label rendered as the tab text. */
+  label: string;
+  /** Name of the property the value applies to. Passed through to the host. */
+  property: string;
+  /** Value compared against `property` when the host applies the filter. */
+  value: string;
+  /** When `true`, this tab is selected on initial render; otherwise the first tab is. */
+  default?: boolean;
 }
 
 interface TableConfig {
@@ -265,6 +279,124 @@ interface TableCardFormState {
 ```
 
 `ResourceFormConfig` is static. Keep runtime errors in `createFormState` / `editFormState`. The submit button is disabled when any entry in `fieldErrors` is truthy.
+
+---
+
+## Filter tabs
+
+When `filterTabs` is set on `TableCardConfig`, the card renders a horizontal tab strip above the table — one tab per `FieldFilterDefinition`. Omit `filterTabs` (or pass an empty array) to hide the strip entirely. The strip does **not** auto-prepend an "All / no filter" tab; if you want one, author it explicitly as a regular filter entry (e.g. `{ label: 'All', property: 'category', value: '*' }`).
+
+### Visual behavior
+
+| State | Styling |
+| ----- | ------- |
+| Inactive tab | Standard text color, no underline |
+| Active tab | SAP blue (`var(--sapButton_Selected_TextColor)`) + 3 px blue underline bar directly below the label |
+| Hover (inactive) | Subtle color shift toward the link color |
+
+When the combined tab width exceeds the card width, the strip becomes a **horizontal carousel**: left/right chevron buttons appear at the edges only when there's room to scroll that direction. Each chevron click scrolls by ~70 % of the visible width so one tab overlaps for context. The native scrollbar is hidden; navigation is via the chevrons (with a `ResizeObserver` watching the strip to keep the chevron-visibility state in sync as the card resizes).
+
+### Initial selection
+
+- If any `FieldFilterDefinition` has `default: true`, it is the active tab on first render.
+- Otherwise, the first tab in the array is active.
+
+### Responding to selection changes
+
+The host owns the actual filtering — the card just emits which tab the user picked. Subscribe to `filterTabChanged`:
+
+```ts
+import {
+  DeclarativeTableCard,
+  FieldFilterDefinition,
+  TableCardConfig,
+} from '@openmfp/webcomponents';
+
+@Component({
+  imports: [DeclarativeTableCard],
+  template: `
+    <mfp-declarative-table-card
+      [config]="config"
+      [resources]="visiblePods"
+      (filterTabChanged)="onFilterTabChanged($event)"
+    />
+  `,
+})
+export class MyComponent {
+  pods: Pod[] = [];
+  visiblePods: Pod[] = [];
+
+  config: TableCardConfig = {
+    header: 'Pods',
+    tableConfig: {
+      fields: [
+        { label: 'Name', property: 'metadata.name' },
+        { label: 'Namespace', property: 'metadata.namespace' },
+        { label: 'Phase', property: 'status.phase' },
+      ],
+    },
+    filterTabs: [
+      {
+        label: 'Running',
+        property: 'status.phase',
+        value: 'Running',
+        default: true,
+      },
+      { label: 'Pending', property: 'status.phase', value: 'Pending' },
+      { label: 'Failed',  property: 'status.phase', value: 'Failed'  },
+    ],
+  };
+
+  onFilterTabChanged(tab: FieldFilterDefinition | undefined): void {
+    if (!tab) {
+      // Defensive: the strip only emits user-picked tabs, but the signature
+      // permits `undefined` for forward compatibility. Treat it as "no filter".
+      this.visiblePods = this.pods;
+      return;
+    }
+
+    // Use `property` + `value` to derive the filtered set. `property` is a
+    // dotted JSON path against each resource; the helper below handles nesting.
+    this.visiblePods = this.pods.filter(
+      (pod) => readByPath(pod, tab.property) === tab.value,
+    );
+  }
+}
+
+// Small helper — pick whatever path resolver the rest of your app uses.
+function readByPath(obj: any, path: string): unknown {
+  return path.split('.').reduce((acc, key) => acc?.[key], obj);
+}
+```
+
+### Server-backed filtering
+
+For larger datasets the host typically forwards the picked tab to its data layer instead of filtering in memory. Two common shapes:
+
+```ts
+// Pass through as a filter parameter to an OpenSearch-style backend.
+onFilterTabChanged(tab: FieldFilterDefinition | undefined): void {
+  this.reload({
+    filter: tab ? `${tab.property}=${tab.value}` : undefined,
+  });
+}
+
+// Or roundtrip via the URL so reloads / shared links restore the tab.
+onFilterTabChanged(tab: FieldFilterDefinition | undefined): void {
+  this.router.navigate([], {
+    queryParams: { [tab?.property ?? 'filter']: tab?.value },
+    queryParamsHandling: 'merge',
+  });
+}
+```
+
+The active tab is owned by the card internally — the host doesn't need to set or reset it. The `default: true` flag is consulted only on initial render; if the host later swaps in a fresh `filterTabs` array, the card re-seeds from `default: true` (falling back to the first tab) in that new array. The host never has to compute "which tab should be selected".
+
+### Notes
+
+- **Single-select only.** Exactly one tab is active at any time; clicking another deactivates the previous. No multi-select API.
+- **No state on the host side is required.** Listen to `filterTabChanged` and update your data; the card handles visual selection.
+- **Keyboard accessible.** Each tab is a real `<button role="tab">`; Tab focuses, Enter / Space activates. The container is `role="tablist"` and each tab carries `aria-selected`.
 
 ---
 
