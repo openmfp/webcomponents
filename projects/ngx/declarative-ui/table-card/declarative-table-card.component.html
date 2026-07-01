@@ -54,6 +54,13 @@
     </div>
   </div>
 
+  @if (hasFilterTabs()) {
+    <mfp-filter-tabs
+      [tabs]="filterTabs()"
+      (tabChanged)="onFilterTabChanged($event)"
+    />
+  }
+
   <div class="card__body">
     @if (tableConfig(); as config) {
       <mfp-declarative-table

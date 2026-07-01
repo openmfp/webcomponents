@@ -32,6 +32,28 @@ export interface DeleteResourceConfirmationConfig {
   cancelLabel?: string;
 }
 
+/**
+ * One entry in the {@link TableCardConfig.filterTabs} strip rendered above the
+ * table. Clicking a tab activates that filter; the host receives the selected
+ * definition via the `filterTabChanged` output and is responsible for applying
+ * the filter to its data set.
+ *
+ * The strip renders exactly the array of `FieldFilterDefinition` it receives
+ * — no extra "All" / no-filter tab is auto-added. If the host wants such an
+ * option it must author it as a regular filter entry (e.g.
+ * `{ label: 'All', property: '<some-field>', value: '*' }`).
+ */
+export interface FieldFilterDefinition {
+  /** Visible label rendered as the tab text. */
+  label: string;
+  /** Name of the property the value applies to. Passed through to the host. */
+  property: string;
+  /** Value compared against `property` when the host applies the filter. */
+  value: string;
+  /** When `true`, this tab is selected on initial render; otherwise the first tab is. */
+  default?: boolean;
+}
+
 /** Configuration for the inner `mfp-declarative-table`. */
 export interface TableConfig {
   /** Column definitions. */
@@ -77,4 +99,9 @@ export interface TableCardConfig {
   editResourceFormConfig?: ResourceFormConfig;
   /** When set, enables per-row "Delete" button and confirmation dialog. */
   deleteResourceConfirmationConfig?: DeleteResourceConfirmationConfig;
+  /**
+   * Predefined filters rendered as a horizontal tab strip above the table.
+   * Omit (or pass an empty array) to hide the strip entirely.
+   */
+  filterTabs?: FieldFilterDefinition[];
 }
