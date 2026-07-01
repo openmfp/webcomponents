@@ -1,8 +1,12 @@
-import { EffectCleanupRegisterFn, Renderer2, ViewContainerRef } from '@angular/core';
-import { CardConfig } from '../../models';
+import { MountCfg } from '../../models';
+import {
+  EffectCleanupRegisterFn,
+  Renderer2,
+  ViewContainerRef,
+} from '@angular/core';
 
 export function mountWcCard(
-  cfg: CardConfig,
+  cfg: MountCfg,
   container: ViewContainerRef,
   onCleanup: EffectCleanupRegisterFn,
   renderer: Renderer2,

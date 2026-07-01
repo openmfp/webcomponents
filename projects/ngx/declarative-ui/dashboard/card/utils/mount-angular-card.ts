@@ -1,4 +1,4 @@
-import { CardConfig } from '../../models';
+import { MountCfg } from '../../models';
 import {
   getRegisteredDashboardCardComponent,
   warnForUnknownDashboardCardInput,
@@ -6,7 +6,7 @@ import {
 import { EffectCleanupRegisterFn, ViewContainerRef } from '@angular/core';
 
 export function mountAngularCard(
-  cfg: CardConfig,
+  cfg: MountCfg,
   angularHost: ViewContainerRef,
   onCleanup: EffectCleanupRegisterFn,
 ): void {

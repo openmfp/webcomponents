@@ -1,4 +1,4 @@
-import { CardConfig } from '../../models';
+import { MountCfg } from '../../models';
 import { EffectCleanupRegisterFn, ViewContainerRef } from '@angular/core';
 
 export type SapUiRequire = (
@@ -14,7 +14,7 @@ export type SapUiRequire = (
 ) => void;
 
 export function mountSapCard(
-  cfg: CardConfig,
+  cfg: MountCfg,
   container: ViewContainerRef,
   onCleanup: EffectCleanupRegisterFn,
 ): void {
