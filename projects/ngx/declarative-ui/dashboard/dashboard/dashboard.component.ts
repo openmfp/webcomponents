@@ -79,6 +79,8 @@ document.body.classList.add('ui5-content-density-compact');
   host: {
     '[style.background-image]':
       'config().backgroundImageUrl ? "url(" + config().backgroundImageUrl + ")" : null',
+    '[style.background-size]':
+      'backgroundImageHeight() ? "100% " + backgroundImageHeight() + "px" : "100% auto"',
   },
 })
 export class Dashboard implements OnInit, OnDestroy {
@@ -105,6 +107,8 @@ export class Dashboard implements OnInit, OnDestroy {
 
   /** True once the user has dragged/resized any grid item while in edit mode. */
   private gridDirty = signal(false);
+
+  protected backgroundImageHeight = signal<number | null>(null);
 
   /** JSON snapshots of sections/cards taken on entering edit mode, used to detect changes. */
   private sectionsSnapshotJson = '';
@@ -218,6 +222,17 @@ export class Dashboard implements OnInit, OnDestroy {
     });
     effect(() => {
       this.i18n.language.set(this.language());
+    });
+    effect((onCleanup) => {
+      const url = this.config().backgroundImageUrl;
+      this.backgroundImageHeight.set(null);
+      if (!url) return;
+      const img = new Image();
+      img.onload = () => { this.backgroundImageHeight.set(img.naturalHeight); };
+      img.src = url;
+      onCleanup(() => {
+        img.onload = null;
+      });
     });
   }
 
