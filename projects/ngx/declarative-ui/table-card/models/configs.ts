@@ -33,15 +33,14 @@ export interface DeleteResourceConfirmationConfig {
 }
 
 /**
- * One entry in the {@link TableCardConfig.filterTabs} strip rendered above the
- * table. Clicking a tab activates that filter; the host receives the selected
- * definition via the `filterTabChanged` output and is responsible for applying
- * the filter to its data set.
+ * One entry in the {@link TableCardSearchConfig.filterTabs} strip rendered
+ * above the table. Clicking a tab activates that filter; the host receives the
+ * selected definition via the `filterTabChanged` output and is responsible for
+ * applying the filter to its data set.
  *
  * The strip renders exactly the array of `FieldFilterDefinition` it receives
  * — no extra "All" / no-filter tab is auto-added. If the host wants such an
- * option it must author it as a regular filter entry (e.g.
- * `{ label: 'All', property: '<some-field>', value: '*' }`).
+ * option it must author it as a regular filter entry.
  */
 export interface FieldFilterDefinition {
   /** Visible label rendered as the tab text. */
@@ -81,6 +80,38 @@ export interface TableCardButtonSettings {
   deleteButton?: Partial<ButtonSettings>;
 }
 
+/**
+ * Groups all search/filter concerns for `<mfp-declarative-table-card>`. Passing
+ * this object opts the card into showing the search input and (if `filterTabs`
+ * is set) the filter-tab strip. Omit the whole object to hide both.
+ *
+ * `initialSearch` and `initialFilter` are **one-shot seeds** — read once when
+ * the card mounts (or when they first appear) and never re-applied afterwards.
+ * User-driven updates continue to flow through the `searchChanged` and
+ * `filterTabChanged` outputs; the host is expected to keep its own state.
+ */
+export interface TableCardSearchConfig {
+  /**
+   * One-shot seed for the search input. Applied to the internal `searchControl`
+   * on first render (or the first time `searchConfig` appears), without
+   * emitting `searchChanged`. Later changes to this value have no effect.
+   */
+  initialSearch?: string;
+  /**
+   * Predefined filters rendered as a horizontal tab strip above the table.
+   * Omit (or pass an empty array) to hide the strip while keeping the search
+   * input visible.
+   */
+  filterTabs?: FieldFilterDefinition[];
+  /**
+   * One-shot seed for the initially selected filter tab. Must match a
+   * `filterTabs` entry by `property`+`value` to take effect. When set, this
+   * takes precedence over any `default: true` flag on filter entries.
+   * User-driven tab changes afterwards flow through `filterTabChanged`.
+   */
+  initialFilter?: FieldFilterDefinition;
+}
+
 /** Top-level configuration for `<mfp-declarative-table-card>`. */
 export interface TableCardConfig {
   /** Card heading. */
@@ -91,17 +122,16 @@ export interface TableCardConfig {
   tableConfig: TableConfig;
   /** Overrides for built-in toolbar and row-action buttons. */
   buttonSettings?: TableCardButtonSettings;
-  /** When `true`, shows the search input and button in the card toolbar. */
-  resourcesSearchable?: boolean;
+  /**
+   * Search-and-filter configuration. When present, the card shows the search
+   * input in the toolbar. Its `filterTabs` (if any) render as a strip above
+   * the table. Omit the whole object to hide the search UI and filter strip.
+   */
+  searchConfig?: TableCardSearchConfig;
   /** When set, enables the "Create" button and create dialog. */
   createResourceFormConfig?: ResourceFormConfig;
   /** When set, enables per-row "Edit" button and edit dialog. */
   editResourceFormConfig?: ResourceFormConfig;
   /** When set, enables per-row "Delete" button and confirmation dialog. */
   deleteResourceConfirmationConfig?: DeleteResourceConfirmationConfig;
-  /**
-   * Predefined filters rendered as a horizontal tab strip above the table.
-   * Omit (or pass an empty array) to hide the strip entirely.
-   */
-  filterTabs?: FieldFilterDefinition[];
 }

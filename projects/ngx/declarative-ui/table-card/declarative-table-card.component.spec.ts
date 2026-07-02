@@ -8,6 +8,7 @@ import {
 import { DeclarativeTableCard } from './declarative-table-card.component';
 import {
   DeleteResourceConfirmationConfig,
+  FieldFilterDefinition,
   ResourceFormConfig,
   TableCardConfig,
   TableCardFormState,
@@ -278,6 +279,234 @@ describe('DeclarativeTableCard', () => {
       component.onSearchAnimationEnd();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((component as any).searchExpanded()).toBe(true);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // 5.b searchConfig one-shot seeds (initialSearch / initialFilter)
+  // -------------------------------------------------------------------------
+
+  /**
+   * Small fixture builder — the shared `setup()` helper doesn't accept a
+   * `searchConfig`, and every test here needs one. Also exposes the emitted
+   * `searchChanged` values so we can assert the seed is silent.
+   */
+  const setupWithSearchConfig = (
+    searchConfig: TableCardConfig['searchConfig'],
+  ) => {
+    const fixture = TestBed.createComponent(
+      DeclarativeTableCard as unknown as typeof DeclarativeTableCard<GenericResource>,
+    );
+    const component = fixture.componentInstance as Comp;
+
+    const searchEvents: string[] = [];
+    component.searchChanged.subscribe((v) => searchEvents.push(v));
+
+    const config: TableCardConfig = {
+      header: '',
+      tableConfig: READ_CONFIG,
+      searchConfig,
+    };
+    fixture.componentRef.setInput('config', config);
+    fixture.componentRef.setInput('resources', RESOURCES);
+    fixture.componentRef.setInput('createFormState', {});
+    fixture.componentRef.setInput('editFormState', {});
+    fixture.detectChanges();
+
+    return { fixture, component, searchEvents };
+  };
+
+  describe('searchConfig.initialSearch seed', () => {
+    it('seeds the internal searchControl with initialSearch on first render', () => {
+      const { component } = setupWithSearchConfig({ initialSearch: 'foo' });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).searchControl.value).toBe('foo');
+    });
+
+    it('auto-expands the search input so the seeded value is visible', () => {
+      const { component } = setupWithSearchConfig({ initialSearch: 'foo' });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).searchExpanded()).toBe(true);
+    });
+
+    it('does not emit searchChanged for the seeded value', () => {
+      // The seed uses `emitEvent: false` so the host doesn't see a phantom
+      // user edit. debounceTime(300) also means any real emission wouldn't
+      // arrive yet — this guards both.
+      const { searchEvents } = setupWithSearchConfig({ initialSearch: 'foo' });
+      expect(searchEvents).toEqual([]);
+    });
+
+    it('does nothing when initialSearch is absent', () => {
+      const { component } = setupWithSearchConfig({});
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).searchControl.value).toBe('');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).searchExpanded()).toBe(false);
+    });
+
+    it('does nothing when initialSearch is an empty string', () => {
+      // Guards the `if (!initial) return` branch — empty string is falsy so
+      // treated the same as absent (no auto-expand, no phantom set).
+      const { component } = setupWithSearchConfig({ initialSearch: '' });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).searchExpanded()).toBe(false);
+    });
+
+    it('is one-shot: a later change to initialSearch does not re-apply', () => {
+      const fixture = TestBed.createComponent(
+        DeclarativeTableCard as unknown as typeof DeclarativeTableCard<GenericResource>,
+      );
+      const component = fixture.componentInstance as Comp;
+      fixture.componentRef.setInput('config', {
+        header: '',
+        tableConfig: READ_CONFIG,
+        searchConfig: { initialSearch: 'first' },
+      } satisfies TableCardConfig);
+      fixture.componentRef.setInput('resources', RESOURCES);
+      fixture.componentRef.setInput('createFormState', {});
+      fixture.componentRef.setInput('editFormState', {});
+      fixture.detectChanges();
+
+      // Simulate the user typing over the seeded value.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (component as any).searchControl.setValue('user-typed', {
+        emitEvent: false,
+      });
+
+      // Host tries to re-seed with a different value — should be ignored.
+      fixture.componentRef.setInput('config', {
+        header: '',
+        tableConfig: READ_CONFIG,
+        searchConfig: { initialSearch: 'second' },
+      } satisfies TableCardConfig);
+      fixture.detectChanges();
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).searchControl.value).toBe('user-typed');
+    });
+  });
+
+  describe('searchConfig.initialFilter seed', () => {
+    const TABS: FieldFilterDefinition[] = [
+      { label: 'Running', property: 'status.phase', value: 'Running' },
+      {
+        label: 'Pending',
+        property: 'status.phase',
+        value: 'Pending',
+        default: true,
+      },
+      { label: 'Failed', property: 'status.phase', value: 'Failed' },
+    ];
+
+    it('promotes the matching tab to default: true', () => {
+      const { component } = setupWithSearchConfig({
+        filterTabs: TABS,
+        initialFilter: {
+          label: 'Failed',
+          property: 'status.phase',
+          value: 'Failed',
+        },
+      });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rendered = (component as any).filterTabs() as FieldFilterDefinition[];
+      const defaults = rendered.filter((t) => t.default);
+      expect(defaults).toHaveLength(1);
+      expect(defaults[0].value).toBe('Failed');
+    });
+
+    it('clears default: true from the previously-default entry', () => {
+      const { component } = setupWithSearchConfig({
+        filterTabs: TABS,
+        initialFilter: {
+          label: 'Failed',
+          property: 'status.phase',
+          value: 'Failed',
+        },
+      });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rendered = (component as any).filterTabs() as FieldFilterDefinition[];
+      // Pending had default:true in TABS — after promotion of Failed it must be cleared.
+      const pending = rendered.find((t) => t.value === 'Pending');
+      expect(pending?.default).toBe(false);
+    });
+
+    it('leaves the array untouched when initialFilter does not match any tab', () => {
+      // The seed shouldn't latch until a match is found, so a later
+      // recomputation could still succeed — but with no match right now, the
+      // pre-existing default: true on Pending must remain.
+      const { component } = setupWithSearchConfig({
+        filterTabs: TABS,
+        initialFilter: {
+          label: 'Ghost',
+          property: 'status.phase',
+          value: 'Ghost',
+        },
+      });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rendered = (component as any).filterTabs() as FieldFilterDefinition[];
+      const defaults = rendered.filter((t) => t.default);
+      expect(defaults).toHaveLength(1);
+      expect(defaults[0].value).toBe('Pending');
+    });
+
+    it('is one-shot: a later change to initialFilter does not re-promote', () => {
+      const fixture = TestBed.createComponent(
+        DeclarativeTableCard as unknown as typeof DeclarativeTableCard<GenericResource>,
+      );
+      const component = fixture.componentInstance as Comp;
+      fixture.componentRef.setInput('config', {
+        header: '',
+        tableConfig: READ_CONFIG,
+        searchConfig: {
+          filterTabs: TABS,
+          initialFilter: {
+            label: 'Failed',
+            property: 'status.phase',
+            value: 'Failed',
+          },
+        },
+      } satisfies TableCardConfig);
+      fixture.componentRef.setInput('resources', RESOURCES);
+      fixture.componentRef.setInput('createFormState', {});
+      fixture.componentRef.setInput('editFormState', {});
+      fixture.detectChanges();
+
+      // Host tries to change the initial seed — should be a no-op.
+      fixture.componentRef.setInput('config', {
+        header: '',
+        tableConfig: READ_CONFIG,
+        searchConfig: {
+          filterTabs: TABS,
+          initialFilter: {
+            label: 'Running',
+            property: 'status.phase',
+            value: 'Running',
+          },
+        },
+      } satisfies TableCardConfig);
+      fixture.detectChanges();
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rendered = (component as any).filterTabs() as FieldFilterDefinition[];
+      const defaults = rendered.filter((t) => t.default);
+      expect(defaults).toHaveLength(1);
+      expect(defaults[0].value).toBe('Failed');
+    });
+
+    it('passes filterTabs through untouched when initialFilter is absent', () => {
+      const { component } = setupWithSearchConfig({ filterTabs: TABS });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rendered = (component as any).filterTabs() as FieldFilterDefinition[];
+      // The array is passed through — reference equality isn't guaranteed
+      // (the computed may or may not identity-preserve), but the shape is.
+      expect(rendered).toEqual(TABS);
+    });
+
+    it('hasFilterTabs is false when searchConfig has no filterTabs', () => {
+      const { component } = setupWithSearchConfig({ initialSearch: 'foo' });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).hasFilterTabs()).toBe(false);
     });
   });
 
@@ -827,11 +1056,11 @@ describe('DeclarativeTableCard', () => {
       expect(el).not.toBeNull();
     });
 
-    it('search button has data-testid="generic-table-card-search-btn" when resourcesSearchable is true', () => {
+    it('search button has data-testid="generic-table-card-search-btn" when searchConfig is provided', () => {
       const config: TableCardConfig = {
         header: '',
         tableConfig: READ_CONFIG,
-        resourcesSearchable: true,
+        searchConfig: {},
       };
       const fixture = TestBed.createComponent(
         DeclarativeTableCard as unknown as typeof DeclarativeTableCard<GenericResource>,
@@ -848,7 +1077,7 @@ describe('DeclarativeTableCard', () => {
       expect(btn).not.toBeNull();
     });
 
-    it('search button is absent when resourcesSearchable is not set', () => {
+    it('search button is absent when searchConfig is not set', () => {
       const { fixture } = setup();
       const shadow: ShadowRoot | HTMLElement =
         fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
