@@ -176,9 +176,9 @@
     #grid
     data-testid="dashboard-grid"
     [options]="gridOptions()"
-    (addedCB)="onGridChange($event)"
-    (changeCB)="onGridChange($event)"
-    (removedCB)="onGridChange($event)"
+    (addedCB)="onGridChange()"
+    (changeCB)="onGridChange()"
+    (removedCB)="onGridChange()"
   >
     @for (card of looseCards(); track card.id) {
       <gridstack-item [options]="card">
