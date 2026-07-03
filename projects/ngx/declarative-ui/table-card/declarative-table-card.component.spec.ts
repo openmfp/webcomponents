@@ -17,9 +17,9 @@ import {
 import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-// ---------------------------------------------------------------------------
+// --------------------------------------------------------------------------
 // Helpers
-// ---------------------------------------------------------------------------
+// --------------------------------------------------------------------------
 
 type TableCardCreateConfig = ResourceFormConfig;
 type TableCardReadConfig = TableConfig;
