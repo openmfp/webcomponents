@@ -1,5 +1,8 @@
 import { ButtonSettings } from '../../models/ui-definition';
 
+
+
+
 export const CARD_TYPES = {
   WC: 'wc',
   ANGULAR: 'angular',
@@ -47,6 +50,11 @@ export interface CardConfig {
   /** Human-readable label shown in the "Add Card" dialog. */
   label?: string;
 }
+
+export type MountCfg = Pick<
+  CardConfig,
+  'type' | 'component' | 'componentInputs'
+>;
 
 /** Configuration for a named horizontal section that groups cards. */
 export interface SectionConfig {
