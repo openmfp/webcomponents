@@ -58,7 +58,7 @@ describe('Dashboard', () => {
     }).compileComponents();
   });
 
-  it('creates and applies the configured background image', () => {
+  it('creates and applies the configured background image.', () => {
     const { fixture, component } = setup();
 
     fixture.componentRef.setInput('config', {
