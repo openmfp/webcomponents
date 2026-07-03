@@ -1,6 +1,16 @@
 @use '../constants/breakpoints' as bp;
 @import 'gridstack/dist/gridstack.min.css';
 
+.grid-stack-placeholder {
+  .placeholder-content {
+    border-radius: 16px;
+    height: calc(100% - 30px);
+    top: calc(var(--gs-item-margin-top) * 2) !important;
+    width: calc(100% - 20px);
+    left: 10px !important;
+  }
+}
+
 mfp-dashboard,
 mfp-wc-dashboard {
   display: block;
@@ -114,7 +124,7 @@ mfp-wc-dashboard {
 }
 
 .mfp-dashboard__edit-bar {
-  position: sticky;
+  position: fixed;
   bottom: 20px;
   left: 16px;
   right: 16px;
@@ -159,6 +169,11 @@ mfp-wc-dashboard {
 .grid-stack.grid-stack-dragging,
 .grid-stack.grid-stack-dragging * {
   cursor: grabbing !important;
+}
+
+.grid-stack:has(.ui-resizable-resizing),
+.grid-stack:has(.ui-resizable-resizing) * {
+  cursor: nwse-resize !important;
 }
 
 // Suppress the small grey diagonal-arrow SVG Gridstack draws inside its corner

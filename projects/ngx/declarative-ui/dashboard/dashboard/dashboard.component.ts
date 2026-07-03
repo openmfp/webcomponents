@@ -1,21 +1,3 @@
-import { ButtonSettings } from '../../models';
-import { DashboardCard } from '../card/dashboard-card.component';
-import { addComponentToRegistry } from '../card/utils';
-import {
-  CELL_HEIGHT,
-  COMPACT_BREAKPOINT,
-  DASHBOARD_BREAKPOINTS,
-} from '../constants';
-import { DiscardChangesDialog } from '../discard-changes-dialog/discard-changes-dialog.component';
-import { EditCardsDialog } from '../edit-cards-dialog/edit-cards-dialog.component';
-import {
-  DASHBOARD_I18N_KEYS,
-  DashboardI18nService,
-  DashboardLanguage,
-} from '../i18n';
-import { CardConfig, DashboardConfig, SectionConfig } from '../models';
-import { DashboardSection } from '../section/dashboard-section.component';
-import { UnsavedChangesDialog } from '../unsaved-changes-dialog/unsaved-changes-dialog.component';
 import {
   Component,
   ElementRef,
@@ -50,8 +32,25 @@ import { GridStackNode, GridStackOptions } from 'gridstack';
 import {
   GridstackComponent,
   GridstackItemComponent,
-  nodesCB,
 } from 'gridstack/dist/angular';
+import { ButtonSettings } from '../../models';
+import { DashboardCard } from '../card/dashboard-card.component';
+import { addComponentToRegistry } from '../card/utils';
+import {
+  CELL_HEIGHT,
+  COMPACT_BREAKPOINT,
+  DASHBOARD_BREAKPOINTS,
+} from '../constants';
+import { DiscardChangesDialog } from '../discard-changes-dialog/discard-changes-dialog.component';
+import { EditCardsDialog } from '../edit-cards-dialog/edit-cards-dialog.component';
+import {
+  DASHBOARD_I18N_KEYS,
+  DashboardI18nService,
+  DashboardLanguage,
+} from '../i18n';
+import { CardConfig, DashboardConfig, SectionConfig } from '../models';
+import { DashboardSection } from '../section/dashboard-section.component';
+import { UnsavedChangesDialog } from '../unsaved-changes-dialog/unsaved-changes-dialog.component';
 
 document.body.classList.add('ui5-content-density-compact');
 
@@ -79,6 +78,8 @@ document.body.classList.add('ui5-content-density-compact');
   host: {
     '[style.background-image]':
       'config().backgroundImageUrl ? "url(" + config().backgroundImageUrl + ")" : null',
+    '[style.background-size]':
+      'backgroundImageHeight() ? "100% " + backgroundImageHeight() + "px" : "100% auto"',
   },
 })
 export class Dashboard implements OnInit, OnDestroy {
@@ -105,6 +106,8 @@ export class Dashboard implements OnInit, OnDestroy {
 
   /** True once the user has dragged/resized any grid item while in edit mode. */
   private gridDirty = signal(false);
+
+  protected backgroundImageHeight = signal<number | null>(null);
 
   /** JSON snapshots of sections/cards taken on entering edit mode, used to detect changes. */
   private sectionsSnapshotJson = '';
@@ -219,6 +222,19 @@ export class Dashboard implements OnInit, OnDestroy {
     effect(() => {
       this.i18n.language.set(this.language());
     });
+    effect((onCleanup) => {
+      const url = this.config().backgroundImageUrl;
+      this.backgroundImageHeight.set(null);
+      if (!url) return;
+      const img = new Image();
+      img.onload = () => {
+        this.backgroundImageHeight.set(img.naturalHeight);
+      };
+      img.src = url;
+      onCleanup(() => {
+        img.onload = null;
+      });
+    });
   }
 
   ngOnInit(): void {
@@ -247,13 +263,7 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   enterEditMode(): void {
-    const gridStackNodes = this.gridStackItems()
-      .gridstackItems?.toArray()
-      .map((node) => node.options);
-
-    if (gridStackNodes) {
-      this.saveCardsPosition(gridStackNodes);
-    }
+    this.updateCardsPositions();
 
     this.sectionsSnapshot = [...this.sections()];
     this.cardsSnapshot = [...this.cards()];
@@ -270,22 +280,26 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   saveEdit(): void {
-    this.saveCardsPosition(this.newGridStackNodes);
-    this.saved.emit({
-      sections: this.sections(),
-      cards: this.cards().map((c) => {
-        const pos = this.cardsPosition.get(c.id);
-        return {
-          ...c,
-          x: pos?.x,
-          y: pos?.y,
-          w: pos?.w ?? c.w,
-          h: pos?.h ?? c.h,
-        };
-      }),
+    this.updateCardsPositions();
+
+    const savedCards = this.cards().map((c) => {
+      const pos = this.cardsPosition.get(c.id);
+      return {
+        ...c,
+        x: pos?.x,
+        y: pos?.y,
+        w: pos?.w ?? c.w,
+        h: pos?.h ?? c.h,
+      };
     });
     this.gridDirty.set(false);
     this.editMode.set(false);
+
+    this.cards.set(savedCards);
+    this.saved.emit({
+      sections: this.sections(),
+      cards: savedCards,
+    });
   }
 
   cancelEdit(): void {
@@ -296,19 +310,11 @@ export class Dashboard implements OnInit, OnDestroy {
     this.discardEdit();
   }
 
-  /**
-   * Confirms abandoning unsaved edit-mode changes: closes the discard popup
-   * and reverts sections/cards to the snapshot taken on entering edit mode.
-   */
   confirmDiscard(): void {
     this.discardDialogOpen.set(false);
     this.discardEdit();
   }
 
-  /**
-   * Cancels the discard popup and keeps the user in edit mode with their
-   * pending changes intact.
-   */
   cancelDiscard(): void {
     this.discardDialogOpen.set(false);
   }
@@ -391,8 +397,18 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   removeCard(id: string): void {
+    const wasLooseCard = this.looseCards().some((c) => c.id === id);
     this.cardsPosition.delete(id);
     this.cards.update((list) => list.filter((c) => c.id !== id));
+
+    if (wasLooseCard) {
+      afterNextRender(
+        () => {
+          this.gridStackItems().grid?.compact('compact', false);
+        },
+        { injector: this.injector },
+      );
+    }
   }
 
   openCardPanel(): void {
@@ -411,8 +427,7 @@ export class Dashboard implements OnInit, OnDestroy {
     this.closeCardPanel();
   }
 
-  onGridChange(event: nodesCB): void {
-    this.newGridStackNodes = event.nodes;
+  onGridChange(): void {
     if (this.editMode()) {
       this.gridDirty.set(true);
     }
@@ -429,5 +444,15 @@ export class Dashboard implements OnInit, OnDestroy {
         });
       }
     });
+  }
+
+  private updateCardsPositions(): void {
+    const gridStackNodes = this.gridStackItems()
+      .gridstackItems?.toArray()
+      .map((node) => node.options);
+
+    if (gridStackNodes) {
+      this.saveCardsPosition(gridStackNodes);
+    }
   }
 }

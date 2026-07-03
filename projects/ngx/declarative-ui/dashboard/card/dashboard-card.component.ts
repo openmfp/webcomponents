@@ -1,4 +1,6 @@
+import { DASHBOARD_I18N_KEYS, DashboardI18nService } from '../i18n';
 import { CARD_TYPES, CardConfig } from '../models';
+import { mountAngularCard, mountSapCard, mountWcCard } from './utils';
 import {
   Component,
   Renderer2,
@@ -14,8 +16,6 @@ import {
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 import { Icon } from '@fundamental-ngx/ui5-webcomponents/icon';
 import '@ui5/webcomponents-icons/dist/resize-corner.js';
-import { mountSapCard, mountAngularCard, mountWcCard } from './utils';
-import { DASHBOARD_I18N_KEYS, DashboardI18nService } from '../i18n';
 
 @Component({
   selector: 'mfp-dashboard-card',
@@ -46,25 +46,42 @@ export class DashboardCard {
   private host = viewChild('elementHost', { read: ViewContainerRef });
   private renderer = inject(Renderer2);
 
+  private readonly mountCfg = computed(
+    () => {
+      const c = this.card();
+      return {
+        type: c.type,
+        component: c.component,
+        componentInputs: c.componentInputs,
+      };
+    },
+    {
+      equal: (a, b) =>
+        a.type === b.type &&
+        a.component === b.component &&
+        JSON.stringify(a.componentInputs) === JSON.stringify(b.componentInputs),
+    },
+  );
+
   constructor() {
     effect((onCleanup) => {
       const host = this.host();
-      const cfg = this.card();
-      if (!host || !cfg.component) return;
+      const mountCfg = this.mountCfg();
+      if (!host || !mountCfg.component) return;
 
       host.clear();
       host.element.nativeElement.innerHTML = '';
 
-      switch (cfg.type) {
+      switch (mountCfg.type) {
         case CARD_TYPES.SAP_UI:
-          mountSapCard(cfg, host, onCleanup);
+          mountSapCard(mountCfg, host, onCleanup);
           break;
         case CARD_TYPES.ANGULAR:
-          mountAngularCard(cfg, host, onCleanup);
+          mountAngularCard(mountCfg, host, onCleanup);
           break;
         case CARD_TYPES.WC:
         default:
-          mountWcCard(cfg, host, onCleanup, this.renderer);
+          mountWcCard(mountCfg, host, onCleanup, this.renderer);
           break;
       }
     });

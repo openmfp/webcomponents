@@ -1,8 +1,7 @@
-import { nodesCB } from 'gridstack/dist/angular';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { resetDashboardCardRegistry } from '../card/utils/dashboard-card-registry';
 import { CardConfig, SectionConfig } from '../models';
 import { Dashboard } from './dashboard.component';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 vi.mock('gridstack', () => ({}));
 
@@ -59,7 +58,7 @@ describe('Dashboard', () => {
     }).compileComponents();
   });
 
-  it('creates and applies the configured background image', () => {
+  it('creates and applies the configured background image.', () => {
     const { fixture, component } = setup();
 
     fixture.componentRef.setInput('config', {
@@ -197,11 +196,15 @@ describe('Dashboard', () => {
 
     component.sections.set(sections);
     component.cards.set(cards);
+    (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
+      () => ({
+        gridstackItems: {
+          toArray: () => [{ options: { id: 'card-1', x: 7, y: 5, w: 8, h: 30 } }],
+        },
+      });
     component.editMode.set(true);
     component.saved.subscribe((value) => emitted.push(value));
-    component.onGridChange({
-      nodes: [{ id: 'card-1', x: 7, y: 5, w: 8, h: 30 }],
-    } as never);
+    component.onGridChange();
 
     component.saveEdit();
 
@@ -221,16 +224,50 @@ describe('Dashboard', () => {
     const emitted: { sections: SectionConfig[]; cards: CardConfig[] }[] = [];
 
     component.cards.set(cards);
+    (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
+      () => ({
+        gridstackItems: {
+          toArray: () => [{ options: { id: 'card-1', x: 0, y: 0, w: 3, h: 10 } }],
+        },
+      });
     component.editMode.set(true);
     component.saved.subscribe((value) => emitted.push(value));
-    component.onGridChange({
-      nodes: [{ id: 'card-1', x: 0, y: 0, w: 3, h: 10 }],
-    } as never);
+    component.onGridChange();
 
     component.saveEdit();
 
     expect(emitted[0].cards[0]).toMatchObject({ id: 'card-1', w: 3, h: 10 });
     expect(component.editMode()).toBe(false);
+  });
+
+  it('preserves saved w/h after save-then-re-enter-then-cancel (regression)', () => {
+    const { component } = setup();
+    const cards: CardConfig[] = [{ id: 'card-1', component: 'mfp-a', w: 6, h: 20 }];
+
+    component.cards.set(cards);
+    (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
+      () => ({
+        gridstackItems: {
+          toArray: () => [{ options: { id: 'card-1', x: 0, y: 0, w: 3, h: 10 } }],
+        },
+      });
+
+    component.enterEditMode();
+    component.onGridChange();
+
+    const emitted: { sections: SectionConfig[]; cards: CardConfig[] }[] = [];
+    component.saved.subscribe((value) => emitted.push(value));
+    component.saveEdit();
+
+    expect(emitted[0].cards[0]).toMatchObject({ id: 'card-1', w: 3, h: 10 });
+
+    component.enterEditMode();
+
+    component.cancelEdit();
+
+    expect(component.discardDialogOpen()).toBe(false);
+    expect(component.editMode()).toBe(false);
+    expect(component.cards()[0]).toMatchObject({ id: 'card-1', w: 3, h: 10 });
   });
 
   it('restores snapshot data and saved positions when edit mode is cancelled', () => {
@@ -420,11 +457,15 @@ describe('Dashboard', () => {
     ];
 
     component.cards.set(cards);
+    (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
+      () => ({
+        gridstackItems: {
+          toArray: () => [{ options: { id: 'card-1', x: 1, y: 2 } }],
+        },
+      });
     component.editMode.set(true);
     component.saved.subscribe(() => false);
-    component.onGridChange({
-      nodes: [{ id: 'card-1', x: 1, y: 2 }],
-    } as never);
+    component.onGridChange();
 
     component.saveEdit();
 
@@ -682,7 +723,7 @@ describe('Dashboard', () => {
       component.enterEditMode();
       expect(component.hasUnsavedChanges()).toBe(false);
 
-      component.onGridChange({ nodes: [{ id: 'c1', x: 1, y: 1 }] } as nodesCB);
+      component.onGridChange();
       expect(component.hasUnsavedChanges()).toBe(true);
     });
 
@@ -692,7 +733,7 @@ describe('Dashboard', () => {
       configureFor(component);
       fixture.detectChanges();
 
-      component.onGridChange({ nodes: [{ id: 'c1', x: 1, y: 1 }] } as nodesCB);
+      component.onGridChange();
 
       expect(component.hasUnsavedChanges()).toBe(false);
     });
