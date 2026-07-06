@@ -14,7 +14,7 @@
       }
     </div>
     <div class="card__actions">
-      @if (config().resourcesSearchable) {
+      @if (resourcesSearchable()) {
         @if (searchExpanded()) {
           <ui5-input
             #searchInput

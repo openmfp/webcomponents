@@ -143,9 +143,7 @@ export class DeclarativeForm<T extends GenericResource> {
     this.form.updateValueAndValidity({ emitEvent: false });
   }
 
-  private setInitialValues(
-    initialValues: Record<string, unknown> | null | undefined,
-  ): void {
+  private setInitialValues(initialValues: T | null | undefined): void {
     if (!initialValues) {
       return;
     }

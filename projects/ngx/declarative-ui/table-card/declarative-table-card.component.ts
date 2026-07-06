@@ -21,13 +21,14 @@ import {
   ViewEncapsulation,
   afterNextRender,
   computed,
+  effect,
   inject,
   input,
   output,
   signal,
   viewChild,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 import { Dialog } from '@fundamental-ngx/ui5-webcomponents/dialog';
@@ -36,7 +37,7 @@ import { Input } from '@fundamental-ngx/ui5-webcomponents/input';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 import '@ui5/webcomponents-icons/dist/add.js';
 import '@ui5/webcomponents-icons/dist/search.js';
-import { debounceTime } from 'rxjs';
+import { debounceTime, filter, map, take } from 'rxjs';
 
 type SearchState = 'collapsed' | 'expanded' | 'collapsing';
 
@@ -128,9 +129,32 @@ export class DeclarativeTableCard<T extends GenericResource> {
     return this.buildInitialValues(editConfig.fields, pendingResource);
   });
 
-  /** Filter-tab definitions for the strip rendered above the table. */
-  protected filterTabs = computed(() => this.config().filterTabs ?? []);
-  /** Whether the tab strip should render at all. */
+  protected searchConfig = computed(() => this.config().searchConfig);
+  protected resourcesSearchable = computed(() => !!this.searchConfig());
+
+  protected filterTabs = computed(() => {
+    const tabs = this.searchConfig()?.filterTabs;
+    if (!tabs?.length) return [];
+
+    const initial = this.searchConfig()?.initialFilter;
+    if (!initial) {
+      return tabs;
+    }
+
+    const matches = tabs.some(
+      (t) => t.property === initial.property && t.value === initial.value,
+    );
+    if (!matches) return tabs;
+
+    return tabs.map((tab) =>
+      tab.property === initial.property && tab.value === initial.value
+        ? { ...tab, default: true }
+        : tab.default
+          ? { ...tab, default: false }
+          : tab,
+    );
+  });
+
   protected hasFilterTabs = computed(() => this.filterTabs().length > 0);
 
   private readonly injector = inject(Injector);
@@ -140,6 +164,17 @@ export class DeclarativeTableCard<T extends GenericResource> {
       .pipe(debounceTime(300), takeUntilDestroyed())
       .subscribe((value) => {
         this.searchChanged.emit(value ?? '');
+      });
+
+    toObservable(this.searchConfig)
+      .pipe(
+        map((config) => config?.initialSearch),
+        filter((initial): initial is string => !!initial),
+        takeUntilDestroyed(),
+      )
+      .subscribe((initial) => {
+        this.searchControl.setValue(initial, { emitEvent: false });
+        this.searchState.set('expanded');
       });
   }
 

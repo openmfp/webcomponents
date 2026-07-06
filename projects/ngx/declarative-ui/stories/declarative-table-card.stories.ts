@@ -141,7 +141,7 @@ const BASE_TABLE_CONFIG: TableConfig = {
 
 const BASE_CONFIG: TableCardConfig = {
   header: 'Pods',
-  resourcesSearchable: true,
+  searchConfig: {},
   tableConfig: BASE_TABLE_CONFIG,
 };
 
@@ -487,16 +487,18 @@ export const WithFilterTabs: Story = {
   args: {
     config: {
       ...BASE_CONFIG,
-      filterTabs: [
-        {
-          label: 'Running',
-          property: 'status.phase',
-          value: 'Running',
-          default: true,
-        },
-        { label: 'Pending', property: 'status.phase', value: 'Pending' },
-        { label: 'Failed', property: 'status.phase', value: 'Failed' },
-      ] satisfies FieldFilterDefinition[],
+      searchConfig: {
+        filterTabs: [
+          {
+            label: 'Running',
+            property: 'status.phase',
+            value: 'Running',
+            default: true,
+          },
+          { label: 'Pending', property: 'status.phase', value: 'Pending' },
+          { label: 'Failed', property: 'status.phase', value: 'Failed' },
+        ] satisfies FieldFilterDefinition[],
+      },
     },
   },
 };
@@ -513,17 +515,19 @@ export const WithExplicitAllTab: Story = {
   args: {
     config: {
       ...BASE_CONFIG,
-      filterTabs: [
-        {
-          label: 'All',
-          property: 'status.phase',
-          value: '*',
-          default: true,
-        },
-        { label: 'Running', property: 'status.phase', value: 'Running' },
-        { label: 'Pending', property: 'status.phase', value: 'Pending' },
-        { label: 'Failed', property: 'status.phase', value: 'Failed' },
-      ] satisfies FieldFilterDefinition[],
+      searchConfig: {
+        filterTabs: [
+          {
+            label: 'All',
+            property: 'status.phase',
+            value: '*',
+            default: true,
+          },
+          { label: 'Running', property: 'status.phase', value: 'Running' },
+          { label: 'Pending', property: 'status.phase', value: 'Pending' },
+          { label: 'Failed', property: 'status.phase', value: 'Failed' },
+        ] satisfies FieldFilterDefinition[],
+      },
     },
   },
 };
@@ -541,69 +545,71 @@ export const WithFilterTabsOverflow: Story = {
   args: {
     config: {
       ...BASE_CONFIG,
-      filterTabs: [
-        {
-          label: 'AI',
-          property: 'category',
-          value: 'ai',
-          default: true,
-        },
-        {
-          label: 'Application Development and Automation',
-          property: 'category',
-          value: 'app-dev-automation',
-        },
-        {
-          label: 'Data and Analysis',
-          property: 'category',
-          value: 'data-analysis',
-        },
-        {
-          label: 'Foundation / Cross Services',
-          property: 'category',
-          value: 'foundation-cross-services',
-        },
-        {
-          label: 'Integration',
-          property: 'category',
-          value: 'integration',
-        },
-        {
-          label: 'Mobile',
-          property: 'category',
-          value: 'mobile',
-        },
-        {
-          label: 'Networking',
-          property: 'category',
-          value: 'networking',
-        },
-        {
-          label: 'Observability',
-          property: 'category',
-          value: 'observability',
-        },
-        {
-          label: 'Runtime',
-          property: 'category',
-          value: 'runtime',
-        },
-        {
-          label: 'Security and Identity',
-          property: 'category',
-          value: 'security-identity',
-        },
-        {
-          label: 'Storage',
-          property: 'category',
-          value: 'storage',
-        },
-        {
-          label: 'User Experience',
-          property: 'category',
-          value: 'ux',
-        },
-      ] satisfies FieldFilterDefinition[],
+      searchConfig: {
+        filterTabs: [
+          {
+            label: 'AI',
+            property: 'category',
+            value: 'ai',
+            default: true,
+          },
+          {
+            label: 'Application Development and Automation',
+            property: 'category',
+            value: 'app-dev-automation',
+          },
+          {
+            label: 'Data and Analysis',
+            property: 'category',
+            value: 'data-analysis',
+          },
+          {
+            label: 'Foundation / Cross Services',
+            property: 'category',
+            value: 'foundation-cross-services',
+          },
+          {
+            label: 'Integration',
+            property: 'category',
+            value: 'integration',
+          },
+          {
+            label: 'Mobile',
+            property: 'category',
+            value: 'mobile',
+          },
+          {
+            label: 'Networking',
+            property: 'category',
+            value: 'networking',
+          },
+          {
+            label: 'Observability',
+            property: 'category',
+            value: 'observability',
+          },
+          {
+            label: 'Runtime',
+            property: 'category',
+            value: 'runtime',
+          },
+          {
+            label: 'Security and Identity',
+            property: 'category',
+            value: 'security-identity',
+          },
+          {
+            label: 'Storage',
+            property: 'category',
+            value: 'storage',
+          },
+          {
+            label: 'User Experience',
+            property: 'category',
+            value: 'ux',
+          },
+        ] satisfies FieldFilterDefinition[],
+      },
     },
   },
 };
