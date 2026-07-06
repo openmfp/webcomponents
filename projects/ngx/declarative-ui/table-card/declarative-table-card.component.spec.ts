@@ -450,7 +450,7 @@ describe('DeclarativeTableCard', () => {
       expect(defaults[0].value).toBe('Pending');
     });
 
-    it('is one-shot: a later change to initialFilter does not re-promote', () => {
+    it('reacts to a later change of initialFilter and promotes the new matching tab', () => {
       const fixture = TestBed.createComponent(
         DeclarativeTableCard as unknown as typeof DeclarativeTableCard<GenericResource>,
       );
@@ -472,7 +472,8 @@ describe('DeclarativeTableCard', () => {
       fixture.componentRef.setInput('editFormState', {});
       fixture.detectChanges();
 
-      // Host tries to change the initial seed — should be a no-op.
+      // Host swaps `initialFilter` — the promotion is source-driven (not
+      // latched), so the new matching tab wins on the next recompute.
       fixture.componentRef.setInput('config', {
         header: '',
         tableConfig: READ_CONFIG,
@@ -491,7 +492,7 @@ describe('DeclarativeTableCard', () => {
       const rendered = (component as any).filterTabs() as FieldFilterDefinition[];
       const defaults = rendered.filter((t) => t.default);
       expect(defaults).toHaveLength(1);
-      expect(defaults[0].value).toBe('Failed');
+      expect(defaults[0].value).toBe('Running');
     });
 
     it('passes filterTabs through untouched when initialFilter is absent', () => {

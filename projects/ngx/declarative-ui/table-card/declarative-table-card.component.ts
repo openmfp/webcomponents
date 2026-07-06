@@ -170,7 +170,6 @@ export class DeclarativeTableCard<T extends GenericResource> {
       .pipe(
         map((config) => config?.initialSearch),
         filter((initial): initial is string => !!initial),
-        take(1),
         takeUntilDestroyed(),
       )
       .subscribe((initial) => {
