@@ -136,13 +136,8 @@ export class DeclarativeTableCard<T extends GenericResource> {
     const tabs = this.searchConfig()?.filterTabs;
     if (!tabs?.length) return [];
 
-    if (this.hasSeededFilter) {
-      return this.seededFilterTabs ?? tabs;
-    }
-
     const initial = this.searchConfig()?.initialFilter;
     if (!initial) {
-      this.hasSeededFilter = true;
       return tabs;
     }
 
@@ -151,22 +146,16 @@ export class DeclarativeTableCard<T extends GenericResource> {
     );
     if (!matches) return tabs;
 
-    this.hasSeededFilter = true;
-    this.seededFilterTabs = tabs.map((tab) =>
+    return tabs.map((tab) =>
       tab.property === initial.property && tab.value === initial.value
         ? { ...tab, default: true }
         : tab.default
           ? { ...tab, default: false }
           : tab,
     );
-    return this.seededFilterTabs;
   });
 
   protected hasFilterTabs = computed(() => this.filterTabs().length > 0);
-
-  private hasSeededFilter = false;
-  private seededFilterTabs: FieldFilterDefinition[] | undefined;
-  private hasSeededSearch = false;
 
   private readonly injector = inject(Injector);
 
