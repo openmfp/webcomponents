@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+} from '@angular/core';
 
 @Component({
   selector: 'mfp-secret-value',
@@ -6,11 +11,11 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
   templateUrl: './secret-value.component.html',
   styleUrl: './secret-value.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  schemas: []
+  schemas: [],
 })
 export class SecretValue {
   value = input.required<string>();
   isVisible = input<boolean>(false);
   testId = input<string>('secret-value');
-  maskedValue = computed(() => '*'.repeat(this.value().length || 8));
+  maskedValue = computed(() => '*'.repeat(this.value()?.length || 8));
 }

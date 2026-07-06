@@ -5,7 +5,7 @@ describe('SecretValueComponent', () => {
   let component: SecretValue;
   let fixture: ComponentFixture<SecretValue>;
 
-  const makeComponent = (value: string) => {
+  const makeComponent = (value?: string) => {
     fixture = TestBed.createComponent(SecretValue);
     component = fixture.componentInstance;
 
@@ -47,6 +47,16 @@ describe('SecretValueComponent', () => {
 
   it('should mask empty string with default 8 asterisks', () => {
     const { component, fixture } = makeComponent('');
+    const compiled = fixture.nativeElement;
+
+    expect(component.maskedValue()).toBe('*'.repeat(8));
+    expect(compiled.querySelector('.secret-value')?.textContent?.trim()).toBe(
+      '*'.repeat(8),
+    );
+  });
+
+  it('should mask undefined value with default 8 asterisks', () => {
+    const { component, fixture } = makeComponent();
     const compiled = fixture.nativeElement;
 
     expect(component.maskedValue()).toBe('*'.repeat(8));
