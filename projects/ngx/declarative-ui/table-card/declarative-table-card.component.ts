@@ -28,7 +28,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 import { Dialog } from '@fundamental-ngx/ui5-webcomponents/dialog';
@@ -37,7 +37,7 @@ import { Input } from '@fundamental-ngx/ui5-webcomponents/input';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 import '@ui5/webcomponents-icons/dist/add.js';
 import '@ui5/webcomponents-icons/dist/search.js';
-import { debounceTime } from 'rxjs';
+import { debounceTime, filter, map, take } from 'rxjs';
 
 type SearchState = 'collapsed' | 'expanded' | 'collapsing';
 
@@ -131,25 +131,11 @@ export class DeclarativeTableCard<T extends GenericResource> {
 
   protected searchConfig = computed(() => this.config().searchConfig);
   protected resourcesSearchable = computed(() => !!this.searchConfig());
-  /**
-   * Filter-tab definitions for the strip rendered above the table.
-   *
-   * If `searchConfig.initialFilter` is set and matches an entry by
-   * `property`+`value`, that entry is promoted to `default: true` (and any
-   * pre-existing `default` on other entries is cleared) exactly once — the
-   * first time filter tabs are handed to the child. This is how we drive the
-   * initial selection without adding an API to `<mfp-filter-tabs>`, which
-   * already re-evaluates its active tab from `default:` whenever `tabs()`
-   * changes. Subsequent recomputations pass through untouched so user-driven
-   * tab clicks (which flow through `filterTabChanged`) aren't overridden.
-   */
+
   protected filterTabs = computed(() => {
     const tabs = this.searchConfig()?.filterTabs;
     if (!tabs?.length) return [];
 
-    // Once the seed has latched, keep returning the promoted array (not the
-    // raw input) so the child `<mfp-filter-tabs>` doesn't re-select from the
-    // original `default: true` on every recomputation.
     if (this.hasSeededFilter) {
       return this.seededFilterTabs ?? tabs;
     }
@@ -160,10 +146,6 @@ export class DeclarativeTableCard<T extends GenericResource> {
       return tabs;
     }
 
-    // Only touch the array if the initial filter actually matches an entry.
-    // Otherwise pass through untouched — the pre-existing `default: true`
-    // (if any) still drives the initial selection, and a later recomputation
-    // might find a match (e.g. host is still resolving `filterTabs`).
     const matches = tabs.some(
       (t) => t.property === initial.property && t.value === initial.value,
     );
@@ -182,11 +164,8 @@ export class DeclarativeTableCard<T extends GenericResource> {
 
   protected hasFilterTabs = computed(() => this.filterTabs().length > 0);
 
-  /** Latched once the `initialFilter` seed has been applied (or determined to be absent). */
   private hasSeededFilter = false;
-  /** Cached promoted array so recomputations don't fall back to the raw input. */
   private seededFilterTabs: FieldFilterDefinition[] | undefined;
-  /** Latched once the `initialSearch` seed has been applied. */
   private hasSeededSearch = false;
 
   private readonly injector = inject(Injector);
@@ -198,20 +177,17 @@ export class DeclarativeTableCard<T extends GenericResource> {
         this.searchChanged.emit(value ?? '');
       });
 
-    // One-shot seed of the search input from `searchConfig.initialSearch`.
-    // Runs the first time the config carries a non-empty `initialSearch`;
-    // afterwards the flag latches and the effect no-ops. `emitEvent: false`
-    // suppresses `searchChanged` so the host doesn't see a phantom user edit.
-    // We also auto-expand the input so the seeded value is visible instead of
-    // hidden behind the collapsed toggle button.
-    effect(() => {
-      if (this.hasSeededSearch) return;
-      const initial = this.searchConfig()?.initialSearch;
-      if (!initial) return;
-      this.searchControl.setValue(initial, { emitEvent: false });
-      this.searchState.set('expanded');
-      this.hasSeededSearch = true;
-    });
+    toObservable(this.searchConfig)
+      .pipe(
+        map((config) => config?.initialSearch),
+        filter((initial): initial is string => !!initial),
+        take(1),
+        takeUntilDestroyed(),
+      )
+      .subscribe((initial) => {
+        this.searchControl.setValue(initial, { emitEvent: false });
+        this.searchState.set('expanded');
+      });
   }
 
   protected onFilterTabChanged(tab: FieldFilterDefinition | undefined): void {
