@@ -3,3 +3,4 @@ export * from './form';
 export * from './table-card';
 export * from './dashboard';
 export * from './resource-field';
+export * from './models';

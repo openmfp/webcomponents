@@ -7,8 +7,7 @@ export type {
   ValueRule,
   RuleCondition,
   FieldDefinition,
-  TableFieldDefinition,
-  ResourceFieldButtonClickEvent,
   PropertyField,
   TransformType,
 } from '../../models/ui-definition';
+export * from './table-field-definition';
