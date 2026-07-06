@@ -353,7 +353,15 @@ describe('DeclarativeTableCard', () => {
       expect((component as any).searchExpanded()).toBe(false);
     });
 
-    it('is one-shot: a later change to initialSearch does not re-apply', () => {
+    it('re-applies initialSearch to searchControl when the host pushes a new value', () => {
+      // The seed subscription is source-driven (no `take(1)`), so any later
+      // change to `searchConfig` with a truthy `initialSearch` re-writes
+      // `searchControl` and forces the input open. This mirrors the way
+      // `initialFilter` promotes on every recompute. **Trade-off:** if the
+      // user has typed over the seeded value and the host later re-emits a
+      // fresh `searchConfig` (even with the same `initialSearch`), the typed
+      // value is overwritten. Hosts that build `config` in a `computed` and
+      // don't want that should avoid pushing `initialSearch` after mount.
       const fixture = TestBed.createComponent(
         DeclarativeTableCard as unknown as typeof DeclarativeTableCard<GenericResource>,
       );
@@ -368,13 +376,18 @@ describe('DeclarativeTableCard', () => {
       fixture.componentRef.setInput('editFormState', {});
       fixture.detectChanges();
 
-      // Simulate the user typing over the seeded value.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).searchControl.value).toBe('first');
+
+      // Simulate the user typing over the seeded value; nothing in the
+      // subscription's pipeline reacts to `searchControl.valueChanges`, so
+      // this alone doesn't re-fire the seed.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (component as any).searchControl.setValue('user-typed', {
         emitEvent: false,
       });
 
-      // Host tries to re-seed with a different value — should be ignored.
+      // Host pushes a new `initialSearch` — the seed fires again and wins.
       fixture.componentRef.setInput('config', {
         header: '',
         tableConfig: READ_CONFIG,
@@ -383,7 +396,9 @@ describe('DeclarativeTableCard', () => {
       fixture.detectChanges();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).searchControl.value).toBe('user-typed');
+      expect((component as any).searchControl.value).toBe('second');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).searchExpanded()).toBe(true);
     });
   });
 
