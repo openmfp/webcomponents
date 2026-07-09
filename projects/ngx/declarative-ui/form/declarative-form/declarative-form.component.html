@@ -11,10 +11,10 @@
         [required]="field.required"
         >{{ field.label }}</ui5-label
       >
-      @if (field.propertyCollection?.length) {
+      @if (field.collection?.length) {
         <mfp-form-collection-field
           [attr.data-testid]="'generic-form-field-' + field.name"
-          [fields]="field.propertyCollection!"
+          [fields]="field.collection!"
           [label]="field.label"
           [initialEntries]="collectionEntries(field)"
           (valueChange)="onCollectionValueChange(field, $event)"

@@ -16,16 +16,15 @@ export interface FormFieldDefinition {
    * Nested field definitions describing one item of an object collection.
    *
    * When set, this field represents an array of objects; the form renders it
-   * as a stack of expandable/collapsible cards. Each card is a nested
-   * `mfp-declarative-form` whose `fields` are the entries in
-   * `propertyCollection`; an inline Add button appends entries and a trash
-   * button removes them. Editing is live — no per-card Save/Cancel.
+   * as a stack of expandable/collapsible cards with Add / Edit / Remove
+   * controls. Each Add / Edit opens a nested `mfp-declarative-form` inline
+   * whose `fields` are the entries in `collection`.
    *
    * The submitted value at this field's path is `Array<Record<string, unknown>>`,
    * with each entry keyed by the sub-fields' `name`s. When `required` is
    * `true`, the host is expected to require at least one entry in the array.
    */
-  propertyCollection?: FormFieldDefinition[];
+  collection?: FormFieldDefinition[];
 }
 
 /** Event payload emitted each time a single form field value changes. */

@@ -14,7 +14,7 @@ import type { Meta, StoryObj } from '@storybook/angular';
   // pre-built bundle loaded via `<script src="/mfp-webcomponents.js">` and
   // does NOT reflect in-tree source changes until it's rebuilt — using the
   // Angular selector keeps the dev loop fast and picks up new field kinds
-  // (like `propertyCollection`) automatically.
+  // (like `collection`) automatically.
   imports: [DeclarativeForm],
   template: `
     <mfp-declarative-form
@@ -37,7 +37,7 @@ class DeclarativeFormStory {
     const nextErrors = { ...this.fieldErrors };
     if (!field?.required) {
       nextErrors[fieldProperty] = null;
-    } else if (field.propertyCollection?.length) {
+    } else if (field.collection?.length) {
       // Required collection = at least one committed object entry.
       const arr = Array.isArray(value) ? (value as unknown[]) : [];
       nextErrors[fieldProperty] = arr.length
@@ -180,7 +180,7 @@ export const WithCollection: Story = {
       {
         name: 'spec_artifacts',
         label: 'Artifacts',
-        propertyCollection: [
+        collection: [
           {
             name: 'name',
             label: 'Name',
@@ -236,7 +236,7 @@ export const WithCollectionEditMode: Story = {
       {
         name: 'spec_artifacts',
         label: 'Artifacts',
-        propertyCollection: [
+        collection: [
           { name: 'name', label: 'Name', required: true },
           { name: 'url', label: 'URL' },
           {
@@ -271,7 +271,7 @@ export const WithRequiredCollection: Story = {
         label: 'Artifacts',
         required: true,
         validation: 'onChange',
-        propertyCollection: [
+        collection: [
           { name: 'name', label: 'Name', required: true },
           { name: 'url', label: 'URL' },
         ],

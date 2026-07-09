@@ -167,7 +167,7 @@ export class DeclarativeForm<T extends GenericResource> {
 
     for (const field of fields) {
       const existingControl = existingControls[field.name];
-      const wantsCollection = !!field.propertyCollection?.length;
+      const wantsCollection = !!field.collection?.length;
       const existingIsCollection = existingControl instanceof FormArray;
       if (existingControl && wantsCollection !== existingIsCollection) {
         this.form.removeControl(field.name);
@@ -200,7 +200,7 @@ export class DeclarativeForm<T extends GenericResource> {
 
     const seeds: Record<string, Record<string, unknown>[]> = {};
     for (const field of this.fields()) {
-      if (!field.propertyCollection?.length) continue;
+      if (!field.collection?.length) continue;
       const raw = (initialValues as Record<string, unknown>)[field.name];
       const entries = Array.isArray(raw)
         ? (raw as Record<string, unknown>[])

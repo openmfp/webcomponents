@@ -141,7 +141,7 @@ export interface ResourceFieldButtonClickEvent<T extends GenericResource> {
 export interface FieldDefinition {
   /** Column header / form label. */
   label?: string;
-  /** Dot-separated path to the resource property (e.g. `metadata.name`). For a collection field this is the path to the array itself (e.g. `status.conditions`). */
+  /** Dot-separated path to the resource property (e.g. `metadata.name`). */
   property?: string | string[];
   /** Alternative path resolver with optional transforms. */
   propertyField?: PropertyField;
@@ -151,10 +151,7 @@ export interface FieldDefinition {
   value?: string;
   /** Display and interaction configuration for this cell. */
   uiSettings?: UiSettings;
-  /**
-   * Sub-field definitions describing one entry of an array-of-objects field.
-   * When set, `property` points at the array; each sub-field describes one
-   * column/input of an entry. Mirrors `propertyField` naming for consistency.
-   */
-  propertyCollection?: FieldDefinition[];
+  /** Dot-separated path to the resource collection property (e.g. `status.conditions`). */
+  collectionProperty?: string;
+  collection?: FieldDefinition[];
 }

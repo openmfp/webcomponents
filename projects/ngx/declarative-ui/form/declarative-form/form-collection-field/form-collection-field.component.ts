@@ -4,10 +4,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   ViewEncapsulation,
+  effect,
   forwardRef,
   input,
-  linkedSignal,
   output,
+  signal,
 } from '@angular/core';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 import { Icon } from '@fundamental-ngx/ui5-webcomponents/icon';
@@ -18,7 +19,7 @@ import '@ui5/webcomponents-icons/dist/navigation-right-arrow.js';
 
 /**
  * Internal collection editor rendered by `mfp-declarative-form` when a field
- * carries `propertyCollection` sub-fields.
+ * carries `collection` sub-fields.
  *
  * Each entry renders as a collapsible card whose expanded body is a nested
  * `<mfp-declarative-form>` bound to that entry. Live changes flow up
@@ -45,18 +46,16 @@ export class FormCollectionField {
 
   readonly initialEntries = input<Record<string, unknown>[]>([]);
   readonly valueChange = output<Record<string, unknown>[]>();
+  protected readonly entries = signal<Record<string, unknown>[]>([]);
+  protected readonly expandedIndex = signal<number | null>(null);
 
-  protected readonly entries = linkedSignal<Record<string, unknown>[]>(() => [
-    ...(this.initialEntries() ?? []),
-  ]);
-
-  protected readonly expandedIndex = linkedSignal<
-    Record<string, unknown>[],
-    number | null
-  >({
-    source: this.initialEntries,
-    computation: () => null,
-  });
+  constructor() {
+    effect(() => {
+      const initial = this.initialEntries();
+      this.entries.set([...(initial ?? [])]);
+      this.expandedIndex.set(null);
+    });
+  }
 
   previewFor(entry: Record<string, unknown>, index: number): string {
     for (const field of this.fields()) {
@@ -83,12 +82,14 @@ export class FormCollectionField {
   remove(index: number): void {
     const next = this.entries().filter((_, i) => i !== index);
     this.entries.set(next);
-    const expandedIndex = this.expandedIndex() as number;
-    if (expandedIndex === index) {
+    if (this.expandedIndex() === index) {
       this.expandedIndex.set(null);
-    } else if (expandedIndex !== null && expandedIndex > index) {
+    } else if (
+      this.expandedIndex() !== null &&
+      (this.expandedIndex() as number) > index
+    ) {
       // Preserve the same expanded row after removing an earlier one.
-      this.expandedIndex.set(expandedIndex - 1);
+      this.expandedIndex.set((this.expandedIndex() as number) - 1);
     }
     this.valueChange.emit(next);
   }

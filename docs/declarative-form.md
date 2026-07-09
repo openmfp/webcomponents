@@ -136,12 +136,12 @@ interface FormFieldDefinition {
   values?: string[];                       // Static select options
   disabled?: boolean;                      // Disables the field
   validation?: 'onBlur' | 'onChange';      // When to emit fieldChange for this field
-  propertyCollection?: FormFieldDefinition[]; // Sub-fields for an array-of-objects field; see "Collection fields" below
+  collection?: FormFieldDefinition[];      // Sub-fields for an array-of-objects field; see "Collection fields" below
 }
 
 interface FormFieldChangeEvent {
   fieldProperty: string;  // The field property name (matches field.name)
-  value: unknown;         // Current value of the control; for a `propertyCollection` field this is the full `Array<Record<string, unknown>>`
+  value: unknown;         // Current value of the control; for a `collection` field this is the full `Array<Record<string, unknown>>`
 }
 
 type FormFieldErrors = Record<string, string | null>;
@@ -153,7 +153,7 @@ type FormFieldErrors = Record<string, string | null>;
 { fieldProperty: 'metadata.name', value: 'my-app' }
 ```
 
-For a `propertyCollection` field the payload carries the whole array:
+For a `collection` field the payload carries the whole array:
 
 ```ts
 {
@@ -180,9 +180,9 @@ For a `propertyCollection` field the payload carries the whole array:
 
 ---
 
-## Collection fields (`propertyCollection`)
+## Collection fields (`collection`)
 
-Set `propertyCollection` on a `FormFieldDefinition` to declare that the value at this field's `name` is an **array of objects**. The form renders it as a stack of expandable/collapsible cards, one per array entry.
+Set `collection` on a `FormFieldDefinition` to declare that the value at this field's `name` is an **array of objects**. The form renders it as a stack of expandable/collapsible cards, one per array entry.
 
 ### UX
 
@@ -193,7 +193,7 @@ Set `propertyCollection` on a `FormFieldDefinition` to declare that the value at
 
 ### Sub-field definitions
 
-`propertyCollection` is a full `FormFieldDefinition[]`. Each sub-field carries the same options as a top-level field (`label`, `values`, `required`, `validation`, `disabled`, and even nested `propertyCollection` for array-of-arrays). Sub-field `name` values are used verbatim as keys on each entry object — whatever you write becomes the shape of the emitted payload.
+`collection` is a full `FormFieldDefinition[]`. Each sub-field carries the same options as a top-level field (`label`, `values`, `required`, `validation`, `disabled`, and even nested `collection` for array-of-arrays). Sub-field `name` values are used verbatim as keys on each entry object — whatever you write becomes the shape of the emitted payload.
 
 ### Change events for collection fields
 
@@ -208,7 +208,7 @@ const fields: FormFieldDefinition[] = [
   {
     name: 'spec.artifacts',
     label: 'Artifacts',
-    propertyCollection: [
+    collection: [
       { name: 'name', label: 'Name', required: true },
       { name: 'url',  label: 'URL' },
       { name: 'type', label: 'Type', values: ['image', 'chart', 'file'] },
@@ -253,7 +253,7 @@ All interactive elements carry `data-testid` attributes for reliable E2E targeti
 | Field label | `generic-form-field-label-{name}` | |
 | Input or select | `generic-form-field-{name}` | `<ui5-input>` or `<ui5-select>` |
 | Select option | `generic-form-field-{name}-option-{value}` | `value` = option string or `empty` for the blank placeholder |
-| Collection container | `collection-field` | Rendered inside a `propertyCollection` field |
+| Collection container | `collection-field` | Rendered inside a `collection` field |
 | Collection item | `collection-item-{index}` | Zero-based array index |
 | Collection item toggle | `collection-item-{index}-toggle` | Expand / collapse header |
 | Collection item remove | `collection-item-{index}-remove` | Trash icon |
