@@ -1,0 +1,54 @@
+<div class="collection" data-testid="collection-field">
+  @for (entry of entries(); track $index; let index = $index) {
+    @let expanded = expandedIndex() === index;
+    <div
+      class="card"
+      [class.card--expanded]="expanded"
+      [attr.data-testid]="'collection-item-' + index"
+    >
+      <button
+        type="button"
+        class="card__header"
+        [attr.aria-expanded]="expanded"
+        [attr.data-testid]="'collection-item-' + index + '-toggle'"
+        (click)="toggle(index)"
+      >
+        <ui5-icon
+          class="card__chevron"
+          [name]="expanded ? 'navigation-down-arrow' : 'navigation-right-arrow'"
+        />
+        <span class="card__preview">{{ previewFor(entry, index) }}</span>
+        <span class="card__spacer"></span>
+        <ui5-button
+          class="card__action"
+          design="Transparent"
+          icon="delete"
+          accessibleName="Remove"
+          tooltip="Remove"
+          [attr.data-testid]="'collection-item-' + index + '-remove'"
+          (click)="remove(index); $event.stopPropagation()"
+        />
+      </button>
+
+      @if (expanded) {
+        <div class="card__body">
+          <mfp-declarative-form
+            [attr.data-testid]="'collection-item-' + index + '-form'"
+            [fields]="fields()"
+            [initialValues]="entry"
+            (formValueChange)="onEntryValueChange(index, $event)"
+          />
+        </div>
+      }
+    </div>
+  }
+
+  <ui5-button
+    class="collection__add"
+    design="Transparent"
+    icon="add"
+    accessibleName="Add"
+    data-testid="collection-add"
+    (click)="add()"
+  />
+</div>

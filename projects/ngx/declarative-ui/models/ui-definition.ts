@@ -151,4 +151,7 @@ export interface FieldDefinition {
   value?: string;
   /** Display and interaction configuration for this cell. */
   uiSettings?: UiSettings;
+  /** Dot-separated path to the resource collection property (e.g. `status.conditions`). */
+  collectionProperty?: string;
+  collection?: FieldDefinition[];
 }
