@@ -18,7 +18,7 @@ import '@ui5/webcomponents-icons/dist/navigation-right-arrow.js';
 
 /**
  * Internal collection editor rendered by `mfp-declarative-form` when a field
- * carries `collection` sub-fields.
+ * carries `propertyCollection` sub-fields.
  *
  * Each entry renders as a collapsible card whose expanded body is a nested
  * `<mfp-declarative-form>` bound to that entry. Live changes flow up
@@ -41,7 +41,7 @@ import '@ui5/webcomponents-icons/dist/navigation-right-arrow.js';
 })
 export class FormCollectionField {
   readonly fields = input.required<FormFieldDefinition[]>();
-  readonly label = input.required<string>();
+  readonly label = input<string>('');
 
   readonly initialEntries = input<Record<string, unknown>[]>([]);
   readonly valueChange = output<Record<string, unknown>[]>();
