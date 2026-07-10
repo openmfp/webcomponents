@@ -427,4 +427,30 @@ describe('ResourceField', () => {
       expect(span?.textContent?.trim()).toBe('Pending');
     });
   });
+
+  describe('collection display', () => {
+    it('delegates to mfp-resource-collection-field when the field has propertyCollection', () => {
+      const { fixture } = setup(
+        {
+          label: 'Conditions',
+          property: 'status.conditions',
+          propertyCollection: [
+            { label: 'Type', property: 'status.conditions.type' },
+          ],
+        },
+        {
+          status: { conditions: [{ type: 'Ready' }] },
+        } as unknown as GenericResource,
+      );
+
+      const scope = fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+      expect(scope.querySelector('mfp-resource-collection-field')).toBeTruthy();
+    });
+
+    it('renders a scalar value (no collection) for a plain field', () => {
+      const { fixture } = setup({ property: 'status' }, { status: 'Active' });
+      const scope = fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+      expect(scope.querySelector('mfp-resource-collection-field')).toBeNull();
+    });
+  });
 });

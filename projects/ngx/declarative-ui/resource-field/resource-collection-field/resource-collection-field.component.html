@@ -1,0 +1,38 @@
+<div class="collection" data-testid="resource-collection-field">
+  @for (entry of entries(); track $index; let index = $index) {
+    @let expanded = expandedIndex() === index;
+    <div
+      class="card"
+      [class.card--expanded]="expanded"
+      [attr.data-testid]="'resource-collection-item-' + index"
+    >
+      <button
+        type="button"
+        class="card__header"
+        [attr.aria-expanded]="expanded"
+        [attr.data-testid]="'resource-collection-item-' + index + '-toggle'"
+        (click)="toggle(index, $event)"
+      >
+        <ui5-icon
+          class="card__chevron"
+          [name]="expanded ? 'navigation-down-arrow' : 'navigation-right-arrow'"
+        />
+        <span class="card__preview">{{ previewFor(entry, index) }}</span>
+      </button>
+
+      @if (expanded) {
+        <div class="card__body" (click)="$event.stopPropagation()">
+          @for (row of rows(); track row.field.property) {
+            <div class="row">
+              <span class="row__label">{{ row.label }}:</span>
+              <mfp-resource-field
+                [fieldDefinition]="row.field"
+                [resource]="entry"
+              />
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

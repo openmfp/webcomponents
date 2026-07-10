@@ -3,6 +3,11 @@
   align-items: center;
 }
 
+:host(.resource-field--collection) {
+  display: block;
+  width: 100%;
+}
+
 .secret-value-container {
   display: flex;
   align-items: center;

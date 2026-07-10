@@ -13,6 +13,9 @@ import type { TableFieldDefinition } from '../table/models';
 import { Component, Input } from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
 import '@ui5/webcomponents-icons/dist/detail-view.js';
+import '@ui5/webcomponents-icons/dist/inspect.js';
+import '@ui5/webcomponents-icons/dist/restart.js';
+import '@ui5/webcomponents-icons/dist/stop.js';
 
 // ---------------------------------------------------------------------------
 // Sample data
@@ -611,5 +614,201 @@ export const WithFilterTabsOverflow: Story = {
         ] satisfies FieldFilterDefinition[],
       },
     },
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Rich collection cells: a collection column whose sub-fields exercise tags,
+// a secret, a css-coloured phrase, and icon-only row actions
+// ---------------------------------------------------------------------------
+
+interface RichPod extends GenericResource {
+  id: string;
+  metadata: { name: string; namespace: string; uid: string };
+  spec: { description: string };
+  status: {
+    conditions: {
+      type: string;
+      status: string;
+      phase: string;
+      token: string;
+    }[];
+  };
+}
+
+const RICH_PODS: RichPod[] = [
+  {
+    id: 'rp-001',
+    metadata: { name: 'api-server-7d9f', namespace: 'default', uid: 'rp-001' },
+    spec: { description: 'Front-facing API server pod' },
+    status: {
+      conditions: [
+        {
+          type: 'Ready',
+          status: 'True',
+          phase: 'Running',
+          token: 'sk-live-7f3a9c21b48e5d0f',
+        },
+        {
+          type: 'Initialized',
+          status: 'True',
+          phase: 'Pending',
+          token: 'sk-live-0d1e2f3a4b5c6d7e',
+        },
+      ],
+    },
+    isAvailable: true,
+  },
+  {
+    id: 'rp-002',
+    metadata: { name: 'worker-5bc8', namespace: 'default', uid: 'rp-002' },
+    spec: { description: 'Background job worker' },
+    status: {
+      conditions: [
+        {
+          type: 'Ready',
+          status: 'False',
+          phase: 'Failed',
+          token: 'sk-live-1a2b3c4d5e6f7a8b',
+        },
+      ],
+    },
+    isAvailable: true,
+  },
+  {
+    id: 'rp-003',
+    metadata: {
+      name: 'db-postgres-0',
+      namespace: 'production',
+      uid: 'rp-003',
+    },
+    spec: { description: 'Primary Postgres database' },
+    status: {
+      conditions: [
+        {
+          type: 'Ready',
+          status: 'True',
+          phase: 'Running',
+          token: 'sk-live-9z8y7x6w5v4u3t2s',
+        },
+      ],
+    },
+    isAvailable: false,
+  },
+];
+
+const PHASE_CSS_RULES = [
+  {
+    if: { condition: 'equals' as const, value: 'Running' },
+    styles: { color: 'var(--sapPositiveColor, #107e3e)', fontWeight: '600' },
+  },
+  {
+    if: { condition: 'equals' as const, value: 'Pending' },
+    styles: { color: 'var(--sapCriticalColor, #e9730c)', fontWeight: '600' },
+  },
+  {
+    if: { condition: 'equals' as const, value: 'Failed' },
+    styles: { color: 'var(--sapNegativeColor, #bb0000)', fontWeight: '600' },
+  },
+];
+
+const RICH_COLUMNS: TableFieldDefinition[] = [
+  { label: 'Name', property: 'metadata.name' },
+  { label: 'Description', property: 'spec.description' },
+  {
+    label: 'Conditions',
+    property: 'status.conditions',
+    propertyCollection: [
+      {
+        label: 'Type',
+        property: 'status.conditions.type',
+        uiSettings: {
+          displayAs: 'tag',
+          tagSettings: { design: 'Set2', colorScheme: '2' },
+        },
+      },
+      {
+        label: 'Status',
+        property: 'status.conditions.status',
+        uiSettings: {
+          displayAs: 'tag',
+          tagSettings: { design: 'Set2', colorScheme: '6' },
+        },
+      },
+      {
+        label: 'Phase',
+        property: 'status.conditions.phase',
+        uiSettings: { cssRules: PHASE_CSS_RULES },
+      },
+      {
+        label: 'Token',
+        property: 'status.conditions.token',
+        uiSettings: { displayAs: 'secret', withCopyButton: true },
+      },
+      {
+        label: 'Restart',
+        uiSettings: {
+          displayAs: 'button',
+          buttonSettings: {
+            icon: 'restart',
+            design: 'Transparent',
+            action: 'restart',
+            tooltip: 'Restart',
+          },
+        },
+      },
+      {
+        label: 'Stop',
+        uiSettings: {
+          displayAs: 'button',
+          buttonSettings: {
+            icon: 'stop',
+            design: 'Transparent',
+            action: 'stop',
+            tooltip: 'Stop',
+          },
+        },
+      },
+    ],
+  },
+  {
+    uiSettings: {
+      displayAs: 'button',
+      align: 'end',
+      buttonSettings: {
+        icon: 'inspect',
+        design: 'Transparent',
+        action: 'inspect',
+        tooltip: 'Inspect',
+      },
+    },
+    group: { name: 'actions', label: '', multiline: false },
+  },
+];
+
+/**
+ * A collection column whose sub-fields exercise every rich cell renderer.
+ *
+ * Top-level columns are just **Name**, **Description**, and the trailing
+ * **Actions** column. The **Conditions** column is a `propertyCollection` —
+ * each row renders as a stack of collapsed cards, and expanding one shows the
+ * sub-fields:
+ *
+ * - **Type** / **Status** as coloured **tags**.
+ * - **Phase** as a phrase coloured by `cssRules` (green / orange / red).
+ * - **Token** as a `secret` with a **copy button** and an **eye** toggle.
+ * - **Restart** and **Stop** as icon-only buttons (no text).
+ */
+export const WithRichCells: Story = {
+  args: {
+    config: {
+      ...BASE_CONFIG,
+      header: 'Pods (rich collection cells)',
+      tableConfig: {
+        ...BASE_TABLE_CONFIG,
+        fields: RICH_COLUMNS,
+      },
+    },
+    resources: RICH_PODS,
   },
 };
