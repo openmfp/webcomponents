@@ -41,7 +41,7 @@ import '@ui5/webcomponents-icons/dist/navigation-right-arrow.js';
 })
 export class FormCollectionField {
   readonly fields = input.required<FormFieldDefinition[]>();
-  readonly label = input<string>('');
+  readonly label = input.required<string>();
 
   readonly initialEntries = input<Record<string, unknown>[]>([]);
   readonly valueChange = output<Record<string, unknown>[]>();

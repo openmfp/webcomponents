@@ -131,7 +131,7 @@ export class MyComponent {
 ```ts
 interface FormFieldDefinition {
   name: string;                            // Field key; dots create nested submit output paths
-  label?: string;                          // Display label shown above the field
+  label: string;                           // Display label shown above the field
   required?: boolean;                      // Visual required marker only
   values?: string[];                       // Static select options
   disabled?: boolean;                      // Disables the field
