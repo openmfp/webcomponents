@@ -18,7 +18,14 @@ export interface PropertyField {
 
 /** Appearance settings for tag chip rendering. */
 export interface TagSettings {
-  design?: 'Neutral' | 'Positive' | 'Critical' | 'Negative' | 'Information' | 'Set1' | 'Set2';
+  design?:
+    | 'Neutral'
+    | 'Positive'
+    | 'Critical'
+    | 'Negative'
+    | 'Information'
+    | 'Set1'
+    | 'Set2';
   colorScheme?: '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10';
   /** Delimiter used to split a plain-string value into individual tags. Default: `','`. */
   valueSeparator?: string;
@@ -125,7 +132,7 @@ export interface ResourceFieldButtonClickEvent<T extends GenericResource> {
   /** Original DOM click event. */
   event: MouseEvent;
   /** The field definition of the button cell that was clicked. */
-  field: TableFieldDefinition;
+  field: FieldDefinition;
   /** The data row associated with the clicked button. */
   resource: T | undefined;
 }
@@ -134,7 +141,7 @@ export interface ResourceFieldButtonClickEvent<T extends GenericResource> {
 export interface FieldDefinition {
   /** Column header / form label. */
   label?: string;
-  /** Dot-separated path to the resource property (e.g. `metadata.name`). */
+  /** Dot-separated path to the resource property (e.g. `metadata.name`). For a collection field this is the path to the array itself (e.g. `status.conditions`). */
   property?: string | string[];
   /** Alternative path resolver with optional transforms. */
   propertyField?: PropertyField;
@@ -144,19 +151,10 @@ export interface FieldDefinition {
   value?: string;
   /** Display and interaction configuration for this cell. */
   uiSettings?: UiSettings;
-}
-
-/** Table column definition — extends `FieldDefinition` with optional column grouping. */
-export interface TableFieldDefinition extends FieldDefinition {
-  /** Groups this column visually with adjacent columns that share the same `name`. */
-  group?: {
-    /** Logical group identifier. */
-    name: string;
-    /** Group header label shown above the grouped cells. */
-    label?: string;
-    /** Separator placed between values in the same group cell. */
-    delimiter?: string;
-    /** When `true`, each value is rendered on its own line. */
-    multiline?: boolean;
-  };
+  /**
+   * Sub-field definitions describing one entry of an array-of-objects field.
+   * When set, `property` points at the array; each sub-field describes one
+   * column/input of an entry. Mirrors `propertyField` naming for consistency.
+   */
+  propertyCollection?: FieldDefinition[];
 }

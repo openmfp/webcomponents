@@ -1,11 +1,8 @@
 import { FormFieldChangeEvent, FormFieldDefinition } from '../form';
 import { DeclarativeForm } from '../form/declarative-form/declarative-form.component';
-import { GenericResource } from '../models';
+import { GenericResource, ResourceFieldButtonClickEvent } from '../models';
 import { DeclarativeTable } from '../table/declarative-table/declarative-table.component';
-import {
-  ResourceFieldButtonClickEvent,
-  TableFieldDefinition,
-} from '../table/models';
+import { TableFieldDefinition } from '../table/models';
 import { getResourceValueByJsonPath } from '../table/utils/resource-field-by-path';
 import { FilterTabs } from './filter-tabs/filter-tabs.component';
 import {

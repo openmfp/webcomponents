@@ -1,0 +1,73 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.collection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  padding-top: 0.25rem;
+}
+
+.card {
+  border: 1px solid var(--sapGroup_ContentBorderColor, #d9d9d9);
+  border-radius: 0.5rem;
+  background: var(--sapGroup_TitleBackground, #fff);
+  overflow: hidden;
+
+  &--expanded {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0 0.75rem;
+    background: transparent;
+    border: 0;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+    min-height: 1.5rem;
+    color: var(--sapTextColor, #1d2d3e);
+
+    &:hover {
+      background: var(--sapList_Hover_Background, rgba(0, 0, 0, 0.03));
+    }
+  }
+
+  &__chevron {
+    flex: 0 0 auto;
+    color: var(--sapContent_IconColor, #6a6d70);
+  }
+
+  &__preview {
+    font-weight: 500;
+    color: var(--sapTextColor, #1d2d3e);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__spacer {
+    flex: 1;
+  }
+
+  &__action {
+    flex: 0 0 auto;
+  }
+
+  &__body {
+    padding: 0.75rem 1rem 1rem;
+    border-top: 1px solid var(--sapGroup_ContentBorderColor, #d9d9d9);
+  }
+}
+
+.collection__add {
+  align-self: flex-start;
+  color: var(--sapButton_IconColor, #0070f2);
+}

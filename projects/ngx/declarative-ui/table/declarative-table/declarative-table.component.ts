@@ -1,6 +1,6 @@
-import { GenericResource } from '../../models';
-import { ResourceField } from '../../resource-field/resource-field.component';
-import { ResourceFieldButtonClickEvent, TableFieldDefinition } from '../models';
+import { GenericResource, ResourceFieldButtonClickEvent } from '../../models';
+import { ResourceField } from '../../resource-field';
+import { TableFieldDefinition } from '../models';
 import { processGroupFields } from '../utils/proccess-fields';
 import { getResourceValueByJsonPath } from '../utils/resource-field-by-path';
 import {

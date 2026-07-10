@@ -1,23 +1,29 @@
+import { DeclarativeForm } from '../form/declarative-form/declarative-form.component';
 import type {
   FormFieldChangeEvent,
   FormFieldDefinition,
   FormFieldErrors,
 } from '../form/models';
-import { CUSTOM_ELEMENTS_SCHEMA, Component, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
 
 @Component({
   selector: 'mfp-declarative-form-story',
+  // Renders the Angular component directly rather than the packaged web-
+  // component wrapper (`<mfp-wc-declarative-form>`). The wrapper is a
+  // pre-built bundle loaded via `<script src="/mfp-webcomponents.js">` and
+  // does NOT reflect in-tree source changes until it's rebuilt — using the
+  // Angular selector keeps the dev loop fast and picks up new field kinds
+  // (like `propertyCollection`) automatically.
+  imports: [DeclarativeForm],
   template: `
-    <mfp-wc-declarative-form
-      [editMode]="editMode"
+    <mfp-declarative-form
       [fieldErrors]="fieldErrors"
       [fields]="fields"
       [initialValues]="initialValues"
       (fieldChange)="handleFormChange($event)"
     />
   `,
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 class DeclarativeFormStory {
   @Input() fields: FormFieldDefinition[] = [];
@@ -25,14 +31,23 @@ class DeclarativeFormStory {
   @Input() fieldErrors: FormFieldErrors = {};
   @Input() editMode = false;
 
-  handleFormChange(event: CustomEvent<FormFieldChangeEvent>): void {
-    const { fieldProperty, value } = event.detail;
+  handleFormChange(event: FormFieldChangeEvent): void {
+    const { fieldProperty, value } = event;
     const field = this.fields.find((f) => f.name === fieldProperty);
     const nextErrors = { ...this.fieldErrors };
-    nextErrors[fieldProperty] =
-      field?.required && !value
+    if (!field?.required) {
+      nextErrors[fieldProperty] = null;
+    } else if (field.propertyCollection?.length) {
+      // Required collection = at least one committed object entry.
+      const arr = Array.isArray(value) ? (value as unknown[]) : [];
+      nextErrors[fieldProperty] = arr.length
+        ? null
+        : `${field.label ?? fieldProperty} requires at least one entry`;
+    } else {
+      nextErrors[fieldProperty] = !value
         ? `${field.label ?? fieldProperty} is required`
         : null;
+    }
     this.fieldErrors = nextErrors;
   }
 }
@@ -144,6 +159,129 @@ export const AllFieldTypes: Story = {
         label: 'Scope',
         values: ['ClusterScoped', 'Namespaced'],
       },
+    ] satisfies FormFieldDefinition[],
+  },
+};
+
+/**
+ * Collection field — repeatable object entries. Each card is a collapsible
+ * `<mfp-declarative-form>` nested inside the outer form; every keystroke
+ * inside a sub-field flows into the outer payload in real time. The header
+ * carries a trash button; an **Add** button below the stack appends a new
+ * empty entry (which opens expanded so the user can start typing right
+ * away).
+ *
+ * The submitted value at `spec_artifacts` is `Array<Record<string, unknown>>`.
+ */
+export const WithCollection: Story = {
+  args: {
+    fields: [
+      { name: 'metadata_name', label: 'Name', required: true },
+      {
+        name: 'spec_artifacts',
+        label: 'Artifacts',
+        propertyCollection: [
+          {
+            name: 'name',
+            label: 'Name',
+            required: true,
+            validation: 'onChange',
+          },
+          { name: 'url', label: 'URL' },
+          {
+            name: 'type',
+            label: 'Type',
+            values: ['image', 'chart', 'file'],
+          },
+        ],
+      },
+      {
+        name: 'spec_priority',
+        label: 'Priority',
+        values: ['low', 'normal', 'high'],
+      },
+      { name: 'metadata_owner', label: 'Owner' },
+    ] satisfies FormFieldDefinition[],
+  },
+};
+
+/**
+ * Collection field pre-populated with committed entries via `initialValues`.
+ * Cards are collapsed on first render — the header shows a preview line
+ * derived from the first non-empty sub-field value. Click the header to
+ * expand and edit the entry in place.
+ */
+export const WithCollectionEditMode: Story = {
+  args: {
+    editMode: true,
+    initialValues: {
+      metadata_name: 'my-order',
+      spec_artifacts: [
+        {
+          name: 'nginx',
+          url: 'oci://registry.local/nginx:1.25',
+          type: 'image',
+        },
+        {
+          name: 'app-chart very long one',
+          url: 'oci://registry.local/app:1.0',
+          type: 'chart',
+        },
+      ],
+      spec_priority: 'high',
+      metadata_owner: 'platform-team',
+    },
+    fields: [
+      { name: 'metadata_name', label: 'Name', required: true },
+      {
+        name: 'spec_artifacts',
+        label: 'Artifacts',
+        propertyCollection: [
+          { name: 'name', label: 'Name', required: true },
+          { name: 'url', label: 'URL' },
+          {
+            name: 'type',
+            label: 'Type',
+            values: ['image', 'chart', 'file'],
+          },
+        ],
+      },
+      {
+        name: 'spec_priority',
+        label: 'Priority',
+        values: ['low', 'normal', 'high'],
+      },
+      { name: 'metadata_owner', label: 'Owner' },
+    ] satisfies FormFieldDefinition[],
+  },
+};
+
+/**
+ * Required collection — hosts validate `value.length >= 1`. The wrapper
+ * component in this story sets an error while the array is empty. Click
+ * **Add** to append an entry and the error clears (each entry counts as
+ * one committed row; editing happens live inside the card).
+ */
+export const WithRequiredCollection: Story = {
+  args: {
+    fields: [
+      { name: 'metadata_name', label: 'Name', required: true },
+      {
+        name: 'spec_artifacts',
+        label: 'Artifacts',
+        required: true,
+        validation: 'onChange',
+        propertyCollection: [
+          { name: 'name', label: 'Name', required: true },
+          { name: 'url', label: 'URL' },
+        ],
+      },
+      {
+        name: 'spec_priority',
+        label: 'Priority',
+        values: ['low', 'normal', 'high'],
+      },
+      { name: 'metadata_owner', label: 'Owner' },
     ] satisfies FormFieldDefinition[],
   },
 };

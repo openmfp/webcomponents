@@ -11,7 +11,18 @@
         [required]="field.required"
         >{{ field.label }}</ui5-label
       >
-      @if (field.values?.length) {
+      @if (field.propertyCollection?.length) {
+        <mfp-form-collection-field
+          [attr.data-testid]="'generic-form-field-' + field.name"
+          [fields]="field.propertyCollection!"
+          [label]="field.label"
+          [initialEntries]="collectionEntries(field)"
+          (valueChange)="onCollectionValueChange(field, $event)"
+        />
+        @if (getError(field.name); as error) {
+          <div class="collection-error" role="alert">{{ error }}</div>
+        }
+      } @else if (field.values?.length) {
         <ui5-select
           class="input"
           [attr.data-testid]="'generic-form-field-' + field.name"
