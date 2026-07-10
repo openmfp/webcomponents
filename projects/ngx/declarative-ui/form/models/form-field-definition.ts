@@ -3,7 +3,7 @@ export interface FormFieldDefinition {
   /** JSON-path key used to read and write the field value (e.g. `metadata.name`). */
   name: string;
   /** Display label shown above the input. */
-  label?: string;
+  label: string;
   /** When `true`, passes the `required` attribute to the UI5 input — shows a visual required indicator. Validation itself is the host's responsibility via `FormFieldErrors`. */
   required?: boolean;
   /** Fixed list of options rendered as a select/dropdown. */
