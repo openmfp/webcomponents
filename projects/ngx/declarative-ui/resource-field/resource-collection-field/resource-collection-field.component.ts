@@ -65,10 +65,10 @@ export class ResourceCollectionField<
     return (this.fieldDefinition().propertyCollection ?? []).map((sub) => {
       const property =
         typeof sub.property === 'string'
-          ? stripParentPath(sub.property, parent)
+          ? this.stripParentPath(sub.property, parent)
           : sub.property;
       return {
-        label: sub.label ?? leafOf(property),
+        label: sub.label ?? this.leafOf(property),
         field: { ...sub, property } as FieldDefinition,
       };
     });
@@ -91,18 +91,18 @@ export class ResourceCollectionField<
     const prefix = (this.fieldDefinition().label ?? '').trim() || 'Item';
     return `${prefix} ${index + 1}`;
   }
-}
 
-function stripParentPath(name: string, parent: string | undefined): string {
-  if (!parent) return name;
-  if (name.startsWith(parent + '.')) {
-    return name.slice(parent.length + 1);
+  private stripParentPath(name: string, parent: string | undefined): string {
+    if (!parent) return name;
+    if (name.startsWith(parent + '.')) {
+      return name.slice(parent.length + 1);
+    }
+    return name;
   }
-  return name;
-}
 
-function leafOf(property: string | string[] | undefined): string {
-  if (typeof property !== 'string') return '';
-  const segments = property.split('.');
-  return segments[segments.length - 1];
+  private leafOf(property: string | string[] | undefined): string {
+    if (typeof property !== 'string') return '';
+    const segments = property.split('.');
+    return segments[segments.length - 1];
+  }
 }
