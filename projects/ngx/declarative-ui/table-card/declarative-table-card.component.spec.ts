@@ -215,70 +215,130 @@ describe('DeclarativeTableCard', () => {
   // -------------------------------------------------------------------------
 
   describe('search', () => {
-    it('searchExpanded starts as false', () => {
-      const { component } = setup();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).searchExpanded()).toBe(false);
+    const setupSearch = (searchConfig: TableCardConfig['searchConfig']) => {
+      const fixture = TestBed.createComponent(
+        DeclarativeTableCard as unknown as typeof DeclarativeTableCard<GenericResource>,
+      );
+      const component = fixture.componentInstance as Comp;
+
+      const searchEvents: string[] = [];
+      component.searchChanged.subscribe((v) => searchEvents.push(v));
+
+      fixture.componentRef.setInput('config', {
+        header: '',
+        tableConfig: READ_CONFIG,
+        searchConfig,
+      } satisfies TableCardConfig);
+      fixture.componentRef.setInput('resources', RESOURCES);
+      fixture.componentRef.setInput('createFormState', {});
+      fixture.componentRef.setInput('editFormState', {});
+      fixture.detectChanges();
+
+      const root: ShadowRoot | HTMLElement =
+        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+
+      return { fixture, component, searchEvents, root };
+    };
+
+    it('renders the search input when searchConfig is present', () => {
+      const { root } = setupSearch({});
+      expect(
+        root.querySelector(
+          '[data-testid="generic-table-card-search-input"]',
+        ),
+      ).not.toBeNull();
     });
 
-    it('toggleSearch() sets searchExpanded to true on first call', () => {
-      const { component } = setup();
-      component.toggleSearch();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).searchExpanded()).toBe(true);
+    it('does not render the search input when searchConfig is absent', () => {
+      const { fixture } = setup();
+      const root: ShadowRoot | HTMLElement =
+        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+      expect(
+        root.querySelector(
+          '[data-testid="generic-table-card-search-input"]',
+        ),
+      ).toBeNull();
     });
 
-    it('toggleSearch() starts collapsing on second call when already expanded', () => {
-      const { component } = setup();
-      component.toggleSearch(); // expand
-      component.toggleSearch(); // collapse
-      // searchCollapsing should be set; searchExpanded still true until animation ends
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).searchCollapsing()).toBe(true);
+    it('enables the built-in clear icon on the input', () => {
+      const { root } = setupSearch({});
+      const input = root.querySelector(
+        '[data-testid="generic-table-card-search-input"]',
+      ) as (Element & { showClearIcon?: boolean }) | null;
+      expect(input?.showClearIcon).toBe(true);
     });
 
-    it('onSearchBlur() collapses search when value is empty', () => {
-      const { component } = setup();
-      component.toggleSearch();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).searchControl.setValue('');
-      component.onSearchBlur();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).searchCollapsing()).toBe(true);
+    it('renders the search icon in the input icon slot', () => {
+      const { root } = setupSearch({});
+      const icon = root.querySelector(
+        '[data-testid="generic-table-card-search-icon"]',
+      );
+      expect(icon).not.toBeNull();
+      expect(icon?.getAttribute('slot')).toBe('icon');
+      expect(icon?.getAttribute('name')).toBe('search');
     });
 
-    it('onSearchBlur() does not collapse when value is non-empty', () => {
-      const { component } = setup();
-      component.toggleSearch();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).searchControl.setValue('abc');
-      component.onSearchBlur();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).searchCollapsing()).toBe(false);
+    it('debounces typing by 500ms before emitting searchChanged', () => {
+      vi.useFakeTimers();
+      try {
+        const { component, searchEvents } = setupSearch({});
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (component as any).searchControl.setValue('abc');
+
+        vi.advanceTimersByTime(499);
+        expect(searchEvents).toEqual([]);
+
+        vi.advanceTimersByTime(1);
+        expect(searchEvents).toEqual(['abc']);
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
-    it('onSearchAnimationEnd() resets search state after collapse animation', () => {
-      const { component } = setup();
-      component.toggleSearch(); // expand
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).searchControl.setValue('query');
-      component.toggleSearch(); // start collapsing
-      component.onSearchAnimationEnd();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).searchCollapsing()).toBe(false);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).searchExpanded()).toBe(false);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).searchControl.value).toBe('');
+    it('does not re-emit when the same value arrives again (blur commit)', () => {
+      // The UI5 `input` (typing) and `change` (blur/enter) events both flow
+      // through the CVA into `valueChanges`. `distinctUntilChanged` drops the
+      // duplicate the blur commit produces for an unchanged value.
+      vi.useFakeTimers();
+      try {
+        const { component, searchEvents } = setupSearch({});
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const control = (component as any).searchControl;
+
+        control.setValue('abc'); // typing (ui5 input)
+        control.setValue('abc'); // blur commit (ui5 change) — same value
+
+        vi.advanceTimersByTime(500);
+        expect(searchEvents).toEqual(['abc']);
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
-    it('onSearchAnimationEnd() does nothing when not collapsing', () => {
-      const { component } = setup();
-      component.toggleSearch();
-      // Not in collapsing state — should be a no-op
-      component.onSearchAnimationEnd();
+    it('submitSearch() emits the current value immediately', () => {
+      const { component, searchEvents } = setupSearch({});
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).searchExpanded()).toBe(true);
+      (component as any).searchControl.setValue('now', { emitEvent: false });
+      component.submitSearch();
+      expect(searchEvents).toEqual(['now']);
+    });
+
+    it('submitSearch() emits an empty string when the control is empty', () => {
+      const { component, searchEvents } = setupSearch({});
+      component.submitSearch();
+      expect(searchEvents).toEqual(['']);
+    });
+
+    it('uses searchConfig.placeholder as the input placeholder', () => {
+      const { component } = setupSearch({ placeholder: 'Find pods' });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).searchPlaceholder()).toBe('Find pods');
+    });
+
+    it('defaults the placeholder to "Search" when unset', () => {
+      const { component } = setupSearch({});
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).searchPlaceholder()).toBe('Search');
     });
   });
 
@@ -323,15 +383,24 @@ describe('DeclarativeTableCard', () => {
       expect((component as any).searchControl.value).toBe('foo');
     });
 
-    it('auto-expands the search input so the seeded value is visible', () => {
-      const { component } = setupWithSearchConfig({ initialSearch: 'foo' });
+    it('keeps the always-visible search input rendered with the seeded value', () => {
+      const { fixture, component } = setupWithSearchConfig({
+        initialSearch: 'foo',
+      });
+      const root: ShadowRoot | HTMLElement =
+        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+      expect(
+        root.querySelector(
+          '[data-testid="generic-table-card-search-input"]',
+        ),
+      ).not.toBeNull();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).searchExpanded()).toBe(true);
+      expect((component as any).searchControl.value).toBe('foo');
     });
 
     it('does not emit searchChanged for the seeded value', () => {
       // The seed uses `emitEvent: false` so the host doesn't see a phantom
-      // user edit. debounceTime(300) also means any real emission wouldn't
+      // user edit. debounceTime(500) also means any real emission wouldn't
       // arrive yet — this guards both.
       const { searchEvents } = setupWithSearchConfig({ initialSearch: 'foo' });
       expect(searchEvents).toEqual([]);
@@ -341,16 +410,14 @@ describe('DeclarativeTableCard', () => {
       const { component } = setupWithSearchConfig({});
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((component as any).searchControl.value).toBe('');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).searchExpanded()).toBe(false);
     });
 
     it('does nothing when initialSearch is an empty string', () => {
       // Guards the `if (!initial) return` branch — empty string is falsy so
-      // treated the same as absent (no auto-expand, no phantom set).
+      // treated the same as absent (no phantom set).
       const { component } = setupWithSearchConfig({ initialSearch: '' });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).searchExpanded()).toBe(false);
+      expect((component as any).searchControl.value).toBe('');
     });
 
     it('re-applies initialSearch to searchControl when the host pushes a new value', () => {
@@ -397,8 +464,6 @@ describe('DeclarativeTableCard', () => {
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((component as any).searchControl.value).toBe('second');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).searchExpanded()).toBe(true);
     });
   });
 
@@ -1072,7 +1137,7 @@ describe('DeclarativeTableCard', () => {
       expect(el).not.toBeNull();
     });
 
-    it('search button has data-testid="generic-table-card-search-btn" when searchConfig is provided', () => {
+    it('search input has data-testid="generic-table-card-search-input" when searchConfig is provided', () => {
       const config: TableCardConfig = {
         header: '',
         tableConfig: READ_CONFIG,
@@ -1089,15 +1154,21 @@ describe('DeclarativeTableCard', () => {
 
       const shadow: ShadowRoot | HTMLElement =
         fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
-      const btn = shadow.querySelector('[data-testid="generic-table-card-search-btn"]');
-      expect(btn).not.toBeNull();
+      const input = shadow.querySelector(
+        '[data-testid="generic-table-card-search-input"]',
+      );
+      expect(input).not.toBeNull();
     });
 
-    it('search button is absent when searchConfig is not set', () => {
+    it('search input is absent when searchConfig is not set', () => {
       const { fixture } = setup();
       const shadow: ShadowRoot | HTMLElement =
         fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
-      expect(shadow.querySelector('[data-testid="generic-table-card-search-btn"]')).toBeNull();
+      expect(
+        shadow.querySelector(
+          '[data-testid="generic-table-card-search-input"]',
+        ),
+      ).toBeNull();
     });
 
     it('create button has data-testid="generic-table-card-create-btn" when createConfig is provided', () => {
