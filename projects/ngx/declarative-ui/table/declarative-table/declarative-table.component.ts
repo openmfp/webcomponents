@@ -11,6 +11,7 @@ import {
   output,
 } from '@angular/core';
 import { IllustratedMessage } from '@fundamental-ngx/ui5-webcomponents-fiori';
+import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 import { Option } from '@fundamental-ngx/ui5-webcomponents/option';
 import { Select } from '@fundamental-ngx/ui5-webcomponents/select';
 import { Table } from '@fundamental-ngx/ui5-webcomponents/table';
@@ -20,6 +21,10 @@ import { TableHeaderCell } from '@fundamental-ngx/ui5-webcomponents/table-header
 import { TableHeaderRow } from '@fundamental-ngx/ui5-webcomponents/table-header-row';
 import { TableRow } from '@fundamental-ngx/ui5-webcomponents/table-row';
 import '@ui5/webcomponents-fiori/dist/illustrations/NoData.js';
+import '@ui5/webcomponents-icons/dist/close-command-field.js';
+import '@ui5/webcomponents-icons/dist/navigation-left-arrow.js';
+import '@ui5/webcomponents-icons/dist/navigation-right-arrow.js';
+import '@ui5/webcomponents-icons/dist/open-command-field.js';
 
 @Component({
   selector: 'mfp-declarative-table',
@@ -34,6 +39,7 @@ import '@ui5/webcomponents-fiori/dist/illustrations/NoData.js';
     Select,
     Option,
     TableGrowing,
+    Button,
   ],
   templateUrl: './declarative-table.component.html',
   styleUrl: './declarative-table.component.scss',
@@ -47,14 +53,16 @@ export class DeclarativeTable<T extends GenericResource> {
   totalItemsCount = input<number>();
   paginationLimit = input<number>(5);
   hasMore = input<boolean>(false);
-  growMode = input<'Scroll' | 'Button'>('Button');
+  loadMode = input<'scroll' | 'button' | 'pager'>('button');
   loadMoreButtonText = input<string>('Load More');
   height = input<number>();
+  currentPage = input<number>(1);
 
   readonly buttonClick = output<ResourceFieldButtonClickEvent<T>>();
   readonly tableRowClicked = output<T>();
   readonly loadMoreResources = output<void>();
   readonly paginationLimitChanged = output<number>();
+  readonly pageChange = output<number>();
 
   columnTrackBy = (column: TableFieldDefinition, index: number) =>
     column.property ?? column.value ?? index;
@@ -62,4 +70,34 @@ export class DeclarativeTable<T extends GenericResource> {
     getResourceValueByJsonPath(item, { property: this.trackByPath() }) ??
     _index;
   viewColumns = computed(() => processGroupFields(this.columns()));
+
+  isPagerMode = computed(() => this.loadMode() === 'pager');
+  totalPages = computed(() =>
+    Math.max(
+      1,
+      Math.ceil((this.totalItemsCount() ?? 0) / this.paginationLimit()),
+    ),
+  );
+  canPrev = computed(() => this.currentPage() > 1);
+  canNext = computed(() => this.currentPage() < this.totalPages());
+
+  goToPage(page: number): void {
+    const target = Math.min(Math.max(1, page), this.totalPages());
+    if (target !== this.currentPage()) {
+      this.pageChange.emit(target);
+    }
+  }
+
+  firstPage = () => {
+    this.goToPage(1);
+  };
+  prevPage = () => {
+    this.goToPage(this.currentPage() - 1);
+  };
+  nextPage = () => {
+    this.goToPage(this.currentPage() + 1);
+  };
+  lastPage = () => {
+    this.goToPage(this.totalPages());
+  };
 }

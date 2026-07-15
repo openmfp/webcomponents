@@ -5,7 +5,7 @@
 >
   <ui5-table-header-row
     slot="headerRow"
-    [sticky]="growMode() === 'Scroll' && !!height()"
+    [sticky]="loadMode() === 'scroll' && !!height()"
   >
     @for (column of viewColumns(); track columnTrackBy(column, $index)) {
       @if (column.group) {
@@ -93,21 +93,21 @@
     </ui5-table-row>
   } @empty {
     <ui5-illustrated-message
+      data-testid="generic-table-view-nodata"
       name="NoData"
       slot="noData"
-      data-testid="generic-table-view-nodata"
     >
       <span slot="title">No Resources</span>
       <span slot="subtitle">There are currently no items to show.</span>
     </ui5-illustrated-message>
   }
 
-  @if (hasMore()) {
+  @if (loadMode() !== 'pager' && hasMore()) {
     <ui5-table-growing
-      id="growing"
       data-testid="generic-table-growing"
+      id="growing"
       slot="features"
-      [mode]="growMode()"
+      [mode]="loadMode() === 'scroll' ? 'Scroll' : 'Button'"
       [text]="loadMoreButtonText()"
       (ui5LoadMore)="loadMoreResources.emit()"
     />
@@ -126,26 +126,65 @@
     border-top: 1px solid var(--sapList_BorderColor);
   "
 >
-  <div style="display: flex; align-items: center; gap: 1.5rem">
-    <div style="display: flex; align-items: center; gap: 0.5rem">
-      <span
-        style="color: var(--sapTextColor); font-size: var(--sapFontSmallSize)"
-        >Items per load:</span
-      >
-      <ui5-select
-        data-testid="generic-table-pagination-select"
-        style="width: 5rem"
-        [value]="paginationLimit().toString()"
-        (change)="paginationLimitChanged.emit(+$any($event)?.target?.value)"
-      >
-        <ui5-option value="5">5</ui5-option>
-        <ui5-option value="10">10</ui5-option>
-        <ui5-option value="10">20</ui5-option>
-        <ui5-option value="50">50</ui5-option>
-        <ui5-option value="100">100</ui5-option>
-      </ui5-select>
-    </div>
+  <div style="display: flex; align-items: center; gap: 0.5rem">
+    <span style="color: var(--sapTextColor); font-size: var(--sapFontSmallSize)">
+      {{ isPagerMode() ? 'Items per page:' : 'Items per load:' }}
+    </span>
+    <ui5-select
+      data-testid="generic-table-pagination-select"
+      style="width: 5rem"
+      [value]="paginationLimit().toString()"
+      (change)="paginationLimitChanged.emit(+$any($event)?.target?.value)"
+    >
+      <ui5-option value="5">5</ui5-option>
+      <ui5-option value="10">10</ui5-option>
+      <ui5-option value="20">20</ui5-option>
+      <ui5-option value="50">50</ui5-option>
+      <ui5-option value="100">100</ui5-option>
+    </ui5-select>
+  </div>
 
+  @if (isPagerMode()) {
+    <div class="pager" data-testid="generic-table-pager">
+      <ui5-button
+        accessibleName="First page"
+        data-testid="generic-table-pager-first"
+        design="Transparent"
+        icon="close-command-field"
+        [disabled]="!canPrev()"
+        (click)="firstPage()"
+      />
+      <ui5-button
+        accessibleName="Previous page"
+        data-testid="generic-table-pager-prev"
+        design="Transparent"
+        icon="navigation-left-arrow"
+        [disabled]="!canPrev()"
+        (click)="prevPage()"
+      />
+      <span
+        class="pager__indicator"
+        data-testid="generic-table-pager-indicator"
+        >{{ currentPage() }} / {{ totalPages() }}</span
+      >
+      <ui5-button
+        accessibleName="Next page"
+        data-testid="generic-table-pager-next"
+        design="Transparent"
+        icon="navigation-right-arrow"
+        [disabled]="!canNext()"
+        (click)="nextPage()"
+      />
+      <ui5-button
+        accessibleName="Last page"
+        data-testid="generic-table-pager-last"
+        design="Transparent"
+        icon="open-command-field"
+        [disabled]="!canNext()"
+        (click)="lastPage()"
+      />
+    </div>
+  } @else {
     <span
       style="color: var(--sapTextColor); font-size: var(--sapFontSmallSize)"
     >
@@ -156,5 +195,5 @@
           : resources().length
       }}</b>
     </span>
-  </div>
+  }
 </div>

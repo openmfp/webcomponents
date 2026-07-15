@@ -63,6 +63,7 @@ export class DeclarativeTableCard<T extends GenericResource> {
   readonly tableRowClicked = output<T>();
   readonly loadMoreResources = output<void>();
   readonly paginationLimitChanged = output<number>();
+  readonly pageChange = output<number>();
 
   readonly searchChanged = output<string>();
   readonly createFieldChange = output<FormFieldChangeEvent>();

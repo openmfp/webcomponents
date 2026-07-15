@@ -1095,16 +1095,24 @@ describe('DeclarativeTableCard', () => {
   });
 
   // -------------------------------------------------------------------------
-  // 16. TableConfig: growMode / height / loadMoreButtonText pass-through
+  // 16. TableConfig: loadMode / height / loadMoreButtonText pass-through
   // -------------------------------------------------------------------------
 
-  describe('tableConfig passthrough: growMode, height, loadMoreButtonText', () => {
-    it('exposes growMode via tableConfig signal', () => {
+  describe('tableConfig passthrough: loadMode, height, loadMoreButtonText', () => {
+    it('exposes loadMode via tableConfig signal', () => {
       const { component } = setup({
-        readConfig: { fields: COLUMNS, growMode: 'Scroll' },
+        readConfig: { fields: COLUMNS, loadMode: 'scroll' },
       });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).tableConfig().growMode).toBe('Scroll');
+      expect((component as any).tableConfig().loadMode).toBe('scroll');
+    });
+
+    it('exposes currentPage via tableConfig signal', () => {
+      const { component } = setup({
+        readConfig: { fields: COLUMNS, loadMode: 'pager', currentPage: 3 },
+      });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).tableConfig().currentPage).toBe(3);
     });
 
     it('exposes height via tableConfig signal', () => {
@@ -1121,6 +1129,14 @@ describe('DeclarativeTableCard', () => {
       });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((component as any).tableConfig().loadMoreButtonText).toBe('Show More');
+    });
+
+    it('re-emits pageChange from the inner table', () => {
+      const { component } = setup();
+      const emitted: number[] = [];
+      component.pageChange.subscribe((n) => emitted.push(n));
+      component.pageChange.emit(4);
+      expect(emitted).toEqual([4]);
     });
   });
 
