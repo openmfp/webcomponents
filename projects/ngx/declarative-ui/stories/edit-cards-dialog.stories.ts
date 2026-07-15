@@ -24,7 +24,6 @@ const AVAILABLE_CARDS: CardConfig[] = [
 @Component({
   selector: 'mfp-edit-cards-dialog-story',
   imports: [EditCardsDialog],
-  providers: [DashboardI18nService],
   template: `
     <ui5-button (click)="open = true">Open Dialog</ui5-button>
     <mfp-edit-cards-dialog
@@ -40,6 +39,7 @@ const AVAILABLE_CARDS: CardConfig[] = [
       </ui5-message-strip>
     }
   `,
+  providers: [DashboardI18nService],
 })
 class EditCardsDialogStory {
   @Input() availableCards: CardConfig[] = AVAILABLE_CARDS;

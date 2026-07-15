@@ -1,8 +1,10 @@
-import { FormFieldChangeEvent, FormFieldDefinition } from '../form';
-import { DeclarativeForm } from '../form/declarative-form/declarative-form.component';
+import {
+  DeclarativeForm,
+  FormFieldChangeEvent,
+  FormFieldDefinition,
+} from '../form';
 import { GenericResource, ResourceFieldButtonClickEvent } from '../models';
-import { DeclarativeTable } from '../table/declarative-table/declarative-table.component';
-import { TableFieldDefinition } from '../table/models';
+import { DeclarativeTable, TableFieldDefinition } from '../table';
 import { getResourceValueByJsonPath } from '../table/utils/resource-field-by-path';
 import { FilterTabs } from './filter-tabs/filter-tabs.component';
 import {
@@ -14,16 +16,11 @@ import {
   CUSTOM_ELEMENTS_SCHEMA,
   ChangeDetectionStrategy,
   Component,
-  Injector,
   ViewEncapsulation,
-  afterNextRender,
   computed,
-  effect,
-  inject,
   input,
   output,
   signal,
-  viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
@@ -34,9 +31,7 @@ import { Input } from '@fundamental-ngx/ui5-webcomponents/input';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 import '@ui5/webcomponents-icons/dist/add.js';
 import '@ui5/webcomponents-icons/dist/search.js';
-import { debounceTime, filter, map, take } from 'rxjs';
-
-type SearchState = 'collapsed' | 'expanded' | 'collapsing';
+import { debounceTime, distinctUntilChanged, filter, map } from 'rxjs';
 
 @Component({
   selector: 'mfp-declarative-table-card',
@@ -83,13 +78,7 @@ export class DeclarativeTableCard<T extends GenericResource> {
   readonly deleteSubmit = output<T>();
   readonly filterTabChanged = output<FieldFilterDefinition | undefined>();
 
-  protected searchState = signal<SearchState>('collapsed');
-  protected searchExpanded = computed(() => this.searchState() !== 'collapsed');
-  protected searchCollapsing = computed(
-    () => this.searchState() === 'collapsing',
-  );
   protected searchControl = new FormControl('');
-  protected searchInputRef = viewChild<Input>('searchInput');
 
   protected createDialogOpen = signal(false);
   protected editDialogOpen = signal(false);
@@ -128,6 +117,9 @@ export class DeclarativeTableCard<T extends GenericResource> {
 
   protected searchConfig = computed(() => this.config().searchConfig);
   protected resourcesSearchable = computed(() => !!this.searchConfig());
+  protected searchPlaceholder = computed(
+    () => this.searchConfig()?.placeholder ?? 'Search',
+  );
 
   protected filterTabs = computed(() => {
     const tabs = this.searchConfig()?.filterTabs;
@@ -154,11 +146,9 @@ export class DeclarativeTableCard<T extends GenericResource> {
 
   protected hasFilterTabs = computed(() => this.filterTabs().length > 0);
 
-  private readonly injector = inject(Injector);
-
   constructor() {
     this.searchControl.valueChanges
-      .pipe(debounceTime(300), takeUntilDestroyed())
+      .pipe(debounceTime(500), distinctUntilChanged(), takeUntilDestroyed())
       .subscribe((value) => {
         this.searchChanged.emit(value ?? '');
       });
@@ -171,7 +161,6 @@ export class DeclarativeTableCard<T extends GenericResource> {
       )
       .subscribe((initial) => {
         this.searchControl.setValue(initial, { emitEvent: false });
-        this.searchState.set('expanded');
       });
   }
 
@@ -179,35 +168,8 @@ export class DeclarativeTableCard<T extends GenericResource> {
     this.filterTabChanged.emit(tab);
   }
 
-  toggleSearch(): void {
-    if (this.searchState() === 'expanded') {
-      this.collapseSearch();
-    } else if (this.searchState() === 'collapsed') {
-      this.searchState.set('expanded');
-      afterNextRender(
-        () => {
-          this.searchInputRef()?.elementRef.nativeElement.focus();
-        },
-        { injector: this.injector },
-      );
-    }
-  }
-
-  onSearchBlur(): void {
-    if (!this.searchControl.value) {
-      this.collapseSearch();
-    }
-  }
-
-  onSearchAnimationEnd(): void {
-    if (this.searchCollapsing()) {
-      this.searchState.set('collapsed');
-      this.searchControl.setValue('', { emitEvent: false });
-    }
-  }
-
-  private collapseSearch(): void {
-    this.searchState.set('collapsing');
+  submitSearch(): void {
+    this.searchChanged.emit(this.searchControl.value ?? '');
   }
 
   onButtonClick(event: ResourceFieldButtonClickEvent<T>): void {

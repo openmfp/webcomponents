@@ -98,6 +98,11 @@ export interface TableCardSearchConfig {
    */
   initialSearch?: string;
   /**
+   * Placeholder text shown in the always-visible search input to prompt
+   * searching. Defaults to `Search` when omitted.
+   */
+  placeholder?: string;
+  /**
    * Predefined filters rendered as a horizontal tab strip above the table.
    * Omit (or pass an empty array) to hide the strip while keeping the search
    * input visible.

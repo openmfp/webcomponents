@@ -6,7 +6,6 @@ import { DashboardI18nService } from '../dashboard/i18n';
 @Component({
   selector: 'mfp-discard-changes-dialog-story',
   imports: [DiscardChangesDialog],
-  providers: [DashboardI18nService],
   template: `
     <ui5-button design="Negative" (click)="open = true">Open Dialog</ui5-button>
     <mfp-discard-changes-dialog
@@ -20,6 +19,7 @@ import { DashboardI18nService } from '../dashboard/i18n';
       </ui5-message-strip>
     }
   `,
+  providers: [DashboardI18nService],
 })
 class DiscardChangesDialogStory {
   open = false;

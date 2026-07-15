@@ -15,34 +15,33 @@
     </div>
     <div class="card__actions">
       @if (resourcesSearchable()) {
-        @if (searchExpanded()) {
-          <ui5-input
-            #searchInput
-            data-testid="generic-table-card-search-input"
-            [class]="
-              'card__search-input card__search-input--' +
-              (searchCollapsing() ? 'leave' : 'enter')
-            "
-            [formControl]="searchControl"
-            (animationend)="onSearchAnimationEnd()"
-            (blur)="onSearchBlur()"
+        <ui5-input
+          class="card__search-input"
+          data-testid="generic-table-card-search-input"
+          [formControl]="searchControl"
+          [placeholder]="searchPlaceholder()"
+          [showClearIcon]="true"
+        >
+          <ui5-icon
+            class="card__search-icon"
+            data-testid="generic-table-card-search-icon"
+            name="search"
+            slot="icon"
+            [accessibleName]="searchButtonConfig()?.tooltip ?? 'Search'"
+            [showTooltip]="true"
+            (click)="submitSearch()"
           />
-        }
-        <ui5-button
-          class="card__search-btn"
-          data-testid="generic-table-card-search-btn"
-          design="Transparent"
-          [accessibleName]="searchButtonConfig()?.tooltip ?? 'Search'"
-          [icon]="searchButtonConfig()?.icon ?? 'search'"
-          [tooltip]="searchButtonConfig()?.tooltip ?? 'Search'"
-          (click)="toggleSearch()"
-        />
+        </ui5-input>
       }
       @if (createFormConfig()) {
         <ui5-button
           class="card__create-btn"
           data-testid="generic-table-card-create-btn"
-          [accessibleName]="createButtonConfig()?.text || createButtonConfig()?.tooltip || 'Create'"
+          [accessibleName]="
+            createButtonConfig()?.text ||
+            createButtonConfig()?.tooltip ||
+            'Create'
+          "
           [design]="createButtonConfig()?.design ?? 'Transparent'"
           [icon]="createButtonConfig()?.icon ?? 'add'"
           [tooltip]="createButtonConfig()?.tooltip"
@@ -109,7 +108,11 @@
       >
         {{ config.confirmLabel ?? 'Save' }}
       </ui5-button>
-      <ui5-button data-testid="generic-table-card-create-cancel" design="Transparent" (click)="closeCreateDialog()">
+      <ui5-button
+        data-testid="generic-table-card-create-cancel"
+        design="Transparent"
+        (click)="closeCreateDialog()"
+      >
         {{ config.cancelLabel ?? 'Cancel' }}
       </ui5-button>
     </div>
@@ -145,7 +148,11 @@
       >
         {{ config.confirmLabel ?? 'Edit' }}
       </ui5-button>
-      <ui5-button data-testid="generic-table-card-edit-cancel" design="Transparent" (click)="closeEditDialog()">
+      <ui5-button
+        data-testid="generic-table-card-edit-cancel"
+        design="Transparent"
+        (click)="closeEditDialog()"
+      >
         {{ config.cancelLabel ?? 'Cancel' }}
       </ui5-button>
     </div>
@@ -168,10 +175,18 @@
       </div>
     }
     <div class="dialog__footer" slot="footer">
-      <ui5-button data-testid="generic-table-card-delete-confirm" design="Negative" (click)="onDeleteSubmit()">
+      <ui5-button
+        data-testid="generic-table-card-delete-confirm"
+        design="Negative"
+        (click)="onDeleteSubmit()"
+      >
         {{ config.confirmLabel ?? 'Delete' }}
       </ui5-button>
-      <ui5-button data-testid="generic-table-card-delete-cancel" design="Transparent" (click)="closeDeleteDialog()">
+      <ui5-button
+        data-testid="generic-table-card-delete-cancel"
+        design="Transparent"
+        (click)="closeDeleteDialog()"
+      >
         {{ config.cancelLabel ?? 'Cancel' }}
       </ui5-button>
     </div>
