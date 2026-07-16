@@ -14,9 +14,10 @@ function setup(opts: {
   totalItemsCount?: number;
   paginationLimit?: number;
   hasMore?: boolean;
-  growMode?: 'Scroll' | 'Button' | undefined;
+  loadMode?: 'scroll' | 'button' | 'pager' | undefined;
   loadMoreButtonText?: string;
   height?: number;
+  currentPage?: number;
 }): { fixture: Fixture; component: Comp } {
   const fixture: Fixture = TestBed.createComponent(
     DeclarativeTable as unknown as typeof DeclarativeTable<GenericResource>,
@@ -28,9 +29,10 @@ function setup(opts: {
   if (opts.totalItemsCount !== undefined) fixture.componentRef.setInput('totalItemsCount', opts.totalItemsCount);
   if (opts.paginationLimit !== undefined) fixture.componentRef.setInput('paginationLimit', opts.paginationLimit);
   if (opts.hasMore !== undefined) fixture.componentRef.setInput('hasMore', opts.hasMore);
-  if (opts.growMode !== undefined) fixture.componentRef.setInput('growMode', opts.growMode);
+  if (opts.loadMode !== undefined) fixture.componentRef.setInput('loadMode', opts.loadMode);
   if (opts.loadMoreButtonText !== undefined) fixture.componentRef.setInput('loadMoreButtonText', opts.loadMoreButtonText);
   if (opts.height !== undefined) fixture.componentRef.setInput('height', opts.height);
+  if (opts.currentPage !== undefined) fixture.componentRef.setInput('currentPage', opts.currentPage);
   fixture.detectChanges();
   return { fixture, component };
 }
@@ -369,23 +371,23 @@ describe('DeclarativeTable', () => {
     });
   });
 
-  describe('growMode input', () => {
-    it('defaults to Button', () => {
+  describe('loadMode input', () => {
+    it('defaults to button', () => {
       const { component } = setup({ columns: [{ property: 'name' }] });
-      expect(component.growMode()).toBe('Button');
+      expect(component.loadMode()).toBe('button');
     });
 
-    it('marks header row sticky when growMode is Scroll and height is set', () => {
+    it('marks header row sticky when loadMode is scroll and height is set', () => {
       const { fixture } = setup({
         columns: [{ property: 'name' }],
-        growMode: 'Scroll',
+        loadMode: 'scroll',
         height: 300,
       });
       const headerRowEl = root(fixture).querySelector('ui5-table-header-row') as HTMLElement & { sticky: boolean };
       expect(headerRowEl.sticky).toBe(true);
     });
 
-    it('header row is not sticky when growMode is Button', () => {
+    it('header row is not sticky when loadMode is button', () => {
       const { fixture } = setup({
         columns: [{ property: 'name' }],
         height: 300,
@@ -394,24 +396,191 @@ describe('DeclarativeTable', () => {
       expect(headerRowEl.sticky).toBe(false);
     });
 
-    it('header row is not sticky when height is not set even if growMode is Scroll', () => {
+    it('header row is not sticky when height is not set even if loadMode is scroll', () => {
       const { fixture } = setup({
         columns: [{ property: 'name' }],
-        growMode: 'Scroll',
+        loadMode: 'scroll',
       });
       const headerRowEl = root(fixture).querySelector('ui5-table-header-row') as HTMLElement & { sticky: boolean };
       expect(headerRowEl.sticky).toBe(false);
     });
 
-    it('passes growMode to ui5-table-growing when hasMore is true', () => {
+    it('maps scroll to the Scroll ui5-table-growing mode when hasMore is true', () => {
       const { fixture } = setup({
         columns: [{ property: 'name' }],
         resources: [{ id: '1' }],
         hasMore: true,
-        growMode: 'Scroll',
+        loadMode: 'scroll',
       });
       const growingDe = fixture.debugElement.query(By.css('ui5-table-growing'));
       expect(growingDe?.properties?.['mode']).toBe('Scroll');
+    });
+
+    it('maps button to the Button ui5-table-growing mode when hasMore is true', () => {
+      const { fixture } = setup({
+        columns: [{ property: 'name' }],
+        resources: [{ id: '1' }],
+        hasMore: true,
+        loadMode: 'button',
+      });
+      const growingDe = fixture.debugElement.query(By.css('ui5-table-growing'));
+      expect(growingDe?.properties?.['mode']).toBe('Button');
+    });
+
+    it('does not render ui5-table-growing in pager mode even when hasMore is true', () => {
+      const { fixture } = setup({
+        columns: [{ property: 'name' }],
+        resources: [{ id: '1' }],
+        hasMore: true,
+        loadMode: 'pager',
+      });
+      expect(el(fixture, 'generic-table-growing')).toBeNull();
+    });
+  });
+
+  describe('pager mode', () => {
+    const pagerSetup = (
+      overrides: Partial<Parameters<typeof setup>[0]> = {},
+    ) =>
+      setup({
+        columns: [{ property: 'name' }],
+        resources: [{ id: '1' }, { id: '2' }],
+        loadMode: 'pager',
+        paginationLimit: 5,
+        totalItemsCount: 12,
+        currentPage: 1,
+        ...overrides,
+      });
+
+    it('renders the pager only in pager mode', () => {
+      const { fixture } = pagerSetup();
+      expect(el(fixture, 'generic-table-pager')).not.toBeNull();
+
+      const { fixture: grow } = setup({
+        columns: [{ property: 'name' }],
+        loadMode: 'button',
+      });
+      expect(el(grow, 'generic-table-pager')).toBeNull();
+    });
+
+    it('computes totalPages as ceil(totalItemsCount / paginationLimit)', () => {
+      const { component } = pagerSetup({
+        totalItemsCount: 12,
+        paginationLimit: 5,
+      });
+      expect(component.totalPages()).toBe(3);
+    });
+
+    it('shows the compact "X / Y" indicator', () => {
+      const { fixture } = pagerSetup({
+        currentPage: 2,
+        totalItemsCount: 12,
+        paginationLimit: 5,
+      });
+      expect(
+        el(fixture, 'generic-table-pager-indicator')?.textContent?.trim(),
+      ).toBe('2 / 3');
+    });
+
+    it('disables first and previous on the first page', () => {
+      const { fixture } = pagerSetup({ currentPage: 1 });
+      const first = el(fixture, 'generic-table-pager-first') as HTMLElement & { disabled: boolean };
+      const prev = el(fixture, 'generic-table-pager-prev') as HTMLElement & { disabled: boolean };
+      expect(first.disabled).toBe(true);
+      expect(prev.disabled).toBe(true);
+    });
+
+    it('disables next and last on the last page', () => {
+      const { fixture } = pagerSetup({
+        currentPage: 3,
+        totalItemsCount: 12,
+        paginationLimit: 5,
+      });
+      const next = el(fixture, 'generic-table-pager-next') as HTMLElement & { disabled: boolean };
+      const last = el(fixture, 'generic-table-pager-last') as HTMLElement & { disabled: boolean };
+      expect(next.disabled).toBe(true);
+      expect(last.disabled).toBe(true);
+    });
+
+    it('emits pageChange with the target page for each control', () => {
+      const { component } = pagerSetup({
+        currentPage: 2,
+        totalItemsCount: 12,
+        paginationLimit: 5,
+      });
+      const emitted: number[] = [];
+      component.pageChange.subscribe((n) => emitted.push(n));
+
+      component.firstPage();
+      component.prevPage();
+      component.nextPage();
+      component.lastPage();
+
+      expect(emitted).toEqual([1, 1, 3, 3]);
+    });
+
+    it('does not emit when already at the boundary', () => {
+      const { component } = pagerSetup({
+        currentPage: 1,
+        totalItemsCount: 12,
+        paginationLimit: 5,
+      });
+      const emitted: number[] = [];
+      component.pageChange.subscribe((n) => emitted.push(n));
+
+      component.firstPage();
+      component.prevPage();
+
+      expect(emitted).toEqual([]);
+    });
+
+    it('clamps out-of-range page requests to totalPages', () => {
+      const { component } = pagerSetup({
+        currentPage: 1,
+        totalItemsCount: 12,
+        paginationLimit: 5,
+      });
+      const emitted: number[] = [];
+      component.pageChange.subscribe((n) => emitted.push(n));
+
+      component.goToPage(99);
+
+      expect(emitted).toEqual([3]);
+    });
+
+    it('shows a neutral "–" indicator and disables all arrows when there are no results', () => {
+      const { fixture, component } = pagerSetup({
+        resources: [],
+        totalItemsCount: 0,
+        currentPage: 1,
+      });
+      expect(
+        el(fixture, 'generic-table-pager-indicator')?.textContent?.trim(),
+      ).toBe('–');
+
+      const ids = ['first', 'prev', 'next', 'last'];
+      for (const id of ids) {
+        const btn = el(fixture, `generic-table-pager-${id}`) as HTMLElement & {
+          disabled: boolean;
+        };
+        expect(btn.disabled).toBe(true);
+      }
+      expect(component.canPrev()).toBe(false);
+      expect(component.canNext()).toBe(false);
+    });
+
+    it('renders the total item count as "<n> Items" in pager mode', () => {
+      const { fixture } = pagerSetup({ totalItemsCount: 145 });
+      expect(
+        el(fixture, 'generic-table-item-count')?.textContent?.replace(/\s+/g, ' ').trim(),
+      ).toBe('145 Items');
+    });
+
+    it('shows "0 Items" when there are no results', () => {
+      const { fixture } = pagerSetup({ resources: [], totalItemsCount: 0 });
+      expect(
+        el(fixture, 'generic-table-item-count')?.textContent?.replace(/\s+/g, ' ').trim(),
+      ).toBe('0 Items');
     });
   });
 

@@ -33,3 +33,46 @@ ui5-table-header-row {
   padding-block-start: 0.75rem;
   padding-block-end: 0.25rem;
 }
+
+.pagination-footer {
+  gap: 0.5rem;
+
+  &__side {
+    flex: 1 1 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+
+    &--end {
+      justify-content: flex-end;
+    }
+  }
+}
+
+.pager {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  justify-content: center;
+
+  ui5-button {
+    color: var(--sapContent_IconColor, #1d2d3e);
+    --sapButton_IconColor: var(--sapContent_IconColor, #1d2d3e);
+    --sapButton_Hover_IconColor: var(--sapContent_IconColor, #1d2d3e);
+
+    &[disabled] {
+      color: var(--sapContent_DisabledTextColor, #b3b3b3);
+      --sapButton_IconColor: var(--sapContent_DisabledTextColor, #b3b3b3);
+    }
+  }
+
+  &__indicator {
+    min-width: 3rem;
+    text-align: center;
+    color: var(--sapTextColor);
+    font-size: var(--sapFontSize);
+    font-weight: bold;
+  }
+}

@@ -87,14 +87,16 @@ const PODS: Pod[] = [
   template: `
     <mfp-declarative-table
       [columns]="columns"
-      [growMode]="growMode"
+      [currentPage]="currentPage"
       [hasMore]="hasMore"
       [height]="height"
+      [loadMode]="loadMode"
       [paginationLimit]="paginationLimit"
-      [resources]="resources"
+      [resources]="visibleResources"
       [totalItemsCount]="totalItemsCount"
       [trackByPath]="trackByProperty"
       (loadMoreResources)="loadMore()"
+      (pageChange)="onPageChange($event)"
       (paginationLimitChanged)="onPageSizeChange($event)"
     />
   `,
@@ -106,8 +108,21 @@ class DeclarativeTableStory {
   @Input() hasMore = false;
   @Input() paginationLimit = 5;
   @Input() totalItemsCount?: number;
-  @Input() growMode: 'Scroll' | 'Button' = 'Scroll';
+  @Input() loadMode: 'scroll' | 'button' | 'pager' = 'scroll';
   @Input() height?: number;
+  @Input() currentPage = 1;
+
+  /**
+   * In pager mode the story slices the full `resources` array to the current
+   * page so the arrows visibly navigate; other modes show `resources` as-is.
+   */
+  get visibleResources(): GenericResource[] {
+    if (this.loadMode !== 'pager') {
+      return this.resources;
+    }
+    const start = (this.currentPage - 1) * this.paginationLimit;
+    return this.resources.slice(start, start + this.paginationLimit);
+  }
 
   loadMore(): void {
     const resources = [...this.resources];
@@ -115,9 +130,16 @@ class DeclarativeTableStory {
     this.resources = resources;
   }
 
-  onPageSizeChange(limit: CustomEvent<number>): void {
-    this.paginationLimit = limit.detail;
-    this.resources = this.resources.slice(0, this.paginationLimit);
+  onPageChange(page: number): void {
+    this.currentPage = page;
+  }
+
+  onPageSizeChange(limit: number): void {
+    this.paginationLimit = limit;
+    // Reset to the first page so the pager recalculates against the new size;
+    // the full `resources` dataset is left intact so `visibleResources` and
+    // `totalItemsCount` stay correct.
+    this.currentPage = 1;
   }
 }
 
@@ -139,7 +161,8 @@ const meta: Meta<DeclarativeTableStory> = {
     hasMore: { control: 'boolean' },
     paginationLimit: { control: 'number' },
     totalItemsCount: { control: 'number' },
-    growMode: { options: ['Scroll', 'Button'] },
+    currentPage: { control: 'number' },
+    loadMode: { options: ['scroll', 'button', 'pager'], control: 'select' },
   },
   args: {
     resources: PODS,
@@ -364,7 +387,7 @@ export const Pagination_Scroll: Story = {
     hasMore: true,
     paginationLimit: 5,
     totalItemsCount: 20,
-    growMode: 'Scroll',
+    loadMode: 'scroll',
     height: 200,
   },
 };
@@ -379,7 +402,37 @@ export const Pagination_Button: Story = {
     hasMore: true,
     paginationLimit: 5,
     totalItemsCount: 20,
-    growMode: 'Button',
+    loadMode: 'button',
+  },
+};
+
+/**
+ * Arrow pager (`loadMode: 'pager'`). Controlled: the story owns `currentPage`
+ * and slices the dataset to the visible page, so first/prev/next/last navigate
+ * and the `X / Y` indicator updates. `pageChange` fires with the 1-based page.
+ * First/prev disable on page 1; next/last on the last page.
+ */
+export const Pagination_Pager: Story = {
+  args: {
+    columns: [
+      { label: 'Name', property: 'metadata.name' },
+      { label: 'Namespace', property: 'metadata.namespace' },
+      { label: 'Phase', property: 'status.phase' },
+    ] satisfies TableFieldDefinition[],
+    resources: Array.from({ length: 20 }, (_, i) => ({
+      ...PODS[i % PODS.length],
+      id: `pager-${i + 1}`,
+      metadata: {
+        ...PODS[i % PODS.length].metadata,
+        name: `resource-${i + 1}`,
+        uid: `pager-${i + 1}`,
+      },
+    })),
+    trackByProperty: 'metadata.uid',
+    loadMode: 'pager',
+    paginationLimit: 5,
+    totalItemsCount: 20,
+    currentPage: 1,
   },
 };
 /** Load-more pagination trigger. Click "Load More" to fire loadMoreResources. */

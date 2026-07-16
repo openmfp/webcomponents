@@ -59,12 +59,20 @@ export interface TableConfig {
   fields: TableFieldDefinition[];
   /** Total number of items on the server (used by pagination). */
   totalItemsCount?: number;
-  /** Number of rows per page. */
+  /** Page size in `pager` mode; batch size for the grow modes otherwise. */
   paginationLimit?: number;
-  /** When `true`, the "Load More" control is shown. */
+  /** 1-based current page. Only used when `loadMode` is `'pager'`. */
+  currentPage?: number;
+  /** When `true`, the "Load More" control is shown. Grow modes only. */
   hasMore?: boolean;
   height?: number;
-  growMode?: 'Scroll' | 'Button';
+  /**
+   * How additional rows are presented:
+   * - `'scroll'` / `'button'` — grow the list in place via `ui5-table-growing`.
+   * - `'pager'` — classic arrow pager (first/prev/next/last) emitting `pageChange`.
+   */
+  loadMode?: 'scroll' | 'button' | 'pager';
+  /** Text on the grow "Load More" button. Grow modes only. */
   loadMoreButtonText?: string;
 }
 
