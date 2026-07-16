@@ -72,14 +72,17 @@ export class DeclarativeTable<T extends GenericResource> {
   viewColumns = computed(() => processGroupFields(this.columns()));
 
   isPagerMode = computed(() => this.loadMode() === 'pager');
+  hasResults = computed(() => (this.totalItemsCount() ?? 0) > 0);
   totalPages = computed(() =>
     Math.max(
       1,
       Math.ceil((this.totalItemsCount() ?? 0) / this.paginationLimit()),
     ),
   );
-  canPrev = computed(() => this.currentPage() > 1);
-  canNext = computed(() => this.currentPage() < this.totalPages());
+  canPrev = computed(() => this.hasResults() && this.currentPage() > 1);
+  canNext = computed(
+    () => this.hasResults() && this.currentPage() < this.totalPages(),
+  );
 
   goToPage(page: number): void {
     const target = Math.min(Math.max(1, page), this.totalPages());

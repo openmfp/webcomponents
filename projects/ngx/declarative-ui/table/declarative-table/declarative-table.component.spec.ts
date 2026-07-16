@@ -547,6 +547,41 @@ describe('DeclarativeTable', () => {
 
       expect(emitted).toEqual([3]);
     });
+
+    it('shows a neutral "–" indicator and disables all arrows when there are no results', () => {
+      const { fixture, component } = pagerSetup({
+        resources: [],
+        totalItemsCount: 0,
+        currentPage: 1,
+      });
+      expect(
+        el(fixture, 'generic-table-pager-indicator')?.textContent?.trim(),
+      ).toBe('–');
+
+      const ids = ['first', 'prev', 'next', 'last'];
+      for (const id of ids) {
+        const btn = el(fixture, `generic-table-pager-${id}`) as HTMLElement & {
+          disabled: boolean;
+        };
+        expect(btn.disabled).toBe(true);
+      }
+      expect(component.canPrev()).toBe(false);
+      expect(component.canNext()).toBe(false);
+    });
+
+    it('renders the total item count as "<n> Items" in pager mode', () => {
+      const { fixture } = pagerSetup({ totalItemsCount: 145 });
+      expect(
+        el(fixture, 'generic-table-item-count')?.textContent?.replace(/\s+/g, ' ').trim(),
+      ).toBe('145 Items');
+    });
+
+    it('shows "0 Items" when there are no results', () => {
+      const { fixture } = pagerSetup({ resources: [], totalItemsCount: 0 });
+      expect(
+        el(fixture, 'generic-table-item-count')?.textContent?.replace(/\s+/g, ' ').trim(),
+      ).toBe('0 Items');
+    });
   });
 
   describe('loadMoreButtonText input', () => {
