@@ -45,7 +45,7 @@
           [design]="createButtonConfig()?.design ?? 'Transparent'"
           [icon]="createButtonConfig()?.icon ?? 'add'"
           [tooltip]="createButtonConfig()?.tooltip"
-          (click)="createDialogOpen.set(true)"
+          (click)="openCreateDialog()"
         >
           {{ createButtonConfig()?.text ?? '' }}
         </ui5-button>
@@ -96,7 +96,7 @@
       <mfp-declarative-form
         #createForm
         [fieldErrors]="createFormState().fieldErrors ?? {}"
-        [fields]="config.fields"
+        [fields]="resolvedCreateFields()"
         (fieldChange)="onCreateFieldChange($event)"
         (formSubmit)="onCreateSubmit($event)"
       />
@@ -135,7 +135,7 @@
       <mfp-declarative-form
         #editForm
         [fieldErrors]="editFormState().fieldErrors ?? {}"
-        [fields]="config.fields"
+        [fields]="resolvedEditFields()"
         [initialValues]="editInitialValue()"
         (fieldChange)="onEditFieldChange($event)"
         (formSubmit)="onEditSubmit($event)"

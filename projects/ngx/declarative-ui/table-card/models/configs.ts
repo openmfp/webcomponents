@@ -4,8 +4,15 @@ import { TableFieldDefinition } from '../../table';
 
 /** Configuration for the create/edit resource form rendered inside the table card dialogs. */
 export interface ResourceFormConfig {
-  /** Ordered list of fields to render in the form. */
-  fields: FormFieldDefinition[];
+  /**
+   * Ordered list of fields to render in the form. May be a plain array, or a
+   * thunk returning a promise of the fields — the thunk form is resolved lazily
+   * when the dialog opens (e.g. to fetch dynamic select options on demand
+   * rather than prefetching them on render).
+   */
+  fields:
+    | FormFieldDefinition[]
+    | (() => Promise<FormFieldDefinition[]>);
   /** Dialog title shown in the header. */
   title?: string;
   /** Label for the confirm/submit button. */
