@@ -19,6 +19,72 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import type { Breakpoint } from 'gridstack';
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /**
  * Layout strategy applied at each breakpoint when Gridstack changes column
  * count. See ColumnOptions in gridstack/dist/types.d.ts:27 for the full set.
@@ -26,9 +92,13 @@ import type { Breakpoint } from 'gridstack';
 type LayoutStrategy = 'compact' | 'list' | 'none';
 
 /** Single source of truth for grid + section breakpoints (TypeScript half). */
-export const DASHBOARD_BREAKPOINTS: readonly Readonly<Required<Pick<Breakpoint, 'w' | 'c'>> & { layout: LayoutStrategy }>[] = [
-  { w: 4000, c: 14, layout: 'compact' },
-  { w: 1439, c: 12, layout: 'compact' },
-  { w: 1023, c: 8, layout: 'compact' },
+export const DASHBOARD_BREAKPOINTS: readonly Readonly<
+  Required<Pick<Breakpoint, 'w' | 'c'>> & { layout: LayoutStrategy }
+>[] = [
+  { w: 4000, c: 4, layout: 'compact' },
+  { w: 1439, c: 4, layout: 'compact' },
+  { w: 1023, c: 4, layout: 'compact' },
   { w: 599, c: 1, layout: 'list' },
 ] as const;
+
+export const XL_PAGE = 1440;

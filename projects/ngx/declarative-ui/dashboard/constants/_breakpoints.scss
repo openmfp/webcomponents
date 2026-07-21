@@ -24,9 +24,9 @@ $dashboard-bp-lg: 1439px;
 
 /// Column counts at each breakpoint.
 $dashboard-cols-sm: 1;
-$dashboard-cols-md: 8;
-$dashboard-cols-lg: 12;
-$dashboard-cols-xl: 14;
+$dashboard-cols-md: 4;
+$dashboard-cols-lg: 4;
+$dashboard-cols-xl: 4;
 
 /// Emit `grid-template-columns: repeat(N, 1fr)` rules wrapped in @container
 /// queries against the `mfp-dashboard` named container. Every dashboard grid

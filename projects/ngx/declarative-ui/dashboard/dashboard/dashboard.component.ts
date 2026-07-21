@@ -1,3 +1,22 @@
+import { ButtonSettings } from '../../models';
+import { DashboardCard } from '../card/dashboard-card.component';
+import { addComponentToRegistry } from '../card/utils';
+import {
+  CELL_HEIGHT,
+  COMPACT_BREAKPOINT,
+  DASHBOARD_BREAKPOINTS,
+  XL_PAGE,
+} from '../constants';
+import { DiscardChangesDialog } from '../discard-changes-dialog/discard-changes-dialog.component';
+import { EditCardsDialog } from '../edit-cards-dialog/edit-cards-dialog.component';
+import {
+  DASHBOARD_I18N_KEYS,
+  DashboardI18nService,
+  DashboardLanguage,
+} from '../i18n';
+import { CardConfig, DashboardConfig, SectionConfig } from '../models';
+import { DashboardSection } from '../section/dashboard-section.component';
+import { UnsavedChangesDialog } from '../unsaved-changes-dialog/unsaved-changes-dialog.component';
 import {
   Component,
   ElementRef,
@@ -33,24 +52,6 @@ import {
   GridstackComponent,
   GridstackItemComponent,
 } from 'gridstack/dist/angular';
-import { ButtonSettings } from '../../models';
-import { DashboardCard } from '../card/dashboard-card.component';
-import { addComponentToRegistry } from '../card/utils';
-import {
-  CELL_HEIGHT,
-  COMPACT_BREAKPOINT,
-  DASHBOARD_BREAKPOINTS,
-} from '../constants';
-import { DiscardChangesDialog } from '../discard-changes-dialog/discard-changes-dialog.component';
-import { EditCardsDialog } from '../edit-cards-dialog/edit-cards-dialog.component';
-import {
-  DASHBOARD_I18N_KEYS,
-  DashboardI18nService,
-  DashboardLanguage,
-} from '../i18n';
-import { CardConfig, DashboardConfig, SectionConfig } from '../models';
-import { DashboardSection } from '../section/dashboard-section.component';
-import { UnsavedChangesDialog } from '../unsaved-changes-dialog/unsaved-changes-dialog.component';
 
 document.body.classList.add('ui5-content-density-compact');
 
@@ -212,8 +213,7 @@ export class Dashboard implements OnInit, OnDestroy {
     { x?: number; y?: number; w?: number; h?: number }
   >();
   looseCards = linkedSignal(() => this.cards().filter((c) => !c.sectionId));
-
-  private newGridStackNodes: GridStackNode[] = [];
+  private isXLPage = signal(true);
 
   constructor() {
     effect(() => {
@@ -241,6 +241,18 @@ export class Dashboard implements OnInit, OnDestroy {
     this.resizeObserver = new ResizeObserver((entries) => {
       const width = entries[0]?.contentRect.width ?? 0;
       this.compactToolbar.set(width < COMPACT_BREAKPOINT);
+      if (width >= XL_PAGE) {
+        if (!this.isXLPage()) {
+          this.isXLPage.set(true);
+          this.cards.set(this.cards().map((c) => ({ ...c, maxW: 3 })));
+        }
+      } else {
+        if (this.isXLPage()) {
+          console.log('m');
+          this.isXLPage.set(false);
+          this.cards.set(this.cards().map((c) => ({ ...c, maxW: 4 })));
+        }
+      }
     });
     this.resizeObserver.observe(this.hostEl.nativeElement);
     window.addEventListener('beforeunload', this.beforeUnloadHandler);
