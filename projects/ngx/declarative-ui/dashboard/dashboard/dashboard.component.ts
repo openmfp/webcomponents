@@ -243,18 +243,7 @@ export class Dashboard implements OnInit, OnDestroy {
     this.resizeObserver = new ResizeObserver((entries) => {
       const width = entries[0]?.contentRect.width ?? 0;
       this.compactToolbar.set(width < COMPACT_BREAKPOINT);
-      if (width >= XL_PAGE) {
-        if (!this.isXLPage()) {
-          this.isXLPage.set(true);
-          this.cards.set(this.cards().map((c) => ({ ...c, maxW: 3 })));
-        }
-      } else {
-        if (this.isXLPage()) {
-          console.log('m');
-          this.isXLPage.set(false);
-          this.cards.set(this.cards().map((c) => ({ ...c, maxW: 4 })));
-        }
-      }
+      this.changeCardSettingsForXlPage(width);
     });
     this.resizeObserver.observe(this.hostEl.nativeElement);
     window.addEventListener('beforeunload', this.beforeUnloadHandler);
@@ -467,6 +456,32 @@ export class Dashboard implements OnInit, OnDestroy {
 
     if (gridStackNodes) {
       this.saveCardsPosition(gridStackNodes);
+    }
+  }
+
+  private changeCardSettingsForXlPage(width: number): void {
+    if (width >= XL_PAGE) {
+      if (!this.isXLPage()) {
+        this.isXLPage.set(true);
+        this.cards.set(
+          this.cards().map((c) => ({
+            ...c,
+            w: c.w === 4 ? 3 : c.w,
+            maxW: c.maxW === 4 ? 3 : c.maxW,
+          })),
+        );
+      }
+    } else {
+      if (this.isXLPage()) {
+        this.isXLPage.set(false);
+        this.cards.set(
+          this.cards().map((c) => ({
+            ...c,
+            w: c.w === 3 ? 4 : c.w,
+            maxW: c.maxW === 3 ? 4 : c.maxW,
+          })),
+        );
+      }
     }
   }
 }
