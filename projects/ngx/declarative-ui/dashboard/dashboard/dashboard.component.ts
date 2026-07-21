@@ -106,6 +106,13 @@ export class Dashboard implements OnInit, OnDestroy {
   compactToolbar = signal(false);
   toolbarMenuOpen = signal(false);
 
+  protected dragOriginStyle = signal<{
+    top: string;
+    left: string;
+    width: string;
+    height: string;
+  } | null>(null);
+
   /** True once the user has dragged/resized any grid item while in edit mode. */
   private gridDirty = signal(false);
 
@@ -428,6 +435,24 @@ export class Dashboard implements OnInit, OnDestroy {
       return [...withoutRemoved, ...event.added.map((ac) => ({ ...ac }))];
     });
     this.closeCardPanel();
+  }
+
+  onDragStart(event: { el: Element }): void {
+    const el = event.el as HTMLElement;
+    const gridEl = this.gridStackItems().el as HTMLElement;
+    const gridRect = gridEl.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+
+    this.dragOriginStyle.set({
+      top: `${elRect.top - gridRect.top}px`,
+      left: `${elRect.left - gridRect.left}px`,
+      width: `${elRect.width}px`,
+      height: `${elRect.height}px`,
+    });
+  }
+
+  onDragStop(): void {
+    this.dragOriginStyle.set(null);
   }
 
   onGridChange(): void {

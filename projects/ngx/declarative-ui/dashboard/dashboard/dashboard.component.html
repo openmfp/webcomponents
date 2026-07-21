@@ -179,7 +179,12 @@
     (addedCB)="onGridChange()"
     (changeCB)="onGridChange()"
     (removedCB)="onGridChange()"
+    (dragStartCB)="onDragStart($event)"
+    (dragStopCB)="onDragStop()"
   >
+    @if (dragOriginStyle()) {
+      <div class="mfp-dashboard__drag-origin-placeholder" [style]="dragOriginStyle()"></div>
+    }
     @for (card of looseCards(); track card.id) {
       <gridstack-item [options]="card">
         <mfp-dashboard-card

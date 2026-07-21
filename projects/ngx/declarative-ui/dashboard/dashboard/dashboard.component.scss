@@ -173,6 +173,19 @@ mfp-wc-dashboard {
   cursor: grabbing !important;
 }
 
+.mfp-dashboard__drag-origin-placeholder {
+  position: absolute;
+  background: var(--sapNeutralColor, #6a6d75);
+  opacity: 0.3;
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+gridstack {
+  position: relative;
+}
+
 .grid-stack:has(.ui-resizable-resizing),
 .grid-stack:has(.ui-resizable-resizing) * {
   cursor: nwse-resize !important;
