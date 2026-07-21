@@ -17,6 +17,7 @@ import {
 import { CardConfig, DashboardConfig, SectionConfig } from '../models';
 import { DashboardSection } from '../section/dashboard-section.component';
 import { UnsavedChangesDialog } from '../unsaved-changes-dialog/unsaved-changes-dialog.component';
+import { SteppedResizeGridStackEngine } from './stepped-resize-engine';
 import {
   Component,
   ElementRef,
@@ -162,6 +163,7 @@ export class Dashboard implements OnInit, OnDestroy {
       marginBottom: 0,
       marginLeft: 0,
       marginRight: 0,
+      engineClass: SteppedResizeGridStackEngine,
       columnOpts: {
         // Source of truth: ../models/breakpoints.ts (paired with
         // ../models/_breakpoints.scss for the section grid's container queries).
