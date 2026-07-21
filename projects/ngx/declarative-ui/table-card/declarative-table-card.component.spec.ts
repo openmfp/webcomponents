@@ -728,11 +728,12 @@ describe('DeclarativeTableCard', () => {
       expect((component as any).editInitialValue()).toEqual({});
     });
 
-    it('builds initial values from pendingResource fields when editConfig is set', () => {
+    it('builds initial values from pendingResource fields when editConfig is set', async () => {
       const { component } = setup({ editConfig: EDIT_CONFIG });
       const resource = RESOURCES[0];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (component as any).pendingResource.set(resource);
+      // Edit fields are resolved when the edit dialog opens; drive that path.
+      component.onButtonClick(makeEvent('edit', resource));
+      await Promise.resolve();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const values = (component as any).editInitialValue();
@@ -746,10 +747,11 @@ describe('DeclarativeTableCard', () => {
   // -------------------------------------------------------------------------
 
   describe('onButtonClick()', () => {
-    it('intercepts action="edit": sets pendingResource and opens editDialogOpen', () => {
+    it('intercepts action="edit": sets pendingResource and opens editDialogOpen', async () => {
       const { component } = setup({ editConfig: EDIT_CONFIG });
       const resource = RESOURCES[0];
       component.onButtonClick(makeEvent('edit', resource));
+      await Promise.resolve();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((component as any).pendingResource()).toBe(resource);
@@ -810,6 +812,45 @@ describe('DeclarativeTableCard', () => {
       component.actionButtonClick.subscribe((e) => emitted.push(e));
       component.onButtonClick(makeEvent('delete', undefined));
       expect(emitted).toHaveLength(1);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // 9.b openCreateDialog() — lazy field resolution
+  // -------------------------------------------------------------------------
+
+  describe('openCreateDialog()', () => {
+    it('resolves an array fields config and opens the dialog', async () => {
+      const { component } = setup({ createConfig: CREATE_CONFIG });
+
+      await component.openCreateDialog();
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).resolvedCreateFields()).toEqual(FORM_FIELDS);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).createDialogOpen()).toBe(true);
+    });
+
+    it('invokes a thunk fields config lazily on open, then opens the dialog', async () => {
+      let called = 0;
+      const thunk = () => {
+        called++;
+        return Promise.resolve(FORM_FIELDS);
+      };
+      const { component } = setup({
+        createConfig: { ...CREATE_CONFIG, fields: thunk },
+      });
+
+      // The thunk must NOT run until the dialog is opened.
+      expect(called).toBe(0);
+
+      await component.openCreateDialog();
+
+      expect(called).toBe(1);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).resolvedCreateFields()).toEqual(FORM_FIELDS);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).createDialogOpen()).toBe(true);
     });
   });
 

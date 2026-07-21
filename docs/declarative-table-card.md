@@ -267,7 +267,7 @@ interface TableConfig {
 }
 
 interface ResourceFormConfig {
-  fields: FormFieldDefinition[];
+  fields: FormFieldDefinition[] | (() => Promise<FormFieldDefinition[]>);
   title?: string;
   confirmLabel?: string;
   cancelLabel?: string;
@@ -278,7 +278,42 @@ interface TableCardFormState {
 }
 ```
 
-`ResourceFormConfig` is static. Keep runtime errors in `createFormState` / `editFormState`. The submit button is disabled when any entry in `fieldErrors` is truthy.
+`ResourceFormConfig` is static, **except** `fields`: it may be a plain
+`FormFieldDefinition[]`, or a **thunk** `() => Promise<FormFieldDefinition[]>`.
+The thunk is invoked when the create/edit dialog is opened — not when the config
+is built — so fields whose options are fetched over the network (e.g. a
+`dynamicValuesDefinition` GraphQL query) load **on demand** rather than being
+prefetched on every render. Use a plain array for static forms; use the thunk
+when resolving fields requires I/O you want deferred to dialog-open. Keep runtime
+errors in `createFormState` / `editFormState`; the submit button is disabled when
+any entry in `fieldErrors` is truthy.
+
+### Lazy form fields (resolved on dialog open)
+
+Pass a thunk as `fields` when the form's fields (or their select options) come
+from an async source you don't want to fetch until the user actually opens the
+dialog. The card `await`s the thunk on open, then renders the resolved fields:
+
+```ts
+createResourceFormConfig: {
+  title: 'Create Pod',
+  // Not called on render — only when the Create dialog opens.
+  fields: () => this.buildCreateFieldsWithDynamicOptions(),
+},
+
+// returns Promise<FormFieldDefinition[]> — e.g. after fetching select options
+private async buildCreateFieldsWithDynamicOptions(): Promise<FormFieldDefinition[]> {
+  const namespaces = await firstValueFrom(this.loadNamespaces());
+  return [
+    { name: 'metadata.name', label: 'Name', required: true },
+    { name: 'metadata.namespace', label: 'Namespace', values: namespaces },
+  ];
+}
+```
+
+The same applies to `editResourceFormConfig.fields`; its thunk runs when a row's
+edit action opens the edit dialog. A plain array is resolved synchronously and
+needs no `await` — prefer it for static forms.
 
 ---
 

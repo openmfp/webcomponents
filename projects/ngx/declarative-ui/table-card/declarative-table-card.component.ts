@@ -86,6 +86,8 @@ export class DeclarativeTableCard<T extends GenericResource> {
   protected deleteDialogOpen = signal(false);
 
   protected pendingResource = signal<T | null>(null);
+  protected resolvedCreateFields = signal<FormFieldDefinition[]>([]);
+  protected resolvedEditFields = signal<FormFieldDefinition[]>([]);
 
   protected tableConfig = computed(() => this.config().tableConfig);
   protected header = computed(() => this.config().header);
@@ -113,7 +115,7 @@ export class DeclarativeTableCard<T extends GenericResource> {
       return {};
     }
 
-    return this.buildInitialValues(editConfig.fields, pendingResource);
+    return this.buildInitialValues(this.resolvedEditFields(), pendingResource);
   });
 
   protected searchConfig = computed(() => this.config().searchConfig);
@@ -177,7 +179,7 @@ export class DeclarativeTableCard<T extends GenericResource> {
     const action = event.field.uiSettings?.buttonSettings?.action;
     if (action === 'edit' && event.resource) {
       this.pendingResource.set(event.resource);
-      this.editDialogOpen.set(true);
+      void this.openEditDialog();
       return;
     }
     if (action === 'delete' && event.resource) {
@@ -187,6 +189,30 @@ export class DeclarativeTableCard<T extends GenericResource> {
     }
 
     this.actionButtonClick.emit(event);
+  }
+
+  async openCreateDialog(): Promise<void> {
+    this.resolvedCreateFields.set(
+      await this.resolveFormFields(this.createFormConfig()?.fields),
+    );
+    this.createDialogOpen.set(true);
+  }
+
+  private async openEditDialog(): Promise<void> {
+    this.resolvedEditFields.set(
+      await this.resolveFormFields(this.editFormConfig()?.fields),
+    );
+    this.editDialogOpen.set(true);
+  }
+
+  private async resolveFormFields(
+    fields:
+      | FormFieldDefinition[]
+      | (() => Promise<FormFieldDefinition[]>)
+      | undefined,
+  ): Promise<FormFieldDefinition[]> {
+    if (!fields) return [];
+    return typeof fields === 'function' ? await fields() : fields;
   }
 
   closeCreateDialog(): void {
