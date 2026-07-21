@@ -82,15 +82,16 @@
   </div>
 </div>
 
-@if (createFormConfig(); as config) {
+@if (createDialogOpen()) {
+  @let config = createFormConfig();
   <ui5-dialog
     data-testid="generic-table-card-create-dialog"
-    [accessibleName]="config.title ?? 'Create'"
-    [open]="createDialogOpen()"
+    [accessibleName]="config?.title ?? 'Create'"
+    [open]="true"
     (ui5BeforeClose)="createDialogOpen.set(false)"
   >
     <div class="dialog__header" slot="header">
-      <ui5-title level="H5">{{ config.title ?? 'Create' }}</ui5-title>
+      <ui5-title level="H5">{{ config?.title ?? 'Create' }}</ui5-title>
     </div>
     <div class="dialog__body">
       <mfp-declarative-form
@@ -108,28 +109,29 @@
         [disabled]="hasErrors(createFormState())"
         (click)="createForm.submit()"
       >
-        {{ config.confirmLabel ?? 'Save' }}
+        {{ config?.confirmLabel ?? 'Save' }}
       </ui5-button>
       <ui5-button
         data-testid="generic-table-card-create-cancel"
         design="Transparent"
         (click)="closeCreateDialog()"
       >
-        {{ config.cancelLabel ?? 'Cancel' }}
+        {{ config?.cancelLabel ?? 'Cancel' }}
       </ui5-button>
     </div>
   </ui5-dialog>
 }
 
-@if (editFormConfig(); as config) {
+@if (editDialogOpen()) {
+  @let config = editFormConfig();
   <ui5-dialog
     data-testid="generic-table-card-edit-dialog"
-    [accessibleName]="config.title ?? 'Edit'"
-    [open]="editDialogOpen()"
+    [accessibleName]="config?.title ?? 'Edit'"
+    [open]="true"
     (ui5BeforeClose)="editDialogOpen.set(false)"
   >
     <div class="dialog__header" slot="header">
-      <ui5-title level="H5">{{ config.title ?? 'Edit' }}</ui5-title>
+      <ui5-title level="H5">{{ config?.title ?? 'Edit' }}</ui5-title>
     </div>
     <div class="dialog__body">
       <mfp-declarative-form
@@ -148,14 +150,14 @@
         [disabled]="hasErrors(editFormState())"
         (click)="editForm.submit()"
       >
-        {{ config.confirmLabel ?? 'Edit' }}
+        {{ config?.confirmLabel ?? 'Edit' }}
       </ui5-button>
       <ui5-button
         data-testid="generic-table-card-edit-cancel"
         design="Transparent"
         (click)="closeEditDialog()"
       >
-        {{ config.cancelLabel ?? 'Cancel' }}
+        {{ config?.cancelLabel ?? 'Cancel' }}
       </ui5-button>
     </div>
   </ui5-dialog>
