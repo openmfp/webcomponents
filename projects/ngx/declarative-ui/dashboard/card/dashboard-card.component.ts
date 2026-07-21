@@ -1,3 +1,4 @@
+import { DASHBOARD_CARD_DRAG_ORIGIN_CLASS } from '../constants';
 import { DASHBOARD_I18N_KEYS, DashboardI18nService } from '../i18n';
 import { CARD_TYPES, CardConfig } from '../models';
 import { mountAngularCard, mountSapCard, mountWcCard } from './utils';
@@ -34,6 +35,8 @@ export class DashboardCard {
   readonly removeCard = output<void>();
   protected readonly i18n = inject(DashboardI18nService);
   protected readonly i18nKeys = DASHBOARD_I18N_KEYS;
+  protected readonly componentHostClasses = `component-host ${DASHBOARD_CARD_DRAG_ORIGIN_CLASS}`;
+  protected readonly cardBodyClasses = `card__body ${DASHBOARD_CARD_DRAG_ORIGIN_CLASS}`;
   protected readonly gridColumn = computed(() => {
     const width = this.card().w ?? 12;
     return this.createGridTrack(this.card().x, width);

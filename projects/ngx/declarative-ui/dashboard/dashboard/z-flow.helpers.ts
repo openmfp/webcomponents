@@ -13,19 +13,18 @@ export function hasZFlowOrder(nodes: ZFlowGridStackNode[]): boolean {
   return nodes.some((n) => n.zFlowOrder !== undefined);
 }
 
-export function seedNodeOrder(nodes: ZFlowGridStackNode[]): void {
-  if (hasZFlowOrder(nodes)) return;
-
-  const sorted = [...nodes].sort((a, b) => {
-    const ay = a.y ?? 0;
-    const by = b.y ?? 0;
-    if (ay !== by) return ay - by;
-    return (a.x ?? 0) - (b.x ?? 0);
-  });
+export function syncNodeOrderFromLayout(nodes: ZFlowGridStackNode[]): void {
+  const sorted = [...nodes].sort(compareNodesByLayoutPosition);
 
   sorted.forEach((n, i) => {
     n.zFlowOrder = i;
   });
+}
+
+export function seedNodeOrder(nodes: ZFlowGridStackNode[]): void {
+  if (hasZFlowOrder(nodes)) return;
+
+  syncNodeOrderFromLayout(nodes);
 }
 
 export function sortNodesByZFlowOrder(
@@ -44,6 +43,16 @@ export function sortNodesByZFlowOrder(
   });
 }
 
+function compareNodesByLayoutPosition(
+  a: ZFlowGridStackNode,
+  b: ZFlowGridStackNode,
+): number {
+  const ay = a.y ?? 0;
+  const by = b.y ?? 0;
+  if (ay !== by) return ay - by;
+  return (a.x ?? 0) - (b.x ?? 0);
+}
+
 export interface ProjectedNode {
   id: string;
   row: number;
@@ -58,6 +67,15 @@ export interface ZFlowRowItem {
   x?: number;
   w?: number;
 }
+
+export interface ZFlowDragRect {
+  leftPx: number;
+  topPx: number;
+  widthPx: number;
+  heightPx: number;
+}
+
+const PROJECTED_SLOT_OVERLAP_THRESHOLD = 0.5;
 
 export function getZFlowRowHeight(nodes: ZFlowGridStackNode[]): number {
   return Math.max(...nodes.map((n) => n.h ?? 1), 1);
@@ -157,6 +175,88 @@ export function reorderByInsertionSlot(
   const clamped = Math.max(0, Math.min(targetSlot, withoutSource.length));
   withoutSource.splice(clamped, 0, sourceId);
   return withoutSource;
+}
+
+export function resolveInsertionSlotFromProjectedRect(
+  orderedNodes: ZFlowGridStackNode[],
+  sourceId: string,
+  columnCount: number,
+  dragRect: ZFlowDragRect,
+  cellWidthPx: number,
+  cellHeightPx: number,
+  previousSlot: number,
+): number {
+  if (cellWidthPx <= 0 || cellHeightPx <= 0) {
+    return previousSlot;
+  }
+
+  const orderedIds = orderedNodes
+    .filter((node) => node.id)
+    .map((node) => node.id as string);
+  const nodesById = new Map(
+    orderedNodes
+      .filter((node): node is ZFlowGridStackNode & { id: string } => !!node.id)
+      .map((node) => [node.id, node]),
+  );
+  const idsWithoutSource = orderedIds.filter((id) => id !== sourceId);
+  const sourceNode = nodesById.get(sourceId);
+
+  if (!sourceNode) return previousSlot;
+
+  let bestSlot = previousSlot;
+  let bestOverlapRatio = 0;
+
+  for (let slot = 0; slot <= idsWithoutSource.length; slot++) {
+    const candidateIds = reorderByInsertionSlot(orderedIds, sourceId, slot);
+    const candidateNodes = candidateIds
+      .map((id) => nodesById.get(id))
+      .filter(
+        (node): node is ZFlowGridStackNode & { id: string } => !!node,
+      );
+    const projectedSource = projectZFlowLayout(candidateNodes, columnCount).find(
+      (projected) => projected.id === sourceId,
+    );
+
+    if (!projectedSource) continue;
+
+    const overlapAreaPx = getRectOverlapAreaPx(dragRect, {
+      leftPx: projectedSource.x * cellWidthPx,
+      topPx: projectedSource.y * cellHeightPx,
+      widthPx: projectedSource.w * cellWidthPx,
+      heightPx: projectedSource.h * cellHeightPx,
+    });
+    const projectedAreaPx =
+      projectedSource.w *
+      cellWidthPx *
+      projectedSource.h *
+      cellHeightPx;
+    const overlapRatio =
+      projectedAreaPx > 0 ? overlapAreaPx / projectedAreaPx : 0;
+
+    if (overlapRatio > bestOverlapRatio) {
+      bestOverlapRatio = overlapRatio;
+      bestSlot = slot;
+    }
+  }
+
+  if (bestOverlapRatio > PROJECTED_SLOT_OVERLAP_THRESHOLD) return bestSlot;
+
+  return Math.max(0, Math.min(previousSlot, idsWithoutSource.length));
+}
+
+function getRectOverlapAreaPx(a: ZFlowDragRect, b: ZFlowDragRect): number {
+  const overlapWidthPx = Math.max(
+    0,
+    Math.min(a.leftPx + a.widthPx, b.leftPx + b.widthPx) -
+      Math.max(a.leftPx, b.leftPx),
+  );
+  const overlapHeightPx = Math.max(
+    0,
+    Math.min(a.topPx + a.heightPx, b.topPx + b.heightPx) -
+      Math.max(a.topPx, b.topPx),
+  );
+
+  return overlapWidthPx * overlapHeightPx;
 }
 
 export function applyProjectedLayout(

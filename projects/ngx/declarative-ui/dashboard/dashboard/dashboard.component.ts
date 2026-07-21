@@ -5,6 +5,7 @@ import {
   CELL_HEIGHT,
   COMPACT_BREAKPOINT,
   DASHBOARD_BREAKPOINTS,
+  DASHBOARD_CARD_DRAG_ORIGIN_SELECTOR,
   XL_PAGE,
 } from '../constants';
 import { DiscardChangesDialog } from '../discard-changes-dialog/discard-changes-dialog.component';
@@ -438,7 +439,7 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   onDragStart(event: { el: Element }): void {
-    const el = event.el as HTMLElement;
+    const el = this.getDragOriginElement(event.el);
     const gridEl = this.gridStackItems().el as HTMLElement;
     const gridRect = gridEl.getBoundingClientRect();
     const elRect = el.getBoundingClientRect();
@@ -452,6 +453,7 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   onDragStop(): void {
+    this.getZFlowEngine()?.commitZFlowLayout();
     this.dragOriginStyle.set(null);
   }
 
@@ -459,6 +461,13 @@ export class Dashboard implements OnInit, OnDestroy {
     if (this.editMode()) {
       this.gridDirty.set(true);
     }
+  }
+
+  private getDragOriginElement(gridItemEl: Element): Element {
+    return (
+      gridItemEl.querySelector(DASHBOARD_CARD_DRAG_ORIGIN_SELECTOR) ??
+      gridItemEl
+    );
   }
 
   private saveCardsPosition(items: GridStackNode[]): void {
@@ -484,28 +493,42 @@ export class Dashboard implements OnInit, OnDestroy {
     }
   }
 
+  private getZFlowEngine(): SteppedResizeGridStackEngine | null {
+    const engine = this.gridStackItems().grid?.engine;
+    return engine instanceof SteppedResizeGridStackEngine ? engine : null;
+  }
+
+  private updateCardsForBreakpoint(
+    updateCard: (card: CardConfig) => CardConfig,
+  ): void {
+    this.getZFlowEngine()?.syncZFlowOrderFromLayout();
+    this.cards.set(this.cards().map(updateCard));
+    afterNextRender(
+      () => {
+        this.getZFlowEngine()?.commitZFlowLayout();
+      },
+      { injector: this.injector },
+    );
+  }
+
   private changeCardSettingsForXlPage(width: number): void {
     if (width >= XL_PAGE) {
       if (!this.isXLPage()) {
         this.isXLPage.set(true);
-        this.cards.set(
-          this.cards().map((c) => ({
-            ...c,
-            w: c.w === 4 ? 3 : c.w,
-            maxW: c.maxW === 4 ? 3 : c.maxW,
-          })),
-        );
+        this.updateCardsForBreakpoint((c) => ({
+          ...c,
+          w: c.w === 4 ? 3 : c.w,
+          maxW: c.maxW === 4 ? 3 : c.maxW,
+        }));
       }
     } else {
       if (this.isXLPage()) {
         this.isXLPage.set(false);
-        this.cards.set(
-          this.cards().map((c) => ({
-            ...c,
-            w: c.w === 3 ? 4 : c.w,
-            maxW: c.maxW === 3 ? 4 : c.maxW,
-          })),
-        );
+        this.updateCardsForBreakpoint((c) => ({
+          ...c,
+          w: c.w === 3 ? 4 : c.w,
+          maxW: c.maxW === 3 ? 4 : c.maxW,
+        }));
       }
     }
   }

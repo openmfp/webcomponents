@@ -23,7 +23,7 @@
       />
     }
     <div
-      class="component-host"
+      [class]="componentHostClasses"
       [style.pointer-events]="editMode() ? 'none' : 'auto'"
     >
       <div #elementHost></div>
@@ -32,7 +32,7 @@
 } @else {
   <div class="card" [attr.data-testid]="'dashboard-card-' + card().id">
     <div
-      class="card__body"
+      [class]="cardBodyClasses"
       [style.pointer-events]="editMode() ? 'none' : 'auto'"
     >
       <ng-content />

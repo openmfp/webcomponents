@@ -2,6 +2,9 @@
 @import 'gridstack/dist/gridstack.min.css';
 
 .grid-stack-placeholder {
+  z-index: 2;
+  pointer-events: none;
+
   .placeholder-content {
     border-radius: 16px;
     height: calc(100% - 30px);
@@ -10,6 +13,7 @@
     left: 10px !important;
     background: var(--sapInformationColor, #0070f2);
     opacity: 0.25;
+    z-index: 2 !important;
   }
 }
 
@@ -175,11 +179,19 @@ mfp-wc-dashboard {
 
 .mfp-dashboard__drag-origin-placeholder {
   position: absolute;
-  background: var(--sapNeutralColor, #6a6d75);
-  opacity: 0.3;
-  border-radius: 16px;
   pointer-events: none;
   z-index: 1;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    width: calc(100% - 10px);
+    height: 100%;
+    background: var(--sapNeutralColor, #6a6d75);
+    border-radius: 16px;
+    opacity: 0.3;
+  }
 }
 
 gridstack {
