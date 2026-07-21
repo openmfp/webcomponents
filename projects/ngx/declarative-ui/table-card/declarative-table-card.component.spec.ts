@@ -1202,8 +1202,13 @@ describe('DeclarativeTableCard', () => {
       expect(shadow.querySelector('[data-testid="generic-table-card-create-btn"]')).toBeNull();
     });
 
-    it('create dialog has data-testid="generic-table-card-create-dialog" when createConfig is provided', () => {
-      const { fixture } = setup({ createConfig: CREATE_CONFIG });
+    it('create dialog has data-testid="generic-table-card-create-dialog" when open', () => {
+      const { fixture, component } = setup({ createConfig: CREATE_CONFIG });
+      // The dialog is rendered only while open.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (component as any).createDialogOpen.set(true);
+      fixture.detectChanges();
+
       const shadow: ShadowRoot | HTMLElement =
         fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
       const dialog = shadow.querySelector('[data-testid="generic-table-card-create-dialog"]');
