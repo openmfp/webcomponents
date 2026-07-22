@@ -205,6 +205,7 @@ export function resolveInsertionSlotFromProjectedRect(
 
   let bestSlot = previousSlot;
   let bestOverlapRatio = 0;
+  let bestProjectedSource: ProjectedNode | undefined;
 
   for (let slot = 0; slot <= idsWithoutSource.length; slot++) {
     const candidateIds = reorderByInsertionSlot(orderedIds, sourceId, slot);
@@ -233,8 +234,15 @@ export function resolveInsertionSlotFromProjectedRect(
     const overlapRatio =
       projectedAreaPx > 0 ? overlapAreaPx / projectedAreaPx : 0;
 
-    if (overlapRatio > bestOverlapRatio) {
+    if (
+      overlapRatio > bestOverlapRatio ||
+      (overlapRatio === bestOverlapRatio &&
+        bestProjectedSource &&
+        isSameProjectedPosition(projectedSource, bestProjectedSource) &&
+        slot > bestSlot)
+    ) {
       bestOverlapRatio = overlapRatio;
+      bestProjectedSource = projectedSource;
       bestSlot = slot;
     }
   }
@@ -242,6 +250,10 @@ export function resolveInsertionSlotFromProjectedRect(
   if (bestOverlapRatio > PROJECTED_SLOT_OVERLAP_THRESHOLD) return bestSlot;
 
   return Math.max(0, Math.min(previousSlot, idsWithoutSource.length));
+}
+
+function isSameProjectedPosition(a: ProjectedNode, b: ProjectedNode): boolean {
+  return a.x === b.x && a.y === b.y && a.w === b.w && a.h === b.h;
 }
 
 function getRectOverlapAreaPx(a: ZFlowDragRect, b: ZFlowDragRect): number {

@@ -1,7 +1,11 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { resetDashboardCardRegistry } from '../card/utils/dashboard-card-registry';
+import { DASHBOARD_CARD_DRAG_ORIGIN_CLASS } from '../constants';
 import { CardConfig, SectionConfig } from '../models';
 import { Dashboard } from './dashboard.component';
+import { SteppedResizeGridStackEngine } from './stepped-resize-engine';
+import type { ZFlowGridStackNode } from './z-flow.helpers';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import type { GridStackMoveOpts, GridStackNode } from 'gridstack';
 
 vi.mock('gridstack', () => ({}));
 
@@ -48,6 +52,23 @@ function setup(): { fixture: Fixture; component: Dashboard } {
 
 function root(fixture: Fixture): ShadowRoot | HTMLElement {
   return fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+}
+
+function mockRect(
+  element: Element,
+  rect: Pick<DOMRect, 'left' | 'top' | 'width' | 'height'>,
+): void {
+  element.getBoundingClientRect = vi.fn(
+    () =>
+      ({
+        ...rect,
+        x: rect.left,
+        y: rect.top,
+        right: rect.left + rect.width,
+        bottom: rect.top + rect.height,
+        toJSON: () => rect,
+      }) as DOMRect,
+  );
 }
 
 describe('Dashboard', () => {
@@ -184,8 +205,18 @@ describe('Dashboard', () => {
     expect(
       (component as unknown as { cardsSnapshot: CardConfig[] }).cardsSnapshot,
     ).toEqual(cards);
-    expect(component.cardsPosition.get('card-1')).toEqual({ x: 4, y: 2, w: 6, h: 20 });
-    expect(component.cardsPosition.get('card-2')).toEqual({ x: 1, y: 3, w: 4, h: 10 });
+    expect(component.cardsPosition.get('card-1')).toEqual({
+      x: 4,
+      y: 2,
+      w: 6,
+      h: 20,
+    });
+    expect(component.cardsPosition.get('card-2')).toEqual({
+      x: 1,
+      y: 3,
+      w: 4,
+      h: 10,
+    });
   });
 
   it('emits the saved payload and persists the latest order on save', () => {
@@ -199,7 +230,9 @@ describe('Dashboard', () => {
     (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
       () => ({
         gridstackItems: {
-          toArray: () => [{ options: { id: 'card-1', x: 7, y: 5, w: 8, h: 30 } }],
+          toArray: () => [
+            { options: { id: 'card-1', x: 7, y: 5, w: 8, h: 30 } },
+          ],
         },
       });
     component.editMode.set(true);
@@ -214,20 +247,29 @@ describe('Dashboard', () => {
         cards: [{ id: 'card-1', component: 'mfp-a', x: 7, y: 5, w: 8, h: 30 }],
       },
     ]);
-    expect(component.cardsPosition.get('card-1')).toEqual({ x: 7, y: 5, w: 8, h: 30 });
+    expect(component.cardsPosition.get('card-1')).toEqual({
+      x: 7,
+      y: 5,
+      w: 8,
+      h: 30,
+    });
     expect(component.editMode()).toBe(false);
   });
 
   it('emits updated w and h in the saved payload when a card is resized', () => {
     const { component } = setup();
-    const cards: CardConfig[] = [{ id: 'card-1', component: 'mfp-a', w: 6, h: 20 }];
+    const cards: CardConfig[] = [
+      { id: 'card-1', component: 'mfp-a', w: 6, h: 20 },
+    ];
     const emitted: { sections: SectionConfig[]; cards: CardConfig[] }[] = [];
 
     component.cards.set(cards);
     (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
       () => ({
         gridstackItems: {
-          toArray: () => [{ options: { id: 'card-1', x: 0, y: 0, w: 3, h: 10 } }],
+          toArray: () => [
+            { options: { id: 'card-1', x: 0, y: 0, w: 3, h: 10 } },
+          ],
         },
       });
     component.editMode.set(true);
@@ -242,13 +284,17 @@ describe('Dashboard', () => {
 
   it('preserves saved w/h after save-then-re-enter-then-cancel (regression)', () => {
     const { component } = setup();
-    const cards: CardConfig[] = [{ id: 'card-1', component: 'mfp-a', w: 6, h: 20 }];
+    const cards: CardConfig[] = [
+      { id: 'card-1', component: 'mfp-a', w: 6, h: 20 },
+    ];
 
     component.cards.set(cards);
     (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
       () => ({
         gridstackItems: {
-          toArray: () => [{ options: { id: 'card-1', x: 0, y: 0, w: 3, h: 10 } }],
+          toArray: () => [
+            { options: { id: 'card-1', x: 0, y: 0, w: 3, h: 10 } },
+          ],
         },
       });
 
@@ -313,8 +359,9 @@ describe('Dashboard', () => {
     it('opens the discard popup instead of reverting when cancelEdit is called with unsaved changes', () => {
       const { component } = setup();
       component.sections.set([{ id: 'alpha', title: 'Alpha' }]);
-      (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
-        () => ({ gridstackItems: { toArray: () => [] } });
+      (
+        component as unknown as { gridStackItems: () => unknown }
+      ).gridStackItems = () => ({ gridstackItems: { toArray: () => [] } });
 
       component.enterEditMode();
       component.sections.set([{ id: 'beta', title: 'Beta' }]);
@@ -330,8 +377,9 @@ describe('Dashboard', () => {
     it('reverts immediately when cancelEdit is called without unsaved changes', () => {
       const { component } = setup();
       component.sections.set([{ id: 'alpha', title: 'Alpha' }]);
-      (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
-        () => ({ gridstackItems: { toArray: () => [] } });
+      (
+        component as unknown as { gridStackItems: () => unknown }
+      ).gridStackItems = () => ({ gridstackItems: { toArray: () => [] } });
 
       component.enterEditMode();
 
@@ -345,8 +393,9 @@ describe('Dashboard', () => {
       const { component } = setup();
       const sections: SectionConfig[] = [{ id: 'alpha', title: 'Alpha' }];
       component.sections.set(sections);
-      (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
-        () => ({ gridstackItems: { toArray: () => [] } });
+      (
+        component as unknown as { gridStackItems: () => unknown }
+      ).gridStackItems = () => ({ gridstackItems: { toArray: () => [] } });
 
       component.enterEditMode();
       component.sections.set([{ id: 'beta', title: 'Beta' }]);
@@ -363,8 +412,9 @@ describe('Dashboard', () => {
     it('cancelDiscard closes the popup and keeps the user in edit mode with their changes', () => {
       const { component } = setup();
       component.sections.set([{ id: 'alpha', title: 'Alpha' }]);
-      (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
-        () => ({ gridstackItems: { toArray: () => [] } });
+      (
+        component as unknown as { gridStackItems: () => unknown }
+      ).gridStackItems = () => ({ gridstackItems: { toArray: () => [] } });
 
       component.enterEditMode();
       component.sections.set([{ id: 'beta', title: 'Beta' }]);
@@ -439,6 +489,130 @@ describe('Dashboard', () => {
       },
     ]);
     expect(component.cardDialogOpen()).toBe(false);
+  });
+
+  it('positions the drag origin placeholder from the marked card surface', () => {
+    const { component } = setup();
+    const gridEl = document.createElement('div');
+    const gridItemEl = document.createElement('div');
+    const dragOriginEl = document.createElement('div');
+
+    dragOriginEl.className = DASHBOARD_CARD_DRAG_ORIGIN_CLASS;
+    gridItemEl.appendChild(dragOriginEl);
+    mockRect(gridEl, { left: 50, top: 100, width: 400, height: 600 });
+    mockRect(dragOriginEl, { left: 70, top: 130, width: 220, height: 180 });
+    (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
+      () => ({ el: gridEl });
+
+    component.onDragStart({ el: gridItemEl });
+
+    expect(
+      (
+        component as unknown as {
+          dragOriginStyle: () => {
+            top: string;
+            left: string;
+            width: string;
+            height: string;
+          } | null;
+        }
+      ).dragOriginStyle(),
+    ).toEqual({
+      top: '30px',
+      left: '20px',
+      width: '220px',
+      height: '180px',
+    });
+  });
+
+  it('falls back to the GridStack item when no drag origin marker exists', () => {
+    const { component } = setup();
+    const gridEl = document.createElement('div');
+    const gridItemEl = document.createElement('div');
+
+    mockRect(gridEl, { left: 10, top: 20, width: 400, height: 600 });
+    mockRect(gridItemEl, { left: 25, top: 45, width: 120, height: 90 });
+    (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
+      () => ({ el: gridEl });
+
+    component.onDragStart({ el: gridItemEl });
+
+    expect(
+      (
+        component as unknown as {
+          dragOriginStyle: () => {
+            top: string;
+            left: string;
+            width: string;
+            height: string;
+          } | null;
+        }
+      ).dragOriginStyle(),
+    ).toEqual({
+      top: '25px',
+      left: '15px',
+      width: '120px',
+      height: '90px',
+    });
+  });
+
+  it('syncs stale z-flow order from the current layout before a new drag starts', () => {
+    const { component } = setup();
+    const gridEl = document.createElement('div');
+    const gridItemEl = document.createElement('div');
+    const dragOriginEl = document.createElement('div');
+    const nodes: ZFlowGridStackNode[] = [
+      { id: 'favorites', x: 0, y: 0, w: 1, h: 10, zFlowOrder: 0 },
+      { id: 'recent', x: 1, y: 0, w: 1, h: 10, zFlowOrder: 1 },
+      { id: 'resource', x: 2, y: 0, w: 1, h: 10, zFlowOrder: 2 },
+      { id: 'cost', x: 3, y: 0, w: 1, h: 10, zFlowOrder: 4 },
+      { id: 'team', x: 0, y: 10, w: 1, h: 10, zFlowOrder: 3 },
+      { id: 'quick', x: 1, y: 10, w: 1, h: 10, zFlowOrder: 5 },
+    ];
+    const engine = new SteppedResizeGridStackEngine({ column: 4, nodes });
+
+    dragOriginEl.className = DASHBOARD_CARD_DRAG_ORIGIN_CLASS;
+    gridItemEl.appendChild(dragOriginEl);
+    mockRect(gridEl, { left: 0, top: 0, width: 400, height: 200 });
+    mockRect(dragOriginEl, { left: 200, top: 0, width: 100, height: 100 });
+    (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
+      () => ({
+        el: gridEl,
+        grid: { engine },
+      });
+
+    component.onDragStart({ el: gridItemEl });
+
+    expect(nodes.map((node) => [node.id, node.zFlowOrder])).toEqual([
+      ['favorites', 0],
+      ['recent', 1],
+      ['resource', 2],
+      ['cost', 3],
+      ['team', 4],
+      ['quick', 5],
+    ]);
+
+    const source = nodes[2] as GridStackNode & { _moving: boolean };
+    source._moving = true;
+
+    const changed = engine.moveNodeCheck(source, {
+      cellWidth: 100,
+      cellHeight: 10,
+      rect: { x: 200, y: 0, w: 100, h: 100 },
+    } as GridStackMoveOpts);
+
+    expect(changed).toBe(false);
+    expect(engine.commitZFlowLayout()).toBe(false);
+    expect(
+      nodes.map((node) => ({ id: node.id, x: node.x, y: node.y })),
+    ).toEqual([
+      { id: 'favorites', x: 0, y: 0 },
+      { id: 'recent', x: 1, y: 0 },
+      { id: 'resource', x: 2, y: 0 },
+      { id: 'cost', x: 3, y: 0 },
+      { id: 'team', x: 0, y: 10 },
+      { id: 'quick', x: 1, y: 10 },
+    ]);
   });
 
   it('preserves card constraint fields (maxH/maxW/minH/minW) through saveEdit', () => {
@@ -622,26 +796,36 @@ describe('Dashboard', () => {
     it('save button has data-testid="dashboard-save-btn" in edit mode', () => {
       const { fixture, component } = setup();
 
-      fixture.componentRef.setInput('config', { title: 'Operations', editable: true });
+      fixture.componentRef.setInput('config', {
+        title: 'Operations',
+        editable: true,
+      });
       fixture.detectChanges();
 
       component.editMode.set(true);
       fixture.detectChanges();
 
-      const btn = root(fixture).querySelector('[data-testid="dashboard-save-btn"]');
+      const btn = root(fixture).querySelector(
+        '[data-testid="dashboard-save-btn"]',
+      );
       expect(btn).not.toBeNull();
     });
 
     it('cancel button has data-testid="dashboard-cancel-btn" in edit mode', () => {
       const { fixture, component } = setup();
 
-      fixture.componentRef.setInput('config', { title: 'Operations', editable: true });
+      fixture.componentRef.setInput('config', {
+        title: 'Operations',
+        editable: true,
+      });
       fixture.detectChanges();
 
       component.editMode.set(true);
       fixture.detectChanges();
 
-      const btn = root(fixture).querySelector('[data-testid="dashboard-cancel-btn"]');
+      const btn = root(fixture).querySelector(
+        '[data-testid="dashboard-cancel-btn"]',
+      );
       expect(btn).not.toBeNull();
     });
 
@@ -651,8 +835,12 @@ describe('Dashboard', () => {
       fixture.componentRef.setInput('config', { title: 'Operations' });
       fixture.detectChanges();
 
-      expect(root(fixture).querySelector('[data-testid="dashboard-save-btn"]')).toBeNull();
-      expect(root(fixture).querySelector('[data-testid="dashboard-cancel-btn"]')).toBeNull();
+      expect(
+        root(fixture).querySelector('[data-testid="dashboard-save-btn"]'),
+      ).toBeNull();
+      expect(
+        root(fixture).querySelector('[data-testid="dashboard-cancel-btn"]'),
+      ).toBeNull();
     });
   });
 
@@ -802,8 +990,9 @@ describe('Dashboard', () => {
   describe('navigation guard (requestNavigation)', () => {
     function enterEditWithDirty(component: Dashboard): void {
       component.sections.set([{ id: 'alpha', title: 'Alpha' }]);
-      (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
-        () => ({ gridstackItems: { toArray: () => [] } });
+      (
+        component as unknown as { gridStackItems: () => unknown }
+      ).gridStackItems = () => ({ gridstackItems: { toArray: () => [] } });
       component.enterEditMode();
       // Make the snapshot diverge so hasUnsavedChanges() flips to true.
       component.sections.set([{ id: 'beta', title: 'Beta' }]);
@@ -852,8 +1041,9 @@ describe('Dashboard', () => {
       const { component } = setup();
       const original: SectionConfig[] = [{ id: 'alpha', title: 'Alpha' }];
       component.sections.set(original);
-      (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
-        () => ({ gridstackItems: { toArray: () => [] } });
+      (
+        component as unknown as { gridStackItems: () => unknown }
+      ).gridStackItems = () => ({ gridstackItems: { toArray: () => [] } });
       component.enterEditMode();
       component.sections.set([{ id: 'beta', title: 'Beta' }]);
       let ran = 0;
@@ -901,8 +1091,9 @@ describe('Dashboard', () => {
       fixture.componentRef.setInput('config', { title: 'Operations' });
       fixture.detectChanges();
       component.sections.set([{ id: 'alpha', title: 'Alpha' }]);
-      (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
-        () => ({ gridstackItems: { toArray: () => [] } });
+      (
+        component as unknown as { gridStackItems: () => unknown }
+      ).gridStackItems = () => ({ gridstackItems: { toArray: () => [] } });
       component.enterEditMode();
       component.sections.set([{ id: 'beta', title: 'Beta' }]);
 
@@ -934,8 +1125,9 @@ describe('Dashboard', () => {
       fixture.componentRef.setInput('config', { title: 'Operations' });
       fixture.detectChanges();
       component.sections.set([{ id: 'alpha', title: 'Alpha' }]);
-      (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
-        () => ({ gridstackItems: { toArray: () => [] } });
+      (
+        component as unknown as { gridStackItems: () => unknown }
+      ).gridStackItems = () => ({ gridstackItems: { toArray: () => [] } });
       component.enterEditMode();
       component.sections.set([{ id: 'beta', title: 'Beta' }]);
 

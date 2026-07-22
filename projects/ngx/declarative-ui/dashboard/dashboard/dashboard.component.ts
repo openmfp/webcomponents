@@ -439,6 +439,8 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   onDragStart(event: { el: Element }): void {
+    this.getZFlowEngine()?.syncZFlowOrderFromLayout();
+
     const el = this.getDragOriginElement(event.el);
     const gridEl = this.gridStackItems().el as HTMLElement;
     const gridRect = gridEl.getBoundingClientRect();
