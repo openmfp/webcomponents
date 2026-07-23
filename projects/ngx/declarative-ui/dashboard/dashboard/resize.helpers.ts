@@ -19,6 +19,10 @@ export function resolveResizeWidthStep(
 ): number {
   const allowed = getAllowedResizeWidths(maxWidth, columnCount, minWidth, effectiveMax);
 
+  if (!allowed.length) {
+    return effectiveMax;
+  }
+
   return allowed.reduce((best, candidate) => {
     return Math.abs(candidate - rawWidth) <= Math.abs(best - rawWidth)
       ? candidate

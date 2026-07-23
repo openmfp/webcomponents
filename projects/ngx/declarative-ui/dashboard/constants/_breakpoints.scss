@@ -6,17 +6,6 @@
 // Keep these values identical to DASHBOARD_BREAKPOINTS in breakpoints.ts.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Each breakpoint's max-width (in px) and the corresponding column count
-// applied at that breakpoint. Ordered ascending by `w` so it's easy to read
-// off as a series of (max-width, columns) pairs.
-$dashboard-breakpoints: (
-  (599, 1),
-  (1023, 8),
-  (1439, 12),
-  // Above 1439: 14 columns. Implemented as the default (no @container rule);
-  // the 4000 ceiling exists in the TS table for Gridstack's benefit only.
-);
-
 /// Convenience accessors for the four breakpoint widths used by the grid.
 $dashboard-bp-sm: 599px;
 $dashboard-bp-md: 1023px;
