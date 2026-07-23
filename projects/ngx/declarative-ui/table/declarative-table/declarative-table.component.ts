@@ -72,6 +72,7 @@ export class DeclarativeTable<T extends GenericResource> {
   viewColumns = computed(() => processGroupFields(this.columns()));
 
   isPagerMode = computed(() => this.loadMode() === 'pager');
+  knowsTotal = computed(() => this.totalItemsCount() !== undefined);
   hasResults = computed(() => (this.totalItemsCount() ?? 0) > 0);
   totalPages = computed(() =>
     Math.max(
@@ -79,13 +80,16 @@ export class DeclarativeTable<T extends GenericResource> {
       Math.ceil((this.totalItemsCount() ?? 0) / this.paginationLimit()),
     ),
   );
-  canPrev = computed(() => this.hasResults() && this.currentPage() > 1);
-  canNext = computed(
-    () => this.hasResults() && this.currentPage() < this.totalPages(),
+  canPrev = computed(() => this.currentPage() > 1);
+  canNext = computed(() =>
+    this.knowsTotal()
+      ? this.hasResults() && this.currentPage() < this.totalPages()
+      : this.hasMore(),
   );
 
   goToPage(page: number): void {
-    const target = Math.min(Math.max(1, page), this.totalPages());
+    const maxPage = this.knowsTotal() ? this.totalPages() : Infinity;
+    const target = Math.min(Math.max(1, page), maxPage);
     if (target !== this.currentPage()) {
       this.pageChange.emit(target);
     }
