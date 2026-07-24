@@ -146,14 +146,16 @@
 
   @if (isPagerMode()) {
     <div class="pager" data-testid="generic-table-pager">
-      <ui5-button
-        accessibleName="First page"
-        data-testid="generic-table-pager-first"
-        design="Transparent"
-        icon="close-command-field"
-        [disabled]="!canPrev()"
-        (click)="firstPage()"
-      />
+      @if (knowsTotal()) {
+        <ui5-button
+          accessibleName="First page"
+          data-testid="generic-table-pager-first"
+          design="Transparent"
+          icon="close-command-field"
+          [disabled]="!canPrev()"
+          (click)="firstPage()"
+        />
+      }
       <ui5-button
         accessibleName="Previous page"
         data-testid="generic-table-pager-prev"
@@ -165,7 +167,11 @@
       <span
         class="pager__indicator"
         data-testid="generic-table-pager-indicator"
-        >{{ hasResults() ? currentPage() + ' / ' + totalPages() : '–' }}</span
+        >{{
+          knowsTotal()
+            ? (hasResults() ? currentPage() + ' / ' + totalPages() : '–')
+            : currentPage()
+        }}</span
       >
       <ui5-button
         accessibleName="Next page"
@@ -175,25 +181,28 @@
         [disabled]="!canNext()"
         (click)="nextPage()"
       />
-      <ui5-button
-        accessibleName="Last page"
-        data-testid="generic-table-pager-last"
-        design="Transparent"
-        icon="open-command-field"
-        [disabled]="!canNext()"
-        (click)="lastPage()"
-      />
+      @if (knowsTotal()) {
+        <ui5-button
+          accessibleName="Last page"
+          data-testid="generic-table-pager-last"
+          design="Transparent"
+          icon="open-command-field"
+          [disabled]="!canNext()"
+          (click)="lastPage()"
+        />
+      }
     </div>
-
     <div class="pagination-footer__side pagination-footer__side--end">
-      <span
-        data-testid="generic-table-item-count"
-        style="color: var(--sapTextColor); font-size: var(--sapFontSmallSize)"
-      >
-        <b style="font-size: var(--sapFontSize)">{{ totalItemsCount() ?? 0 }}</b>
-        Items
-      </span>
-    </div>
+        @if (knowsTotal()) {
+          <span
+            data-testid="generic-table-item-count"
+            style="color: var(--sapTextColor); font-size: var(--sapFontSmallSize)"
+          >
+            <b style="font-size: var(--sapFontSize)">{{ totalItemsCount() }}</b>
+            Items
+          </span>
+      }
+      </div>
   } @else {
     <div class="pagination-footer__side pagination-footer__side--end">
       <span

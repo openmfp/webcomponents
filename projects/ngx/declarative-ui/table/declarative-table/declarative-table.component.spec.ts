@@ -484,10 +484,12 @@ describe('DeclarativeTable', () => {
 
     it('disables first and previous on the first page', () => {
       const { fixture } = pagerSetup({ currentPage: 1 });
-      const first = el(fixture, 'generic-table-pager-first') as HTMLElement & { disabled: boolean };
+      // canPrev is false on page 1 regardless of totalItemsCount
       const prev = el(fixture, 'generic-table-pager-prev') as HTMLElement & { disabled: boolean };
-      expect(first.disabled).toBe(true);
       expect(prev.disabled).toBe(true);
+      // first button is only rendered when knowsTotal=true (totalItemsCount set)
+      const first = el(fixture, 'generic-table-pager-first') as HTMLElement & { disabled: boolean };
+      expect(first.disabled).toBe(true);
     });
 
     it('disables next and last on the last page', () => {
@@ -534,7 +536,7 @@ describe('DeclarativeTable', () => {
       expect(emitted).toEqual([]);
     });
 
-    it('clamps out-of-range page requests to totalPages', () => {
+    it('clamps out-of-range page requests to totalPages when total is known', () => {
       const { component } = pagerSetup({
         currentPage: 1,
         totalItemsCount: 12,
@@ -558,13 +560,18 @@ describe('DeclarativeTable', () => {
         el(fixture, 'generic-table-pager-indicator')?.textContent?.trim(),
       ).toBe('–');
 
-      const ids = ['first', 'prev', 'next', 'last'];
+      const ids = ['prev', 'next'];
       for (const id of ids) {
         const btn = el(fixture, `generic-table-pager-${id}`) as HTMLElement & {
           disabled: boolean;
         };
         expect(btn.disabled).toBe(true);
       }
+      // first/last are still rendered (knowsTotal=true) but also disabled
+      const first = el(fixture, 'generic-table-pager-first') as HTMLElement & { disabled: boolean };
+      const last = el(fixture, 'generic-table-pager-last') as HTMLElement & { disabled: boolean };
+      expect(first.disabled).toBe(true);
+      expect(last.disabled).toBe(true);
       expect(component.canPrev()).toBe(false);
       expect(component.canNext()).toBe(false);
     });
@@ -581,6 +588,65 @@ describe('DeclarativeTable', () => {
       expect(
         el(fixture, 'generic-table-item-count')?.textContent?.replace(/\s+/g, ' ').trim(),
       ).toBe('0 Items');
+    });
+
+    describe('cursor-based mode (totalItemsCount undefined)', () => {
+      const cursorSetup = (overrides: Partial<Parameters<typeof setup>[0]> = {}) =>
+        setup({
+          columns: [{ property: 'name' }],
+          resources: [{ id: '1' }, { id: '2' }],
+          loadMode: 'pager',
+          paginationLimit: 5,
+          currentPage: 2,
+          // totalItemsCount intentionally omitted
+          ...overrides,
+        });
+
+      it('shows only the current page number when totalItemsCount is undefined', () => {
+        const { fixture } = cursorSetup();
+        expect(
+          el(fixture, 'generic-table-pager-indicator')?.textContent?.trim(),
+        ).toBe('2');
+      });
+
+      it('hides first and last buttons when totalItemsCount is undefined', () => {
+        const { fixture } = cursorSetup();
+        expect(el(fixture, 'generic-table-pager-first')).toBeNull();
+        expect(el(fixture, 'generic-table-pager-last')).toBeNull();
+      });
+
+      it('hides the item count panel when totalItemsCount is undefined', () => {
+        const { fixture } = cursorSetup();
+        expect(el(fixture, 'generic-table-item-count')).toBeNull();
+      });
+
+      it('enables next when hasMore is true', () => {
+        const { component } = cursorSetup({ hasMore: true });
+        expect(component.canNext()).toBe(true);
+      });
+
+      it('disables next when hasMore is false', () => {
+        const { component } = cursorSetup({ hasMore: false });
+        expect(component.canNext()).toBe(false);
+      });
+
+      it('enables prev when currentPage > 1', () => {
+        const { component } = cursorSetup({ currentPage: 3 });
+        expect(component.canPrev()).toBe(true);
+      });
+
+      it('disables prev on page 1', () => {
+        const { component } = cursorSetup({ currentPage: 1 });
+        expect(component.canPrev()).toBe(false);
+      });
+
+      it('does not clamp nextPage when total is unknown', () => {
+        const { component } = cursorSetup({ currentPage: 99 });
+        const emitted: number[] = [];
+        component.pageChange.subscribe((n) => emitted.push(n));
+        component.nextPage();
+        expect(emitted).toEqual([100]);
+      });
     });
   });
 
