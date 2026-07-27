@@ -1,15 +1,13 @@
-import { SteppedResizeGridStackEngine } from './stepped-resize-engine';
+import { ZflowGridStackEngine } from './z-flow-engine';
 import type { ZFlowGridStackNode } from './z-flow.helpers';
 import type { GridStackMoveOpts, GridStackNode } from 'gridstack';
 
-function createEngine(
-  nodes: ZFlowGridStackNode[],
-): {
-  engine: SteppedResizeGridStackEngine;
+function createEngine(nodes: ZFlowGridStackNode[]): {
+  engine: ZflowGridStackEngine;
   onChange: ReturnType<typeof vi.fn>;
 } {
   const onChange = vi.fn();
-  const engine = new SteppedResizeGridStackEngine({
+  const engine = new ZflowGridStackEngine({
     column: 4,
     nodes,
     onChange,

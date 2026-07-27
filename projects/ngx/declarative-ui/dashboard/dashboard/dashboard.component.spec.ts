@@ -2,8 +2,8 @@ import { resetDashboardCardRegistry } from '../card/utils/dashboard-card-registr
 import { DASHBOARD_CARD_DRAG_ORIGIN_CLASS } from '../constants';
 import { CardConfig, SectionConfig } from '../models';
 import { Dashboard } from './dashboard.component';
-import { SteppedResizeGridStackEngine } from './stepped-resize-engine';
-import type { ZFlowGridStackNode } from './z-flow.helpers';
+import { ZflowGridStackEngine } from './engines/zflow/z-flow-engine';
+import type { ZFlowGridStackNode } from './engines/zflow/z-flow.helpers';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import type { GridStackMoveOpts, GridStackNode } from 'gridstack';
 
@@ -569,7 +569,7 @@ describe('Dashboard', () => {
       { id: 'team', x: 0, y: 10, w: 1, h: 10, zFlowOrder: 3 },
       { id: 'quick', x: 1, y: 10, w: 1, h: 10, zFlowOrder: 5 },
     ];
-    const engine = new SteppedResizeGridStackEngine({ column: 4, nodes });
+    const engine = new ZflowGridStackEngine({ column: 4, nodes });
 
     dragOriginEl.className = DASHBOARD_CARD_DRAG_ORIGIN_CLASS;
     gridItemEl.appendChild(dragOriginEl);

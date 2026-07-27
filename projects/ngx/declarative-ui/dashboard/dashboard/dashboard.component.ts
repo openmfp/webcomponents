@@ -18,7 +18,7 @@ import {
 import { CardConfig, DashboardConfig, SectionConfig } from '../models';
 import { DashboardSection } from '../section/dashboard-section.component';
 import { UnsavedChangesDialog } from '../unsaved-changes-dialog/unsaved-changes-dialog.component';
-import { SteppedResizeGridStackEngine } from './stepped-resize-engine';
+import { ZflowGridStackEngine } from './engines/zflow/z-flow-engine';
 import {
   Component,
   ElementRef,
@@ -171,7 +171,7 @@ export class Dashboard implements OnInit, OnDestroy {
       marginBottom: 0,
       marginLeft: 0,
       marginRight: 0,
-      engineClass: SteppedResizeGridStackEngine,
+      engineClass: ZflowGridStackEngine,
       columnOpts: {
         // Source of truth: ../models/breakpoints.ts (paired with
         // ../models/_breakpoints.scss for the section grid's container queries).
@@ -495,9 +495,9 @@ export class Dashboard implements OnInit, OnDestroy {
     }
   }
 
-  private getZFlowEngine(): SteppedResizeGridStackEngine | null {
+  private getZFlowEngine(): ZflowGridStackEngine | null {
     const engine = this.gridStackItems().grid?.engine;
-    return engine instanceof SteppedResizeGridStackEngine ? engine : null;
+    return engine instanceof ZflowGridStackEngine ? engine : null;
   }
 
   private updateCardsForBreakpoint(

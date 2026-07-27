@@ -23,7 +23,7 @@ interface LayoutSnapshot {
   h?: number;
 }
 
-export class SteppedResizeGridStackEngine extends GridStackEngine {
+export class ZflowGridStackEngine extends GridStackEngine {
   override moveNodeCheck(
     node: GridStackNode,
     opts: GridStackMoveOpts,
