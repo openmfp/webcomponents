@@ -1,13 +1,7 @@
 import { ButtonSettings } from '../../models';
 import { DashboardCard } from '../card/dashboard-card.component';
 import { addComponentToRegistry } from '../card/utils';
-import {
-  CELL_HEIGHT,
-  COMPACT_BREAKPOINT,
-  DASHBOARD_BREAKPOINTS,
-  DASHBOARD_CARD_DRAG_ORIGIN_SELECTOR,
-  XL_PAGE,
-} from '../constants';
+import { CELL_HEIGHT, COMPACT_BREAKPOINT, XL_PAGE } from '../constants';
 import { DiscardChangesDialog } from '../discard-changes-dialog/discard-changes-dialog.component';
 import { EditCardsDialog } from '../edit-cards-dialog/edit-cards-dialog.component';
 import {
@@ -18,7 +12,7 @@ import {
 import { CardConfig, DashboardConfig, SectionConfig } from '../models';
 import { DashboardSection } from '../section/dashboard-section.component';
 import { UnsavedChangesDialog } from '../unsaved-changes-dialog/unsaved-changes-dialog.component';
-import { ENGINES_MAP, EngineClass } from './engines/contants/engines';
+import { ENGINE_PROFILES, EngineProfile } from './engines/contants/engines';
 import { ZflowGridStackEngine } from './engines/zflow/z-flow-engine';
 import {
   Component,
@@ -149,12 +143,25 @@ export class Dashboard implements OnInit, OnDestroy {
     return this.sanitizer.bypassSecurityTrustHtml(clean);
   });
 
-  protected gridStackEngine = computed((): EngineClass => {
-    if (this.config().zFlow) {
-      return ENGINES_MAP.zFlow;
-    }
+  protected engineProfile = computed(
+    (): EngineProfile =>
+      this.config().zFlow ? ENGINE_PROFILES.zFlow : ENGINE_PROFILES.default,
+  );
 
-    return ENGINES_MAP.default;
+  protected gridStackEngine = computed(() => this.engineProfile().engineClass);
+
+  protected gridBreakpoints = computed(() => [
+    ...this.engineProfile().breakpoints,
+  ]);
+
+  protected columnVars = computed(() => {
+    const [sm, md, lg, xl] = this.engineProfile().columns;
+    return {
+      '--dashboard-cols-sm': sm,
+      '--dashboard-cols-md': md,
+      '--dashboard-cols-lg': lg,
+      '--dashboard-cols-xl': xl,
+    };
   });
 
   protected customActions = computed(() => this.config().customActions ?? []);
@@ -181,9 +188,18 @@ export class Dashboard implements OnInit, OnDestroy {
     const all = this.cards();
     return (sectionId: string) => all.filter((c) => c.sectionId === sectionId);
   });
-  protected looseCards = linkedSignal(() =>
-    this.cards().filter((c) => !c.sectionId),
-  );
+  protected looseCards = linkedSignal(() => {
+    const loose = this.cards().filter((c) => !c.sectionId);
+    const cardHeight = this.config().zFlow?.cardHeight;
+    if (!this.engineProfile().fixedCardHeight || cardHeight === undefined)
+      return loose;
+    return loose.map((c) => ({
+      ...c,
+      h: cardHeight,
+      maxH: cardHeight,
+      minH: cardHeight,
+    }));
+  });
 
   protected gridOptions = computed(
     (): GridStackOptions => ({
@@ -196,9 +212,10 @@ export class Dashboard implements OnInit, OnDestroy {
       marginRight: 0,
       engineClass: this.gridStackEngine(),
       columnOpts: {
-        // Source of truth: ../models/breakpoints.ts (paired with
-        // ../models/_breakpoints.scss for the section grid's container queries).
-        breakpoints: [...DASHBOARD_BREAKPOINTS],
+        // Source of truth: ../constants/breakpoints.ts — active profile's
+        // breakpoints (paired with ../constants/_breakpoints.scss for the
+        // section grid's container queries via --dashboard-cols-* CSS vars).
+        breakpoints: this.gridBreakpoints(),
       },
     }),
   );
@@ -442,7 +459,11 @@ export class Dashboard implements OnInit, OnDestroy {
   onDragStart(event: { el: Element }): void {
     this.getZFlowEngine()?.syncZFlowOrderFromLayout();
 
-    const el = this.getDragOriginElement(event.el);
+    if (!this.engineProfile().renderOriginPosition) {
+      return;
+    }
+
+    const el = event.el;
     const gridEl = this.gridStack().el as HTMLElement;
     const gridRect = gridEl.getBoundingClientRect();
     const elRect = el.getBoundingClientRect();
@@ -464,13 +485,6 @@ export class Dashboard implements OnInit, OnDestroy {
     if (this.editMode()) {
       this.gridDirty.set(true);
     }
-  }
-
-  private getDragOriginElement(gridItemEl: Element): Element {
-    return (
-      gridItemEl.querySelector(DASHBOARD_CARD_DRAG_ORIGIN_SELECTOR) ??
-      gridItemEl
-    );
   }
 
   private saveCardsPosition(items: GridStackNode[]): void {
@@ -515,6 +529,7 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   private changeCardSettingsForXlPage(width: number): void {
+    if (!this.engineProfile().xlWidthSwap) return;
     if (width >= XL_PAGE) {
       if (!this.isXLPage()) {
         this.isXLPage.set(true);
