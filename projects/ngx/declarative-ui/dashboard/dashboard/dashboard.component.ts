@@ -18,6 +18,7 @@ import {
 import { CardConfig, DashboardConfig, SectionConfig } from '../models';
 import { DashboardSection } from '../section/dashboard-section.component';
 import { UnsavedChangesDialog } from '../unsaved-changes-dialog/unsaved-changes-dialog.component';
+import { ENGINES_MAP, EngineClass } from './engines/contants/engines';
 import { ZflowGridStackEngine } from './engines/zflow/z-flow-engine';
 import {
   Component,
@@ -49,7 +50,7 @@ import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 import '@ui5/webcomponents-icons/dist/action-settings.js';
 import '@ui5/webcomponents-icons/dist/menu2.js';
 import '@ui5/webcomponents-icons/dist/user-edit.js';
-import { GridStackNode, GridStackOptions } from 'gridstack';
+import { GridStackNode, GridStackOptions, GridStackPosition } from 'gridstack';
 import {
   GridstackComponent,
   GridstackItemComponent,
@@ -89,6 +90,10 @@ export class Dashboard implements OnInit, OnDestroy {
   static registerAngularComponents(componentTypes: Type<unknown>[]): void {
     addComponentToRegistry(componentTypes);
   }
+  private readonly hostEl = inject(ElementRef<HTMLElement>);
+  private readonly injector = inject(Injector);
+  private readonly sanitizer = inject(DomSanitizer);
+  protected readonly i18n = inject(DashboardI18nService);
 
   config = input.required<DashboardConfig>();
   sections = model<SectionConfig[]>([]);
@@ -103,32 +108,27 @@ export class Dashboard implements OnInit, OnDestroy {
   }>();
   readonly unsavedChangesChange = output<boolean>();
 
+  protected readonly i18nKeys = DASHBOARD_I18N_KEYS;
+
+  /** True once the user has dragged/resized any grid item while in edit mode. */
+  private gridDirty = signal(false);
+  private isXLPage = signal(true);
+
   editMode = signal(false);
   compactToolbar = signal(false);
   toolbarMenuOpen = signal(false);
-
-  protected dragOriginStyle = signal<{
+  cardDialogOpen = signal(false);
+  discardDialogOpen = signal(false);
+  unsavedNavDialogOpen = signal(false);
+  backgroundImageHeight = signal<number | null>(null);
+  dragOriginStyle = signal<{
     top: string;
     left: string;
     width: string;
     height: string;
   } | null>(null);
 
-  /** True once the user has dragged/resized any grid item while in edit mode. */
-  private gridDirty = signal(false);
-
-  protected backgroundImageHeight = signal<number | null>(null);
-
-  /** JSON snapshots of sections/cards taken on entering edit mode, used to detect changes. */
-  private sectionsSnapshotJson = '';
-  private cardsSnapshotJson = '';
-
-  /**
-   * True when the user is in edit mode AND has made any change (sections/cards
-   * mutated, or grid items moved/resized). Resets when entering edit mode and
-   * after save/cancel.
-   */
-  hasUnsavedChanges = computed(() => {
+  protected hasUnsavedChanges = computed(() => {
     if (!this.editMode()) return false;
     if (this.gridDirty()) return true;
     return (
@@ -136,24 +136,11 @@ export class Dashboard implements OnInit, OnDestroy {
       JSON.stringify(this.cards()) !== this.cardsSnapshotJson
     );
   });
-
-  private sectionsSnapshot: SectionConfig[] = [];
-  private cardsSnapshot: CardConfig[] = [];
-  private gridStackItems = viewChild.required<GridstackComponent>('grid');
-  private addCardBtn = viewChild<Button>('editCardsBtn');
-  private resizeObserver?: ResizeObserver;
-  private readonly hostEl = inject(ElementRef<HTMLElement>);
-  private readonly injector = inject(Injector);
-  private readonly sanitizer = inject(DomSanitizer);
-  protected readonly i18n = inject(DashboardI18nService);
-  protected readonly i18nKeys = DASHBOARD_I18N_KEYS;
-
   protected safeTitle = computed((): SafeHtml => {
     const clean =
       this.sanitizer.sanitize(SecurityContext.HTML, this.config().title) ?? '';
     return this.sanitizer.bypassSecurityTrustHtml(clean);
   });
-
   protected safeDescription = computed((): SafeHtml | null => {
     const desc = this.config().description;
     if (!desc) return null;
@@ -161,6 +148,42 @@ export class Dashboard implements OnInit, OnDestroy {
     const clean = this.sanitizer.sanitize(SecurityContext.HTML, desc) ?? '';
     return this.sanitizer.bypassSecurityTrustHtml(clean);
   });
+
+  protected gridStackEngine = computed((): EngineClass => {
+    if (this.config().zFlow) {
+      return ENGINES_MAP.zFlow;
+    }
+
+    return ENGINES_MAP.default;
+  });
+
+  protected customActions = computed(() => this.config().customActions ?? []);
+  protected addedCardsIds = computed(
+    () => new Set(this.cards().map((c) => c.id)),
+  );
+
+  protected editViewButton = computed(() => ({
+    icon: 'action-settings',
+    design: 'Transparent' as const,
+    tooltip: this.i18n.getTranslation(DASHBOARD_I18N_KEYS.EDIT_VIEW),
+    text: '',
+    ...this.config().buttonsSettings?.editViewButton,
+  }));
+  protected editCardsButton = computed(() => ({
+    icon: '',
+    design: 'Default' as const,
+    tooltip: '',
+    text: this.i18n.getTranslation(DASHBOARD_I18N_KEYS.EDIT_CARDS),
+    ...this.config().buttonsSettings?.editCardsButton,
+  }));
+
+  protected sectionCards = computed(() => {
+    const all = this.cards();
+    return (sectionId: string) => all.filter((c) => c.sectionId === sectionId);
+  });
+  protected looseCards = linkedSignal(() =>
+    this.cards().filter((c) => !c.sectionId),
+  );
 
   protected gridOptions = computed(
     (): GridStackOptions => ({
@@ -171,7 +194,7 @@ export class Dashboard implements OnInit, OnDestroy {
       marginBottom: 0,
       marginLeft: 0,
       marginRight: 0,
-      engineClass: ZflowGridStackEngine,
+      engineClass: this.gridStackEngine(),
       columnOpts: {
         // Source of truth: ../models/breakpoints.ts (paired with
         // ../models/_breakpoints.scss for the section grid's container queries).
@@ -180,9 +203,17 @@ export class Dashboard implements OnInit, OnDestroy {
     }),
   );
 
-  cardDialogOpen = signal(false);
-  discardDialogOpen = signal(false);
-  unsavedNavDialogOpen = signal(false);
+  /** JSON snapshots of sections/cards taken on entering edit mode, used to detect changes. */
+  private sectionsSnapshotJson = '';
+  private cardsSnapshotJson = '';
+  private sectionsSnapshot: SectionConfig[] = [];
+  private cardsSnapshot: CardConfig[] = [];
+
+  private gridStack = viewChild.required<GridstackComponent>('grid');
+  private addCardBtn = viewChild<Button>('editCardsBtn');
+  private resizeObserver?: ResizeObserver;
+  private cardsPosition = new Map<string, GridStackPosition>();
+
   /** Callback that resumes the intercepted navigation once the user resolves the dialog. */
   private pendingNavigation: (() => void) | null = null;
   /** beforeunload handler kept on instance so add/removeEventListener pair up. */
@@ -194,36 +225,6 @@ export class Dashboard implements OnInit, OnDestroy {
       event.returnValue = '';
     }
   };
-  customActions = computed(() => this.config().customActions ?? []);
-  addedCardsIds = computed(() => new Set(this.cards().map((c) => c.id)));
-
-  editViewButton = computed(() => ({
-    icon: 'action-settings',
-    design: 'Transparent' as const,
-    tooltip: this.i18n.getTranslation(DASHBOARD_I18N_KEYS.EDIT_VIEW),
-    text: '',
-    ...this.config().buttonsSettings?.editViewButton,
-  }));
-
-  editCardsButton = computed(() => ({
-    icon: '',
-    design: 'Default' as const,
-    tooltip: '',
-    text: this.i18n.getTranslation(DASHBOARD_I18N_KEYS.EDIT_CARDS),
-    ...this.config().buttonsSettings?.editCardsButton,
-  }));
-
-  sectionCards = computed(() => {
-    const all = this.cards();
-    return (sectionId: string) => all.filter((c) => c.sectionId === sectionId);
-  });
-
-  cardsPosition = new Map<
-    string,
-    { x?: number; y?: number; w?: number; h?: number }
-  >();
-  looseCards = linkedSignal(() => this.cards().filter((c) => !c.sectionId));
-  private isXLPage = signal(true);
 
   constructor() {
     effect(() => {
@@ -415,7 +416,7 @@ export class Dashboard implements OnInit, OnDestroy {
     if (wasLooseCard) {
       afterNextRender(
         () => {
-          this.gridStackItems().grid?.compact('compact', false);
+          this.gridStack().grid?.compact('compact', false);
         },
         { injector: this.injector },
       );
@@ -442,7 +443,7 @@ export class Dashboard implements OnInit, OnDestroy {
     this.getZFlowEngine()?.syncZFlowOrderFromLayout();
 
     const el = this.getDragOriginElement(event.el);
-    const gridEl = this.gridStackItems().el as HTMLElement;
+    const gridEl = this.gridStack().el as HTMLElement;
     const gridRect = gridEl.getBoundingClientRect();
     const elRect = el.getBoundingClientRect();
 
@@ -486,7 +487,7 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   private updateCardsPositions(): void {
-    const gridStackNodes = this.gridStackItems()
+    const gridStackNodes = this.gridStack()
       .gridstackItems?.toArray()
       .map((node) => node.options);
 
@@ -496,7 +497,7 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   private getZFlowEngine(): ZflowGridStackEngine | null {
-    const engine = this.gridStackItems().grid?.engine;
+    const engine = this.gridStack().grid?.engine;
     return engine instanceof ZflowGridStackEngine ? engine : null;
   }
 
