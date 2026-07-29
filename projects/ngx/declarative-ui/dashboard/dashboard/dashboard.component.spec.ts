@@ -478,7 +478,7 @@ describe('Dashboard', () => {
     expect(component.cardDialogOpen()).toBe(false);
   });
 
-  it('positions the drag origin placeholder from the marked card surface', () => {
+  it('positions the drag origin placeholder from the dragged grid item', () => {
     const { fixture, component } = setup();
     fixture.componentRef.setInput('config', {
       title: 'T',
@@ -486,12 +486,9 @@ describe('Dashboard', () => {
     });
     const gridEl = document.createElement('div');
     const gridItemEl = document.createElement('div');
-    const dragOriginEl = document.createElement('div');
 
-    dragOriginEl.className = DASHBOARD_CARD_DRAG_ORIGIN_CLASS;
-    gridItemEl.appendChild(dragOriginEl);
     mockRect(gridEl, { left: 50, top: 100, width: 400, height: 600 });
-    mockRect(dragOriginEl, { left: 70, top: 130, width: 220, height: 180 });
+    mockRect(gridItemEl, { left: 70, top: 130, width: 220, height: 180 });
     (component as unknown as { gridStack: () => unknown }).gridStack = () => ({
       el: gridEl,
     });
@@ -1113,7 +1110,7 @@ describe('Dashboard', () => {
       expect(profile.engineClass).toBe(ZflowGridStackEngine);
       expect(profile.fixedCardHeight).toBe(true);
       expect(profile.xlWidthSwap).toBe(true);
-      expect(profile.columns).toEqual([1, 4, 4, 4]);
+      expect(profile.columns).toEqual([1, 2, 3, 3]);
     });
 
     it('resolves to the default profile when config().zFlow is absent', () => {
@@ -1175,7 +1172,7 @@ describe('Dashboard', () => {
       ]);
     });
 
-    it('columnVars() reflects 4-column layout under zFlow', () => {
+    it('columnVars() reflects the zFlow column layout', () => {
       const { fixture, component } = setup();
 
       fixture.componentRef.setInput('config', {
@@ -1186,9 +1183,9 @@ describe('Dashboard', () => {
 
       expect(component['columnVars']()).toEqual({
         '--dashboard-cols-sm': 1,
-        '--dashboard-cols-md': 4,
-        '--dashboard-cols-lg': 4,
-        '--dashboard-cols-xl': 4,
+        '--dashboard-cols-md': 2,
+        '--dashboard-cols-lg': 3,
+        '--dashboard-cols-xl': 3,
       });
     });
 

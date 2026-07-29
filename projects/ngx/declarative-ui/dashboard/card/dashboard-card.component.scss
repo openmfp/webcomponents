@@ -67,6 +67,14 @@
   opacity: 1;
 }
 
+// In zFlow mode, a drag surfaces the blue drop placeholder over the grid. The
+// dashboard flags the active drag with `.zflow-dragging` on the <gridstack>
+// host; hide every card's remove button for the duration so it doesn't poke
+// out over the placeholder.
+:host-context(.zflow-dragging) .remove-wrapper {
+  opacity: 0;
+  pointer-events: none;
+}
 .component-host {
   position: relative;
   height: 100%;

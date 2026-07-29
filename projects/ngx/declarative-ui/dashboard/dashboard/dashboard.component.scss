@@ -42,6 +42,10 @@ mfp-wc-dashboard {
   container-name: mfp-dashboard;
 }
 
+.mfp-dashboard.edit {
+  padding-bottom: 60px;
+}
+
 .mfp-sections-container {
   display: grid;
   grid-auto-rows: auto;

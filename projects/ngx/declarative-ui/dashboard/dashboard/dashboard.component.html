@@ -1,4 +1,4 @@
-<div class="mfp-dashboard" data-testid="dashboard" [style]="columnVars()">
+<div class="mfp-dashboard" data-testid="dashboard" [style]="columnVars()" [class.edit]="editMode()">
   <div class="mfp-dashboard__topbar">
     <div class="mfp-dashboard__topbar-row">
       <div class="mfp-dashboard__header">
@@ -175,6 +175,7 @@
   <gridstack
     #grid
     data-testid="dashboard-grid"
+    [class.zflow-dragging]="!!dragOriginStyle()"
     [options]="gridOptions()"
     (addedCB)="onGridChange()"
     (changeCB)="onGridChange()"
