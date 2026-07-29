@@ -1,14 +1,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // SCSS defaults — must match DASHBOARD_BREAKPOINTS in breakpoints.ts.
-//
+
 // Column counts are now runtime-overridable via --dashboard-cols-{sm,md,lg,xl}
 // CSS custom properties set on the .mfp-dashboard container by
-// dashboard.component.ts (sourced from ENGINE_PROFILES[*].columns).
-//
+// dashboard.component.ts (sourced from ENGINE_PROFILES[*].sectionColumns).
+
 // The $dashboard-cols-* SCSS variables serve as static fallbacks when no CSS
 // var is set (i.e. for the default engine). They MUST match the column counts
 // in DASHBOARD_BREAKPOINTS (currently 14/12/8/1 for xl/lg/md/sm).
-//
+
 // The zFlow engine pushes [1,4,4,4] via --dashboard-cols-* at runtime — no
 // SCSS changes are needed when adding a new engine.
 // ─────────────────────────────────────────────────────────────────────────────

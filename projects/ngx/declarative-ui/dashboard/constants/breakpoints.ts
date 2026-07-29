@@ -10,7 +10,7 @@
 //
 //   ZFLOW_DASHBOARD_BREAKPOINTS — zFlow engine (4/4/4/1 columns).
 //                                 Overrides the CSS vars at runtime via the
-//                                 engineProfile().columns tuple set on the host.
+//                                 engineProfile().sectionColumns tuple set on the host.
 //
 // Both tables are consumed by two systems that can't share a single source of
 // truth at compile time:
@@ -22,7 +22,7 @@
 //
 //   2. _breakpoints.scss — @container queries on .mfp-sections-container use
 //      CSS vars (--dashboard-cols-*) with the SCSS $dashboard-cols-* values as
-//      fallbacks. The active ENGINE_PROFILES[*].columns tuple is pushed into
+//      fallbacks. The active ENGINE_PROFILES[*].sectionColumns tuple is pushed into
 //      those vars at runtime by dashboard.component.ts.
 //
 // If you change DASHBOARD_BREAKPOINTS column counts, update BOTH the TS values
