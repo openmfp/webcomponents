@@ -1,5 +1,5 @@
 import { resetDashboardCardRegistry } from '../card/utils/dashboard-card-registry';
-import { DASHBOARD_CARD_DRAG_ORIGIN_CLASS } from '../constants';
+import { DASHBOARD_CARD_DRAG_ORIGIN_CLASS, XL_PAGE } from '../constants';
 import { CardConfig, SectionConfig } from '../models';
 import { Dashboard } from './dashboard.component';
 import { ZflowGridStackEngine } from './engines/zflow/z-flow-engine';
@@ -1110,7 +1110,7 @@ describe('Dashboard', () => {
       expect(profile.engineClass).toBe(ZflowGridStackEngine);
       expect(profile.fixedCardHeight).toBe(true);
       expect(profile.xlWidthSwap).toBe(true);
-      expect(profile.columns).toEqual([1, 2, 3, 3]);
+      expect(profile.sectionColumns).toEqual([1, 2, 3, 3]);
     });
 
     it('resolves to the default profile when config().zFlow is absent', () => {
@@ -1123,7 +1123,7 @@ describe('Dashboard', () => {
       expect(profile.engineClass).toBeUndefined();
       expect(profile.fixedCardHeight).toBe(false);
       expect(profile.xlWidthSwap).toBe(false);
-      expect(profile.columns).toEqual([1, 8, 12, 14]);
+      expect(profile.sectionColumns).toEqual([1, 8, 12, 14]);
     });
 
     it('gridStackEngine() returns ZflowGridStackEngine under zFlow', () => {
@@ -1276,6 +1276,91 @@ describe('Dashboard', () => {
       });
       fixture.detectChanges();
       expect(component['engineProfile']().xlWidthSwap).toBe(true);
+    });
+  });
+
+  describe('XL width swap (changeCardSettingsForXlPage)', () => {
+    function stubEmptyGrid(component: Dashboard): void {
+      (component as unknown as { gridStack: () => unknown }).gridStack =
+        () => ({ gridstackItems: { toArray: () => [] } });
+    }
+
+    function swap(component: Dashboard, width: number): void {
+      (
+        component as unknown as {
+          changeCardSettingsForXlPage: (w: number) => void;
+        }
+      ).changeCardSettingsForXlPage(width);
+    }
+
+    it('does nothing under the default profile (xlWidthSwap is false)', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', { title: 'T' });
+      component.cards.set([{ id: 'c1', component: 'mfp-a', w: 4, maxW: 4 }]);
+      stubEmptyGrid(component);
+      fixture.detectChanges();
+
+      // Dropping below the XL page would swap 4→? only under zFlow.
+      swap(component, 1000);
+
+      expect(component.cards()[0]).toMatchObject({ w: 4, maxW: 4 });
+    });
+
+    it('narrows w/maxW from 4 to 3 when growing to an XL-width page under zFlow', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', {
+        title: 'T',
+        zFlow: { cardHeight: 30 },
+      });
+      component.cards.set([
+        { id: 'c1', component: 'mfp-a', w: 4, maxW: 4 },
+        { id: 'c2', component: 'mfp-b', w: 2, maxW: 2 },
+      ]);
+      stubEmptyGrid(component);
+      fixture.detectChanges();
+
+      // Start on a sub-XL page, then grow to XL.
+      swap(component, 1000);
+      swap(component, XL_PAGE);
+
+      expect(component.cards()[0]).toMatchObject({ w: 3, maxW: 3 });
+      // Cards that are not exactly 4 wide are left untouched.
+      expect(component.cards()[1]).toMatchObject({ w: 2, maxW: 2 });
+    });
+
+    it('widens w/maxW from 3 to 4 when shrinking below the XL page under zFlow', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', {
+        title: 'T',
+        zFlow: { cardHeight: 30 },
+      });
+      component.cards.set([{ id: 'c1', component: 'mfp-a', w: 3, maxW: 3 }]);
+      stubEmptyGrid(component);
+      fixture.detectChanges();
+
+      // The component starts assuming an XL page, so shrinking triggers 3→4.
+      swap(component, XL_PAGE - 1);
+
+      expect(component.cards()[0]).toMatchObject({ w: 4, maxW: 4 });
+    });
+
+    it('does not re-run the swap while staying within the same page bracket', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', {
+        title: 'T',
+        zFlow: { cardHeight: 30 },
+      });
+      // A card already at 3 that a second XL notification must not touch.
+      component.cards.set([{ id: 'c1', component: 'mfp-a', w: 3, maxW: 3 }]);
+      stubEmptyGrid(component);
+      fixture.detectChanges();
+
+      // Two XL-width notifications in a row: the guard keeps isXLPage true, so
+      // the 3→4 widening branch never runs and the card stays at 3.
+      swap(component, XL_PAGE);
+      swap(component, XL_PAGE + 200);
+
+      expect(component.cards()[0]).toMatchObject({ w: 3, maxW: 3 });
     });
   });
 

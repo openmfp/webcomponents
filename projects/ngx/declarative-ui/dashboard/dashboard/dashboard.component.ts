@@ -155,7 +155,7 @@ export class Dashboard implements OnInit, OnDestroy {
   ]);
 
   protected columnVars = computed(() => {
-    const [sm, md, lg, xl] = this.engineProfile().columns;
+    const [sm, md, lg, xl] = this.engineProfile().sectionColumns;
     return {
       '--dashboard-cols-sm': sm,
       '--dashboard-cols-md': md,

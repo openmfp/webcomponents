@@ -11,8 +11,8 @@ export interface EngineProfile {
   engineClass: typeof GridStackEngine | undefined;
   /** Column breakpoint table fed to GridStack columnOpts. */
   breakpoints: readonly DashboardBreakpoint[];
-  /** Column counts [sm, md, lg, xl] pushed to CSS vars so the section grids match. */
-  columns: readonly [number, number, number, number];
+  /** Column counts for [sm, md, lg, xl] page size. Pushed to CSS vars so the section grids match. */
+  sectionColumns: readonly [number, number, number, number];
   /** When true, all loose cards get a fixed h/maxH from the engine's config. */
   fixedCardHeight: boolean;
   /** When true, the XL-page width swap (3↔4) runs. */
@@ -28,7 +28,7 @@ export const ENGINE_PROFILES = {
   zFlow: {
     engineClass: ZflowGridStackEngine,
     breakpoints: ZFLOW_DASHBOARD_BREAKPOINTS,
-    columns: [1, 2, 3, 3],
+    sectionColumns: [1, 2, 3, 3],
     fixedCardHeight: true,
     xlWidthSwap: true,
     renderOriginPosition: true,
@@ -36,7 +36,7 @@ export const ENGINE_PROFILES = {
   default: {
     engineClass: undefined,
     breakpoints: DASHBOARD_BREAKPOINTS,
-    columns: getColumns(DASHBOARD_BREAKPOINTS),
+    sectionColumns: getColumns(DASHBOARD_BREAKPOINTS),
     fixedCardHeight: false,
     xlWidthSwap: false,
     renderOriginPosition: false,
