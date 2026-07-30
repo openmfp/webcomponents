@@ -1,28 +1,24 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// MUST MATCH: ./breakpoints.ts
-//
-// SCSS half of the shared dashboard breakpoint table. Consumed by
-// dashboard.component.scss for @container queries on .mfp-sections-container.
-// Keep these values identical to DASHBOARD_BREAKPOINTS in breakpoints.ts.
-// ─────────────────────────────────────────────────────────────────────────────
+// SCSS defaults — must match DASHBOARD_BREAKPOINTS in breakpoints.ts.
 
-// Each breakpoint's max-width (in px) and the corresponding column count
-// applied at that breakpoint. Ordered ascending by `w` so it's easy to read
-// off as a series of (max-width, columns) pairs.
-$dashboard-breakpoints: (
-  (599, 1),
-  (1023, 8),
-  (1439, 12),
-  // Above 1439: 14 columns. Implemented as the default (no @container rule);
-  // the 4000 ceiling exists in the TS table for Gridstack's benefit only.
-);
+// Column counts are now runtime-overridable via --dashboard-cols-{sm,md,lg,xl}
+// CSS custom properties set on the .mfp-dashboard container by
+// dashboard.component.ts (sourced from ENGINE_PROFILES[*].sectionColumns).
+
+// The $dashboard-cols-* SCSS variables serve as static fallbacks when no CSS
+// var is set (i.e. for the default engine). They MUST match the column counts
+// in DASHBOARD_BREAKPOINTS (currently 14/12/8/1 for xl/lg/md/sm).
+
+// The zFlow engine pushes [1,4,4,4] via --dashboard-cols-* at runtime — no
+// SCSS changes are needed when adding a new engine.
+// ─────────────────────────────────────────────────────────────────────────────
 
 /// Convenience accessors for the four breakpoint widths used by the grid.
 $dashboard-bp-sm: 599px;
 $dashboard-bp-md: 1023px;
 $dashboard-bp-lg: 1439px;
 
-/// Column counts at each breakpoint.
+/// Column counts at each breakpoint — defaults matching DASHBOARD_BREAKPOINTS.
 $dashboard-cols-sm: 1;
 $dashboard-cols-md: 8;
 $dashboard-cols-lg: 12;
@@ -33,14 +29,34 @@ $dashboard-cols-xl: 14;
 /// (the section-laying-out one and each section's card-laying-out one) calls
 /// this so the column counts stay aligned.
 ///
+/// Column counts are driven by CSS vars (--dashboard-cols-*) with the SCSS
+/// $dashboard-cols-* values as static fallbacks. The active engine profile
+/// sets these vars on the host at runtime.
+///
 /// `$override` lets a caller substitute a CSS variable in front of each value
 /// (used by .section__grid to honour an explicit `--cols` override before
 /// falling back to the responsive default).
 @mixin dashboard-grid-columns($override: null) {
-  $sm: if($override, var($override, #{$dashboard-cols-sm}), $dashboard-cols-sm);
-  $md: if($override, var($override, #{$dashboard-cols-md}), $dashboard-cols-md);
-  $lg: if($override, var($override, #{$dashboard-cols-lg}), $dashboard-cols-lg);
-  $xl: if($override, var($override, #{$dashboard-cols-xl}), $dashboard-cols-xl);
+  $sm: if(
+    $override,
+    var($override, var(--dashboard-cols-sm, #{$dashboard-cols-sm})),
+    var(--dashboard-cols-sm, #{$dashboard-cols-sm})
+  );
+  $md: if(
+    $override,
+    var($override, var(--dashboard-cols-md, #{$dashboard-cols-md})),
+    var(--dashboard-cols-md, #{$dashboard-cols-md})
+  );
+  $lg: if(
+    $override,
+    var($override, var(--dashboard-cols-lg, #{$dashboard-cols-lg})),
+    var(--dashboard-cols-lg, #{$dashboard-cols-lg})
+  );
+  $xl: if(
+    $override,
+    var($override, var(--dashboard-cols-xl, #{$dashboard-cols-xl})),
+    var(--dashboard-cols-xl, #{$dashboard-cols-xl})
+  );
 
   grid-template-columns: repeat(#{$xl}, 1fr);
 

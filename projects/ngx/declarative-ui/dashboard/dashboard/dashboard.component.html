@@ -1,10 +1,10 @@
-<div class="mfp-dashboard" data-testid="dashboard">
+<div class="mfp-dashboard" data-testid="dashboard" [style]="columnVars()" [class.edit]="editMode()">
   <div class="mfp-dashboard__topbar">
     <div class="mfp-dashboard__topbar-row">
       <div class="mfp-dashboard__header">
         <div class="mfp-dashboard__title-row">
           @if (config().title) {
-            <ui5-title level="H3" size="H3" wrapping-type="Normal" data-testid="dashboard-title">
+            <ui5-title data-testid="dashboard-title" level="H3" size="H3" wrapping-type="Normal">
               <span [innerHTML]="safeTitle()"></span>
             </ui5-title>
           }
@@ -22,7 +22,7 @@
           }
         </div>
         @if (config().description) {
-          <ui5-title level="H5" size="H5" wrapping-type="Normal" data-testid="dashboard-description">
+          <ui5-title data-testid="dashboard-description" level="H5" size="H5" wrapping-type="Normal">
             <span
               class="mfp-dashboard__description"
               [innerHTML]="safeDescription()"
@@ -35,8 +35,8 @@
         @if (editMode()) {
           <ui5-button
             #editCardsBtn
-            id="edit-cards-btn"
             data-testid="dashboard-edit-cards-btn"
+            id="edit-cards-btn"
             [accessibleName]="
               editCardsButton().text ||
               editCardsButton().tooltip ||
@@ -124,8 +124,8 @@
           }
           @for (action of customActions(); track action.action) {
             <ui5-button
-              [attr.data-testid]="'dashboard-action-' + action.action"
               [accessibleName]="action.text || action.tooltip || action.action"
+              [attr.data-testid]="'dashboard-action-' + action.action"
               [design]="action.design ?? 'Default'"
               [endIcon]="action?.endIcon"
               [icon]="action.icon ?? ''"
@@ -175,11 +175,17 @@
   <gridstack
     #grid
     data-testid="dashboard-grid"
+    [class.zflow-dragging]="!!dragOriginStyle()"
     [options]="gridOptions()"
     (addedCB)="onGridChange()"
     (changeCB)="onGridChange()"
+    (dragStartCB)="onDragStart($event)"
+    (dragStopCB)="onDragStop()"
     (removedCB)="onGridChange()"
   >
+    @if (dragOriginStyle()) {
+      <div class="mfp-dashboard__drag-origin-placeholder" [style]="dragOriginStyle()"></div>
+    }
     @for (card of looseCards(); track card.id) {
       <gridstack-item [options]="card">
         <mfp-dashboard-card

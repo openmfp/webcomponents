@@ -509,10 +509,53 @@ interface DashboardConfig {
   customActions?: ButtonSettings[];
   editable?: boolean;
   editButtonFirst?: boolean;
+  zFlow?: {
+    cardHeight: number;
+  };
 }
 ```
 
 `title` and `description` accept plain strings or HTML markup. Safe HTML tags (e.g. `<b>`, `<em>`, `<a>`) are rendered; dangerous content such as `<script>` tags is stripped automatically. The title is rendered as an `<h3>` heading and the description as an `<h5>` heading.
+
+#### `zFlow` — reflow layout mode
+
+Providing `zFlow` switches the loose-card grid from the default free-placement engine to the **z-flow engine**. It changes two things fundamentally: how cards are ordered, and how they can be resized.
+
+**What z-flow is.** In z-flow the loose cards are a single **linear list**, not a set of free (x, y) coordinates. The grid only *renders* that list left-to-right, then wraps to the next row and continues left-to-right — the reading path traces a `Z`, hence the name (it has nothing to do with CSS `z-index`). The card's position is its index in the list:
+
+```text
+list:  [A, B, C, D, E, F]      4 columns:   [A] [B] [C] [D]
+                                            [E] [F]
+```
+
+**How drag & drop reorders.** Dragging a card does not drop it at arbitrary pixels — it picks a **new index in the list**. The card is removed from its old index, inserted at the new one, and every card in between shifts by one; the grid then re-packs from the updated list with **no gaps left behind**. Because the source of truth is the order (not coordinates), the same list reflows correctly at any column count — resizing the viewport never changes the saved order, only how many cards fit per row.
+
+```text
+drag F between C and D  →  list becomes [A, B, C, F, D, E]
+
+before            after
+[A] [B] [C]       [A] [B] [C]
+[D] [E] [F]       [F] [D] [E]
+```
+
+**Snapped (stepped) resize.** Instead of allowing any column count, the z-flow engine snaps every resize to three fixed fractions of the dashboard width — the drag handle jumps between them rather than moving pixel by pixel:
+
+| Card Size | Width | Fraction of the row                                   |
+| --------- | ----- | ----------------------------------------------------- |
+| S         | 1     | ¼                                                     |
+| M         | 2     | ½                                                     |
+| XL        | 3     | ¾ on XL Page (min-width: 1440) / full-width below XL  |
+
+The "full" step is screen-width-dependent: on XL-width pages (≥ 1440 px) a full card fills **3 of 4** columns of the row (¾), and below that it fills **4 of 4** (full-width) so it always fills the row. Cards already sized to the old full-width value are re-snapped automatically when the viewport crosses the 1440 px boundary.
+
+**Fixed card height.** Every loose card is forced to a fixed height — `cardHeight` sets `h`, `maxH`, and `minH` on each loose card (section cards keep their own heights).
+
+```ts
+const config: DashboardConfig = {
+  title: 'Platform Overview',
+  zFlow: { cardHeight: 30 }, // each loose card is 30 rows (300 px) tall
+};
+```
 
 ### `DashboardButtonSettings`
 

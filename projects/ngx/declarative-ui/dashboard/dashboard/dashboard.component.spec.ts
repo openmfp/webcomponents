@@ -1,7 +1,11 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { resetDashboardCardRegistry } from '../card/utils/dashboard-card-registry';
+import { DASHBOARD_CARD_DRAG_ORIGIN_CLASS, XL_PAGE } from '../constants';
 import { CardConfig, SectionConfig } from '../models';
 import { Dashboard } from './dashboard.component';
+import { ZflowGridStackEngine } from './engines/zflow/z-flow-engine';
+import type { ZFlowGridStackNode } from './engines/zflow/z-flow.helpers';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import type { GridStackMoveOpts, GridStackNode } from 'gridstack';
 
 vi.mock('gridstack', () => ({}));
 
@@ -48,6 +52,23 @@ function setup(): { fixture: Fixture; component: Dashboard } {
 
 function root(fixture: Fixture): ShadowRoot | HTMLElement {
   return fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
+}
+
+function mockRect(
+  element: Element,
+  rect: Pick<DOMRect, 'left' | 'top' | 'width' | 'height'>,
+): void {
+  element.getBoundingClientRect = vi.fn(
+    () =>
+      ({
+        ...rect,
+        x: rect.left,
+        y: rect.top,
+        right: rect.left + rect.width,
+        bottom: rect.top + rect.height,
+        toJSON: () => rect,
+      }) as DOMRect,
+  );
 }
 
 describe('Dashboard', () => {
@@ -130,7 +151,7 @@ describe('Dashboard', () => {
   });
 
   it('computes added components, section cards, loose cards and drag options from state', () => {
-    const { component } = setup();
+    const { fixture, component } = setup();
     const cards: CardConfig[] = [
       { id: 'card-1', component: 'mfp-a', sectionId: 'alpha' },
       { id: 'card-2', component: 'mfp-b' },
@@ -140,13 +161,14 @@ describe('Dashboard', () => {
       component as unknown as { gridOptions: () => { disableDrag: boolean } }
     ).gridOptions;
 
+    fixture.componentRef.setInput('config', { title: 'T' });
     component.cards.set(cards);
 
-    expect(component.addedCardsIds()).toEqual(
+    expect(component['addedCardsIds']()).toEqual(
       new Set(['card-1', 'card-2', 'card-3']),
     );
-    expect(component.sectionCards()('alpha')).toEqual([cards[0]]);
-    expect(component.looseCards()).toEqual([cards[1], cards[2]]);
+    expect(component['sectionCards']()('alpha')).toEqual([cards[0]]);
+    expect(component['looseCards']()).toEqual([cards[1], cards[2]]);
     expect(gridOptions().disableDrag).toBe(true);
 
     component.editMode.set(true);
@@ -164,15 +186,14 @@ describe('Dashboard', () => {
 
     component.sections.set(sections);
     component.cards.set(cards);
-    (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
-      () => ({
-        gridstackItems: {
-          toArray: () => [
-            { options: { id: 'card-1', x: 4, y: 2, w: 6, h: 20 } },
-            { options: { id: 'card-2', x: 1, y: 3, w: 4, h: 10 } },
-          ],
-        },
-      });
+    (component as unknown as { gridStack: () => unknown }).gridStack = () => ({
+      gridstackItems: {
+        toArray: () => [
+          { options: { id: 'card-1', x: 4, y: 2, w: 6, h: 20 } },
+          { options: { id: 'card-2', x: 1, y: 3, w: 4, h: 10 } },
+        ],
+      },
+    });
 
     component.enterEditMode();
 
@@ -184,8 +205,18 @@ describe('Dashboard', () => {
     expect(
       (component as unknown as { cardsSnapshot: CardConfig[] }).cardsSnapshot,
     ).toEqual(cards);
-    expect(component.cardsPosition.get('card-1')).toEqual({ x: 4, y: 2, w: 6, h: 20 });
-    expect(component.cardsPosition.get('card-2')).toEqual({ x: 1, y: 3, w: 4, h: 10 });
+    expect(component['cardsPosition'].get('card-1')).toEqual({
+      x: 4,
+      y: 2,
+      w: 6,
+      h: 20,
+    });
+    expect(component['cardsPosition'].get('card-2')).toEqual({
+      x: 1,
+      y: 3,
+      w: 4,
+      h: 10,
+    });
   });
 
   it('emits the saved payload and persists the latest order on save', () => {
@@ -196,12 +227,11 @@ describe('Dashboard', () => {
 
     component.sections.set(sections);
     component.cards.set(cards);
-    (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
-      () => ({
-        gridstackItems: {
-          toArray: () => [{ options: { id: 'card-1', x: 7, y: 5, w: 8, h: 30 } }],
-        },
-      });
+    (component as unknown as { gridStack: () => unknown }).gridStack = () => ({
+      gridstackItems: {
+        toArray: () => [{ options: { id: 'card-1', x: 7, y: 5, w: 8, h: 30 } }],
+      },
+    });
     component.editMode.set(true);
     component.saved.subscribe((value) => emitted.push(value));
     component.onGridChange();
@@ -214,22 +244,28 @@ describe('Dashboard', () => {
         cards: [{ id: 'card-1', component: 'mfp-a', x: 7, y: 5, w: 8, h: 30 }],
       },
     ]);
-    expect(component.cardsPosition.get('card-1')).toEqual({ x: 7, y: 5, w: 8, h: 30 });
+    expect(component['cardsPosition'].get('card-1')).toEqual({
+      x: 7,
+      y: 5,
+      w: 8,
+      h: 30,
+    });
     expect(component.editMode()).toBe(false);
   });
 
   it('emits updated w and h in the saved payload when a card is resized', () => {
     const { component } = setup();
-    const cards: CardConfig[] = [{ id: 'card-1', component: 'mfp-a', w: 6, h: 20 }];
+    const cards: CardConfig[] = [
+      { id: 'card-1', component: 'mfp-a', w: 6, h: 20 },
+    ];
     const emitted: { sections: SectionConfig[]; cards: CardConfig[] }[] = [];
 
     component.cards.set(cards);
-    (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
-      () => ({
-        gridstackItems: {
-          toArray: () => [{ options: { id: 'card-1', x: 0, y: 0, w: 3, h: 10 } }],
-        },
-      });
+    (component as unknown as { gridStack: () => unknown }).gridStack = () => ({
+      gridstackItems: {
+        toArray: () => [{ options: { id: 'card-1', x: 0, y: 0, w: 3, h: 10 } }],
+      },
+    });
     component.editMode.set(true);
     component.saved.subscribe((value) => emitted.push(value));
     component.onGridChange();
@@ -242,15 +278,16 @@ describe('Dashboard', () => {
 
   it('preserves saved w/h after save-then-re-enter-then-cancel (regression)', () => {
     const { component } = setup();
-    const cards: CardConfig[] = [{ id: 'card-1', component: 'mfp-a', w: 6, h: 20 }];
+    const cards: CardConfig[] = [
+      { id: 'card-1', component: 'mfp-a', w: 6, h: 20 },
+    ];
 
     component.cards.set(cards);
-    (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
-      () => ({
-        gridstackItems: {
-          toArray: () => [{ options: { id: 'card-1', x: 0, y: 0, w: 3, h: 10 } }],
-        },
-      });
+    (component as unknown as { gridStack: () => unknown }).gridStack = () => ({
+      gridstackItems: {
+        toArray: () => [{ options: { id: 'card-1', x: 0, y: 0, w: 3, h: 10 } }],
+      },
+    });
 
     component.enterEditMode();
     component.onGridChange();
@@ -280,15 +317,14 @@ describe('Dashboard', () => {
 
     component.sections.set(sections);
     component.cards.set(cards);
-    (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
-      () => ({
-        gridstackItems: {
-          toArray: () => [
-            { options: { id: 'card-1', x: 3, y: 6 } },
-            { options: { id: 'card-2', x: 8, y: 1 } },
-          ],
-        },
-      });
+    (component as unknown as { gridStack: () => unknown }).gridStack = () => ({
+      gridstackItems: {
+        toArray: () => [
+          { options: { id: 'card-1', x: 3, y: 6 } },
+          { options: { id: 'card-2', x: 8, y: 1 } },
+        ],
+      },
+    });
     component.enterEditMode();
     component.sections.set([{ id: 'beta', title: 'Beta' }]);
     component.cards.set([{ id: 'temp', component: 'mfp-temp', x: 9, y: 9 }]);
@@ -313,7 +349,7 @@ describe('Dashboard', () => {
     it('opens the discard popup instead of reverting when cancelEdit is called with unsaved changes', () => {
       const { component } = setup();
       component.sections.set([{ id: 'alpha', title: 'Alpha' }]);
-      (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
+      (component as unknown as { gridStack: () => unknown }).gridStack =
         () => ({ gridstackItems: { toArray: () => [] } });
 
       component.enterEditMode();
@@ -330,7 +366,7 @@ describe('Dashboard', () => {
     it('reverts immediately when cancelEdit is called without unsaved changes', () => {
       const { component } = setup();
       component.sections.set([{ id: 'alpha', title: 'Alpha' }]);
-      (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
+      (component as unknown as { gridStack: () => unknown }).gridStack =
         () => ({ gridstackItems: { toArray: () => [] } });
 
       component.enterEditMode();
@@ -345,7 +381,7 @@ describe('Dashboard', () => {
       const { component } = setup();
       const sections: SectionConfig[] = [{ id: 'alpha', title: 'Alpha' }];
       component.sections.set(sections);
-      (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
+      (component as unknown as { gridStack: () => unknown }).gridStack =
         () => ({ gridstackItems: { toArray: () => [] } });
 
       component.enterEditMode();
@@ -363,7 +399,7 @@ describe('Dashboard', () => {
     it('cancelDiscard closes the popup and keeps the user in edit mode with their changes', () => {
       const { component } = setup();
       component.sections.set([{ id: 'alpha', title: 'Alpha' }]);
-      (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
+      (component as unknown as { gridStack: () => unknown }).gridStack =
         () => ({ gridstackItems: { toArray: () => [] } });
 
       component.enterEditMode();
@@ -380,8 +416,9 @@ describe('Dashboard', () => {
   });
 
   it('removes sections together with their cards and removes loose cards by id', () => {
-    const { component } = setup();
+    const { fixture, component } = setup();
 
+    fixture.componentRef.setInput('config', { title: 'T' });
     component.sections.set([
       { id: 'alpha', title: 'Alpha' },
       { id: 'beta', title: 'Beta' },
@@ -441,6 +478,104 @@ describe('Dashboard', () => {
     expect(component.cardDialogOpen()).toBe(false);
   });
 
+  it('positions the drag origin placeholder from the dragged grid item', () => {
+    const { fixture, component } = setup();
+    fixture.componentRef.setInput('config', {
+      title: 'T',
+      zFlow: { cardHeight: 40 },
+    });
+    const gridEl = document.createElement('div');
+    const gridItemEl = document.createElement('div');
+
+    mockRect(gridEl, { left: 50, top: 100, width: 400, height: 600 });
+    mockRect(gridItemEl, { left: 70, top: 130, width: 220, height: 180 });
+    (component as unknown as { gridStack: () => unknown }).gridStack = () => ({
+      el: gridEl,
+    });
+
+    component.onDragStart({ el: gridItemEl });
+
+    expect(
+      (
+        component as unknown as {
+          dragOriginStyle: () => {
+            top: string;
+            left: string;
+            width: string;
+            height: string;
+          } | null;
+        }
+      ).dragOriginStyle(),
+    ).toEqual({
+      top: '30px',
+      left: '20px',
+      width: '220px',
+      height: '180px',
+    });
+  });
+
+  it('syncs stale z-flow order from the current layout before a new drag starts', () => {
+    const { fixture, component } = setup();
+    fixture.componentRef.setInput('config', {
+      title: 'T',
+      zFlow: { cardHeight: 40 },
+    });
+    const gridEl = document.createElement('div');
+    const gridItemEl = document.createElement('div');
+    const dragOriginEl = document.createElement('div');
+    const nodes: ZFlowGridStackNode[] = [
+      { id: 'favorites', x: 0, y: 0, w: 1, h: 10, zFlowOrder: 0 },
+      { id: 'recent', x: 1, y: 0, w: 1, h: 10, zFlowOrder: 1 },
+      { id: 'resource', x: 2, y: 0, w: 1, h: 10, zFlowOrder: 2 },
+      { id: 'cost', x: 3, y: 0, w: 1, h: 10, zFlowOrder: 4 },
+      { id: 'team', x: 0, y: 10, w: 1, h: 10, zFlowOrder: 3 },
+      { id: 'quick', x: 1, y: 10, w: 1, h: 10, zFlowOrder: 5 },
+    ];
+    const engine = new ZflowGridStackEngine({ column: 4, nodes });
+
+    dragOriginEl.className = DASHBOARD_CARD_DRAG_ORIGIN_CLASS;
+    gridItemEl.appendChild(dragOriginEl);
+    mockRect(gridEl, { left: 0, top: 0, width: 400, height: 200 });
+    mockRect(dragOriginEl, { left: 200, top: 0, width: 100, height: 100 });
+    (component as unknown as { gridStack: () => unknown }).gridStack = () => ({
+      el: gridEl,
+      grid: { engine },
+    });
+
+    component.onDragStart({ el: gridItemEl });
+
+    expect(nodes.map((node) => [node.id, node.zFlowOrder])).toEqual([
+      ['favorites', 0],
+      ['recent', 1],
+      ['resource', 2],
+      ['cost', 3],
+      ['team', 4],
+      ['quick', 5],
+    ]);
+
+    const source = nodes[2] as GridStackNode & { _moving: boolean };
+    source._moving = true;
+
+    const changed = engine.moveNodeCheck(source, {
+      cellWidth: 100,
+      cellHeight: 10,
+      rect: { x: 200, y: 0, w: 100, h: 100 },
+    } as GridStackMoveOpts);
+
+    expect(changed).toBe(false);
+    expect(engine.commitZFlowLayout()).toBe(false);
+    expect(
+      nodes.map((node) => ({ id: node.id, x: node.x, y: node.y })),
+    ).toEqual([
+      { id: 'favorites', x: 0, y: 0 },
+      { id: 'recent', x: 1, y: 0 },
+      { id: 'resource', x: 2, y: 0 },
+      { id: 'cost', x: 3, y: 0 },
+      { id: 'team', x: 0, y: 10 },
+      { id: 'quick', x: 1, y: 10 },
+    ]);
+  });
+
   it('preserves card constraint fields (maxH/maxW/minH/minW) through saveEdit', () => {
     const { component } = setup();
     const cards: CardConfig[] = [
@@ -457,12 +592,11 @@ describe('Dashboard', () => {
     ];
 
     component.cards.set(cards);
-    (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
-      () => ({
-        gridstackItems: {
-          toArray: () => [{ options: { id: 'card-1', x: 1, y: 2 } }],
-        },
-      });
+    (component as unknown as { gridStack: () => unknown }).gridStack = () => ({
+      gridstackItems: {
+        toArray: () => [{ options: { id: 'card-1', x: 1, y: 2 } }],
+      },
+    });
     component.editMode.set(true);
     component.saved.subscribe(() => false);
     component.onGridChange();
@@ -603,8 +737,8 @@ describe('Dashboard', () => {
         },
       });
 
-      expect(component.editCardsButton().text).toBe('Add Card');
-      expect(component.editCardsButton().design).toBe('Emphasized');
+      expect(component['editCardsButton']().text).toBe('Add Card');
+      expect(component['editCardsButton']().design).toBe('Emphasized');
     });
   });
 
@@ -622,26 +756,36 @@ describe('Dashboard', () => {
     it('save button has data-testid="dashboard-save-btn" in edit mode', () => {
       const { fixture, component } = setup();
 
-      fixture.componentRef.setInput('config', { title: 'Operations', editable: true });
+      fixture.componentRef.setInput('config', {
+        title: 'Operations',
+        editable: true,
+      });
       fixture.detectChanges();
 
       component.editMode.set(true);
       fixture.detectChanges();
 
-      const btn = root(fixture).querySelector('[data-testid="dashboard-save-btn"]');
+      const btn = root(fixture).querySelector(
+        '[data-testid="dashboard-save-btn"]',
+      );
       expect(btn).not.toBeNull();
     });
 
     it('cancel button has data-testid="dashboard-cancel-btn" in edit mode', () => {
       const { fixture, component } = setup();
 
-      fixture.componentRef.setInput('config', { title: 'Operations', editable: true });
+      fixture.componentRef.setInput('config', {
+        title: 'Operations',
+        editable: true,
+      });
       fixture.detectChanges();
 
       component.editMode.set(true);
       fixture.detectChanges();
 
-      const btn = root(fixture).querySelector('[data-testid="dashboard-cancel-btn"]');
+      const btn = root(fixture).querySelector(
+        '[data-testid="dashboard-cancel-btn"]',
+      );
       expect(btn).not.toBeNull();
     });
 
@@ -651,18 +795,21 @@ describe('Dashboard', () => {
       fixture.componentRef.setInput('config', { title: 'Operations' });
       fixture.detectChanges();
 
-      expect(root(fixture).querySelector('[data-testid="dashboard-save-btn"]')).toBeNull();
-      expect(root(fixture).querySelector('[data-testid="dashboard-cancel-btn"]')).toBeNull();
+      expect(
+        root(fixture).querySelector('[data-testid="dashboard-save-btn"]'),
+      ).toBeNull();
+      expect(
+        root(fixture).querySelector('[data-testid="dashboard-cancel-btn"]'),
+      ).toBeNull();
     });
   });
 
   describe('hasUnsavedChanges indicator', () => {
     function configureFor(component: Dashboard) {
-      (
-        component as unknown as { gridStackItems: () => unknown }
-      ).gridStackItems = () => ({
-        gridstackItems: { toArray: () => [] },
-      });
+      (component as unknown as { gridStack: () => unknown }).gridStack =
+        () => ({
+          gridstackItems: { toArray: () => [] },
+        });
     }
 
     it('is false when not in edit mode', () => {
@@ -671,7 +818,7 @@ describe('Dashboard', () => {
       configureFor(component);
       fixture.detectChanges();
 
-      expect(component.hasUnsavedChanges()).toBe(false);
+      expect(component['hasUnsavedChanges']()).toBe(false);
     });
 
     it('is false right after entering edit mode without any modifications', () => {
@@ -683,7 +830,7 @@ describe('Dashboard', () => {
       component.enterEditMode();
 
       expect(component.editMode()).toBe(true);
-      expect(component.hasUnsavedChanges()).toBe(false);
+      expect(component['hasUnsavedChanges']()).toBe(false);
     });
 
     it('flips to true when sections change while in edit mode', () => {
@@ -694,10 +841,10 @@ describe('Dashboard', () => {
       fixture.detectChanges();
 
       component.enterEditMode();
-      expect(component.hasUnsavedChanges()).toBe(false);
+      expect(component['hasUnsavedChanges']()).toBe(false);
 
       component.sections.set([{ id: 'beta', title: 'Beta' }]);
-      expect(component.hasUnsavedChanges()).toBe(true);
+      expect(component['hasUnsavedChanges']()).toBe(true);
     });
 
     it('flips to true when cards change while in edit mode', () => {
@@ -708,10 +855,10 @@ describe('Dashboard', () => {
       fixture.detectChanges();
 
       component.enterEditMode();
-      expect(component.hasUnsavedChanges()).toBe(false);
+      expect(component['hasUnsavedChanges']()).toBe(false);
 
       component.removeCard('c1');
-      expect(component.hasUnsavedChanges()).toBe(true);
+      expect(component['hasUnsavedChanges']()).toBe(true);
     });
 
     it('flips to true when the gridstack reports a change while in edit mode', () => {
@@ -721,10 +868,10 @@ describe('Dashboard', () => {
       fixture.detectChanges();
 
       component.enterEditMode();
-      expect(component.hasUnsavedChanges()).toBe(false);
+      expect(component['hasUnsavedChanges']()).toBe(false);
 
       component.onGridChange();
-      expect(component.hasUnsavedChanges()).toBe(true);
+      expect(component['hasUnsavedChanges']()).toBe(true);
     });
 
     it('ignores grid change events fired outside edit mode', () => {
@@ -735,7 +882,7 @@ describe('Dashboard', () => {
 
       component.onGridChange();
 
-      expect(component.hasUnsavedChanges()).toBe(false);
+      expect(component['hasUnsavedChanges']()).toBe(false);
     });
 
     it('resets to false after saveEdit', () => {
@@ -746,12 +893,12 @@ describe('Dashboard', () => {
 
       component.enterEditMode();
       component.sections.set([{ id: 'new', title: 'New' }]);
-      expect(component.hasUnsavedChanges()).toBe(true);
+      expect(component['hasUnsavedChanges']()).toBe(true);
 
       component.saveEdit();
 
       expect(component.editMode()).toBe(false);
-      expect(component.hasUnsavedChanges()).toBe(false);
+      expect(component['hasUnsavedChanges']()).toBe(false);
     });
 
     it('resets to false after cancelEdit', () => {
@@ -763,7 +910,7 @@ describe('Dashboard', () => {
 
       component.enterEditMode();
       component.sections.set([{ id: 'beta', title: 'Beta' }]);
-      expect(component.hasUnsavedChanges()).toBe(true);
+      expect(component['hasUnsavedChanges']()).toBe(true);
 
       component.cancelEdit();
       // cancelEdit now defers the revert behind the discard popup when there
@@ -771,7 +918,7 @@ describe('Dashboard', () => {
       component.confirmDiscard();
 
       expect(component.editMode()).toBe(false);
-      expect(component.hasUnsavedChanges()).toBe(false);
+      expect(component['hasUnsavedChanges']()).toBe(false);
     });
 
     it('renders the indicator only when there are unsaved changes', () => {
@@ -802,7 +949,7 @@ describe('Dashboard', () => {
   describe('navigation guard (requestNavigation)', () => {
     function enterEditWithDirty(component: Dashboard): void {
       component.sections.set([{ id: 'alpha', title: 'Alpha' }]);
-      (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
+      (component as unknown as { gridStack: () => unknown }).gridStack =
         () => ({ gridstackItems: { toArray: () => [] } });
       component.enterEditMode();
       // Make the snapshot diverge so hasUnsavedChanges() flips to true.
@@ -852,7 +999,7 @@ describe('Dashboard', () => {
       const { component } = setup();
       const original: SectionConfig[] = [{ id: 'alpha', title: 'Alpha' }];
       component.sections.set(original);
-      (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
+      (component as unknown as { gridStack: () => unknown }).gridStack =
         () => ({ gridstackItems: { toArray: () => [] } });
       component.enterEditMode();
       component.sections.set([{ id: 'beta', title: 'Beta' }]);
@@ -901,7 +1048,7 @@ describe('Dashboard', () => {
       fixture.componentRef.setInput('config', { title: 'Operations' });
       fixture.detectChanges();
       component.sections.set([{ id: 'alpha', title: 'Alpha' }]);
-      (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
+      (component as unknown as { gridStack: () => unknown }).gridStack =
         () => ({ gridstackItems: { toArray: () => [] } });
       component.enterEditMode();
       component.sections.set([{ id: 'beta', title: 'Beta' }]);
@@ -934,7 +1081,7 @@ describe('Dashboard', () => {
       fixture.componentRef.setInput('config', { title: 'Operations' });
       fixture.detectChanges();
       component.sections.set([{ id: 'alpha', title: 'Alpha' }]);
-      (component as unknown as { gridStackItems: () => unknown }).gridStackItems =
+      (component as unknown as { gridStack: () => unknown }).gridStack =
         () => ({ gridstackItems: { toArray: () => [] } });
       component.enterEditMode();
       component.sections.set([{ id: 'beta', title: 'Beta' }]);
@@ -946,6 +1093,274 @@ describe('Dashboard', () => {
       window.dispatchEvent(event);
 
       expect(preventSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('engine profile gating', () => {
+    it('resolves to the zFlow profile when config().zFlow is set', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', {
+        title: 'T',
+        zFlow: { cardHeight: 30 },
+      });
+      fixture.detectChanges();
+
+      const profile = component['engineProfile']();
+      expect(profile.engineClass).toBe(ZflowGridStackEngine);
+      expect(profile.fixedCardHeight).toBe(true);
+      expect(profile.xlWidthSwap).toBe(true);
+      expect(profile.sectionColumns).toEqual([1, 2, 3, 3]);
+    });
+
+    it('resolves to the default profile when config().zFlow is absent', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', { title: 'T' });
+      fixture.detectChanges();
+
+      const profile = component['engineProfile']();
+      expect(profile.engineClass).toBeUndefined();
+      expect(profile.fixedCardHeight).toBe(false);
+      expect(profile.xlWidthSwap).toBe(false);
+      expect(profile.sectionColumns).toEqual([1, 8, 12, 14]);
+    });
+
+    it('gridStackEngine() returns ZflowGridStackEngine under zFlow', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', {
+        title: 'T',
+        zFlow: { cardHeight: 30 },
+      });
+      fixture.detectChanges();
+
+      expect(component['gridStackEngine']()).toBe(ZflowGridStackEngine);
+    });
+
+    it('gridStackEngine() returns undefined by default', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', { title: 'T' });
+      fixture.detectChanges();
+
+      expect(component['gridStackEngine']()).toBeUndefined();
+    });
+
+    it('gridBreakpoints() column counts are [4,4,4,1] under zFlow', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', {
+        title: 'T',
+        zFlow: { cardHeight: 30 },
+      });
+      fixture.detectChanges();
+
+      expect(component['gridBreakpoints']().map((bp) => bp.c)).toEqual([
+        4, 4, 4, 1,
+      ]);
+    });
+
+    it('gridBreakpoints() column counts are [14,12,8,1] by default', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', { title: 'T' });
+      fixture.detectChanges();
+
+      expect(component['gridBreakpoints']().map((bp) => bp.c)).toEqual([
+        14, 12, 8, 1,
+      ]);
+    });
+
+    it('columnVars() reflects the zFlow column layout', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', {
+        title: 'T',
+        zFlow: { cardHeight: 30 },
+      });
+      fixture.detectChanges();
+
+      expect(component['columnVars']()).toEqual({
+        '--dashboard-cols-sm': 1,
+        '--dashboard-cols-md': 2,
+        '--dashboard-cols-lg': 3,
+        '--dashboard-cols-xl': 3,
+      });
+    });
+
+    it('columnVars() reflects 14-column layout by default', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', { title: 'T' });
+      fixture.detectChanges();
+
+      expect(component['columnVars']()).toEqual({
+        '--dashboard-cols-sm': 1,
+        '--dashboard-cols-md': 8,
+        '--dashboard-cols-lg': 12,
+        '--dashboard-cols-xl': 14,
+      });
+    });
+
+    it('looseCards() overrides h and maxH to cardHeight for loose cards under zFlow', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', {
+        title: 'T',
+        zFlow: { cardHeight: 30 },
+      });
+      component.cards.set([
+        { id: 'loose-1', component: 'mfp-a', h: 50, maxH: 55 },
+        { id: 'loose-2', component: 'mfp-b', h: 20 },
+      ]);
+      fixture.detectChanges();
+
+      const loose = component['looseCards']();
+      expect(loose).toHaveLength(2);
+      expect(loose[0]).toMatchObject({ id: 'loose-1', h: 30, maxH: 30 });
+      expect(loose[1]).toMatchObject({ id: 'loose-2', h: 30, maxH: 30 });
+    });
+
+    it('looseCards() passes loose cards through unchanged by default', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', { title: 'T' });
+      component.cards.set([
+        { id: 'loose-1', component: 'mfp-a', h: 50, maxH: 55 },
+      ]);
+      fixture.detectChanges();
+
+      const loose = component['looseCards']();
+      expect(loose[0]).toMatchObject({ id: 'loose-1', h: 50, maxH: 55 });
+    });
+
+    it('looseCards() does NOT height-override section cards under zFlow', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', {
+        title: 'T',
+        zFlow: { cardHeight: 30 },
+      });
+      component.cards.set([
+        {
+          id: 'section-card',
+          component: 'mfp-a',
+          sectionId: 'alpha',
+          h: 20,
+          maxH: 25,
+        },
+        { id: 'loose-card', component: 'mfp-b', h: 20 },
+      ]);
+      fixture.detectChanges();
+
+      // looseCards() only contains cards without a sectionId
+      const loose = component['looseCards']();
+      expect(loose.map((c) => c.id)).not.toContain('section-card');
+      expect(loose.find((c) => c.id === 'loose-card')).toMatchObject({
+        h: 30,
+        maxH: 30,
+      });
+    });
+
+    it('xlWidthSwap is false by default and true under zFlow', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', { title: 'T' });
+      fixture.detectChanges();
+      expect(component['engineProfile']().xlWidthSwap).toBe(false);
+
+      fixture.componentRef.setInput('config', {
+        title: 'T',
+        zFlow: { cardHeight: 30 },
+      });
+      fixture.detectChanges();
+      expect(component['engineProfile']().xlWidthSwap).toBe(true);
+    });
+  });
+
+  describe('XL width swap (changeCardSettingsForXlPage)', () => {
+    function stubEmptyGrid(component: Dashboard): void {
+      (component as unknown as { gridStack: () => unknown }).gridStack =
+        () => ({ gridstackItems: { toArray: () => [] } });
+    }
+
+    function swap(component: Dashboard, width: number): void {
+      (
+        component as unknown as {
+          changeCardSettingsForXlPage: (w: number) => void;
+        }
+      ).changeCardSettingsForXlPage(width);
+    }
+
+    it('does nothing under the default profile (xlWidthSwap is false)', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', { title: 'T' });
+      component.cards.set([{ id: 'c1', component: 'mfp-a', w: 4, maxW: 4 }]);
+      stubEmptyGrid(component);
+      fixture.detectChanges();
+
+      // Dropping below the XL page would swap 4→? only under zFlow.
+      swap(component, 1000);
+
+      expect(component.cards()[0]).toMatchObject({ w: 4, maxW: 4 });
+    });
+
+    it('narrows w/maxW from 4 to 3 when growing to an XL-width page under zFlow', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', {
+        title: 'T',
+        zFlow: { cardHeight: 30 },
+      });
+      component.cards.set([
+        { id: 'c1', component: 'mfp-a', w: 4, maxW: 4 },
+        { id: 'c2', component: 'mfp-b', w: 2, maxW: 2 },
+      ]);
+      stubEmptyGrid(component);
+      fixture.detectChanges();
+
+      // Start on a sub-XL page, then grow to XL.
+      swap(component, 1000);
+      swap(component, XL_PAGE);
+
+      expect(component.cards()[0]).toMatchObject({ w: 3, maxW: 3 });
+      // Cards that are not exactly 4 wide are left untouched.
+      expect(component.cards()[1]).toMatchObject({ w: 2, maxW: 2 });
+    });
+
+    it('widens w/maxW from 3 to 4 when shrinking below the XL page under zFlow', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', {
+        title: 'T',
+        zFlow: { cardHeight: 30 },
+      });
+      component.cards.set([{ id: 'c1', component: 'mfp-a', w: 3, maxW: 3 }]);
+      stubEmptyGrid(component);
+      fixture.detectChanges();
+
+      // The component starts assuming an XL page, so shrinking triggers 3→4.
+      swap(component, XL_PAGE - 1);
+
+      expect(component.cards()[0]).toMatchObject({ w: 4, maxW: 4 });
+    });
+
+    it('does not re-run the swap while staying within the same page bracket', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', {
+        title: 'T',
+        zFlow: { cardHeight: 30 },
+      });
+      // A card already at 3 that a second XL notification must not touch.
+      component.cards.set([{ id: 'c1', component: 'mfp-a', w: 3, maxW: 3 }]);
+      stubEmptyGrid(component);
+      fixture.detectChanges();
+
+      // Two XL-width notifications in a row: the guard keeps isXLPage true, so
+      // the 3→4 widening branch never runs and the card stays at 3.
+      swap(component, XL_PAGE);
+      swap(component, XL_PAGE + 200);
+
+      expect(component.cards()[0]).toMatchObject({ w: 3, maxW: 3 });
     });
   });
 
