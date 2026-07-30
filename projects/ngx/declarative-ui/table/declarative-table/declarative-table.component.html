@@ -29,7 +29,7 @@
       [attr.data-testid]="'generic-table-row-' + i"
       [class.disabled]="item.isAvailable === false"
       [interactive]="item.isAvailable !== false"
-      (click)="tableRowClicked.emit(item)"
+      (click)="onRowClick(item)"
     >
       @for (column of viewColumns(); track columnTrackBy(column, $index)) {
         @if (column.group) {

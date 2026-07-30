@@ -4,7 +4,6 @@
 
 .disabled {
   filter: brightness(0.92);
-  pointer-events: none;
 
   ui5-table-cell:not(:first-child) {
     color: var(--sapContent_DisabledTextColor, #6a6d70);

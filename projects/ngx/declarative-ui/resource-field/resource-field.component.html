@@ -45,9 +45,10 @@
     } @else if (displayType === 'button') {
       @let buttonSettings = uiSettings()?.buttonSettings;
       <ui5-button
+        [accessibleName]="buttonAccessibleName()"
         [attr.data-testid]="testId() + '-button'"
-        [accessibleName]="buttonSettings?.text || buttonSettings?.tooltip || buttonSettings?.icon || ''"
         [design]="buttonSettings?.design"
+        [disabled]="buttonDisabled()"
         [endIcon]="buttonSettings?.endIcon"
         [icon]="buttonSettings?.icon"
         [tooltip]="buttonSettings?.tooltip"
