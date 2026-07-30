@@ -1,0 +1,38 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.mock-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--sapTile_Background, #fff);
+  border-radius: 12px;
+  border: var(--_ui5_card_border, 1px solid var(--sapTile_BorderColor, #e5e5e5));
+  box-shadow: var(--_ui5_card_box_shadow, var(--sapContent_Shadow0));
+  overflow: hidden;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 0.5rem 0.75rem 1rem;
+    flex-shrink: 0;
+  }
+
+  &__title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__menu {
+    flex-shrink: 0;
+  }
+
+  &__body {
+    flex: 1;
+    min-height: 20rem;
+  }
+}

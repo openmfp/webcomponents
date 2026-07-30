@@ -2,12 +2,18 @@
 @import 'gridstack/dist/gridstack.min.css';
 
 .grid-stack-placeholder {
+  z-index: 2;
+  pointer-events: none;
+
   .placeholder-content {
     border-radius: 16px;
     height: calc(100% - 30px);
-    top: calc(var(--gs-item-margin-top) * 2) !important;
-    width: calc(100% - 20px);
-    left: 10px !important;
+    top: calc(var(--gs-item-margin-top) * 2 - 2px) !important;
+    width: calc(100% - 19px);
+    left: 8px !important;
+    background: var(--sapContent_Selected_Hover_Background, #E3F0FF);
+    border: 1px solid var(--sapContent_DragAndDropActiveColor, #0064D9);
+    z-index: 2 !important;
   }
 }
 
@@ -34,6 +40,10 @@ mfp-wc-dashboard {
   // discussion / GridStackOptions.columnOpts.breakpointForWindow).
   container-type: inline-size;
   container-name: mfp-dashboard;
+}
+
+.mfp-dashboard.edit {
+  padding-bottom: 60px;
 }
 
 .mfp-sections-container {
@@ -169,6 +179,28 @@ mfp-wc-dashboard {
 .grid-stack.grid-stack-dragging,
 .grid-stack.grid-stack-dragging * {
   cursor: grabbing !important;
+}
+
+.mfp-dashboard__drag-origin-placeholder {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+
+  &::before {
+    content: '';
+    height: calc(100% - 30px);
+    top: calc(var(--gs-item-margin-top) * 2 - 2px) !important;
+    width: calc(100% - 19px);
+    left: 8px !important;
+    position: absolute;
+    background: var(--sapNeutralColor, #6a6d75);
+    border-radius: 16px;
+    opacity: 0.3;
+  }
+}
+
+gridstack {
+  position: relative;
 }
 
 .grid-stack:has(.ui-resizable-resizing),

@@ -1,10 +1,11 @@
 import { Favorites } from '../../cards/favorites/favorites.component';
+import { MockCard } from '../../cards/mock-card/mock-card.component';
 import { ServiceStatusCard } from '../../cards/service-status/service-status-card.component';
 import { VisitedServiceCard } from '../../cards/visited-service-card/visited-service-card.component';
 import { Dashboard } from '../dashboard/dashboard/dashboard.component';
 import type { CardConfig, DashboardConfig } from '../dashboard/models';
 import { ButtonSettings } from '../models/ui-definition';
-import { CARDS, SECTIONS } from './dashboard.cards';
+import { CARDS, RAS_CARDS, SECTIONS } from './dashboard.cards';
 import { TABLE_CARD_CONFIG, TABLE_RESOURCES } from './pods-table.config';
 import type { Meta, StoryObj } from '@storybook/angular';
 
@@ -12,6 +13,7 @@ Dashboard.registerAngularComponents([
   Favorites,
   ServiceStatusCard,
   VisitedServiceCard,
+  MockCard,
 ]);
 
 // ---------------------------------------------------------------------------
@@ -158,6 +160,20 @@ const ANGULAR_REGISTRY_AVAILABLE_CARDS: CardConfig[] = [
   },
 ];
 
+// Empty placeholder cards used to fill out the z-flow grid so the reflow,
+// drag/resize and width-swap behaviour is easy to see against a uniform
+// baseline. One column wide each → four cards per row on the 4-column grid.
+const ZFLOW_MOCK_CARDS: CardConfig[] = Array.from({ length: 8 }, (_, i) => ({
+  id: `mock-card-${i}`,
+  type: 'angular' as const,
+  component: 'mfp-mock-card',
+  componentInputs: {
+    title: `Card ${i + 1}`,
+  },
+  w: 1,
+  h: 40,
+}));
+
 // ---------------------------------------------------------------------------
 // Meta
 // ---------------------------------------------------------------------------
@@ -298,6 +314,28 @@ export const CustomButtonSettings: Story = {
           design: 'Emphasized',
           tooltip: '',
         },
+      },
+    },
+  },
+};
+
+export const ZFlowLayout: Story = {
+  args: {
+    config: {
+      ...SAMPLE_CONFIG,
+      title: 'Z-Flow Layout',
+      description:
+        'Activates the z-flow grid engine, loose cards forced to a fixed height, and z-flow drag/resize.',
+      zFlow: { cardHeight: 40 },
+    },
+    cards: [...RAS_CARDS.map((c) => ({ ...c, w: 1 })), ...ZFLOW_MOCK_CARDS],
+    availableCards: [...ZFLOW_MOCK_CARDS],
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The z-flow engine reflows loose cards left-to-right, top-to-bottom. Card widths here are proportional to the Default story (default 12-col base → z-flow 4-col base), so a half-width card stays half-width.',
       },
     },
   },

@@ -62,16 +62,18 @@ const RAS_CARD_TEMPLATES = [
   },
 ];
 
+export const RAS_CARDS: CardConfig[] = RAS_CARD_TEMPLATES.map((t, i) => ({
+  id: `ras-card-${i}`,
+  w: 4,
+  h: 10,
+  sectionId: 'ras',
+  type: 'angular' as const,
+  component: 'mfp-visited-service-card',
+  componentInputs: { ...t },
+}));
+
 export const CARDS: CardConfig[] = [
-  ...RAS_CARD_TEMPLATES.map((t, i) => ({
-    id: `ras-card-${i}`,
-    w: 4,
-    h: 10,
-    sectionId: 'ras',
-    type: 'angular' as const,
-    component: 'mfp-visited-service-card',
-    componentInputs: { ...t },
-  })),
+  ...RAS_CARDS,
   {
     id: 'table-pods',
     w: 12,

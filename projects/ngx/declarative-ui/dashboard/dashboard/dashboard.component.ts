@@ -1,3 +1,19 @@
+import { ButtonSettings } from '../../models';
+import { DashboardCard } from '../card/dashboard-card.component';
+import { addComponentToRegistry } from '../card/utils';
+import { CELL_HEIGHT, COMPACT_BREAKPOINT, XL_PAGE } from '../constants';
+import { DiscardChangesDialog } from '../discard-changes-dialog/discard-changes-dialog.component';
+import { EditCardsDialog } from '../edit-cards-dialog/edit-cards-dialog.component';
+import {
+  DASHBOARD_I18N_KEYS,
+  DashboardI18nService,
+  DashboardLanguage,
+} from '../i18n';
+import { CardConfig, DashboardConfig, SectionConfig } from '../models';
+import { DashboardSection } from '../section/dashboard-section.component';
+import { UnsavedChangesDialog } from '../unsaved-changes-dialog/unsaved-changes-dialog.component';
+import { ENGINE_PROFILES, EngineProfile } from './engines/contants/engines';
+import { ZflowGridStackEngine } from './engines/zflow/z-flow-engine';
 import {
   Component,
   ElementRef,
@@ -28,29 +44,11 @@ import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 import '@ui5/webcomponents-icons/dist/action-settings.js';
 import '@ui5/webcomponents-icons/dist/menu2.js';
 import '@ui5/webcomponents-icons/dist/user-edit.js';
-import { GridStackNode, GridStackOptions } from 'gridstack';
+import { GridStackNode, GridStackOptions, GridStackPosition } from 'gridstack';
 import {
   GridstackComponent,
   GridstackItemComponent,
 } from 'gridstack/dist/angular';
-import { ButtonSettings } from '../../models';
-import { DashboardCard } from '../card/dashboard-card.component';
-import { addComponentToRegistry } from '../card/utils';
-import {
-  CELL_HEIGHT,
-  COMPACT_BREAKPOINT,
-  DASHBOARD_BREAKPOINTS,
-} from '../constants';
-import { DiscardChangesDialog } from '../discard-changes-dialog/discard-changes-dialog.component';
-import { EditCardsDialog } from '../edit-cards-dialog/edit-cards-dialog.component';
-import {
-  DASHBOARD_I18N_KEYS,
-  DashboardI18nService,
-  DashboardLanguage,
-} from '../i18n';
-import { CardConfig, DashboardConfig, SectionConfig } from '../models';
-import { DashboardSection } from '../section/dashboard-section.component';
-import { UnsavedChangesDialog } from '../unsaved-changes-dialog/unsaved-changes-dialog.component';
 
 document.body.classList.add('ui5-content-density-compact');
 
@@ -86,6 +84,10 @@ export class Dashboard implements OnInit, OnDestroy {
   static registerAngularComponents(componentTypes: Type<unknown>[]): void {
     addComponentToRegistry(componentTypes);
   }
+  private readonly hostEl = inject(ElementRef<HTMLElement>);
+  private readonly injector = inject(Injector);
+  private readonly sanitizer = inject(DomSanitizer);
+  protected readonly i18n = inject(DashboardI18nService);
 
   config = input.required<DashboardConfig>();
   sections = model<SectionConfig[]>([]);
@@ -100,25 +102,27 @@ export class Dashboard implements OnInit, OnDestroy {
   }>();
   readonly unsavedChangesChange = output<boolean>();
 
-  editMode = signal(false);
-  compactToolbar = signal(false);
-  toolbarMenuOpen = signal(false);
+  protected readonly i18nKeys = DASHBOARD_I18N_KEYS;
 
   /** True once the user has dragged/resized any grid item while in edit mode. */
   private gridDirty = signal(false);
+  private isXLPage = signal(true);
 
-  protected backgroundImageHeight = signal<number | null>(null);
+  editMode = signal(false);
+  compactToolbar = signal(false);
+  toolbarMenuOpen = signal(false);
+  cardDialogOpen = signal(false);
+  discardDialogOpen = signal(false);
+  unsavedNavDialogOpen = signal(false);
+  backgroundImageHeight = signal<number | null>(null);
+  dragOriginStyle = signal<{
+    top: string;
+    left: string;
+    width: string;
+    height: string;
+  } | null>(null);
 
-  /** JSON snapshots of sections/cards taken on entering edit mode, used to detect changes. */
-  private sectionsSnapshotJson = '';
-  private cardsSnapshotJson = '';
-
-  /**
-   * True when the user is in edit mode AND has made any change (sections/cards
-   * mutated, or grid items moved/resized). Resets when entering edit mode and
-   * after save/cancel.
-   */
-  hasUnsavedChanges = computed(() => {
+  protected hasUnsavedChanges = computed(() => {
     if (!this.editMode()) return false;
     if (this.gridDirty()) return true;
     return (
@@ -126,30 +130,75 @@ export class Dashboard implements OnInit, OnDestroy {
       JSON.stringify(this.cards()) !== this.cardsSnapshotJson
     );
   });
-
-  private sectionsSnapshot: SectionConfig[] = [];
-  private cardsSnapshot: CardConfig[] = [];
-  private gridStackItems = viewChild.required<GridstackComponent>('grid');
-  private addCardBtn = viewChild<Button>('editCardsBtn');
-  private resizeObserver?: ResizeObserver;
-  private readonly hostEl = inject(ElementRef<HTMLElement>);
-  private readonly injector = inject(Injector);
-  private readonly sanitizer = inject(DomSanitizer);
-  protected readonly i18n = inject(DashboardI18nService);
-  protected readonly i18nKeys = DASHBOARD_I18N_KEYS;
-
   protected safeTitle = computed((): SafeHtml => {
     const clean =
       this.sanitizer.sanitize(SecurityContext.HTML, this.config().title) ?? '';
     return this.sanitizer.bypassSecurityTrustHtml(clean);
   });
-
   protected safeDescription = computed((): SafeHtml | null => {
     const desc = this.config().description;
     if (!desc) return null;
 
     const clean = this.sanitizer.sanitize(SecurityContext.HTML, desc) ?? '';
     return this.sanitizer.bypassSecurityTrustHtml(clean);
+  });
+
+  protected engineProfile = computed(
+    (): EngineProfile =>
+      this.config().zFlow ? ENGINE_PROFILES.zFlow : ENGINE_PROFILES.default,
+  );
+
+  protected gridStackEngine = computed(() => this.engineProfile().engineClass);
+
+  protected gridBreakpoints = computed(() => [
+    ...this.engineProfile().breakpoints,
+  ]);
+
+  protected columnVars = computed(() => {
+    const [sm, md, lg, xl] = this.engineProfile().sectionColumns;
+    return {
+      '--dashboard-cols-sm': sm,
+      '--dashboard-cols-md': md,
+      '--dashboard-cols-lg': lg,
+      '--dashboard-cols-xl': xl,
+    };
+  });
+
+  protected customActions = computed(() => this.config().customActions ?? []);
+  protected addedCardsIds = computed(
+    () => new Set(this.cards().map((c) => c.id)),
+  );
+
+  protected editViewButton = computed(() => ({
+    icon: 'action-settings',
+    design: 'Transparent' as const,
+    tooltip: this.i18n.getTranslation(DASHBOARD_I18N_KEYS.EDIT_VIEW),
+    text: '',
+    ...this.config().buttonsSettings?.editViewButton,
+  }));
+  protected editCardsButton = computed(() => ({
+    icon: '',
+    design: 'Default' as const,
+    tooltip: '',
+    text: this.i18n.getTranslation(DASHBOARD_I18N_KEYS.EDIT_CARDS),
+    ...this.config().buttonsSettings?.editCardsButton,
+  }));
+
+  protected sectionCards = computed(() => {
+    const all = this.cards();
+    return (sectionId: string) => all.filter((c) => c.sectionId === sectionId);
+  });
+  protected looseCards = linkedSignal(() => {
+    const loose = this.cards().filter((c) => !c.sectionId);
+    const cardHeight = this.config().zFlow?.cardHeight;
+    if (!this.engineProfile().fixedCardHeight || cardHeight === undefined)
+      return loose;
+    return loose.map((c) => ({
+      ...c,
+      h: cardHeight,
+      maxH: cardHeight,
+      minH: cardHeight,
+    }));
   });
 
   protected gridOptions = computed(
@@ -161,17 +210,27 @@ export class Dashboard implements OnInit, OnDestroy {
       marginBottom: 0,
       marginLeft: 0,
       marginRight: 0,
+      engineClass: this.gridStackEngine(),
       columnOpts: {
-        // Source of truth: ../models/breakpoints.ts (paired with
-        // ../models/_breakpoints.scss for the section grid's container queries).
-        breakpoints: [...DASHBOARD_BREAKPOINTS],
+        // Source of truth: ../constants/breakpoints.ts — active profile's
+        // breakpoints (paired with ../constants/_breakpoints.scss for the
+        // section grid's container queries via --dashboard-cols-* CSS vars).
+        breakpoints: this.gridBreakpoints(),
       },
     }),
   );
 
-  cardDialogOpen = signal(false);
-  discardDialogOpen = signal(false);
-  unsavedNavDialogOpen = signal(false);
+  /** JSON snapshots of sections/cards taken on entering edit mode, used to detect changes. */
+  private sectionsSnapshotJson = '';
+  private cardsSnapshotJson = '';
+  private sectionsSnapshot: SectionConfig[] = [];
+  private cardsSnapshot: CardConfig[] = [];
+
+  private gridStack = viewChild.required<GridstackComponent>('grid');
+  private addCardBtn = viewChild<Button>('editCardsBtn');
+  private resizeObserver?: ResizeObserver;
+  private cardsPosition = new Map<string, GridStackPosition>();
+
   /** Callback that resumes the intercepted navigation once the user resolves the dialog. */
   private pendingNavigation: (() => void) | null = null;
   /** beforeunload handler kept on instance so add/removeEventListener pair up. */
@@ -183,37 +242,6 @@ export class Dashboard implements OnInit, OnDestroy {
       event.returnValue = '';
     }
   };
-  customActions = computed(() => this.config().customActions ?? []);
-  addedCardsIds = computed(() => new Set(this.cards().map((c) => c.id)));
-
-  editViewButton = computed(() => ({
-    icon: 'action-settings',
-    design: 'Transparent' as const,
-    tooltip: this.i18n.getTranslation(DASHBOARD_I18N_KEYS.EDIT_VIEW),
-    text: '',
-    ...this.config().buttonsSettings?.editViewButton,
-  }));
-
-  editCardsButton = computed(() => ({
-    icon: '',
-    design: 'Default' as const,
-    tooltip: '',
-    text: this.i18n.getTranslation(DASHBOARD_I18N_KEYS.EDIT_CARDS),
-    ...this.config().buttonsSettings?.editCardsButton,
-  }));
-
-  sectionCards = computed(() => {
-    const all = this.cards();
-    return (sectionId: string) => all.filter((c) => c.sectionId === sectionId);
-  });
-
-  cardsPosition = new Map<
-    string,
-    { x?: number; y?: number; w?: number; h?: number }
-  >();
-  looseCards = linkedSignal(() => this.cards().filter((c) => !c.sectionId));
-
-  private newGridStackNodes: GridStackNode[] = [];
 
   constructor() {
     effect(() => {
@@ -241,6 +269,7 @@ export class Dashboard implements OnInit, OnDestroy {
     this.resizeObserver = new ResizeObserver((entries) => {
       const width = entries[0]?.contentRect.width ?? 0;
       this.compactToolbar.set(width < COMPACT_BREAKPOINT);
+      this.changeCardSettingsForXlPage(width);
     });
     this.resizeObserver.observe(this.hostEl.nativeElement);
     window.addEventListener('beforeunload', this.beforeUnloadHandler);
@@ -404,7 +433,7 @@ export class Dashboard implements OnInit, OnDestroy {
     if (wasLooseCard) {
       afterNextRender(
         () => {
-          this.gridStackItems().grid?.compact('compact', false);
+          this.gridStack().grid?.compact('compact', false);
         },
         { injector: this.injector },
       );
@@ -427,6 +456,31 @@ export class Dashboard implements OnInit, OnDestroy {
     this.closeCardPanel();
   }
 
+  onDragStart(event: { el: Element }): void {
+    this.getZFlowEngine()?.syncZFlowOrderFromLayout();
+
+    if (!this.engineProfile().renderOriginPosition) {
+      return;
+    }
+
+    const el = event.el;
+    const gridEl = this.gridStack().el as HTMLElement;
+    const gridRect = gridEl.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+
+    this.dragOriginStyle.set({
+      top: `${elRect.top - gridRect.top}px`,
+      left: `${elRect.left - gridRect.left}px`,
+      width: `${elRect.width}px`,
+      height: `${elRect.height}px`,
+    });
+  }
+
+  onDragStop(): void {
+    this.getZFlowEngine()?.commitZFlowLayout();
+    this.dragOriginStyle.set(null);
+  }
+
   onGridChange(): void {
     if (this.editMode()) {
       this.gridDirty.set(true);
@@ -447,12 +501,53 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   private updateCardsPositions(): void {
-    const gridStackNodes = this.gridStackItems()
+    const gridStackNodes = this.gridStack()
       .gridstackItems?.toArray()
       .map((node) => node.options);
 
     if (gridStackNodes) {
       this.saveCardsPosition(gridStackNodes);
+    }
+  }
+
+  private getZFlowEngine(): ZflowGridStackEngine | null {
+    const engine = this.gridStack().grid?.engine;
+    return engine instanceof ZflowGridStackEngine ? engine : null;
+  }
+
+  private updateCardsForBreakpoint(
+    updateCard: (card: CardConfig) => CardConfig,
+  ): void {
+    this.getZFlowEngine()?.syncZFlowOrderFromLayout();
+    this.cards.set(this.cards().map(updateCard));
+    afterNextRender(
+      () => {
+        this.getZFlowEngine()?.commitZFlowLayout();
+      },
+      { injector: this.injector },
+    );
+  }
+
+  private changeCardSettingsForXlPage(width: number): void {
+    if (!this.engineProfile().xlWidthSwap) return;
+    if (width >= XL_PAGE) {
+      if (!this.isXLPage()) {
+        this.isXLPage.set(true);
+        this.updateCardsForBreakpoint((c) => ({
+          ...c,
+          w: c.w === 4 ? 3 : c.w,
+          maxW: c.maxW === 4 ? 3 : c.maxW,
+        }));
+      }
+    } else {
+      if (this.isXLPage()) {
+        this.isXLPage.set(false);
+        this.updateCardsForBreakpoint((c) => ({
+          ...c,
+          w: c.w === 3 ? 4 : c.w,
+          maxW: c.maxW === 3 ? 4 : c.maxW,
+        }));
+      }
     }
   }
 }

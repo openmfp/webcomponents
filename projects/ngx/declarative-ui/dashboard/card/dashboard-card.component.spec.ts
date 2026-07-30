@@ -1,4 +1,5 @@
 import { DashboardCard } from './dashboard-card.component';
+import { DASHBOARD_CARD_DRAG_ORIGIN_CLASS } from '../constants';
 import { DashboardI18nService } from '../i18n';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
@@ -127,6 +128,38 @@ describe('DashboardCard', () => {
 
     expect(root(fixture).querySelector('.card__body')).not.toBeNull();
     expect(root(fixture).querySelector('.component-card')).toBeNull();
+  });
+
+  it('marks the dynamic component host as the drag origin surface', () => {
+    const { fixture } = setup();
+
+    fixture.componentRef.setInput('card', {
+      id: 'card-1',
+      component: 'demo-widget',
+    });
+    fixture.detectChanges();
+
+    expect(
+      root(fixture).querySelector(
+        `.component-host.${DASHBOARD_CARD_DRAG_ORIGIN_CLASS}`,
+      ),
+    ).not.toBeNull();
+  });
+
+  it('marks the fallback card body as the drag origin surface', () => {
+    const { fixture } = setup();
+
+    fixture.componentRef.setInput('card', {
+      id: 'card-1',
+      component: '',
+    });
+    fixture.detectChanges();
+
+    expect(
+      root(fixture).querySelector(
+        `.card__body.${DASHBOARD_CARD_DRAG_ORIGIN_CLASS}`,
+      ),
+    ).not.toBeNull();
   });
 
   describe('data-testid attributes', () => {

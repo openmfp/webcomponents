@@ -1,8 +1,5 @@
 import { ButtonSettings } from '../../models/ui-definition';
 
-
-
-
 export const CARD_TYPES = {
   WC: 'wc',
   ANGULAR: 'angular',
@@ -92,4 +89,9 @@ export interface DashboardConfig {
   editable?: boolean;
   /** When `true`, the Edit View button is rendered before the custom actions instead of after. Defaults to `false`. */
   editButtonFirst?: boolean;
+  /** When provided, enable z-flow layout. */
+  zFlow?: {
+    /** Sets the height of each card in the z-flow layout. */
+    cardHeight: number;
+  };
 }
