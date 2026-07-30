@@ -1,6 +1,6 @@
 {
   "name": "@openmfp/webcomponents",
-  "version": "0.18.3",
+  "version": "0.18.4",
   "type": "module",
   "scripts": {
     "build:ngx": "ng build ngx",
@@ -27,7 +27,7 @@
     "npm": ">=10.0.0"
   },
   "dependencies": {
-    "gridstack": "13.0.0",
+    "gridstack": "13.0.1",
     "tslib": "2.8.1"
   },
   "peerDependencies": {
