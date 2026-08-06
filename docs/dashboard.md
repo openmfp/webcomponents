@@ -211,7 +211,15 @@ const cards: CardConfig[] = [
 | Method                                            | Returns   | Description                                                                                                  |
 | ------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------ |
 | `requestNavigation(proceed: () => void)`          | `boolean` | Framework-agnostic navigation guard — see [Unsaved-changes guard](#unsaved-changes-guard).                  |
+| `saveEdit()`                                      | `void`    | Persists changes (fires the `saved` event) and exits edit mode.                                             |
+| `cancelEdit()`                                    | `void`    | Requests to leave edit mode. Opens `DiscardChangesDialog` if there are unsaved changes; otherwise discards immediately. |
+| `confirmDiscard()`                                | `void`    | Confirms the discard, closes `DiscardChangesDialog`, and reverts to the snapshot taken on entering edit mode. |
+| `onUnsavedNavSave()`                              | `void`    | Save handler for a custom in-app-navigation dialog — closes the popup, saves, then resumes the queued navigation. |
+| `onUnsavedNavDiscard()`                           | `void`    | Discard handler for a custom in-app-navigation dialog — closes the popup, reverts, then resumes the queued navigation. |
+| `onUnsavedNavCancel()`                            | `void`    | Cancel handler for a custom in-app-navigation dialog — closes the popup and drops the queued navigation.    |
 | `Dashboard.registerAngularComponents(types[])`    | `void`    | Static — registers standalone Angular card components by their element selector name.                       |
+
+> **Web-component consumers:** `@angular/elements` only proxies inputs and outputs onto the custom element — instance methods are **not** reachable on the DOM node by default. The dashboard's WC bundle (`mfp-wc-dashboard.js`) explicitly forwards all of the methods above onto `<mfp-wc-dashboard>`, so they are callable directly on the DOM element (e.g. `document.querySelector('mfp-wc-dashboard').saveEdit()`). If the Angular component has not been created yet, `requestNavigation()` runs its callback synchronously and returns `true`, and the void handlers are no-ops.
 
 ### Reactive state
 
