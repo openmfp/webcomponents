@@ -312,6 +312,56 @@ describe('ResourceField', () => {
       expect(emitted[0].field).toEqual(field);
       expect(emitted[0].resource).toEqual(resource);
     });
+
+    it('disables the button and exposes the resource status when unavailable', () => {
+      const { fixture, component } = setup(
+        {
+          property: 'action',
+          uiSettings: {
+            displayAs: 'button',
+            buttonSettings: {
+              action: 'delete',
+              icon: 'delete',
+              tooltip: 'Delete',
+            },
+          },
+        },
+        {
+          isAvailable: false,
+          accessibleName: 'Resource is pending deletion',
+        },
+      );
+
+      const button = q(fixture, 'ui5-button') as
+        | (Element & {
+            accessibleName: string;
+            disabled: boolean;
+          })
+        | null;
+
+      expect(component.buttonDisabled()).toBe(true);
+      expect(button?.disabled).toBe(true);
+      expect(button?.accessibleName).toBe('Resource is pending deletion');
+    });
+
+    it('does not emit buttonClick when the resource is unavailable', () => {
+      const field: FieldDefinition = {
+        property: 'action',
+        uiSettings: {
+          displayAs: 'button',
+          buttonSettings: { action: 'delete' },
+        },
+      };
+      const { fixture, component } = setup(field, { isAvailable: false });
+      const emitted: ResourceFieldButtonClickEvent<GenericResource>[] = [];
+      component.buttonClick.subscribe((event) => emitted.push(event));
+
+      q(fixture, 'ui5-button')?.dispatchEvent(
+        new MouseEvent('click', { bubbles: true }),
+      );
+
+      expect(emitted).toHaveLength(0);
+    });
   });
 
   describe('displayAs: tag', () => {
