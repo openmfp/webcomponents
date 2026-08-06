@@ -1,6 +1,6 @@
 {
   "name": "@openmfp/webcomponents",
-  "version": "0.18.10",
+  "version": "0.18.11",
   "type": "module",
   "scripts": {
     "build:ngx": "ng build ngx",
