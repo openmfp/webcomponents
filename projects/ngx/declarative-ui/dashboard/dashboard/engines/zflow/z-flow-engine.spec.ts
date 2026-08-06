@@ -16,7 +16,100 @@ function createEngine(nodes: ZFlowGridStackNode[]): {
   return { engine, onChange };
 }
 
+function withInternalIds(nodes: ZFlowGridStackNode[]): ZFlowGridStackNode[] {
+  nodes.forEach((node, index) => {
+    (node as unknown as { _id: number })._id = index + 1;
+  });
+  return nodes;
+}
+
 describe('SteppedResizeGridStackEngine', () => {
+  it('preserves z-flow when a card is removed during a GridStack batch update', () => {
+    const nodes = withInternalIds([
+      { id: 'favorites', x: 0, y: 0, w: 1, h: 10 },
+      { id: 'recent', x: 1, y: 0, w: 1, h: 10 },
+      { id: 'resource', x: 2, y: 0, w: 1, h: 10 },
+      { id: 'cost', x: 3, y: 0, w: 1, h: 10 },
+      { id: 'team', x: 0, y: 10, w: 1, h: 10 },
+      { id: 'quick', x: 1, y: 10, w: 1, h: 10 },
+    ]);
+    const { engine } = createEngine(nodes);
+
+    engine.syncZFlowOrderFromLayout();
+    engine.batchUpdate();
+    engine.removeNode(nodes[0]);
+    engine.batchUpdate(false);
+    engine.commitZFlowLayout();
+
+    expect(
+      engine.nodes
+        .map((node) => ({
+          id: node.id,
+          x: node.x,
+          y: node.y,
+          zFlowOrder: (node as ZFlowGridStackNode).zFlowOrder,
+        }))
+        .sort(
+          (a, b) =>
+            (a.zFlowOrder ?? Number.MAX_SAFE_INTEGER) -
+            (b.zFlowOrder ?? Number.MAX_SAFE_INTEGER),
+        ),
+    ).toEqual([
+      { id: 'recent', x: 0, y: 0, zFlowOrder: 0 },
+      { id: 'resource', x: 1, y: 0, zFlowOrder: 1 },
+      { id: 'cost', x: 2, y: 0, zFlowOrder: 2 },
+      { id: 'team', x: 3, y: 0, zFlowOrder: 3 },
+      { id: 'quick', x: 0, y: 10, zFlowOrder: 4 },
+    ]);
+  });
+
+  it('appends a card added during a GridStack batch update to z-flow', () => {
+    const nodes = withInternalIds([
+      { id: 'recent', x: 0, y: 0, w: 1, h: 10 },
+      { id: 'resource', x: 1, y: 0, w: 1, h: 10 },
+      { id: 'cost', x: 2, y: 0, w: 1, h: 10 },
+      { id: 'team', x: 3, y: 0, w: 1, h: 10 },
+      { id: 'quick', x: 0, y: 10, w: 1, h: 10 },
+    ]);
+    const { engine } = createEngine(nodes);
+    const added: ZFlowGridStackNode = {
+      id: 'favorites',
+      x: 0,
+      y: 0,
+      w: 1,
+      h: 10,
+    };
+    (added as unknown as { _id: number })._id = 6;
+
+    engine.syncZFlowOrderFromLayout();
+    engine.batchUpdate();
+    engine.addNode(added);
+    engine.batchUpdate(false);
+    engine.commitZFlowLayout();
+
+    expect(
+      engine.nodes
+        .map((node) => ({
+          id: node.id,
+          x: node.x,
+          y: node.y,
+          zFlowOrder: (node as ZFlowGridStackNode).zFlowOrder,
+        }))
+        .sort(
+          (a, b) =>
+            (a.zFlowOrder ?? Number.MAX_SAFE_INTEGER) -
+            (b.zFlowOrder ?? Number.MAX_SAFE_INTEGER),
+        ),
+    ).toEqual([
+      { id: 'recent', x: 0, y: 0, zFlowOrder: 0 },
+      { id: 'resource', x: 1, y: 0, zFlowOrder: 1 },
+      { id: 'cost', x: 2, y: 0, zFlowOrder: 2 },
+      { id: 'team', x: 3, y: 0, zFlowOrder: 3 },
+      { id: 'quick', x: 0, y: 10, zFlowOrder: 4 },
+      { id: 'favorites', x: 1, y: 10, zFlowOrder: 5 },
+    ]);
+  });
+
   it('keeps non-dragged nodes visually frozen during z-flow drag', () => {
     const nodes: ZFlowGridStackNode[] = [
       { id: 'a', x: 0, y: 0, w: 2, h: 10 },

@@ -449,6 +449,15 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   onCardsEdited(event: { added: CardConfig[]; removed: string[] }): void {
+    const looseCardIds = new Set(this.looseCards().map((c) => c.id));
+
+    const hasLooseCardChanges =
+      event.added.some((card) => !card.sectionId) ||
+      event.removed.some((id) => looseCardIds.has(id));
+    if (hasLooseCardChanges) {
+      this.getZFlowEngine()?.syncZFlowOrderFromLayout();
+    }
+
     this.cards.update((list) => {
       const withoutRemoved = list.filter((c) => !event.removed.includes(c.id));
       return [...withoutRemoved, ...event.added.map((ac) => ({ ...ac }))];
@@ -482,6 +491,7 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   onGridChange(): void {
+    this.getZFlowEngine()?.commitZFlowLayout();
     if (this.editMode()) {
       this.gridDirty.set(true);
     }
