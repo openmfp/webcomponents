@@ -449,8 +449,9 @@ describe('Dashboard', () => {
   });
 
   it('adds new cards and closes the panel', () => {
-    const { component } = setup();
+    const { fixture, component } = setup();
 
+    fixture.componentRef.setInput('config', { title: 'T' });
     component.cards.set([{ id: 'card-1', component: 'mfp-a' }]);
     component.cardDialogOpen.set(true);
 
@@ -476,6 +477,31 @@ describe('Dashboard', () => {
       },
     ]);
     expect(component.cardDialogOpen()).toBe(false);
+  });
+
+  it('preserves and commits z-flow around edit-card dialog changes', () => {
+    const { fixture, component } = setup();
+    const engine = new ZflowGridStackEngine({ column: 4, nodes: [] });
+    const syncOrder = vi.spyOn(engine, 'syncZFlowOrderFromLayout');
+    const commitLayout = vi.spyOn(engine, 'commitZFlowLayout');
+
+    fixture.componentRef.setInput('config', {
+      title: 'T',
+      zFlow: { cardHeight: 40 },
+    });
+    component.cards.set([{ id: 'card-1', component: 'mfp-a' }]);
+    (component as unknown as { gridStack: () => unknown }).gridStack = () => ({
+      grid: { engine },
+    });
+
+    component.onCardsEdited({
+      added: [{ id: 'card-2', component: 'mfp-b' }],
+      removed: [],
+    });
+    component.onGridChange();
+
+    expect(syncOrder).toHaveBeenCalledOnce();
+    expect(commitLayout).toHaveBeenCalledOnce();
   });
 
   it('positions the drag origin placeholder from the dragged grid item', () => {
@@ -612,8 +638,9 @@ describe('Dashboard', () => {
   });
 
   it('still closes the panel when no changes are made', () => {
-    const { component } = setup();
+    const { fixture, component } = setup();
 
+    fixture.componentRef.setInput('config', { title: 'T' });
     component.cardDialogOpen.set(true);
     component.cards.set([{ id: 'card-1', component: 'mfp-a' }]);
 
@@ -624,8 +651,9 @@ describe('Dashboard', () => {
   });
 
   it('removes cards by id and closes the panel when onCardsEdited receives removed ids', () => {
-    const { component } = setup();
+    const { fixture, component } = setup();
 
+    fixture.componentRef.setInput('config', { title: 'T' });
     component.cards.set([
       { id: 'card-1', component: 'mfp-a' },
       { id: 'card-2', component: 'mfp-b' },

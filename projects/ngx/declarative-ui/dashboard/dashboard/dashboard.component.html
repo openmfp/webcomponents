@@ -1,10 +1,20 @@
-<div class="mfp-dashboard" data-testid="dashboard" [style]="columnVars()" [class.edit]="editMode()">
+<div
+  class="mfp-dashboard"
+  data-testid="dashboard"
+  [style]="columnVars()"
+  [class.edit]="editMode()"
+>
   <div class="mfp-dashboard__topbar">
     <div class="mfp-dashboard__topbar-row">
       <div class="mfp-dashboard__header">
         <div class="mfp-dashboard__title-row">
           @if (config().title) {
-            <ui5-title data-testid="dashboard-title" level="H3" size="H3" wrapping-type="Normal">
+            <ui5-title
+              data-testid="dashboard-title"
+              level="H3"
+              size="H3"
+              wrapping-type="Normal"
+            >
               <span [innerHTML]="safeTitle()"></span>
             </ui5-title>
           }
@@ -22,7 +32,12 @@
           }
         </div>
         @if (config().description) {
-          <ui5-title data-testid="dashboard-description" level="H5" size="H5" wrapping-type="Normal">
+          <ui5-title
+            data-testid="dashboard-description"
+            level="H5"
+            size="H5"
+            wrapping-type="Normal"
+          >
             <span
               class="mfp-dashboard__description"
               [innerHTML]="safeDescription()"
@@ -184,7 +199,10 @@
     (removedCB)="onGridChange()"
   >
     @if (dragOriginStyle()) {
-      <div class="mfp-dashboard__drag-origin-placeholder" [style]="dragOriginStyle()"></div>
+      <div
+        class="mfp-dashboard__drag-origin-placeholder"
+        [style]="dragOriginStyle()"
+      ></div>
     }
     @for (card of looseCards(); track card.id) {
       <gridstack-item [options]="card">
@@ -196,16 +214,21 @@
       </gridstack-item>
     }
   </gridstack>
-
 </div>
 @if (editMode()) {
   <div class="mfp-dashboard__edit-bar">
-    <ui5-button data-testid="dashboard-save-btn" design="Emphasized" (click)="saveEdit()">{{
-      i18n.getTranslation(i18nKeys.SAVE)
-    }}</ui5-button>
-    <ui5-button data-testid="dashboard-cancel-btn" design="Transparent" (click)="cancelEdit()">{{
-      i18n.getTranslation(i18nKeys.CANCEL)
-    }}</ui5-button>
+    <ui5-button
+      data-testid="dashboard-save-btn"
+      design="Emphasized"
+      (click)="saveEdit()"
+      >{{ i18n.getTranslation(i18nKeys.SAVE) }}</ui5-button
+    >
+    <ui5-button
+      data-testid="dashboard-cancel-btn"
+      design="Transparent"
+      (click)="cancelEdit()"
+      >{{ i18n.getTranslation(i18nKeys.CANCEL) }}</ui5-button
+    >
   </div>
 }
 

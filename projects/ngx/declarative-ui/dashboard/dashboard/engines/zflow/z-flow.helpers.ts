@@ -27,6 +27,13 @@ export function seedNodeOrder(nodes: ZFlowGridStackNode[]): void {
   syncNodeOrderFromLayout(nodes);
 }
 
+export function normalizeNodeOrder(nodes: ZFlowGridStackNode[]): void {
+  seedNodeOrder(nodes);
+  sortNodesByZFlowOrder(nodes).forEach((node, index) => {
+    node.zFlowOrder = index;
+  });
+}
+
 export function sortNodesByZFlowOrder(
   nodes: ZFlowGridStackNode[],
 ): ZFlowGridStackNode[] {
@@ -211,12 +218,11 @@ export function resolveInsertionSlotFromProjectedRect(
     const candidateIds = reorderByInsertionSlot(orderedIds, sourceId, slot);
     const candidateNodes = candidateIds
       .map((id) => nodesById.get(id))
-      .filter(
-        (node): node is ZFlowGridStackNode & { id: string } => !!node,
-      );
-    const projectedSource = projectZFlowLayout(candidateNodes, columnCount).find(
-      (projected) => projected.id === sourceId,
-    );
+      .filter((node): node is ZFlowGridStackNode & { id: string } => !!node);
+    const projectedSource = projectZFlowLayout(
+      candidateNodes,
+      columnCount,
+    ).find((projected) => projected.id === sourceId);
 
     if (!projectedSource) continue;
 
@@ -227,10 +233,7 @@ export function resolveInsertionSlotFromProjectedRect(
       heightPx: projectedSource.h * cellHeightPx,
     });
     const projectedAreaPx =
-      projectedSource.w *
-      cellWidthPx *
-      projectedSource.h *
-      cellHeightPx;
+      projectedSource.w * cellWidthPx * projectedSource.h * cellHeightPx;
     const overlapRatio =
       projectedAreaPx > 0 ? overlapAreaPx / projectedAreaPx : 0;
 

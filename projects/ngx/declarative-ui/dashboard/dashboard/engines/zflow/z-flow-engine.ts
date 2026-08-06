@@ -3,6 +3,7 @@ import {
   type ZFlowGridStackNode,
   applyProjectedLayout,
   getZFlowRowHeight,
+  normalizeNodeOrder,
   notifyEngine,
   projectZFlowLayout,
   reorderByInsertionSlot,
@@ -81,7 +82,7 @@ export class ZflowGridStackEngine extends GridStackEngine {
 
   commitZFlowLayout(): boolean {
     const nodes = this.nodes as ZFlowGridStackNode[];
-    seedNodeOrder(nodes);
+    normalizeNodeOrder(nodes);
 
     const snapshot = this.takeLayoutSnapshot(nodes);
     const ordered = sortNodesByZFlowOrder(nodes);
