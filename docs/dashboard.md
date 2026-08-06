@@ -51,7 +51,7 @@ import {
   DashboardConfig,
   SectionConfig,
   VisitedServiceCard,
-} from '@openmfp/webcomponents';
+} from '@openmfp/ngx';
 
 Dashboard.registerAngularComponents([VisitedServiceCard]);
 
@@ -204,6 +204,7 @@ const cards: CardConfig[] = [
 | -------------------- | ---------------------------------------------------- | ---------------------------------------------------------------- |
 | `saved`              | `{ sections: SectionConfig[]; cards: CardConfig[] }` | Emits when the user saves edits                                  |
 | `actionButtonClick`  | `{ event: MouseEvent; action: ButtonSettings }`      | Emits when a custom action button from `config.customActions` is clicked |
+| `unsavedChangesChange` | `boolean`                                          | Emits whenever the unsaved-changes state flips — `true` when the user first makes an unsaved edit, `false` after save/discard. Use this to drive your own navigation guard (see [Showing your own dialog instead](#showing-your-own-dialog-instead)). |
 
 ### Public methods
 
@@ -216,10 +217,11 @@ const cards: CardConfig[] = [
 
 | Signal                  | Type                  | Description                                                                                                                                |
 | ----------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `hasUnsavedChanges()`   | `computed<boolean>`   | `true` while the user is in edit mode AND has changed sections, cards, or grid positions. Resets after save / discard.                     |
 | `editMode()`            | `signal<boolean>`     | `true` while the user is in the dashboard's edit mode.                                                                                     |
 | `unsavedNavDialogOpen()`| `signal<boolean>`     | `true` while the unsaved-changes navigation popup is shown. Driven by `requestNavigation()`; consumers normally don't read it directly.    |
 | `discardDialogOpen()`   | `signal<boolean>`     | `true` while the discard-confirmation popup (Cancel button on the edit-bar) is shown.                                                      |
+
+> **Note:** The dashboard also tracks a `hasUnsavedChanges` computed internally (`true` while the user is in edit mode AND has changed sections, cards, or grid positions; resets after save / discard), but it is `protected` and **not** readable from a consumer's dashboard reference. To react to that state from your own code, listen to the [`unsavedChangesChange`](#outputs) output instead.
 
 ---
 
@@ -272,10 +274,6 @@ The dashboard does **not** translate consumer-supplied strings — those are pas
 
 Translate these in your application before passing them to the dashboard.
 
-### Standalone dialog reuse
-
-`<mfp-discard-changes-dialog>`, `<mfp-unsaved-changes-dialog>`, and `<mfp-edit-cards-dialog>` are exported on the public API for reuse outside the dashboard. When mounted standalone, each dialog accepts its own `language` input (default falls back to `'en'`); when nested inside `<mfp-dashboard>`, the input is ignored and the dashboard's shared language wins.
-
 ---
 
 ## EditCardsDialog
@@ -289,7 +287,6 @@ The `EditCardsDialog` component (`mfp-edit-cards-dialog`) is rendered inside the
 | `availableCards` | `CardConfig[]` | `[]`         | Full list of cards the user may add/remove |
 | `addedCardsIds`  | `Set<string>`  | `new Set()`  | IDs of cards currently on the dashboard  |
 | `open`           | `boolean`      | `false`      | Controls dialog visibility               |
-| `language`       | `'en' \| 'de' \| null` | `null` | Optional standalone-only override; ignored when nested in `<mfp-dashboard>`. |
 
 ### Outputs
 
@@ -297,12 +294,6 @@ The `EditCardsDialog` component (`mfp-edit-cards-dialog`) is rendered inside the
 | ----------- | ----------------------------------------------- | ----------------------------------------------------- |
 | `confirm`   | `{ added: CardConfig[]; removed: string[] }`    | Emits the diff when the user clicks **Save**          |
 | `cancelled` | `void`                                          | Emits when the user clicks **Cancel** or presses Esc  |
-
-### Static methods
-
-| Method                        | Description                                                                 |
-| ----------------------------- | --------------------------------------------------------------------------- |
-| `registerAngularComponents()` | Registers standalone Angular card components by their element selector name |
 
 ---
 
@@ -419,8 +410,8 @@ const proceeded = dashboardEl.requestNavigation(() => {
 
 The built-in `UnsavedChangesDialog` covers the common case (Save / Discard / Cancel). If the host app needs a different look, copy, or behaviour, the dashboard exposes the primitives so you can replace the popup entirely:
 
-1. Read the `hasUnsavedChanges()` computed signal in your own navigation interceptor.
-2. If it is `true`, suppress the navigation, render your own dialog (any framework, any styling), and based on the user's choice call one of:
+1. Track the unsaved-changes state via the `unsavedChangesChange` output.
+2. While it is `true`, suppress the navigation, render your own dialog (any framework, any styling), and based on the user's choice call one of:
    - `dashboard.saveEdit()` — persist (fires the `saved` event) and exit edit mode.
    - The dashboard does not currently expose a public `discardEdit()` method. The simplest way to discard from outside is `dashboard.cancelEdit()` — it opens `DiscardChangesDialog` if there are unsaved changes; you can then drive `confirmDiscard()` programmatically. If you want to discard without any popup at all, prefer skipping the in-app navigation and relying on `requestNavigation()` instead.
 3. If you do want to keep the dashboard in charge of the popup but swap the **dialog UI only**, you can hide the default dialog by overriding its CSS in your shadow-DOM-piercing stylesheet and rendering your own component bound to `unsavedNavDialogOpen()`, then calling `onUnsavedNavSave()`, `onUnsavedNavDiscard()`, or `onUnsavedNavCancel()` from your buttons. The handlers are the same ones the built-in dialog uses, so behaviour stays consistent.
@@ -441,7 +432,7 @@ This fires only while `hasUnsavedChanges()` is true; the listener is removed whe
 
 Three-button popup driven by `requestNavigation()`:
 
-- Header: warning icon + "Unsaved Changes"
+- Header: "Unsaved Changes" (`<ui5-title>`; the dialog uses `state="Critical"` for the accent — there is no icon)
 - Body: "You are leaving this page. Save or discard the changes to proceed. This action cannot be undone."
 - Buttons: **Save** (Emphasized) / **Discard** (Transparent) / **Cancel** (Transparent)
 
@@ -449,7 +440,7 @@ Three-button popup driven by `requestNavigation()`:
 
 Two-button popup shown when the user clicks the Cancel button on the in-page edit toolbar with unsaved changes:
 
-- Header: warning icon + "Discard Changes"
+- Header: "Discard Changes" (`<ui5-title>`; the dialog uses `state="Critical"` for the accent — there is no icon)
 - Body: "Discard the changes? This action cannot be undone."
 - Buttons: **Discard** (Emphasized) / **Cancel** (Transparent)
 
@@ -457,14 +448,13 @@ Two-button popup shown when the user clicks the Cancel button on the in-page edi
 
 ## DiscardChangesDialog
 
-`<mfp-discard-changes-dialog>` — confirmation popup the dashboard pops when the user clicks Cancel on the edit-bar with unsaved changes. It is rendered automatically by `<mfp-dashboard>`; the standalone component is exported so it can be reused outside the dashboard if you need the same confirmation pattern elsewhere.
+`<mfp-discard-changes-dialog>` — confirmation popup the dashboard pops when the user clicks Cancel on the edit-bar with unsaved changes. It is rendered automatically by `<mfp-dashboard>` and is not part of the public API — the tag and API below document the dashboard's internal behaviour.
 
 ### Inputs
 
 | Input      | Type                    | Default | Description                                                                  |
 | ---------- | ----------------------- | ------- | ---------------------------------------------------------------------------- |
 | `open`     | `boolean`               | `false` | Controls dialog visibility                                                   |
-| `language` | `'en' \| 'de' \| null`  | `null`  | Optional standalone-only override; ignored when nested in `<mfp-dashboard>`. |
 
 ### Outputs
 
@@ -477,14 +467,13 @@ Two-button popup shown when the user clicks the Cancel button on the in-page edi
 
 ## UnsavedChangesDialog
 
-`<mfp-unsaved-changes-dialog>` — three-button popup the dashboard pops when an in-app navigation is intercepted via `requestNavigation()`. Like `DiscardChangesDialog`, the component is exported standalone and can be reused.
+`<mfp-unsaved-changes-dialog>` — three-button popup the dashboard pops when an in-app navigation is intercepted via `requestNavigation()`. Like `DiscardChangesDialog`, it is rendered automatically by `<mfp-dashboard>` and is not part of the public API.
 
 ### Inputs
 
 | Input      | Type                    | Default | Description                                                                  |
 | ---------- | ----------------------- | ------- | ---------------------------------------------------------------------------- |
 | `open`     | `boolean`               | `false` | Controls dialog visibility                                                   |
-| `language` | `'en' \| 'de' \| null`  | `null`  | Optional standalone-only override; ignored when nested in `<mfp-dashboard>`. |
 
 ### Outputs
 
@@ -675,7 +664,7 @@ interface CardConfig {
 ```
 
 For sections, `w` controls the column span while height is determined by the section content.
-For cards, `w` and `h` control the initial rendered grid span. When edit mode is saved, `x`, `y`, `w`, and `h` are all persisted in the `saved` event payload — resizing a card updates its dimensions and dragging updates its position. `minH`/`minW` and `maxH`/`maxW` set hard resize bounds enforced by the grid — the user cannot drag a card below the minimum or above the maximum size in edit mode.
+For cards, `w` and `h` control the initial rendered grid span. When edit mode is saved, each card's `w` and `h` are persisted in the `saved` event payload. Position (`x`, `y`) is only persisted for **loose** cards (those without a `sectionId`) — section cards are laid out by their section and do not carry `x`/`y`. Note that a loose card's `h` may be recomputed by the grid's `sizeToContent` behaviour. `minH`/`minW` and `maxH`/`maxW` set hard resize bounds enforced by the grid — the user cannot drag a card below the minimum or above the maximum size in edit mode.
 
 `component` and `type` work together to determine how the card is rendered:
 
@@ -716,6 +705,8 @@ If `window.sap` is not available when the card is rendered, an error is logged a
 ## Test IDs
 
 All interactive elements carry `data-testid` attributes for reliable E2E targeting. See [docs/test-ids.md](./test-ids.md) for the full naming convention.
+
+> **Shadow DOM caveat:** The three dialogs (`EditCardsDialog`, `DiscardChangesDialog`, `UnsavedChangesDialog`) use `ViewEncapsulation.ShadowDom`, so their `data-testid` elements live inside a shadow root. A plain `getByTestId()` / `document.querySelector('[data-testid=…]')` will **not** reach them — you must first query the dialog's host element and then pierce its `shadowRoot` (or use a testing tool that traverses shadow boundaries).
 
 ### Main component
 
