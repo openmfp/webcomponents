@@ -45,11 +45,11 @@ import '@ui5/webcomponents-icons/dist/AllIcons.js';
   ],
   templateUrl: './resource-field.component.html',
   styleUrl: './resource-field.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.ShadowDom,
   host: {
     '[class.resource-field--collection]': 'isCollection()',
   },
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation: ViewEncapsulation.ShadowDom,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ResourceField<
@@ -58,6 +58,8 @@ export class ResourceField<
 > {
   fieldDefinition = input.required<F>();
   resource = input<T>();
+  // keyed by row id; host sets row.id = permissionKey(entity/ns/name)
+  permissions = input<Map<string, string[]>>();
   readonly buttonClick = output<ResourceFieldButtonClickEvent<T>>();
 
   value = computed(() =>
@@ -93,6 +95,16 @@ export class ResourceField<
   isCollection = computed(
     () => !!this.fieldDefinition().propertyCollection?.length,
   );
+
+  protected canRenderField = computed(() => {
+    const perm = this.fieldDefinition().requirePermission;
+    if (!perm) {
+      return true;
+    }
+
+    const actions = this.permissions()?.get(this.resource()?.id ?? '');
+    return actions ? actions.includes(perm) : false;
+  });
 
   toggleVisibility(e: Event): void {
     e.stopPropagation();

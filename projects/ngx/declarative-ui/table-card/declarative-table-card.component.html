@@ -70,6 +70,7 @@
         [loadMode]="config.loadMode ?? 'button'"
         [loadMoreButtonText]="config.loadMoreButtonText ?? 'Load More'"
         [paginationLimit]="config.paginationLimit ?? 5"
+        [permissions]="permissions()"
         [resources]="resources()"
         [totalItemsCount]="config.totalItemsCount"
         (buttonClick)="onButtonClick($event)"
