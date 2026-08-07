@@ -82,117 +82,37 @@
   </div>
 </div>
 
-@if (createDialogOpen()) {
-  @let config = createFormConfig();
-  <ui5-dialog
-    data-testid="generic-table-card-create-dialog"
-    [accessibleName]="config?.title ?? 'Create'"
-    [open]="true"
-    (ui5BeforeClose)="createDialogOpen.set(false)"
-  >
-    <div class="dialog__header" slot="header">
-      <ui5-title level="H5">{{ config?.title ?? 'Create' }}</ui5-title>
-    </div>
-    <div class="dialog__body">
-      <mfp-declarative-form
-        #createForm
-        [fieldErrors]="createFormState().fieldErrors ?? {}"
-        [fields]="resolvedCreateFields()"
-        (fieldChange)="onCreateFieldChange($event)"
-        (formSubmit)="onCreateSubmit($event)"
-      />
-    </div>
-    <div class="dialog__footer" slot="footer">
-      <ui5-button
-        data-testid="generic-table-card-create-confirm"
-        design="Emphasized"
-        [disabled]="hasErrors(createFormState())"
-        (click)="createForm.submit()"
-      >
-        {{ config?.confirmLabel ?? 'Save' }}
-      </ui5-button>
-      <ui5-button
-        data-testid="generic-table-card-create-cancel"
-        design="Transparent"
-        (click)="closeCreateDialog()"
-      >
-        {{ config?.cancelLabel ?? 'Cancel' }}
-      </ui5-button>
-    </div>
-  </ui5-dialog>
-}
+<mfp-resource-form-dialog
+  [open]="createDialogOpen()"
+  [config]="createFormConfig()"
+  [fields]="resolvedCreateFields()"
+  [fieldErrors]="createFormState().fieldErrors ?? {}"
+  [initialValues]="{}"
+  defaultTitle="Create"
+  defaultConfirmLabel="Save"
+  dataTestidPrefix="generic-table-card-create"
+  (fieldChange)="onCreateFieldChange($event)"
+  (submitted)="onCreateSubmit($event)"
+  (cancelled)="closeCreateDialog()"
+/>
 
-@if (editDialogOpen()) {
-  @let config = editFormConfig();
-  <ui5-dialog
-    data-testid="generic-table-card-edit-dialog"
-    [accessibleName]="config?.title ?? 'Edit'"
-    [open]="true"
-    (ui5BeforeClose)="editDialogOpen.set(false)"
-  >
-    <div class="dialog__header" slot="header">
-      <ui5-title level="H5">{{ config?.title ?? 'Edit' }}</ui5-title>
-    </div>
-    <div class="dialog__body">
-      <mfp-declarative-form
-        #editForm
-        [fieldErrors]="editFormState().fieldErrors ?? {}"
-        [fields]="resolvedEditFields()"
-        [initialValues]="editInitialValue()"
-        (fieldChange)="onEditFieldChange($event)"
-        (formSubmit)="onEditSubmit($event)"
-      />
-    </div>
-    <div class="dialog__footer" slot="footer">
-      <ui5-button
-        data-testid="generic-table-card-edit-confirm"
-        design="Emphasized"
-        [disabled]="hasErrors(editFormState())"
-        (click)="editForm.submit()"
-      >
-        {{ config?.confirmLabel ?? 'Edit' }}
-      </ui5-button>
-      <ui5-button
-        data-testid="generic-table-card-edit-cancel"
-        design="Transparent"
-        (click)="closeEditDialog()"
-      >
-        {{ config?.cancelLabel ?? 'Cancel' }}
-      </ui5-button>
-    </div>
-  </ui5-dialog>
-}
+<mfp-resource-form-dialog
+  [open]="editDialogOpen()"
+  [config]="editFormConfig()"
+  [fields]="resolvedEditFields()"
+  [fieldErrors]="editFormState().fieldErrors ?? {}"
+  [initialValues]="editInitialValue()"
+  defaultTitle="Edit"
+  defaultConfirmLabel="Edit"
+  dataTestidPrefix="generic-table-card-edit"
+  (fieldChange)="onEditFieldChange($event)"
+  (submitted)="onEditSubmit($event)"
+  (cancelled)="closeEditDialog()"
+/>
 
-@if (deleteConfirmationConfig(); as config) {
-  <ui5-dialog
-    data-testid="generic-table-card-delete-dialog"
-    [accessibleName]="config.title ?? 'Confirm Delete'"
-    [open]="deleteDialogOpen()"
-    (ui5BeforeClose)="deleteDialogOpen.set(false)"
-  >
-    <div class="dialog__header" slot="header">
-      <ui5-title level="H5">{{ config.title ?? 'Confirm Delete' }}</ui5-title>
-    </div>
-    @if (config.message) {
-      <div class="dialog__body">
-        <p class="dialog__message">{{ config.message }}</p>
-      </div>
-    }
-    <div class="dialog__footer" slot="footer">
-      <ui5-button
-        data-testid="generic-table-card-delete-confirm"
-        design="Negative"
-        (click)="onDeleteSubmit()"
-      >
-        {{ config.confirmLabel ?? 'Delete' }}
-      </ui5-button>
-      <ui5-button
-        data-testid="generic-table-card-delete-cancel"
-        design="Transparent"
-        (click)="closeDeleteDialog()"
-      >
-        {{ config.cancelLabel ?? 'Cancel' }}
-      </ui5-button>
-    </div>
-  </ui5-dialog>
-}
+<mfp-delete-confirmation-dialog
+  [open]="deleteDialogOpen()"
+  [config]="deleteConfirmationConfig()"
+  (confirmed)="onDeleteSubmit()"
+  (cancelled)="closeDeleteDialog()"
+/>

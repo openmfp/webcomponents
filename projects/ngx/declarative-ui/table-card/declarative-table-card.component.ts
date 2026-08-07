@@ -1,10 +1,8 @@
-import {
-  DeclarativeForm,
-  FormFieldChangeEvent,
-  FormFieldDefinition,
-} from '../form';
+import { DeleteConfirmationDialog } from '../dialogs/delete-confirmation-dialog/delete-confirmation-dialog.component';
+import { ResourceFormDialog } from '../dialogs/resource-form-dialog/resource-form-dialog.component';
+import { FormFieldChangeEvent, FormFieldDefinition } from '../form';
 import { GenericResource, ResourceFieldButtonClickEvent } from '../models';
-import { DeclarativeTable, TableFieldDefinition } from '../table';
+import { DeclarativeTable } from '../table';
 import { getResourceValueByJsonPath } from '../table/utils/resource-field-by-path';
 import { FilterTabs } from './filter-tabs/filter-tabs.component';
 import {
@@ -25,10 +23,8 @@ import {
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
-import { Dialog } from '@fundamental-ngx/ui5-webcomponents/dialog';
 import { Icon } from '@fundamental-ngx/ui5-webcomponents/icon';
 import { Input } from '@fundamental-ngx/ui5-webcomponents/input';
-import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 import '@ui5/webcomponents-icons/dist/add.js';
 import '@ui5/webcomponents-icons/dist/search.js';
 import { debounceTime, distinctUntilChanged, filter, map } from 'rxjs';
@@ -37,14 +33,13 @@ import { debounceTime, distinctUntilChanged, filter, map } from 'rxjs';
   selector: 'mfp-declarative-table-card',
   imports: [
     DeclarativeTable,
-    DeclarativeForm,
     FilterTabs,
     ReactiveFormsModule,
-    Dialog,
-    Title,
     Button,
     Icon,
     Input,
+    ResourceFormDialog,
+    DeleteConfirmationDialog,
   ],
   templateUrl: './declarative-table-card.component.html',
   styleUrl: './declarative-table-card.component.scss',
@@ -55,7 +50,7 @@ import { debounceTime, distinctUntilChanged, filter, map } from 'rxjs';
 export class DeclarativeTableCard<T extends GenericResource> {
   resources = input.required<T[]>();
 
-  config = input.required<TableCardConfig>();
+  config = input.required<TableCardConfig<T>>();
   createFormState = input<TableCardFormState>({});
   editFormState = input<TableCardFormState>({});
 
@@ -95,19 +90,29 @@ export class DeclarativeTableCard<T extends GenericResource> {
   protected createFormConfig = computed(
     () => this.config().createResourceFormConfig,
   );
-  protected editFormConfig = computed(
-    () => this.config().editResourceFormConfig,
-  );
-  protected deleteConfirmationConfig = computed(
-    () => this.config().deleteResourceConfirmationConfig,
-  );
+  protected editFormConfig = computed(() => {
+    const pendingResource = this.pendingResource();
+    if (!pendingResource) {
+      return;
+    }
+
+    return this.config().editResourceFormConfig?.(pendingResource);
+  });
+  protected deleteConfirmationConfig = computed(() => {
+    const pendingResource = this.pendingResource();
+    if (!pendingResource) {
+      return;
+    }
+
+    return this.config().deleteResourceConfirmationConfig?.(pendingResource);
+  });
   protected createButtonConfig = computed(
     () => this.config().buttonSettings?.createButton,
   );
   protected searchButtonConfig = computed(
     () => this.config().buttonSettings?.searchButton,
   );
-  protected effectiveColumns = computed(() => this.addActionsColumn());
+  protected effectiveColumns = computed(() => this.tableConfig().fields);
   protected editInitialValue = computed(() => {
     const pendingResource = this.pendingResource();
     const editConfig = this.editFormConfig();
@@ -176,8 +181,12 @@ export class DeclarativeTableCard<T extends GenericResource> {
   }
 
   onButtonClick(event: ResourceFieldButtonClickEvent<T>): void {
+    if (event.resource?.isAvailable === false) {
+      return;
+    }
+
     const action = event.field.uiSettings?.buttonSettings?.action;
-    if (action === 'edit' && event.resource) {
+    if (action === 'update' && event.resource) {
       this.pendingResource.set(event.resource);
       void this.openEditDialog();
       return;
@@ -239,8 +248,8 @@ export class DeclarativeTableCard<T extends GenericResource> {
     }
   }
 
-  onCreateSubmit(value: T): void {
-    this.createSubmit.emit(value);
+  onCreateSubmit(value: Record<string, unknown>): void {
+    this.createSubmit.emit(value as T);
   }
 
   onEditSubmit(value: Record<string, unknown>): void {
@@ -254,57 +263,6 @@ export class DeclarativeTableCard<T extends GenericResource> {
   onDeleteSubmit(): void {
     const resource = this.pendingResource();
     if (resource) this.deleteSubmit.emit(resource);
-  }
-
-  protected hasErrors(state: TableCardFormState): boolean {
-    const errors = state.fieldErrors;
-    return !!errors && Object.values(errors).some((val) => !!val);
-  }
-
-  private addActionsColumn(): TableFieldDefinition[] {
-    const cols = this.tableConfig().fields;
-    const buttonSettings = this.config().buttonSettings;
-    const editButton = this.editFormConfig();
-    const deleteButton = this.deleteConfirmationConfig();
-    const actions: TableFieldDefinition[] = [];
-
-    if (editButton) {
-      actions.push({
-        property: 'mfp_edit_action',
-        uiSettings: {
-          displayAs: 'button',
-          align: 'end',
-          buttonSettings: {
-            icon: 'edit',
-            design: 'Transparent',
-            action: 'edit',
-            tooltip: 'Edit',
-            ...buttonSettings?.editButton,
-          },
-        },
-        group: { name: 'actions', label: '', multiline: false },
-      });
-    }
-
-    if (deleteButton) {
-      actions.push({
-        property: 'mfp_delete_action',
-        uiSettings: {
-          align: 'end',
-          displayAs: 'button',
-          buttonSettings: {
-            icon: 'decline',
-            design: 'Transparent',
-            action: 'delete',
-            tooltip: 'Delete',
-            ...buttonSettings?.deleteButton,
-          },
-        },
-        group: { name: 'actions', label: '', multiline: false },
-      });
-    }
-
-    return cols.concat(actions);
   }
 
   private buildInitialValues(
