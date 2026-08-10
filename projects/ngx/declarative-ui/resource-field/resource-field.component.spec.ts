@@ -12,6 +12,7 @@ type Comp = ResourceField<GenericResource, FieldDefinition>;
 function setup(
   field: FieldDefinition,
   resource?: Partial<GenericResource>,
+  permissions?: Record<string, string[]>,
 ): { fixture: Fixture; component: Comp } {
   const fixture: Fixture = TestBed.createComponent(
     ResourceField as unknown as typeof ResourceField<GenericResource, FieldDefinition>,
@@ -20,6 +21,8 @@ function setup(
   fixture.componentRef.setInput('fieldDefinition', field);
   if (resource !== undefined)
     fixture.componentRef.setInput('resource', resource as GenericResource);
+  if (permissions !== undefined)
+    fixture.componentRef.setInput('permissions', permissions);
   fixture.detectChanges();
   return { fixture, component };
 }
@@ -451,6 +454,157 @@ describe('ResourceField', () => {
       const { fixture } = setup({ property: 'status' }, { status: 'Active' });
       const scope = fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
       expect(scope.querySelector('mfp-resource-collection-field')).toBeNull();
+    });
+  });
+
+  describe('canRenderField / requirePermission', () => {
+    const FIELD_PROPERTY = 'action';
+    const RESOURCE_ID = 'ns/pod-1';
+    const VERB = 'delete';
+
+    it('renders the field when requirePermission is absent', () => {
+      // No requirePermission → always visible regardless of permissions map
+      const { fixture } = setup(
+        { property: FIELD_PROPERTY },
+        { id: RESOURCE_ID, action: 'go' },
+      );
+      const span = q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`);
+      expect(span).not.toBeNull();
+    });
+
+    it('renders the field when requirePermission is absent and permissions map is undefined', () => {
+      const { fixture } = setup(
+        { property: FIELD_PROPERTY },
+        { id: RESOURCE_ID, action: 'go' },
+        undefined,
+      );
+      const span = q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`);
+      expect(span).not.toBeNull();
+    });
+
+    it('renders the field when verb is present in the row\'s granted actions', () => {
+      const permissions = { [RESOURCE_ID]: [VERB, 'get'] };
+      const { fixture } = setup(
+        { property: FIELD_PROPERTY, requirePermission: VERB },
+        { id: RESOURCE_ID, action: 'go' },
+        permissions,
+      );
+      const span = q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`);
+      expect(span).not.toBeNull();
+    });
+
+    it('hides the field when verb is absent from the row\'s granted actions', () => {
+      const permissions = { [RESOURCE_ID]: ['get', 'list'] };
+      const { fixture } = setup(
+        { property: FIELD_PROPERTY, requirePermission: VERB },
+        { id: RESOURCE_ID, action: 'go' },
+        permissions,
+      );
+      const span = q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`);
+      expect(span).toBeNull();
+    });
+
+    it('hides the field when the resource id is not in the permissions map (fail-closed)', () => {
+      // Row exists in the map under a different id — no match → hidden
+      const permissions = { 'other-id': [VERB] };
+      const { fixture } = setup(
+        { property: FIELD_PROPERTY, requirePermission: VERB },
+        { id: RESOURCE_ID, action: 'go' },
+        permissions,
+      );
+      const span = q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`);
+      expect(span).toBeNull();
+    });
+
+    it('hides the field when permissions input is undefined (fail-closed)', () => {
+      // requirePermission set but no permissions map at all
+      const { fixture } = setup(
+        { property: FIELD_PROPERTY, requirePermission: VERB },
+        { id: RESOURCE_ID, action: 'go' },
+        undefined,
+      );
+      const span = q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`);
+      expect(span).toBeNull();
+    });
+
+    it('hides the field when resource has no id (fail-closed)', () => {
+      // resource.id is undefined → id ?? '' → empty string key
+      // If the map does NOT have '' as a key, actions is undefined → hidden
+      const permissions = { [RESOURCE_ID]: [VERB] };
+      const { fixture } = setup(
+        { property: FIELD_PROPERTY, requirePermission: VERB },
+        { action: 'go' }, // no id — id resolves to ''
+        permissions,
+      );
+      const span = q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`);
+      expect(span).toBeNull();
+    });
+
+    it('hides the field when resource input is undefined (fail-closed)', () => {
+      const permissions = { [RESOURCE_ID]: [VERB] };
+      // resource not provided → resource() returns undefined
+      const { fixture } = setup(
+        { property: FIELD_PROPERTY, requirePermission: VERB },
+        undefined,
+        permissions,
+      );
+      const span = q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`);
+      expect(span).toBeNull();
+    });
+
+    it('hides the field when permissions map entry is an empty array', () => {
+      // Row is present but granted no actions → hidden
+      const permissions = { [RESOURCE_ID]: [] as string[] };
+      const { fixture } = setup(
+        { property: FIELD_PROPERTY, requirePermission: VERB },
+        { id: RESOURCE_ID, action: 'go' },
+        permissions,
+      );
+      const span = q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`);
+      expect(span).toBeNull();
+    });
+
+    it('reacts to a permissions input change and hides the field', () => {
+      // Start with permission granted, then revoke it
+      const permissions = { [RESOURCE_ID]: [VERB] };
+      const { fixture } = setup(
+        { property: FIELD_PROPERTY, requirePermission: VERB },
+        { id: RESOURCE_ID, action: 'go' },
+        permissions,
+      );
+      expect(
+        q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`),
+      ).not.toBeNull();
+
+      // Remove the verb
+      fixture.componentRef.setInput('permissions', { [RESOURCE_ID]: ['get'] });
+      fixture.detectChanges();
+
+      expect(
+        q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`),
+      ).toBeNull();
+    });
+
+    it('reacts to a permissions input change and shows the field', () => {
+      // Start hidden (no map), then grant the verb
+      const { fixture } = setup(
+        { property: FIELD_PROPERTY, requirePermission: VERB },
+        { id: RESOURCE_ID, action: 'go' },
+        undefined,
+      );
+      expect(
+        q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`),
+      ).toBeNull();
+
+      fixture.componentRef.setInput(
+        'permissions',
+        { [RESOURCE_ID]: [VERB] },
+      );
+      fixture.detectChanges();
+
+      expect(
+        q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`),
+      ).not.toBeNull();
     });
   });
 });

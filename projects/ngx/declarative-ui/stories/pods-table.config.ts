@@ -183,6 +183,6 @@ export const TABLE_CARD_CONFIG: TableCardConfig = {
   headerTooltip: 'This table lists all pods running in the cluster.',
   tableConfig: BASE_TABLE_CONFIG,
   createResourceFormConfig: CREATE_FORM_CONFIG,
-  editResourceFormConfig: EDIT_FORM_CONFIG,
-  deleteResourceConfirmationConfig: DELETE_CONFIRMATION_CONFIG,
+  editResourceFormConfig: () => EDIT_FORM_CONFIG,
+  deleteResourceConfirmationConfig: () => DELETE_CONFIRMATION_CONFIG,
 };

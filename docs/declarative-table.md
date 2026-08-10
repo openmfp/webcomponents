@@ -99,6 +99,7 @@ export class MyComponent {
 | `growMode` | `'Button' \| 'Scroll'` | no | `'Button'` | Load-more strategy: `'Button'` shows a button, `'Scroll'` triggers on scroll |
 | `loadMoreButtonText` | `string` | no | `'Load More'` | Label shown on the load-more button (used when `growMode` is `'Button'`) |
 | `height` | `number` | no | — | Fixed height in pixels. When combined with `growMode: 'Scroll'`, enables scroll-based loading with a sticky header |
+| `permissions` | `Map<string, string[]>` | no | — | Per-row permission map keyed by `resource.id`. Passed to every cell's `mfp-resource-field` to evaluate `requirePermission` on each column definition. |
 
 ### Outputs / Events
 

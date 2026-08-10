@@ -18,6 +18,7 @@ function setup(opts: {
   loadMoreButtonText?: string;
   height?: number;
   currentPage?: number;
+  permissions?: Record<string, string[]>;
 }): { fixture: Fixture; component: Comp } {
   const fixture: Fixture = TestBed.createComponent(
     DeclarativeTable as unknown as typeof DeclarativeTable<GenericResource>,
@@ -33,6 +34,7 @@ function setup(opts: {
   if (opts.loadMoreButtonText !== undefined) fixture.componentRef.setInput('loadMoreButtonText', opts.loadMoreButtonText);
   if (opts.height !== undefined) fixture.componentRef.setInput('height', opts.height);
   if (opts.currentPage !== undefined) fixture.componentRef.setInput('currentPage', opts.currentPage);
+  if (opts.permissions !== undefined) fixture.componentRef.setInput('permissions', opts.permissions);
   fixture.detectChanges();
   return { fixture, component };
 }
@@ -665,6 +667,95 @@ describe('DeclarativeTable', () => {
       });
       const growingDe = fixture.debugElement.query(By.css('ui5-table-growing'));
       expect(growingDe?.properties?.['text']).toBe('Fetch More');
+    });
+  });
+
+  describe('permissions input threading', () => {
+    it('accepts a permissions map via the permissions input', () => {
+      const permissions = { 'ns/pod-1': ['delete', 'get'] };
+      const { component } = setup({
+        columns: [{ property: 'name' }],
+        resources: [{ id: 'ns/pod-1', name: 'pod-1' }],
+        permissions,
+      });
+      expect(component.permissions()).toBe(permissions);
+    });
+
+    it('permissions input defaults to undefined', () => {
+      const { component } = setup({
+        columns: [{ property: 'name' }],
+      });
+      expect(component.permissions()).toBeUndefined();
+    });
+
+    it('passes permissions down to each mfp-resource-field child', () => {
+      const permissions = { 'ns/pod-1': ['delete'] };
+      const { fixture } = setup({
+        columns: [
+          {
+            property: 'name',
+            requirePermission: 'delete',
+          },
+        ],
+        resources: [{ id: 'ns/pod-1', name: 'pod-1' }],
+        permissions,
+      });
+      const resourceFields = fixture.debugElement.queryAll(
+        By.directive(ResourceField),
+      );
+      expect(resourceFields.length).toBeGreaterThan(0);
+      // Every ResourceField instance must receive the same permissions map
+      for (const de of resourceFields) {
+        const comp: ResourceField<GenericResource, TableFieldDefinition> =
+          de.componentInstance;
+        expect(comp.permissions()).toBe(permissions);
+      }
+    });
+
+    it('field with requirePermission is hidden when verb is not in the map', () => {
+      const permissions = { 'ns/pod-1': ['get'] };
+      const column: TableFieldDefinition = {
+        property: 'name',
+        requirePermission: 'delete',
+      };
+      const { fixture } = setup({
+        columns: [column],
+        resources: [{ id: 'ns/pod-1', name: 'pod-1' }],
+        permissions,
+      });
+      // The field span is inside ResourceField's shadow root; querying the
+      // host element for the testid will find nothing when hidden.
+      const resourceFieldDe = fixture.debugElement.query(
+        By.directive(ResourceField),
+      );
+      const resourceFieldRoot: ShadowRoot | HTMLElement =
+        resourceFieldDe.nativeElement.shadowRoot ??
+        resourceFieldDe.nativeElement;
+      expect(
+        resourceFieldRoot.querySelector('[data-testid="resource-field-name"]'),
+      ).toBeNull();
+    });
+
+    it('field with requirePermission is visible when verb is granted', () => {
+      const permissions = { 'ns/pod-1': ['delete', 'get'] };
+      const column: TableFieldDefinition = {
+        property: 'name',
+        requirePermission: 'delete',
+      };
+      const { fixture } = setup({
+        columns: [column],
+        resources: [{ id: 'ns/pod-1', name: 'pod-1' }],
+        permissions,
+      });
+      const resourceFieldDe = fixture.debugElement.query(
+        By.directive(ResourceField),
+      );
+      const resourceFieldRoot: ShadowRoot | HTMLElement =
+        resourceFieldDe.nativeElement.shadowRoot ??
+        resourceFieldDe.nativeElement;
+      expect(
+        resourceFieldRoot.querySelector('[data-testid="resource-field-name"]'),
+      ).not.toBeNull();
     });
   });
 });

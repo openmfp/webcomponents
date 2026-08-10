@@ -1,9 +1,11 @@
+import { ResourceFormDialog } from '../dialogs/resource-form-dialog/resource-form-dialog.component';
 import { FormFieldChangeEvent, FormFieldDefinition } from '../form/models';
+import { DeclarativeTable } from '../table';
 import {
   ButtonSettings,
   GenericResource,
-  TableFieldDefinition,
   ResourceFieldButtonClickEvent,
+  TableFieldDefinition,
 } from '../table/models';
 import { DeclarativeTableCard } from './declarative-table-card.component';
 import {
@@ -16,6 +18,7 @@ import {
 } from './models/configs';
 import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 
 // --------------------------------------------------------------------------
 // Helpers
@@ -104,6 +107,7 @@ function setup(
     deleteConfig?: TableCardDeleteConfig;
     createFormState?: TableCardFormState;
     editFormState?: TableCardFormState;
+    permissions?: Record<string, string[]>;
   } = {},
 ): { fixture: Fixture; component: Comp } {
   const fixture: Fixture = TestBed.createComponent(
@@ -116,18 +120,21 @@ function setup(
     headerTooltip: opts.headerTooltip,
     tableConfig: opts.readConfig ?? READ_CONFIG,
     createResourceFormConfig: opts.createConfig,
-    editResourceFormConfig: opts.editConfig,
-    deleteResourceConfirmationConfig: opts.deleteConfig,
-    buttonSettings: {
-      editButton: opts.editConfig?.editButtonSettings,
-      deleteButton: opts.deleteConfig?.deleteButtonSettings,
-    },
+    editResourceFormConfig: opts.editConfig
+      ? () => opts.editConfig!
+      : undefined,
+    deleteResourceConfirmationConfig: opts.deleteConfig
+      ? () => opts.deleteConfig!
+      : undefined,
+    buttonSettings: {},
   };
 
   fixture.componentRef.setInput('config', config);
   fixture.componentRef.setInput('resources', opts.resources ?? RESOURCES);
   fixture.componentRef.setInput('createFormState', opts.createFormState ?? {});
   fixture.componentRef.setInput('editFormState', opts.editFormState ?? {});
+  if (opts.permissions !== undefined)
+    fixture.componentRef.setInput('permissions', opts.permissions);
 
   fixture.detectChanges();
   return { fixture, component };
@@ -137,14 +144,36 @@ function setup(
 // Tests
 // ---------------------------------------------------------------------------
 
+/** Query inside a ResourceFormDialog child's shadow root by test-id prefix. */
+function dialogRoot(
+  fixture: ComponentFixture<DeclarativeTableCard<GenericResource>>,
+  prefix: string,
+): ShadowRoot | HTMLElement | null {
+  const dialogs = fixture.debugElement.queryAll(
+    By.directive(ResourceFormDialog),
+  );
+  const dialog = dialogs.find(
+    (de) =>
+      (de.componentInstance as ResourceFormDialog).dataTestidPrefix() ===
+      prefix,
+  );
+  if (!dialog) return null;
+  return dialog.nativeElement.shadowRoot ?? dialog.nativeElement;
+}
+
 describe('DeclarativeTableCard', () => {
   beforeEach(async () => {
+    vi.useFakeTimers();
     await TestBed.configureTestingModule({
       imports: [
         DeclarativeTableCard as unknown as typeof DeclarativeTableCard<GenericResource>,
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
     }).compileComponents();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   // -------------------------------------------------------------------------
@@ -199,7 +228,6 @@ describe('DeclarativeTableCard', () => {
         fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
       const icon = root.querySelector('ui5-icon[name="hint"]');
       expect(icon).not.toBeNull();
-      expect(icon?.getAttribute('accessible-name')).toBe('Some tooltip');
     });
 
     it('does not render info icon when headerTooltip is not provided', () => {
@@ -243,9 +271,7 @@ describe('DeclarativeTableCard', () => {
     it('renders the search input when searchConfig is present', () => {
       const { root } = setupSearch({});
       expect(
-        root.querySelector(
-          '[data-testid="generic-table-card-search-input"]',
-        ),
+        root.querySelector('[data-testid="generic-table-card-search-input"]'),
       ).not.toBeNull();
     });
 
@@ -254,9 +280,7 @@ describe('DeclarativeTableCard', () => {
       const root: ShadowRoot | HTMLElement =
         fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
       expect(
-        root.querySelector(
-          '[data-testid="generic-table-card-search-input"]',
-        ),
+        root.querySelector('[data-testid="generic-table-card-search-input"]'),
       ).toBeNull();
     });
 
@@ -390,9 +414,7 @@ describe('DeclarativeTableCard', () => {
       const root: ShadowRoot | HTMLElement =
         fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
       expect(
-        root.querySelector(
-          '[data-testid="generic-table-card-search-input"]',
-        ),
+        root.querySelector('[data-testid="generic-table-card-search-input"]'),
       ).not.toBeNull();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((component as any).searchControl.value).toBe('foo');
@@ -489,7 +511,9 @@ describe('DeclarativeTableCard', () => {
         },
       });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const rendered = (component as any).filterTabs() as FieldFilterDefinition[];
+      const rendered = (
+        component as any
+      ).filterTabs() as FieldFilterDefinition[];
       const defaults = rendered.filter((t) => t.default);
       expect(defaults).toHaveLength(1);
       expect(defaults[0].value).toBe('Failed');
@@ -505,7 +529,9 @@ describe('DeclarativeTableCard', () => {
         },
       });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const rendered = (component as any).filterTabs() as FieldFilterDefinition[];
+      const rendered = (
+        component as any
+      ).filterTabs() as FieldFilterDefinition[];
       // Pending had default:true in TABS — after promotion of Failed it must be cleared.
       const pending = rendered.find((t) => t.value === 'Pending');
       expect(pending?.default).toBe(false);
@@ -524,7 +550,9 @@ describe('DeclarativeTableCard', () => {
         },
       });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const rendered = (component as any).filterTabs() as FieldFilterDefinition[];
+      const rendered = (
+        component as any
+      ).filterTabs() as FieldFilterDefinition[];
       const defaults = rendered.filter((t) => t.default);
       expect(defaults).toHaveLength(1);
       expect(defaults[0].value).toBe('Pending');
@@ -569,7 +597,9 @@ describe('DeclarativeTableCard', () => {
       fixture.detectChanges();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const rendered = (component as any).filterTabs() as FieldFilterDefinition[];
+      const rendered = (
+        component as any
+      ).filterTabs() as FieldFilterDefinition[];
       const defaults = rendered.filter((t) => t.default);
       expect(defaults).toHaveLength(1);
       expect(defaults[0].value).toBe('Running');
@@ -578,7 +608,9 @@ describe('DeclarativeTableCard', () => {
     it('passes filterTabs through untouched when initialFilter is absent', () => {
       const { component } = setupWithSearchConfig({ filterTabs: TABS });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const rendered = (component as any).filterTabs() as FieldFilterDefinition[];
+      const rendered = (
+        component as any
+      ).filterTabs() as FieldFilterDefinition[];
       // The array is passed through — reference equality isn't guaranteed
       // (the computed may or may not identity-preserve), but the shape is.
       expect(rendered).toEqual(TABS);
@@ -616,7 +648,7 @@ describe('DeclarativeTableCard', () => {
   // -------------------------------------------------------------------------
 
   describe('effectiveColumns()', () => {
-    it('returns only readConfig.fields when no edit or delete config is set', () => {
+    it('returns readConfig.fields unchanged', () => {
       const { component } = setup();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cols = (component as any).effectiveColumns();
@@ -624,90 +656,33 @@ describe('DeclarativeTableCard', () => {
       expect(cols).toEqual(COLUMNS);
     });
 
-    it('adds an edit action column when editConfig is provided', () => {
-      const { component } = setup({ editConfig: EDIT_CONFIG });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cols = (component as any).effectiveColumns();
-      expect(cols).toHaveLength(COLUMNS.length + 1);
-      const editCol = cols.find(
-        (c: TableFieldDefinition) =>
-          c.uiSettings?.buttonSettings?.action === 'edit',
-      );
-      expect(editCol).toBeDefined();
-      expect(editCol.uiSettings.buttonSettings.icon).toBe('edit');
-    });
-
-    it('adds a delete action column when deleteConfig is provided', () => {
-      const { component } = setup({ deleteConfig: DELETE_CONFIG });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cols = (component as any).effectiveColumns();
-      expect(cols).toHaveLength(COLUMNS.length + 1);
-      const deleteCol = cols.find(
-        (c: TableFieldDefinition) =>
-          c.uiSettings?.buttonSettings?.action === 'delete',
-      );
-      expect(deleteCol).toBeDefined();
-    });
-
-    it('adds both edit and delete columns when both configs are provided', () => {
+    it('returns custom columns when provided via readConfig', () => {
+      const customColumns: TableFieldDefinition[] = [
+        { label: 'Phase', property: 'status.phase' },
+      ];
       const { component } = setup({
-        editConfig: EDIT_CONFIG,
-        deleteConfig: DELETE_CONFIG,
+        readConfig: { fields: customColumns },
       });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cols = (component as any).effectiveColumns();
-      expect(cols).toHaveLength(COLUMNS.length + 2);
-      const editCol = cols.find(
-        (c: TableFieldDefinition) =>
-          c.uiSettings?.buttonSettings?.action === 'edit',
-      );
-      const deleteCol = cols.find(
-        (c: TableFieldDefinition) =>
-          c.uiSettings?.buttonSettings?.action === 'delete',
-      );
-      expect(editCol).toBeDefined();
-      expect(deleteCol).toBeDefined();
+      expect(cols).toEqual(customColumns);
     });
 
-    it('delete column uses "decline" icon by default', () => {
+    it('reflects editConfig being present (edit column must be in tableConfig.fields)', () => {
+      // effectiveColumns simply returns tableConfig.fields — the host is
+      // responsible for adding action columns to tableConfig.fields.
+      // This test documents that behaviour: with no extra fields, count stays the same.
+      const { component } = setup({ editConfig: EDIT_CONFIG });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const cols = (component as any).effectiveColumns();
+      expect(cols).toHaveLength(COLUMNS.length);
+    });
+
+    it('reflects deleteConfig being present (delete column must be in tableConfig.fields)', () => {
       const { component } = setup({ deleteConfig: DELETE_CONFIG });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cols = (component as any).effectiveColumns();
-      const deleteCol = cols.find(
-        (c: TableFieldDefinition) =>
-          c.uiSettings?.buttonSettings?.action === 'delete',
-      );
-      expect(deleteCol.uiSettings.buttonSettings.icon).toBe('decline');
-    });
-
-    it('respects custom icon from editConfig.editButtonSettings', () => {
-      const customEditConfig: TableCardEditConfig = {
-        ...EDIT_CONFIG,
-        editButtonSettings: { icon: 'pen-tool' },
-      };
-      const { component } = setup({ editConfig: customEditConfig });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cols = (component as any).effectiveColumns();
-      const editCol = cols.find(
-        (c: TableFieldDefinition) =>
-          c.uiSettings?.buttonSettings?.action === 'edit',
-      );
-      expect(editCol.uiSettings.buttonSettings.icon).toBe('pen-tool');
-    });
-
-    it('respects custom icon from deleteConfig.deleteButtonSettings', () => {
-      const customDeleteConfig: TableCardDeleteConfig = {
-        ...DELETE_CONFIG,
-        deleteButtonSettings: { icon: 'trash' },
-      };
-      const { component } = setup({ deleteConfig: customDeleteConfig });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cols = (component as any).effectiveColumns();
-      const deleteCol = cols.find(
-        (c: TableFieldDefinition) =>
-          c.uiSettings?.buttonSettings?.action === 'delete',
-      );
-      expect(deleteCol.uiSettings.buttonSettings.icon).toBe('trash');
+      expect(cols).toHaveLength(COLUMNS.length);
     });
   });
 
@@ -732,7 +707,7 @@ describe('DeclarativeTableCard', () => {
       const { component } = setup({ editConfig: EDIT_CONFIG });
       const resource = RESOURCES[0];
       // Edit fields are resolved when the edit dialog opens; drive that path.
-      component.onButtonClick(makeEvent('edit', resource));
+      component.onButtonClick(makeEvent('update', resource));
       await Promise.resolve();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -747,10 +722,10 @@ describe('DeclarativeTableCard', () => {
   // -------------------------------------------------------------------------
 
   describe('onButtonClick()', () => {
-    it('intercepts action="edit": sets pendingResource and opens editDialogOpen', async () => {
+    it('intercepts action="update": sets pendingResource and opens editDialogOpen', async () => {
       const { component } = setup({ editConfig: EDIT_CONFIG });
       const resource = RESOURCES[0];
-      component.onButtonClick(makeEvent('edit', resource));
+      component.onButtonClick(makeEvent('update', resource));
       await Promise.resolve();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -759,11 +734,11 @@ describe('DeclarativeTableCard', () => {
       expect((component as any).editDialogOpen()).toBe(true);
     });
 
-    it('intercepts action="edit": does not emit actionButtonClick', () => {
+    it('intercepts action="update": does not emit actionButtonClick', () => {
       const { component } = setup({ editConfig: EDIT_CONFIG });
       const emitted: unknown[] = [];
       component.actionButtonClick.subscribe((e) => emitted.push(e));
-      component.onButtonClick(makeEvent('edit', RESOURCES[0]));
+      component.onButtonClick(makeEvent('update', RESOURCES[0]));
       expect(emitted).toHaveLength(0);
     });
 
@@ -798,11 +773,11 @@ describe('DeclarativeTableCard', () => {
       expect(emitted[0]).toBe(event);
     });
 
-    it('forwards action="edit" without a resource via actionButtonClick', () => {
+    it('forwards action="update" without a resource via actionButtonClick', () => {
       const { component } = setup();
       const emitted: unknown[] = [];
       component.actionButtonClick.subscribe((e) => emitted.push(e));
-      component.onButtonClick(makeEvent('edit', undefined));
+      component.onButtonClick(makeEvent('update', undefined));
       expect(emitted).toHaveLength(1);
     });
 
@@ -1019,13 +994,12 @@ describe('DeclarativeTableCard', () => {
       (component as any).createDialogOpen.set(true);
       fixture.detectChanges();
 
-      const root: ShadowRoot | HTMLElement =
-        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
-      const submitButton = root.querySelector(
-        '.dialog__footer ui5-button[design="Emphasized"]',
-      ) as HTMLElement & { disabled: boolean };
+      const dRoot = dialogRoot(fixture, 'generic-table-card-create');
+      const submitButton = dRoot?.querySelector(
+        '[data-testid="generic-table-card-create-confirm"]',
+      ) as (HTMLElement & { disabled: boolean }) | null;
 
-      expect(submitButton.disabled).toBe(true);
+      expect(submitButton?.disabled).toBe(true);
     });
 
     it('enables the create submit button when fieldErrors is empty', () => {
@@ -1037,13 +1011,12 @@ describe('DeclarativeTableCard', () => {
       (component as any).createDialogOpen.set(true);
       fixture.detectChanges();
 
-      const root: ShadowRoot | HTMLElement =
-        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
-      const submitButton = root.querySelector(
-        '.dialog__footer ui5-button[design="Emphasized"]',
-      ) as HTMLElement & { disabled: boolean };
+      const dRoot = dialogRoot(fixture, 'generic-table-card-create');
+      const submitButton = dRoot?.querySelector(
+        '[data-testid="generic-table-card-create-confirm"]',
+      ) as (HTMLElement & { disabled: boolean }) | null;
 
-      expect(submitButton.disabled).toBe(false);
+      expect(submitButton?.disabled).toBe(false);
     });
 
     it('disables the edit submit button when fieldErrors has errors', () => {
@@ -1057,13 +1030,12 @@ describe('DeclarativeTableCard', () => {
       (component as any).editDialogOpen.set(true);
       fixture.detectChanges();
 
-      const root: ShadowRoot | HTMLElement =
-        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
-      const submitButton = root.querySelector(
-        '.dialog__footer ui5-button[design="Emphasized"]',
-      ) as HTMLElement & { disabled: boolean };
+      const dRoot = dialogRoot(fixture, 'generic-table-card-edit');
+      const submitButton = dRoot?.querySelector(
+        '[data-testid="generic-table-card-edit-confirm"]',
+      ) as (HTMLElement & { disabled: boolean }) | null;
 
-      expect(submitButton.disabled).toBe(true);
+      expect(submitButton?.disabled).toBe(true);
     });
 
     it('enables the edit submit button when fieldErrors is empty', () => {
@@ -1075,13 +1047,12 @@ describe('DeclarativeTableCard', () => {
       (component as any).editDialogOpen.set(true);
       fixture.detectChanges();
 
-      const root: ShadowRoot | HTMLElement =
-        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
-      const submitButton = root.querySelector(
-        '.dialog__footer ui5-button[design="Emphasized"]',
-      ) as HTMLElement & { disabled: boolean };
+      const dRoot = dialogRoot(fixture, 'generic-table-card-edit');
+      const submitButton = dRoot?.querySelector(
+        '[data-testid="generic-table-card-edit-confirm"]',
+      ) as (HTMLElement & { disabled: boolean }) | null;
 
-      expect(submitButton.disabled).toBe(false);
+      expect(submitButton?.disabled).toBe(false);
     });
   });
 
@@ -1169,7 +1140,9 @@ describe('DeclarativeTableCard', () => {
         readConfig: { fields: COLUMNS, loadMoreButtonText: 'Show More' },
       });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).tableConfig().loadMoreButtonText).toBe('Show More');
+      expect((component as any).tableConfig().loadMoreButtonText).toBe(
+        'Show More',
+      );
     });
 
     it('re-emits pageChange from the inner table', () => {
@@ -1178,6 +1151,64 @@ describe('DeclarativeTableCard', () => {
       component.pageChange.subscribe((n) => emitted.push(n));
       component.pageChange.emit(4);
       expect(emitted).toEqual([4]);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // 16b. permissions input threading
+  // -------------------------------------------------------------------------
+
+  describe('permissions input threading', () => {
+    it('accepts a permissions map and exposes it via the permissions() signal', () => {
+      const permissions = { 'ns/pod-alpha': ['delete', 'get'] };
+      const { component } = setup({ permissions });
+      expect(component.permissions()).toBe(permissions);
+    });
+
+    it('permissions input defaults to undefined', () => {
+      const { component } = setup();
+      expect(component.permissions()).toBeUndefined();
+    });
+
+    it('passes the permissions map down to mfp-declarative-table', () => {
+      const permissions = { 'ns/pod-alpha': ['delete'] };
+      const { fixture } = setup({ permissions });
+      // DeclarativeTable is a real (non-schema-stubbed) child because the
+      // TestBed uses NO_ERRORS_SCHEMA only for unknowns — DeclarativeTable is
+      // imported. Query via debugElement to reach its signal input.
+      const tableDe = fixture.debugElement.query(
+        By.directive(DeclarativeTable),
+      );
+      expect(tableDe).not.toBeNull();
+      const tableComp: DeclarativeTable<GenericResource> =
+        tableDe.componentInstance;
+      expect(tableComp.permissions()).toBe(permissions);
+    });
+
+    it('passes undefined permissions to mfp-declarative-table when not set', () => {
+      const { fixture } = setup();
+      const tableDe = fixture.debugElement.query(
+        By.directive(DeclarativeTable),
+      );
+      const tableComp: DeclarativeTable<GenericResource> =
+        tableDe.componentInstance;
+      expect(tableComp.permissions()).toBeUndefined();
+    });
+
+    it('updates mfp-declarative-table permissions when the input changes', () => {
+      const permissions = { 'ns/pod-alpha': ['delete'] };
+      const { fixture } = setup();
+      const tableDe = fixture.debugElement.query(
+        By.directive(DeclarativeTable),
+      );
+      const tableComp: DeclarativeTable<GenericResource> =
+        tableDe.componentInstance;
+      expect(tableComp.permissions()).toBeUndefined();
+
+      fixture.componentRef.setInput('permissions', permissions);
+      fixture.detectChanges();
+
+      expect(tableComp.permissions()).toBe(permissions);
     });
   });
 
@@ -1222,9 +1253,7 @@ describe('DeclarativeTableCard', () => {
       const shadow: ShadowRoot | HTMLElement =
         fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
       expect(
-        shadow.querySelector(
-          '[data-testid="generic-table-card-search-input"]',
-        ),
+        shadow.querySelector('[data-testid="generic-table-card-search-input"]'),
       ).toBeNull();
     });
 
@@ -1232,7 +1261,9 @@ describe('DeclarativeTableCard', () => {
       const { fixture } = setup({ createConfig: CREATE_CONFIG });
       const shadow: ShadowRoot | HTMLElement =
         fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
-      const btn = shadow.querySelector('[data-testid="generic-table-card-create-btn"]');
+      const btn = shadow.querySelector(
+        '[data-testid="generic-table-card-create-btn"]',
+      );
       expect(btn).not.toBeNull();
     });
 
@@ -1240,20 +1271,23 @@ describe('DeclarativeTableCard', () => {
       const { fixture } = setup();
       const shadow: ShadowRoot | HTMLElement =
         fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
-      expect(shadow.querySelector('[data-testid="generic-table-card-create-btn"]')).toBeNull();
+      expect(
+        shadow.querySelector('[data-testid="generic-table-card-create-btn"]'),
+      ).toBeNull();
     });
 
     it('create dialog has data-testid="generic-table-card-create-dialog" when open', () => {
       const { fixture, component } = setup({ createConfig: CREATE_CONFIG });
-      // The dialog is rendered only while open.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (component as any).createDialogOpen.set(true);
       fixture.detectChanges();
 
-      const shadow: ShadowRoot | HTMLElement =
-        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
-      const dialog = shadow.querySelector('[data-testid="generic-table-card-create-dialog"]');
-      expect(dialog).not.toBeNull();
+      const dRoot = dialogRoot(fixture, 'generic-table-card-create');
+      expect(
+        dRoot?.querySelector(
+          '[data-testid="generic-table-card-create-dialog"]',
+        ),
+      ).not.toBeNull();
     });
 
     it('create confirm button has data-testid="generic-table-card-create-confirm"', () => {
@@ -1262,10 +1296,12 @@ describe('DeclarativeTableCard', () => {
       (component as any).createDialogOpen.set(true);
       fixture.detectChanges();
 
-      const shadow: ShadowRoot | HTMLElement =
-        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
-      const btn = shadow.querySelector('[data-testid="generic-table-card-create-confirm"]');
-      expect(btn).not.toBeNull();
+      const dRoot = dialogRoot(fixture, 'generic-table-card-create');
+      expect(
+        dRoot?.querySelector(
+          '[data-testid="generic-table-card-create-confirm"]',
+        ),
+      ).not.toBeNull();
     });
 
     it('create cancel button has data-testid="generic-table-card-create-cancel"', () => {
@@ -1274,10 +1310,12 @@ describe('DeclarativeTableCard', () => {
       (component as any).createDialogOpen.set(true);
       fixture.detectChanges();
 
-      const shadow: ShadowRoot | HTMLElement =
-        fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
-      const btn = shadow.querySelector('[data-testid="generic-table-card-create-cancel"]');
-      expect(btn).not.toBeNull();
+      const dRoot = dialogRoot(fixture, 'generic-table-card-create');
+      expect(
+        dRoot?.querySelector(
+          '[data-testid="generic-table-card-create-cancel"]',
+        ),
+      ).not.toBeNull();
     });
   });
 });

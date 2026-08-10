@@ -59,7 +59,7 @@ export class ResourceField<
   fieldDefinition = input.required<F>();
   resource = input<T>();
   // keyed by row id; host sets row.id = permissionKey(entity/ns/name)
-  permissions = input<Map<string, string[]>>();
+  permissions = input<Record<string, string[]>>();
   readonly buttonClick = output<ResourceFieldButtonClickEvent<T>>();
 
   value = computed(() =>
@@ -102,7 +102,7 @@ export class ResourceField<
       return true;
     }
 
-    const actions = this.permissions()?.get(this.resource()?.id ?? '');
+    const actions = this.permissions()?.[this.resource()?.id ?? ''];
     return actions ? actions.includes(perm) : false;
   });
 

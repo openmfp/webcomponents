@@ -160,6 +160,7 @@ const BASE_CONFIG: TableCardConfig = {
       #tableCard
       [config]="config"
       [createFormState]="createFormState"
+      [permissions]="permissions"
       [resources]="resources"
       (createFieldChange)="onCreateFieldChange($event)"
       (createSubmit)="onCreateSubmit($event, tableCard)"
@@ -169,6 +170,7 @@ const BASE_CONFIG: TableCardConfig = {
 class DeclarativeTableCardCreateStory {
   @Input() config!: TableCardConfig;
   @Input() resources: GenericResource[] = [];
+  @Input() permissions: Record<string, string[]> | undefined;
   createFormState: TableCardFormState = {};
 
   onCreateFieldChange(event: FormFieldChangeEvent): void {
@@ -286,12 +288,13 @@ export const WithEdit: Story = {
   args: {
     config: {
       ...BASE_CONFIG,
-      editResourceFormConfig: {
-        fields: POD_EDIT_FORM_FIELDS,
-        title: 'Edit Pod',
-        confirmLabel: 'Save',
-        cancelLabel: 'Cancel',
-      } satisfies ResourceFormConfig,
+      editResourceFormConfig: () =>
+        ({
+          fields: POD_EDIT_FORM_FIELDS,
+          title: 'Edit Pod',
+          confirmLabel: 'Save',
+          cancelLabel: 'Cancel',
+        }) satisfies ResourceFormConfig,
     },
   },
 };
@@ -301,13 +304,14 @@ export const WithDelete: Story = {
   args: {
     config: {
       ...BASE_CONFIG,
-      deleteResourceConfirmationConfig: {
-        title: 'Delete Pod?',
-        message:
-          'This action cannot be undone. The pod will be permanently removed.',
-        confirmLabel: 'Delete',
-        cancelLabel: 'Cancel',
-      } satisfies DeleteResourceConfirmationConfig,
+      deleteResourceConfirmationConfig: () =>
+        ({
+          title: 'Delete Pod?',
+          message:
+            'This action cannot be undone. The pod will be permanently removed.',
+          confirmLabel: 'Delete',
+          cancelLabel: 'Cancel',
+        }) satisfies DeleteResourceConfirmationConfig,
     },
   },
 };
@@ -323,19 +327,21 @@ export const WithAllActions: Story = {
         confirmLabel: 'Create',
         cancelLabel: 'Cancel',
       } satisfies ResourceFormConfig,
-      editResourceFormConfig: {
-        fields: POD_EDIT_FORM_FIELDS,
-        title: 'Edit Pod',
-        confirmLabel: 'Save',
-        cancelLabel: 'Cancel',
-      } satisfies ResourceFormConfig,
-      deleteResourceConfirmationConfig: {
-        title: 'Delete Pod?',
-        message:
-          'This action cannot be undone. The pod will be permanently removed.',
-        confirmLabel: 'Delete',
-        cancelLabel: 'Cancel',
-      } satisfies DeleteResourceConfirmationConfig,
+      editResourceFormConfig: () =>
+        ({
+          fields: POD_EDIT_FORM_FIELDS,
+          title: 'Edit Pod',
+          confirmLabel: 'Save',
+          cancelLabel: 'Cancel',
+        }) satisfies ResourceFormConfig,
+      deleteResourceConfirmationConfig: () =>
+        ({
+          title: 'Delete Pod?',
+          message:
+            'This action cannot be undone. The pod will be permanently removed.',
+          confirmLabel: 'Delete',
+          cancelLabel: 'Cancel',
+        }) satisfies DeleteResourceConfirmationConfig,
     },
   },
 };
@@ -368,19 +374,21 @@ export const WithCustomActions: Story = {
           } satisfies TableFieldDefinition,
         ],
       },
-      editResourceFormConfig: {
-        fields: POD_EDIT_FORM_FIELDS,
-        title: 'Edit Pod',
-        confirmLabel: 'Save',
-        cancelLabel: 'Cancel',
-      } satisfies ResourceFormConfig,
-      deleteResourceConfirmationConfig: {
-        title: 'Delete Pod?',
-        message:
-          'This action cannot be undone. The pod will be permanently removed.',
-        confirmLabel: 'Delete',
-        cancelLabel: 'Cancel',
-      } satisfies DeleteResourceConfirmationConfig,
+      editResourceFormConfig: () =>
+        ({
+          fields: POD_EDIT_FORM_FIELDS,
+          title: 'Edit Pod',
+          confirmLabel: 'Save',
+          cancelLabel: 'Cancel',
+        }) satisfies ResourceFormConfig,
+      deleteResourceConfirmationConfig: () =>
+        ({
+          title: 'Delete Pod?',
+          message:
+            'This action cannot be undone. The pod will be permanently removed.',
+          confirmLabel: 'Delete',
+          cancelLabel: 'Cancel',
+        }) satisfies DeleteResourceConfirmationConfig,
     },
   },
 };
@@ -393,33 +401,39 @@ export const EmptyState: Story = {
 };
 
 /**
- * Text buttons with arbitrary-length labels. Width is computed automatically
- * from each button's text length (~0.55rem per character + padding).
+ * Customises the toolbar's Create and Search buttons via `buttonSettings`.
+ * Per-row edit/delete button text is not configurable via `buttonSettings`
+ * (those keys were removed when edit/delete moved to the factory-function
+ * configs); their appearance is fixed by the component.
  */
 export const WithTextActions: Story = {
   args: {
     config: {
       ...BASE_CONFIG,
       buttonSettings: {
-        editButton: { text: 'Edit resource', icon: 'edit', action: 'edit' },
-        deleteButton: {
-          text: 'Delete resource',
-          icon: 'decline',
-          action: 'delete',
-        },
+        createButton: { text: 'Add Pod', icon: 'add' },
+        searchButton: { text: 'Find', icon: 'search' },
       },
-      editResourceFormConfig: {
-        fields: POD_EDIT_FORM_FIELDS,
-        title: 'Edit Pod',
-        confirmLabel: 'Save',
+      createResourceFormConfig: {
+        fields: POD_FORM_FIELDS,
+        title: 'Add Pod',
+        confirmLabel: 'Add',
         cancelLabel: 'Cancel',
       } satisfies ResourceFormConfig,
-      deleteResourceConfirmationConfig: {
-        title: 'Delete Pod?',
-        message: 'This action cannot be undone.',
-        confirmLabel: 'Delete',
-        cancelLabel: 'Cancel',
-      } satisfies DeleteResourceConfirmationConfig,
+      editResourceFormConfig: () =>
+        ({
+          fields: POD_EDIT_FORM_FIELDS,
+          title: 'Edit Pod',
+          confirmLabel: 'Save',
+          cancelLabel: 'Cancel',
+        }) satisfies ResourceFormConfig,
+      deleteResourceConfirmationConfig: () =>
+        ({
+          title: 'Delete Pod?',
+          message: 'This action cannot be undone.',
+          confirmLabel: 'Delete',
+          cancelLabel: 'Cancel',
+        }) satisfies DeleteResourceConfirmationConfig,
     },
   },
 };
@@ -445,19 +459,21 @@ export const WithNarrowActionsColumn: Story = {
           } satisfies TableFieldDefinition,
         ],
       },
-      editResourceFormConfig: {
-        fields: POD_EDIT_FORM_FIELDS,
-        title: 'Edit Pod',
-        confirmLabel: 'Save',
-        cancelLabel: 'Cancel',
-      } satisfies ResourceFormConfig,
-      deleteResourceConfirmationConfig: {
-        title: 'Delete Pod?',
-        message:
-          'This action cannot be undone. The pod will be permanently removed.',
-        confirmLabel: 'Delete',
-        cancelLabel: 'Cancel',
-      } satisfies DeleteResourceConfirmationConfig,
+      editResourceFormConfig: () =>
+        ({
+          fields: POD_EDIT_FORM_FIELDS,
+          title: 'Edit Pod',
+          confirmLabel: 'Save',
+          cancelLabel: 'Cancel',
+        }) satisfies ResourceFormConfig,
+      deleteResourceConfirmationConfig: () =>
+        ({
+          title: 'Delete Pod?',
+          message:
+            'This action cannot be undone. The pod will be permanently removed.',
+          confirmLabel: 'Delete',
+          cancelLabel: 'Cancel',
+        }) satisfies DeleteResourceConfirmationConfig,
     },
   },
 };
@@ -810,5 +826,79 @@ export const WithRichCells: Story = {
       },
     },
     resources: RICH_PODS,
+  },
+};
+
+/**
+ * Demonstrates per-row field permission gating threaded through
+ * DeclarativeTableCard → DeclarativeTable → ResourceField, matched by row `id`.
+ *
+ * The **Update** and **Delete** action buttons each carry a `requirePermission`
+ * (`'update'` / `'delete'`). Each row's `id` is looked up in the `permissions`
+ * map; a button renders only when that row's granted actions include the verb.
+ * Rows absent from the map render neither button (fail-closed).
+ *
+ * | Row id   | In map | Granted actions        | Update btn | Delete btn |
+ * |----------|--------|------------------------|------------|------------|
+ * | abc-001  | yes    | get, update            | yes        | no         |
+ * | abc-002  | yes    | get                    | no         | no         |
+ * | abc-003  | yes    | get, update, delete    | yes        | yes        |
+ * | abc-004  | yes    | get, delete            | no         | yes        |
+ * | abc-005  | no     | —                      | no         | no         |
+ */
+export const WithRowPermissions: Story = {
+  args: {
+    config: {
+      ...BASE_CONFIG,
+      header: 'Pods (per-row permission gating)',
+      tableConfig: {
+        ...BASE_TABLE_CONFIG,
+        fields: [
+          { label: 'Name', property: 'metadata.name' },
+          { label: 'Namespace', property: 'metadata.namespace' },
+          { label: 'Phase', property: 'status.phase' },
+          {
+            // No `label` — a button cell must not print a "label:" prefix.
+            // Rendered only when the row's granted actions include 'update'.
+            requirePermission: 'update',
+            uiSettings: {
+              displayAs: 'button',
+              align: 'end',
+              buttonSettings: {
+                icon: 'edit',
+                design: 'Transparent',
+                action: 'update',
+                tooltip: 'Update',
+              },
+            },
+            group: { name: 'actions', label: '', multiline: false },
+          } satisfies TableFieldDefinition,
+          {
+            // No `label` — a button cell must not print a "label:" prefix.
+            // Rendered only when the row's granted actions include 'delete'.
+            requirePermission: 'delete',
+            uiSettings: {
+              displayAs: 'button',
+              align: 'end',
+              buttonSettings: {
+                icon: 'delete',
+                design: 'Transparent',
+                action: 'delete',
+                tooltip: 'Delete',
+              },
+            },
+            group: { name: 'actions', label: '', multiline: false },
+          } satisfies TableFieldDefinition,
+        ],
+      },
+    } satisfies TableCardConfig,
+    resources: PODS,
+    // Keyed by row id (permissionKey). abc-005 is absent → fail-closed.
+    permissions: {
+      'abc-001': ['get', 'update'],
+      'abc-002': ['get'],
+      'abc-003': ['get', 'update', 'delete'],
+      'abc-004': ['get', 'delete'],
+    },
   },
 };

@@ -49,7 +49,7 @@ import { debounceTime, distinctUntilChanged, filter, map } from 'rxjs';
 })
 export class DeclarativeTableCard<T extends GenericResource> {
   resources = input.required<T[]>();
-  permissions = input<Map<string, string[]>>();
+  permissions = input<Record<string, string[]>>();
 
   config = input.required<TableCardConfig<T>>();
   createFormState = input<TableCardFormState>({});

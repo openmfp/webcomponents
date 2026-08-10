@@ -179,6 +179,7 @@ export class MyComponent {
 | `config`          | `TableCardConfig`    | yes      | -       | Static table, button, and dialog configuration            |
 | `createFormState` | `TableCardFormState` | no       | `{}`    | Runtime validation and submit state for the create dialog |
 | `editFormState`   | `TableCardFormState` | no       | `{}`    | Runtime validation and submit state for the edit dialog   |
+| `permissions`     | `Map<string, string[]>` | no   | —       | Per-row permission map keyed by `resource.id`. Threaded through to `mfp-declarative-table` and each `mfp-resource-field` to evaluate `requirePermission` on column definitions. |
 
 ### Outputs / Events
 
