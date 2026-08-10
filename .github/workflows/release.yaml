@@ -1,0 +1,188 @@
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Compute the version and changelog only; do not publish, commit, tag, or release.'
+        type: boolean
+        default: false
+      release-as:
+        description: 'Force an exact version (e.g. 1.0.0). Overrides the computed version.'
+        type: string
+        required: false
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref_name }}
+
+      - name: Determine baseline tag
+        id: baseline
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          echo "last_tag=$LAST_TAG" >> "$GITHUB_OUTPUT"
+          echo "Baseline tag: ${LAST_TAG:-<none>}"
+
+      - name: Compute next version
+        id: semver
+        if: ${{ inputs.release-as == '' }}
+        uses: ietf-tools/semver-action@c90370b2958652d71c06a3484129a4d423a6d8a8 # v1.11.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          prefix: ''
+          majorList: ''
+          minorList: feat
+          patchList: fix, perf
+          noVersionBumpBehavior: silent
+          noNewCommitBehavior: silent
+          skipInvalidTags: true
+
+      - name: Resolve version (override + pre-1.0 guard)
+        id: version
+        run: |
+          set -euo pipefail
+          RELEASE_AS="${{ inputs.release-as }}"
+
+          if [ -n "$RELEASE_AS" ]; then
+            echo "Using release-as override: $RELEASE_AS"
+            echo "version=$RELEASE_AS" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          NEXT="${{ steps.semver.outputs.nextStrict }}"
+          CURRENT="${{ steps.semver.outputs.current }}"
+          BUMP="${{ steps.semver.outputs.bump }}"
+
+          # No releasable commits -> nothing to do.
+          if [ -z "$NEXT" ] || [ "$BUMP" = "none" ]; then
+            echo "No releasable changes since the last tag. Nothing to release."
+            echo "version=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Pre-1.0 guard: a breaking change yields 1.0.0 from semver-action, but while on 0.x
+          # the API is not stable (SemVer sec.4), so a breaking change bumps the minor instead.
+          CUR_MAJOR="${CURRENT%%.*}"
+          if [ "$BUMP" = "major" ] && [ "$CUR_MAJOR" = "0" ]; then
+            REST="${CURRENT#*.}"
+            CUR_MINOR="${REST%%.*}"
+            NEXT="0.$((CUR_MINOR + 1)).0"
+            echo "Pre-1.0 guard: downgrading major bump to minor -> $NEXT"
+          fi
+
+          echo "version=$NEXT" >> "$GITHUB_OUTPUT"
+
+      - name: Stop if nothing to release
+        if: ${{ steps.version.outputs.version == '' }}
+        run: |
+          echo "### No release" >> "$GITHUB_STEP_SUMMARY"
+          echo "No releasable changes since \`${{ steps.baseline.outputs.last_tag }}\`." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Setup Node
+        if: ${{ steps.version.outputs.version != '' }}
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org
+
+      - name: Ensure npm supports OIDC trusted publishing
+        if: ${{ steps.version.outputs.version != '' }}
+        run: npm install -g npm@latest
+
+      - name: Install dependencies
+        if: ${{ steps.version.outputs.version != '' }}
+        run: npm ci
+
+      - name: Set root package version
+        if: ${{ steps.version.outputs.version != '' }}
+        run: npm version "${{ steps.version.outputs.version }}" --no-git-tag-version --allow-same-version
+
+      - name: Test
+        if: ${{ steps.version.outputs.version != '' }}
+        run: npm test
+
+      - name: Build
+        if: ${{ steps.version.outputs.version != '' }}
+        run: npm run build
+
+      - name: Write version into dist/ngx/package.json
+        if: ${{ steps.version.outputs.version != '' }}
+        working-directory: dist/ngx
+        run: npm version "${{ steps.version.outputs.version }}" --no-git-tag-version --allow-same-version
+
+      - name: Generate release notes
+        if: ${{ steps.version.outputs.version != '' }}
+        uses: orhun/git-cliff-action@f50e11560dce63f7c33227798f90b924471a88b5 # v4.8.0
+        id: notes
+        with:
+          config: cliff.toml
+          args: >-
+            ${{ steps.baseline.outputs.last_tag != '' && format('{0}..HEAD', steps.baseline.outputs.last_tag) || '' }}
+            --tag ${{ steps.version.outputs.version }}
+            --strip all
+            --output RELEASE_NOTES.md
+
+      - name: Update CHANGELOG.md
+        if: ${{ steps.version.outputs.version != '' }}
+        run: |
+          node scripts/update-changelog.mjs RELEASE_NOTES.md
+          rm -f RELEASE_NOTES.md
+
+      - name: Dry-run summary
+        if: ${{ steps.version.outputs.version != '' && inputs.dry-run }}
+        run: |
+          {
+            echo "## Dry run — release ${{ steps.version.outputs.version }}"
+            echo ""
+            echo "Baseline tag: \`${{ steps.baseline.outputs.last_tag }}\`"
+            echo ""
+            echo "### Changelog preview"
+            echo ""
+            echo "${{ steps.notes.outputs.content }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish @openmfp/webcomponents
+        if: ${{ steps.version.outputs.version != '' && !inputs.dry-run }}
+        working-directory: dist/webcomponents
+        run: npm publish --access public
+
+      - name: Publish @openmfp/ngx
+        if: ${{ steps.version.outputs.version != '' && !inputs.dry-run }}
+        working-directory: dist/ngx
+        run: npm publish --access public
+
+      - name: Commit, tag and push
+        if: ${{ steps.version.outputs.version != '' && !inputs.dry-run }}
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add CHANGELOG.md package.json package-lock.json projects/ngx/package.json
+          git commit -m "[no ci] Release ${VERSION}"
+          git tag "${VERSION}"
+          git push origin HEAD:"${{ github.ref_name }}"
+          git push origin "${VERSION}"
+
+      - name: Create GitHub Release
+        if: ${{ steps.version.outputs.version != '' && !inputs.dry-run }}
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: ${{ steps.version.outputs.version }}
+          body: ${{ steps.notes.outputs.content }}
