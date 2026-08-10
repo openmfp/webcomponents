@@ -47,9 +47,10 @@
         @let buttonSettings = uiSettings()?.buttonSettings;
         <ui5-button
           [attr.data-testid]="testId() + '-button'"
-          [accessibleName]="buttonSettings?.text || buttonSettings?.tooltip || buttonSettings?.icon || ''"
+          [accessibleName]="buttonAccessibleName()"
           [design]="buttonSettings?.design"
           [endIcon]="buttonSettings?.endIcon"
+          [disabled]="buttonDisabled()"
           [icon]="buttonSettings?.icon"
           [tooltip]="buttonSettings?.tooltip"
           (click)="buttonClicked($event)"

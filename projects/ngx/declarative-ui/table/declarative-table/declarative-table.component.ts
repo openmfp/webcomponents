@@ -72,6 +72,12 @@ export class DeclarativeTable<T extends GenericResource> {
     _index;
   viewColumns = computed(() => processGroupFields(this.columns()));
 
+  onRowClick(item: T): void {
+    if (item.isAvailable !== false) {
+      this.tableRowClicked.emit(item);
+    }
+  }
+
   isPagerMode = computed(() => this.loadMode() === 'pager');
   knowsTotal = computed(() => this.totalItemsCount() !== undefined);
   hasResults = computed(() => (this.totalItemsCount() ?? 0) > 0);

@@ -44,7 +44,7 @@ export interface CardConfig {
   type?: CardsType;
   /** Key/value pairs passed to the rendered card. Behaviour depends on `type`. */
   componentInputs?: Record<string, unknown>;
-  /** Human-readable label shown in the "Add Card" dialog. */
+  /** Human-readable label shown in the "Edit Cards" dialog. */
   label?: string;
 }
 
@@ -81,7 +81,7 @@ export interface DashboardConfig {
   description?: string;
   /** URL of the background image applied to the dashboard host element. */
   backgroundImageUrl?: string;
-  /** Overrides for the built-in Edit View and Add Card toolbar buttons. */
+  /** Overrides for the built-in Edit View and Edit Cards toolbar buttons. */
   buttonsSettings?: DashboardButtonsSettings;
   /** Extra action buttons rendered in the toolbar alongside the built-in ones. */
   customActions?: ButtonSettings[];

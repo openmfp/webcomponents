@@ -200,6 +200,26 @@ describe('DeclarativeTable', () => {
       expect(emitted).toHaveLength(1);
       expect(emitted[0]).toEqual(resource);
     });
+
+    it('does not emit tableRowClicked for an unavailable resource', () => {
+      const resource = {
+        id: '1',
+        name: 'Alice',
+        isAvailable: false,
+      };
+      const { fixture, component } = setup({
+        columns: [{ property: 'name' }],
+        resources: [resource],
+      });
+
+      const emitted: unknown[] = [];
+      component.tableRowClicked.subscribe((event) => emitted.push(event));
+
+      const row = el(fixture, 'generic-table-row-0') as HTMLElement;
+      row.click();
+
+      expect(emitted).toHaveLength(0);
+    });
   });
 
   describe('buttonClick output', () => {

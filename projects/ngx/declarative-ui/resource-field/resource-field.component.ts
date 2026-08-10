@@ -85,6 +85,15 @@ export class ResourceField<
   isBoolLike = computed(() => this.boolValue() !== undefined);
   isUrlValue = computed(() => this.checkValidUrl(this.stringValue()));
   testId = computed(() => `resource-field-${this.fieldDefinition().property}`);
+  buttonDisabled = computed(() => this.resource()?.isAvailable === false);
+  buttonAccessibleName = computed(
+    () =>
+      (this.buttonDisabled() ? this.resource()?.accessibleName : undefined) ??
+      this.uiSettings()?.buttonSettings?.text ??
+      this.uiSettings()?.buttonSettings?.tooltip ??
+      this.uiSettings()?.buttonSettings?.icon ??
+      '',
+  );
 
   boolValue = computed(() => this.normalizeBoolean(this.value()));
   stringValue = computed(() => this.normalizeString(this.value()));
@@ -169,6 +178,10 @@ export class ResourceField<
 
   protected buttonClicked(event: MouseEvent) {
     event.stopPropagation();
+    if (this.buttonDisabled()) {
+      return;
+    }
+
     this.buttonClick.emit({
       event,
       field: this.fieldDefinition(),
