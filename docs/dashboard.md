@@ -196,7 +196,7 @@ const cards: CardConfig[] = [
 | `sections`       | `SectionConfig[]` | no       | `[]`    | Named dashboard sections rendered above the loose-card grid |
 | `cards`          | `CardConfig[]`    | no       | `[]`    | All cards shown in sections or in the grid                  |
 | `availableCards` | `CardConfig[]`    | no       | `[]`    | Card templates that can be added in edit mode               |
-| `language`       | `'en' \| 'de'`    | no       | `'en'`  | Language for the dashboard chrome (toolbar buttons, dialogs, a11y labels). See [Localization](#localization). |
+| `i18n`           | `Partial<DashboardTranslations>` | no | `{}` | Translations for the dashboard chrome (toolbar buttons, dialogs, a11y labels). Omitted keys fall back to the English default. See [Localization](#localization). |
 
 ### Outputs
 
@@ -235,41 +235,65 @@ const cards: CardConfig[] = [
 
 ## Localization
 
-The dashboard chrome (toolbar buttons, dialogs, accessibility labels, the **Unsaved Changes** badge) is translated by the dashboard itself. Supported languages: `en` (default) and `de`.
+The dashboard chrome (toolbar buttons, dialogs, accessibility labels, the **Unsaved Changes** badge) is rendered from a fixed set of string keys. The library ships **English only** as the built-in default. To render the chrome in any other language, the client application supplies the translated strings through the `i18n` input; to switch language at runtime, swap the object passed to `i18n` (any key you omit falls back to the English default).
+
+This keeps the library free of a hardcoded language list: the set of supported languages is entirely the client's decision.
+
+The key contract is exported for type-safe usage:
+
+```ts
+import {
+  DashboardI18nKey, // union of the 13 key strings
+  DashboardTranslations, // Record<DashboardI18nKey, string>
+  EN_DEFAULTS, // the built-in English strings
+} from '@openmfp/ngx';
+```
 
 ### Angular usage
 
-```html
-<mfp-dashboard [config]="config" [language]="lang" />
+```ts
+germanChrome: Partial<DashboardTranslations> = {
+  save: 'Speichern',
+  cancel: 'Abbrechen',
+  // …the remaining keys; omitted keys fall back to English
+};
 ```
+
+```html
+<mfp-dashboard [config]="config" [i18n]="germanChrome" />
+```
+
+Switch language by binding a new object to `i18n` — the change is forwarded to every nested dashboard component (sections, cards, all three dialogs) via a shared `DashboardI18nService`, so every chrome label re-renders in place.
 
 ### Web-component usage
 
 ```js
 const el = document.querySelector('mfp-wc-dashboard');
-el.language = 'de';
+el.i18n = germanStrings;
+// language change: reassign the i18n property
+el.i18n = spanishStrings;
 ```
-
-The `language` value is forwarded to every nested dashboard component (sections, cards, all three dialogs) via a shared `DashboardI18nService`, so changing it on the dashboard re-renders every chrome label in place.
 
 ### Translated keys
 
-| Key                  | English                                                                                                       | German                                                                                                                            |
-| -------------------- | ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `unsavedChanges`     | Unsaved Changes                                                                                               | Nicht gespeicherte Änderungen                                                                                                     |
-| `editCards`          | Edit Cards                                                                                                    | Karten bearbeiten                                                                                                                 |
-| `editView`           | Edit View                                                                                                     | Ansicht bearbeiten                                                                                                                |
-| `actions`            | Actions                                                                                                       | Aktionen                                                                                                                          |
-| `save`               | Save                                                                                                          | Speichern                                                                                                                         |
-| `cancel`             | Cancel                                                                                                        | Abbrechen                                                                                                                         |
-| `discard`            | Discard                                                                                                       | Verwerfen                                                                                                                         |
-| `discardChanges`     | Discard Changes                                                                                               | Änderungen verwerfen                                                                                                              |
-| `discardConfirmBody` | Discard the changes? This action cannot be undone.                                                            | Änderungen verwerfen? Diese Aktion kann nicht rückgängig gemacht werden.                                                          |
-| `unsavedNavBody`     | You are leaving this page. Save or discard the changes to proceed. This action cannot be undone.              | Sie verlassen diese Seite. Speichern oder verwerfen Sie die Änderungen, um fortzufahren. Diese Aktion kann nicht rückgängig gemacht werden. |
-| `noCardsAvailable`   | No cards available.                                                                                           | Keine Karten verfügbar.                                                                                                           |
-| `removeSection`      | Remove section                                                                                                | Bereich entfernen                                                                                                                 |
-| `removeCard`         | Remove card                                                                                                   | Karte entfernen                                                                                                                   |
-| `resizable`          | Resizable                                                                                                     | Größenveränderbar                                                                                                                 |
+The 13 keys and their built-in English defaults (the exact strings in `EN_DEFAULTS`). Client applications provide a value per key for each language they support:
+
+| Key                  | English default (built-in)                                                                       |
+| -------------------- | ------------------------------------------------------------------------------------------------ |
+| `unsavedChanges`     | Unsaved Changes                                                                                  |
+| `editCards`          | Edit Cards                                                                                        |
+| `editView`           | Edit View                                                                                         |
+| `actions`            | Actions                                                                                           |
+| `save`               | Save                                                                                              |
+| `cancel`             | Cancel                                                                                            |
+| `discard`            | Discard                                                                                           |
+| `discardChanges`     | Discard Changes                                                                                   |
+| `discardConfirmBody` | Discard the changes? This action cannot be undone.                                               |
+| `unsavedNavBody`     | You are leaving this page. Save or discard the changes to proceed. This action cannot be undone. |
+| `noCardsAvailable`   | No cards available.                                                                               |
+| `removeSection`      | Remove section                                                                                    |
+| `removeCard`         | Remove card                                                                                        |
+| `resizable`          | Resizable                                                                                          |
 
 ### What is NOT translated
 
@@ -280,7 +304,7 @@ The dashboard does **not** translate consumer-supplied strings — those are pas
 - `config.buttonsSettings.editViewButton.text` / `tooltip` and the Edit Cards equivalents (overrides win over the translated defaults)
 - Card `label`s shown in the Edit Cards dialog list
 
-Translate these in your application before passing them to the dashboard.
+Translate these in your application before passing them to the dashboard — typically alongside the same language switch that swaps the `i18n` input.
 
 ---
 

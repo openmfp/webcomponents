@@ -1,7 +1,4 @@
-import de from './de.json';
 import en from './en.json';
-
-export type DashboardLanguage = 'en' | 'de';
 
 export const DASHBOARD_I18N_KEYS = {
   UNSAVED_CHANGES: 'unsavedChanges',
@@ -23,10 +20,16 @@ export const DASHBOARD_I18N_KEYS = {
 export type DashboardI18nKey =
   (typeof DASHBOARD_I18N_KEYS)[keyof typeof DASHBOARD_I18N_KEYS];
 
-export const DASHBOARD_TRANSLATIONS: Record<
-  DashboardLanguage,
-  Record<DashboardI18nKey, string>
-> = {
-  en,
-  de,
-};
+/**
+ * The full set of dashboard chrome strings (toolbar buttons, dialogs, a11y
+ * labels). Client applications provide translated values through
+ * `DashboardConfig.i18n`; any key they omit falls back to `EN_DEFAULTS`.
+ */
+export type DashboardTranslations = Record<DashboardI18nKey, string>;
+
+/**
+ * Built-in English strings. This is the only translation the library ships and
+ * the fallback used whenever a key is not supplied by the client through
+ * `DashboardConfig.i18n`.
+ */
+export const EN_DEFAULTS: DashboardTranslations = en;
