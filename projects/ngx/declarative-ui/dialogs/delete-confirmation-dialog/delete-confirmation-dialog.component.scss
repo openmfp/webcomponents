@@ -1,0 +1,51 @@
+:host {
+  display: contents;
+}
+
+.dialog {
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+  }
+
+  &__header-icon {
+    color: var(--sapCriticalColor);
+  }
+
+  &__body {
+    margin: -1rem;
+    min-width: 320px;
+    padding: 1rem;
+  }
+
+  &__message {
+    margin: 0;
+    font-size: 0.875rem;
+    max-width: 320px;
+  }
+
+  // Applied to elements inside the sanitized `message` HTML to mark critical
+  // text. The `style` attribute is stripped by the HTML sanitizer, so callers
+  // colour critical copy via this class instead of inline styles.
+  &__message--critical {
+    color: var(--sapCriticalElementColor);
+  }
+
+  &__confirmation-input {
+    display: block;
+    width: 100%;
+    max-width: 320px;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    margin: 0 -1rem;
+    width: 100%;
+  }
+}

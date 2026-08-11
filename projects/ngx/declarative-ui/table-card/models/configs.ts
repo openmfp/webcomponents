@@ -1,6 +1,11 @@
 import { FormFieldDefinition, FormFieldErrors } from '../../form';
-import { ButtonSettings } from '../../models';
+import { ButtonSettings, GenericResource } from '../../models';
 import { TableFieldDefinition } from '../../table';
+
+
+
+
+
 
 /** Configuration for the create/edit resource form rendered inside the table card dialogs. */
 export interface ResourceFormConfig {
@@ -10,10 +15,8 @@ export interface ResourceFormConfig {
    * when the dialog opens (e.g. to fetch dynamic select options on demand
    * rather than prefetching them on render).
    */
-  fields:
-    | FormFieldDefinition[]
-    | (() => Promise<FormFieldDefinition[]>);
-  /** Dialog title shown in the header. */
+  fields: FormFieldDefinition[] | (() => Promise<FormFieldDefinition[]>);
+  /** Dialog title shown in the header. May contain HTML, which is sanitized before rendering. */
   title?: string;
   /** Label for the confirm/submit button. */
   confirmLabel?: string;
@@ -29,10 +32,19 @@ export interface TableCardFormState {
 
 /** Configuration for the delete-confirmation dialog. */
 export interface DeleteResourceConfirmationConfig {
-  /** Dialog title. */
+  /** Dialog title. May contain HTML, which is sanitized before rendering. */
   title?: string;
-  /** Explanatory message shown below the title. */
+  /** Explanatory message shown below the title. May contain HTML, which is sanitized before rendering. */
   message?: string;
+  /**
+   * When set, the dialog renders a text input and keeps the confirm button
+   * disabled until the typed value matches this text (case-insensitive,
+   * trimmed). Use it to require the user to type e.g. the resource name before
+   * deleting. Omit to allow immediate confirmation.
+   */
+  confirmationText?: string;
+  /** Placeholder for the confirmation input. Defaults to `Type to confirm`. Only used when {@link confirmationText} is set. */
+  confirmationPlaceholder?: string;
   /** Label for the confirm/delete button. */
   confirmLabel?: string;
   /** Label for the cancel button. */
@@ -89,10 +101,6 @@ export interface TableCardButtonSettings {
   createButton?: Partial<ButtonSettings>;
   /** Partial override for the search toggle button. */
   searchButton?: Partial<ButtonSettings>;
-  /** Partial override for the per-row "Edit" button. */
-  editButton?: Partial<ButtonSettings>;
-  /** Partial override for the per-row "Delete" button. */
-  deleteButton?: Partial<ButtonSettings>;
 }
 
 /**
@@ -133,7 +141,7 @@ export interface TableCardSearchConfig {
 }
 
 /** Top-level configuration for `<mfp-declarative-table-card>`. */
-export interface TableCardConfig {
+export interface TableCardConfig<T extends GenericResource = GenericResource> {
   /** Card heading. */
   header?: string;
   /** Tooltip shown on hover of the card heading. */
@@ -151,7 +159,9 @@ export interface TableCardConfig {
   /** When set, enables the "Create" button and create dialog. */
   createResourceFormConfig?: ResourceFormConfig;
   /** When set, enables per-row "Edit" button and edit dialog. */
-  editResourceFormConfig?: ResourceFormConfig;
+  editResourceFormConfig?: (resource: T) => ResourceFormConfig;
   /** When set, enables per-row "Delete" button and confirmation dialog. */
-  deleteResourceConfirmationConfig?: DeleteResourceConfirmationConfig;
+  deleteResourceConfirmationConfig?: (
+    resource: T,
+  ) => DeleteResourceConfirmationConfig;
 }

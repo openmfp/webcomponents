@@ -48,6 +48,7 @@ export class MyComponent {
 | ----------------- | ----------------- | -------- | ------- | ------------------------------------------------------ |
 | `fieldDefinition` | `FieldDefinition` | yes      | —       | Describes how to resolve and display the field value    |
 | `resource`        | `GenericResource` | no       | —       | The data object from which the field value is resolved  |
+| `permissions`     | `Record<string, string[]>` | no | —      | Per-row permission map keyed by `resource.id`. Used to evaluate `fieldDefinition.requirePermission`. |
 
 ### Outputs / Events
 
@@ -75,6 +76,10 @@ interface FieldDefinition {
   jsonPathExpression?: string;              // explicit JSONPath expression
   value?:              string;              // static fallback value
   uiSettings?:         UiSettings;
+  /** Verb that must appear in the row's granted actions for this field to render.
+   *  When absent the field is always rendered.
+   *  When set but the verb is not found (row absent from the map, or map undefined) the field is hidden (fail-closed). */
+  requirePermission?:  string;
 }
 ```
 
@@ -239,6 +244,54 @@ Renders each value as a `<ui5-tag>` chip. String values are split by `tagSetting
   // resource value: ['prod', 'staging']
 }
 ```
+
+---
+
+## Permission gating (`requirePermission`)
+
+A field can be hidden unless a specific verb is granted for the current row. Set `requirePermission` to the verb name and supply a `permissions` map on the parent table or directly on the component.
+
+```ts
+// Only render this field when 'delete' is granted for the row
+{
+    group: {
+      label: "Actions",
+      name: "actions",
+      multiline: false
+    },
+    requirePermission: "delete",
+    uiSettings: {
+      displayAs: "button",
+      buttonSettings: {
+        action: "delete",
+        icon: "delete",
+        design: "Negative"
+      }
+    }
+}
+```
+
+The `permissions` map is keyed by `resource.id`. The value is the list of granted verbs for that row.
+
+```ts
+const permissions = {
+  'pod-1': ['get', 'update', 'delete'],
+  'pod-2': ['get', 'update'],
+};
+```
+
+**Semantics (fail-closed):**
+
+| Condition | Rendered? |
+|---|---|
+| `requirePermission` absent | Yes — always rendered |
+| `requirePermission` set, verb present in granted actions | Yes |
+| `requirePermission` set, verb absent from granted actions | No |
+| `requirePermission` set, row not in the map | No |
+| `requirePermission` set, `permissions` input not provided | No |
+| `requirePermission` set, `resource` has no `id` | No |
+
+When using `DeclarativeTable` or `DeclarativeTableCard`, pass the map to their `permissions` input — it is threaded down to every `mfp-resource-field` automatically.
 
 ---
 

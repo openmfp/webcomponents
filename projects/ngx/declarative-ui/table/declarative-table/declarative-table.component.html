@@ -67,6 +67,7 @@
                   <mfp-resource-field
                     [fieldDefinition]="field"
                     [resource]="item"
+                    [permissions]="permissions()"
                     (buttonClick)="buttonClick.emit($event)"
                   />
                 </span>
@@ -84,6 +85,7 @@
               <mfp-resource-field
                 [fieldDefinition]="column"
                 [resource]="item"
+                [permissions]="permissions()"
                 (buttonClick)="buttonClick.emit($event)"
               />
             </div>
