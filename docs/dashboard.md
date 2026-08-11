@@ -201,6 +201,7 @@ const cards: CardConfig[] = [
 | `sections`       | `SectionConfig[]` | no       | `[]`    | Named dashboard sections rendered above the loose-card grid |
 | `cards`          | `CardConfig[]`    | no       | `[]`    | All cards shown in sections or in the grid                  |
 | `availableCards` | `CardConfig[]`    | no       | `[]`    | Card templates that can be added in edit mode               |
+| `customActions`  | `ButtonSettings[]` | no      | `[]`    | Extra action buttons rendered in the toolbar alongside the built-in ones. Clicking one emits `actionButtonClick`. |
 | `i18n`           | `DashboardTranslations \| null \| undefined` | no | `EN_DEFAULTS` | Full set of dashboard chrome + title/description strings. When `null`, `undefined`, or `{}`, the built-in English defaults are used; when provided, it must be the complete `DashboardTranslations`. See [Localization](#localization). |
 
 ### Outputs
@@ -208,7 +209,7 @@ const cards: CardConfig[] = [
 | Output               | Payload                                              | Description                                                      |
 | -------------------- | ---------------------------------------------------- | ---------------------------------------------------------------- |
 | `saved`              | `{ sections: SectionConfig[]; cards: CardConfig[] }` | Emits when the user saves edits                                  |
-| `actionButtonClick`  | `{ event: MouseEvent; action: ButtonSettings }`      | Emits when a custom action button from `config.customActions` is clicked |
+| `actionButtonClick`  | `{ event: MouseEvent; action: ButtonSettings }`      | Emits when a custom action button from the `customActions` input is clicked |
 | `unsavedChangesChange` | `boolean`                                          | Emits whenever the unsaved-changes state flips — `true` when the user first makes an unsaved edit, `false` after save/discard. Use this to drive your own navigation guard (see [Showing your own dialog instead](#showing-your-own-dialog-instead)). |
 
 ### Public methods
@@ -314,7 +315,7 @@ The 17 keys and their built-in English defaults (the exact strings in `EN_DEFAUL
 
 The dashboard does **not** translate the remaining consumer-supplied strings — those are passed through verbatim because the consumer already controls them:
 
-- `config.customActions[].text` / `tooltip`
+- `customActions[].text` / `tooltip`
 - `config.buttonsSettings` `icon` / `design` (the built-in button **texts** come from `i18n.editHomeButton` and `i18n.editCardsButton`)
 - Card `label`s shown in the Edit Cards dialog list
 
@@ -539,7 +540,6 @@ Two-button popup shown when the user clicks the Cancel button on the in-page edi
 interface DashboardConfig {
   backgroundImageUrl?: string;
   buttonsSettings?: DashboardButtonsSettings;
-  customActions?: ButtonSettings[];
   editable?: boolean;
   editButtonFirst?: boolean;
   zFlow?: {
@@ -637,11 +637,17 @@ By default the **Edit View** button is rendered _after_ all `customActions` (in 
 const config: DashboardConfig = {
   editable: true,
   editButtonFirst: true,
-  customActions: [
-    { action: 'export', text: 'Export', icon: 'download' },
-    { action: 'share',  text: 'Share',  icon: 'share' },
-  ],
 };
+
+// customActions is a separate input, not part of config:
+const customActions: ButtonSettings[] = [
+  { action: 'export', text: 'Export', icon: 'download' },
+  { action: 'share',  text: 'Share',  icon: 'share' },
+];
+```
+
+```html
+<mfp-dashboard [config]="config" [customActions]="customActions" />
 ```
 
 | `editButtonFirst` | Resulting toolbar order                          |

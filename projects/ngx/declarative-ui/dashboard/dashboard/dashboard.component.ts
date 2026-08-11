@@ -94,6 +94,8 @@ export class Dashboard implements OnInit, OnDestroy {
   sections = model<SectionConfig[]>([]);
   cards = model<CardConfig[]>([]);
   availableCards = input<CardConfig[]>([]);
+  /** Extra action buttons rendered in the toolbar alongside the built-in ones. */
+  customActions = input<ButtonSettings[]>([]);
   /**
    * Full set of dashboard-chrome translations (title, description, toolbar
    * buttons, dialogs, a11y labels). The library ships English only. Provide a
@@ -178,7 +180,6 @@ export class Dashboard implements OnInit, OnDestroy {
     };
   });
 
-  protected customActions = computed(() => this.config().customActions ?? []);
   protected addedCardsIds = computed(
     () => new Set(this.cards().map((c) => c.id)),
   );

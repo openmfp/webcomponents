@@ -3,6 +3,8 @@ import { MockCard } from '../../cards/mock-card/mock-card.component';
 import { ServiceStatusCard } from '../../cards/service-status/service-status-card.component';
 import { VisitedServiceCard } from '../../cards/visited-service-card/visited-service-card.component';
 import { Dashboard } from '../dashboard/dashboard/dashboard.component';
+import { EN_DEFAULTS } from '../dashboard/i18n';
+import type { DashboardTranslations } from '../dashboard/i18n';
 import type { CardConfig, DashboardConfig } from '../dashboard/models';
 import { ButtonSettings } from '../models/ui-definition';
 import { CARDS, RAS_CARDS, SECTIONS } from './dashboard.cards';
@@ -37,12 +39,15 @@ const CUSTOM_ACTIONS: ButtonSettings[] = [
   },
 ];
 
-const SAMPLE_CONFIG: DashboardConfig = {
+const SAMPLE_I18N: DashboardTranslations = {
+  ...EN_DEFAULTS,
   title: 'System Overview',
   description:
     'Monitor your platform metrics, traffic and service health in <b>real time</b>.',
+};
+
+const SAMPLE_CONFIG: DashboardConfig = {
   backgroundImageUrl: '/background-lightblue.png',
-  customActions: CUSTOM_ACTIONS,
   editable: true,
 };
 
@@ -187,21 +192,25 @@ const meta: Meta<Dashboard> = {
   },
   argTypes: {
     config: { control: 'object' },
+    i18n: { control: 'object' },
     sections: { control: 'object' },
     cards: { control: 'object' },
     availableCards: { control: 'object' },
+    customActions: { control: 'object' },
     actionButtonClick: { action: 'actionButtonClick' },
     saved: { action: 'saved' },
   },
   args: {
     config: SAMPLE_CONFIG,
+    i18n: SAMPLE_I18N,
     sections: SECTIONS,
     cards: CARDS,
     availableCards: AVAILABLE_CARDS,
+    customActions: CUSTOM_ACTIONS,
   },
   render: (args) => ({
     props: args,
-    template: `<mfp-dashboard [config]="config" [sections]="sections" [cards]="cards" [availableCards]="availableCards" (actionButtonClick)="actionButtonClick($event)" (saved)="saved($event)" />`,
+    template: `<mfp-dashboard [config]="config" [i18n]="i18n" [sections]="sections" [cards]="cards" [availableCards]="availableCards" [customActions]="customActions" (actionButtonClick)="actionButtonClick($event)" (saved)="saved($event)" />`,
   }),
 };
 
@@ -218,7 +227,7 @@ export const WithSubheader: Story = {
   render: (args) => ({
     props: args,
     template: `
-      <mfp-dashboard [config]="config" [sections]="sections" [cards]="cards" [availableCards]="availableCards">
+      <mfp-dashboard [config]="config" [i18n]="i18n" [sections]="sections" [cards]="cards" [availableCards]="availableCards" [customActions]="customActions">
         <div slot="dashboard-subheader" style="display:flex;align-items:center;gap:1.5rem;width:100%">
           <img src="https://platform-mesh.io/main/pm_logo.svg" alt="Platform Mesh logo" style="width:48px;height:48px;object-fit:contain;flex-shrink:0" />
           <div style="display:flex;gap:2rem;flex-wrap:wrap">
@@ -256,7 +265,7 @@ export const CompactToolbar: Story = {
     props: args,
     template: `
       <div style="width:725px;overflow:hidden">
-        <mfp-dashboard [config]="config" [sections]="sections" [cards]="cards" [availableCards]="availableCards">
+        <mfp-dashboard [config]="config" [i18n]="i18n" [sections]="sections" [cards]="cards" [availableCards]="availableCards" [customActions]="customActions">
           <div slot="dashboard-subheader" style="display:flex;align-items:center;gap:1.5rem;width:100%">
             <img src="https://platform-mesh.io/main/pm_logo.svg" alt="Platform Mesh logo" style="width:48px;height:48px;object-fit:contain;flex-shrink:0" />
             <div style="display:flex;gap:2rem;flex-wrap:wrap">
@@ -282,8 +291,9 @@ export const CompactToolbar: Story = {
 
 export const AngularComponentRegistry: Story = {
   args: {
-    config: {
-      ...SAMPLE_CONFIG,
+    config: SAMPLE_CONFIG,
+    i18n: {
+      ...SAMPLE_I18N,
       title: 'Angular Component Registry',
       description:
         'This story mixes registered Angular card components with existing web components.',
@@ -298,9 +308,6 @@ export const CustomButtonSettings: Story = {
   args: {
     config: {
       ...SAMPLE_CONFIG,
-      title: 'Custom Button Settings',
-      description:
-        'Edit View and Add Card buttons configured via buttonSettings — text labels, no icons.',
       buttonsSettings: {
         editViewButton: {
           text: 'Edit View',
@@ -316,6 +323,12 @@ export const CustomButtonSettings: Story = {
         },
       },
     },
+    i18n: {
+      ...SAMPLE_I18N,
+      title: 'Custom Button Settings',
+      description:
+        'Edit View and Add Card buttons configured via buttonSettings — text labels, no icons.',
+    },
   },
 };
 
@@ -323,10 +336,13 @@ export const ZFlowLayout: Story = {
   args: {
     config: {
       ...SAMPLE_CONFIG,
+      zFlow: { cardHeight: 40 },
+    },
+    i18n: {
+      ...SAMPLE_I18N,
       title: 'Z-Flow Layout',
       description:
         'Activates the z-flow grid engine, loose cards forced to a fixed height, and z-flow drag/resize.',
-      zFlow: { cardHeight: 40 },
     },
     cards: [...RAS_CARDS.map((c) => ({ ...c, w: 1 })), ...ZFLOW_MOCK_CARDS],
     availableCards: [...ZFLOW_MOCK_CARDS],
