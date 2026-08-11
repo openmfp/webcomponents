@@ -192,10 +192,11 @@ const cards: CardConfig[] = [
 
 | Input            | Type              | Required | Default | Description                                                 |
 | ---------------- | ----------------- | -------- | ------- | ----------------------------------------------------------- |
-| `config`         | `DashboardConfig` | yes      | —       | Header text, optional background image, and chrome translations (`config.i18n`) |
+| `config`         | `DashboardConfig` | yes      | —       | Header text and optional background image                   |
 | `sections`       | `SectionConfig[]` | no       | `[]`    | Named dashboard sections rendered above the loose-card grid |
 | `cards`          | `CardConfig[]`    | no       | `[]`    | All cards shown in sections or in the grid                  |
 | `availableCards` | `CardConfig[]`    | no       | `[]`    | Card templates that can be added in edit mode               |
+| `i18n`           | `Partial<DashboardTranslations>` | no | `{}` | Translations for the dashboard chrome (toolbar buttons, dialogs, a11y labels). Omitted keys fall back to the English default. See [Localization](#localization). |
 
 ### Outputs
 
@@ -234,7 +235,7 @@ const cards: CardConfig[] = [
 
 ## Localization
 
-The dashboard chrome (toolbar buttons, dialogs, accessibility labels, the **Unsaved Changes** badge) is rendered from a fixed set of string keys. The library ships **English only** as the built-in default. To render the chrome in any other language, the client application supplies the translated strings through `config.i18n`; to switch language at runtime, swap `config.i18n` (any key you omit falls back to the English default).
+The dashboard chrome (toolbar buttons, dialogs, accessibility labels, the **Unsaved Changes** badge) is rendered from a fixed set of string keys. The library ships **English only** as the built-in default. To render the chrome in any other language, the client application supplies the translated strings through the `i18n` input; to switch language at runtime, swap the object passed to `i18n` (any key you omit falls back to the English default).
 
 This keeps the library free of a hardcoded language list: the set of supported languages is entirely the client's decision.
 
@@ -251,29 +252,26 @@ import {
 ### Angular usage
 
 ```ts
-config: DashboardConfig = {
-  title: 'Platform Overview',
-  i18n: {
-    save: 'Speichern',
-    cancel: 'Abbrechen',
-    // …the remaining keys; omitted keys fall back to English
-  },
+germanChrome: Partial<DashboardTranslations> = {
+  save: 'Speichern',
+  cancel: 'Abbrechen',
+  // …the remaining keys; omitted keys fall back to English
 };
 ```
 
 ```html
-<mfp-dashboard [config]="config" />
+<mfp-dashboard [config]="config" [i18n]="germanChrome" />
 ```
 
-Switch language by assigning a new `config` (or a new `config.i18n`) — the change is forwarded to every nested dashboard component (sections, cards, all three dialogs) via a shared `DashboardI18nService`, so every chrome label re-renders in place.
+Switch language by binding a new object to `i18n` — the change is forwarded to every nested dashboard component (sections, cards, all three dialogs) via a shared `DashboardI18nService`, so every chrome label re-renders in place.
 
 ### Web-component usage
 
 ```js
 const el = document.querySelector('mfp-wc-dashboard');
-el.config = { title: 'Platform Overview', i18n: germanStrings };
-// language change: reassign config with the new i18n map
-el.config = { ...el.config, i18n: spanishStrings };
+el.i18n = germanStrings;
+// language change: reassign the i18n property
+el.i18n = spanishStrings;
 ```
 
 ### Translated keys
@@ -306,7 +304,7 @@ The dashboard does **not** translate consumer-supplied strings — those are pas
 - `config.buttonsSettings.editViewButton.text` / `tooltip` and the Edit Cards equivalents (overrides win over the translated defaults)
 - Card `label`s shown in the Edit Cards dialog list
 
-Translate these in your application before passing them to the dashboard — typically alongside the same language switch that swaps `config.i18n`.
+Translate these in your application before passing them to the dashboard — typically alongside the same language switch that swaps the `i18n` input.
 
 ---
 
@@ -527,8 +525,6 @@ Two-button popup shown when the user clicks the Cancel button on the in-page edi
 interface DashboardConfig {
   title: string;
   description?: string;
-  /** Chrome translations; omitted keys fall back to the English default. */
-  i18n?: Partial<DashboardTranslations>;
   backgroundImageUrl?: string;
   buttonsSettings?: DashboardButtonsSettings;
   customActions?: ButtonSettings[];

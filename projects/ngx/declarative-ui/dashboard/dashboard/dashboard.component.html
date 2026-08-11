@@ -23,10 +23,10 @@
               <ui5-icon
                 class="mfp-dashboard__unsaved-changes-icon"
                 name="user-edit"
-                [accessibleName]="i18n.getTranslation(i18nKeys.UNSAVED_CHANGES)"
+                [accessibleName]="i18nService.getTranslation(i18nKeys.UNSAVED_CHANGES)"
               />
               <span class="mfp-dashboard__unsaved-changes-text">{{
-                i18n.getTranslation(i18nKeys.UNSAVED_CHANGES)
+                i18nService.getTranslation(i18nKeys.UNSAVED_CHANGES)
               }}</span>
             </div>
           }
@@ -55,7 +55,7 @@
             [accessibleName]="
               editCardsButton().text ||
               editCardsButton().tooltip ||
-              i18n.getTranslation(i18nKeys.EDIT_CARDS)
+              i18nService.getTranslation(i18nKeys.EDIT_CARDS)
             "
             [design]="editCardsButton().design"
             [icon]="editCardsButton().icon"
@@ -69,8 +69,8 @@
             data-testid="dashboard-toolbar-menu-btn"
             design="Transparent"
             icon="menu2"
-            [accessibleName]="i18n.getTranslation(i18nKeys.ACTIONS)"
-            [tooltip]="i18n.getTranslation(i18nKeys.ACTIONS)"
+            [accessibleName]="i18nService.getTranslation(i18nKeys.ACTIONS)"
+            [tooltip]="i18nService.getTranslation(i18nKeys.ACTIONS)"
             (click)="toolbarMenuOpen.update((v) => !v)"
           />
           <ui5-menu
@@ -93,7 +93,7 @@
                 [icon]="editViewButton().icon"
                 [text]="
                   editViewButton().text ||
-                  i18n.getTranslation(i18nKeys.EDIT_VIEW)
+                  i18nService.getTranslation(i18nKeys.EDIT_VIEW)
                 "
               />
               @if (customActions().length) {
@@ -116,7 +116,7 @@
                 [icon]="editViewButton().icon"
                 [text]="
                   editViewButton().text ||
-                  i18n.getTranslation(i18nKeys.EDIT_VIEW)
+                  i18nService.getTranslation(i18nKeys.EDIT_VIEW)
                 "
               />
             }
@@ -128,7 +128,7 @@
               [accessibleName]="
                 editViewButton().text ||
                 editViewButton().tooltip ||
-                i18n.getTranslation(i18nKeys.EDIT_VIEW)
+                i18nService.getTranslation(i18nKeys.EDIT_VIEW)
               "
               [design]="editViewButton().design"
               [icon]="editViewButton().icon"
@@ -157,7 +157,7 @@
               [accessibleName]="
                 editViewButton().text ||
                 editViewButton().tooltip ||
-                i18n.getTranslation(i18nKeys.EDIT_VIEW)
+                i18nService.getTranslation(i18nKeys.EDIT_VIEW)
               "
               [design]="editViewButton().design"
               [icon]="editViewButton().icon"
@@ -221,13 +221,13 @@
       data-testid="dashboard-save-btn"
       design="Emphasized"
       (click)="saveEdit()"
-      >{{ i18n.getTranslation(i18nKeys.SAVE) }}</ui5-button
+      >{{ i18nService.getTranslation(i18nKeys.SAVE) }}</ui5-button
     >
     <ui5-button
       data-testid="dashboard-cancel-btn"
       design="Transparent"
       (click)="cancelEdit()"
-      >{{ i18n.getTranslation(i18nKeys.CANCEL) }}</ui5-button
+      >{{ i18nService.getTranslation(i18nKeys.CANCEL) }}</ui5-button
     >
   </div>
 }

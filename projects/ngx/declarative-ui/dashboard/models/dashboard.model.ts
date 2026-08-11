@@ -1,4 +1,3 @@
-import { DashboardTranslations } from '../i18n/dashboard-i18n';
 import { ButtonSettings } from '../../models/ui-definition';
 
 export const CARD_TYPES = {
@@ -80,14 +79,6 @@ export interface DashboardConfig {
   title: string;
   /** Optional subtitle shown below the title. */
   description?: string;
-  /**
-   * Translations for the built-in dashboard chrome (toolbar buttons, dialogs,
-   * a11y labels). The library ships English only; supply this object to render
-   * the chrome in another language, and swap it on language change. Any key you
-   * omit falls back to the built-in English default. See `DashboardI18nKey` /
-   * `DashboardTranslations` for the full key contract.
-   */
-  i18n?: Partial<DashboardTranslations>;
   /** URL of the background image applied to the dashboard host element. */
   backgroundImageUrl?: string;
   /** Overrides for the built-in Edit View and Edit Cards toolbar buttons. */

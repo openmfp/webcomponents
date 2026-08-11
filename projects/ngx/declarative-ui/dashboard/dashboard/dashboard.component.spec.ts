@@ -1413,16 +1413,16 @@ describe('Dashboard', () => {
       expect(labels).toContain('Cancel');
     });
 
-    it('renders client-supplied chrome translations from config.i18n', () => {
+    it('renders client-supplied chrome translations from the i18n input', () => {
       const { fixture, component } = setup();
 
       fixture.componentRef.setInput('config', {
         title: 'Operations',
         editable: true,
-        i18n: {
-          save: 'Speichern',
-          cancel: 'Abbrechen',
-        },
+      });
+      fixture.componentRef.setInput('i18n', {
+        save: 'Speichern',
+        cancel: 'Abbrechen',
       });
       fixture.detectChanges();
 
@@ -1437,15 +1437,15 @@ describe('Dashboard', () => {
       expect(labels).toContain('Abbrechen');
     });
 
-    it('falls back to English for keys omitted from config.i18n', () => {
+    it('falls back to English for keys omitted from the i18n input', () => {
       const { fixture, component } = setup();
 
       fixture.componentRef.setInput('config', {
         title: 'Operations',
         editable: true,
-        i18n: {
-          save: 'Speichern',
-        },
+      });
+      fixture.componentRef.setInput('i18n', {
+        save: 'Speichern',
       });
       fixture.detectChanges();
 

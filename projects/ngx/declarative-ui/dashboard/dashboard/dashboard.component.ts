@@ -7,6 +7,7 @@ import { EditCardsDialog } from '../edit-cards-dialog/edit-cards-dialog.componen
 import {
   DASHBOARD_I18N_KEYS,
   DashboardI18nService,
+  DashboardTranslations,
 } from '../i18n';
 import { CardConfig, DashboardConfig, SectionConfig } from '../models';
 import { DashboardSection } from '../section/dashboard-section.component';
@@ -86,12 +87,20 @@ export class Dashboard implements OnInit, OnDestroy {
   private readonly hostEl = inject(ElementRef<HTMLElement>);
   private readonly injector = inject(Injector);
   private readonly sanitizer = inject(DomSanitizer);
-  protected readonly i18n = inject(DashboardI18nService);
+  protected readonly i18nService = inject(DashboardI18nService);
 
   config = input.required<DashboardConfig>();
   sections = model<SectionConfig[]>([]);
   cards = model<CardConfig[]>([]);
   availableCards = input<CardConfig[]>([]);
+  /**
+   * Translations for the built-in dashboard chrome (toolbar buttons, dialogs,
+   * a11y labels). The library ships English only; supply this map to render the
+   * chrome in another language, and swap it to switch language. Any key omitted
+   * falls back to the built-in English default. See `DashboardTranslations` /
+   * `DashboardI18nKey` for the full key contract.
+   */
+  i18n = input<Partial<DashboardTranslations>>({});
 
   readonly saved = output<{ sections: SectionConfig[]; cards: CardConfig[] }>();
   readonly actionButtonClick = output<{
@@ -170,7 +179,7 @@ export class Dashboard implements OnInit, OnDestroy {
   protected editViewButton = computed(() => ({
     icon: 'action-settings',
     design: 'Transparent' as const,
-    tooltip: this.i18n.getTranslation(DASHBOARD_I18N_KEYS.EDIT_VIEW),
+    tooltip: this.i18nService.getTranslation(DASHBOARD_I18N_KEYS.EDIT_VIEW),
     text: '',
     ...this.config().buttonsSettings?.editViewButton,
   }));
@@ -178,7 +187,7 @@ export class Dashboard implements OnInit, OnDestroy {
     icon: '',
     design: 'Default' as const,
     tooltip: '',
-    text: this.i18n.getTranslation(DASHBOARD_I18N_KEYS.EDIT_CARDS),
+    text: this.i18nService.getTranslation(DASHBOARD_I18N_KEYS.EDIT_CARDS),
     ...this.config().buttonsSettings?.editCardsButton,
   }));
 
@@ -246,7 +255,7 @@ export class Dashboard implements OnInit, OnDestroy {
       this.unsavedChangesChange.emit(this.hasUnsavedChanges());
     });
     effect(() => {
-      this.i18n.overrides.set(this.config().i18n ?? {});
+      this.i18nService.overrides.set(this.i18n());
     });
     effect((onCleanup) => {
       const url = this.config().backgroundImageUrl;
