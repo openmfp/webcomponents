@@ -58,6 +58,8 @@ export class ResourceField<
 > {
   fieldDefinition = input.required<F>();
   resource = input<T>();
+  // keyed by row id; host sets row.id = permissionKey(entity/ns/name)
+  permissions = input<Record<string, string[]>>();
   readonly buttonClick = output<ResourceFieldButtonClickEvent<T>>();
 
   value = computed(() =>
@@ -102,6 +104,20 @@ export class ResourceField<
   isCollection = computed(
     () => !!this.fieldDefinition().propertyCollection?.length,
   );
+
+  protected canRenderField = computed(() => {
+    const perm = this.fieldDefinition().requirePermission;
+    if (!perm) {
+      return true;
+    }
+
+    const resourceId = this.resource()?.id;
+    if (!resourceId) {
+      return false;
+    }
+
+    return this.permissions()?.[resourceId]?.includes(perm) ?? false;
+  });
 
   toggleVisibility(e: Event): void {
     e.stopPropagation();

@@ -1,0 +1,39 @@
+<ui5-dialog
+  [attr.data-testid]="dataTestidPrefix() + '-dialog'"
+  [accessibleName]="config()?.title ?? defaultTitle()"
+  [open]="open()"
+  (ui5BeforeClose)="cancelled.emit()"
+>
+  <div class="dialog__header" slot="header">
+    <ui5-title level="H5">
+      <span [innerHTML]="(config()?.title ?? defaultTitle()) | sanitizeHtml"></span>
+    </ui5-title>
+  </div>
+  <div class="dialog__body">
+    <mfp-declarative-form
+      #form
+      [fieldErrors]="fieldErrors()"
+      [fields]="fields()"
+      [initialValues]="initialValues()"
+      (fieldChange)="fieldChange.emit($event)"
+      (formSubmit)="submitted.emit($event)"
+    />
+  </div>
+  <div class="dialog__footer" slot="footer">
+    <ui5-button
+      [attr.data-testid]="dataTestidPrefix() + '-confirm'"
+      design="Emphasized"
+      [disabled]="hasErrors()"
+      (click)="form.submit()"
+    >
+      {{ config()?.confirmLabel ?? defaultConfirmLabel() }}
+    </ui5-button>
+    <ui5-button
+      [attr.data-testid]="dataTestidPrefix() + '-cancel'"
+      design="Transparent"
+      (click)="cancelled.emit()"
+    >
+      {{ config()?.cancelLabel ?? defaultCancelLabel() }}
+    </ui5-button>
+  </div>
+</ui5-dialog>

@@ -157,4 +157,7 @@ export interface FieldDefinition {
    * column/input of an entry. Mirrors `propertyField` naming for consistency.
    */
   propertyCollection?: FieldDefinition[];
+  /** Verb required to render this field (e.g. 'update', 'delete').
+   *  Evaluated against the row's granted actions. Absent → always render. */
+  requirePermission?: string;
 }

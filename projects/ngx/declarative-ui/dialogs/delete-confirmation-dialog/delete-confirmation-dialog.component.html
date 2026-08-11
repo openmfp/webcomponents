@@ -1,0 +1,48 @@
+<ui5-dialog
+  data-testid="generic-table-card-delete-dialog"
+  [accessibleName]="config()?.title ?? 'Confirm Delete'"
+  [open]="open()"
+  (ui5BeforeClose)="cancelled.emit()"
+>
+  <div class="dialog__header" slot="header">
+    <ui5-icon class="dialog__header-icon" name="alert" design="Critical"></ui5-icon>
+    <ui5-title level="H5">
+      <span [innerHTML]="(config()?.title ?? 'Confirm Delete') | sanitizeHtml"></span>
+    </ui5-title>
+  </div>
+  @if (config()?.message || requiresConfirmation()) {
+    <div class="dialog__body">
+      @if (config()?.message; as message) {
+        <p class="dialog__message" [innerHTML]="message | sanitizeHtml"></p>
+      }
+      @if (requiresConfirmation()) {
+        <p class="dialog__message">
+          <ui5-input
+            class="dialog__confirmation-input"
+            data-testid="generic-table-card-delete-confirmation-input"
+            [formControl]="confirmationControl"
+            [placeholder]="config()?.confirmationPlaceholder ?? 'Type to confirm'"
+            [valueState]="confirmationControl.invalid && confirmationControl.dirty ? 'Negative' : 'None'"
+          />
+        </p>
+      }
+    </div>
+  }
+  <div class="dialog__footer" slot="footer">
+    <ui5-button
+      data-testid="generic-table-card-delete-confirm"
+      design="Negative"
+      [disabled]="confirmDisabled()"
+      (click)="onConfirm()"
+    >
+      {{ config()?.confirmLabel ?? 'Delete' }}
+    </ui5-button>
+    <ui5-button
+      data-testid="generic-table-card-delete-cancel"
+      design="Transparent"
+      (click)="cancelled.emit()"
+    >
+      {{ config()?.cancelLabel ?? 'Cancel' }}
+    </ui5-button>
+  </div>
+</ui5-dialog>
