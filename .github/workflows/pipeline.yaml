@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   pipe:
-    uses: openmfp/gha/.github/workflows/pipeline-node-module.yml@main
+    uses: openmfp/gha/.github/workflows/pipeline-node-module.yml@dd5d11065486f662a85fcbdd24788afff0ce0a37 # main
     secrets: inherit
     with:
       publishFromDist: true
@@ -30,7 +30,7 @@ jobs:
   publish-ngx:
     if: ${{ (github.head_ref || github.ref) == 'refs/heads/main' }}
     needs: [pipe]
-    uses: openmfp/gha/.github/workflows/job-node-publish.yml@main
+    uses: openmfp/gha/.github/workflows/job-node-publish.yml@dd5d11065486f662a85fcbdd24788afff0ce0a37 # main
     secrets: inherit
     with:
       version: ${{ needs.pipe.outputs.strictVersion }}
