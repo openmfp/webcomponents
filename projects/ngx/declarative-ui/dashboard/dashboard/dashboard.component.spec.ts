@@ -1413,14 +1413,17 @@ describe('Dashboard', () => {
       expect(labels).toContain('Cancel');
     });
 
-    it('renders German chrome when language input is "de"', () => {
+    it('renders client-supplied chrome translations from config.i18n', () => {
       const { fixture, component } = setup();
 
       fixture.componentRef.setInput('config', {
         title: 'Operations',
         editable: true,
+        i18n: {
+          save: 'Speichern',
+          cancel: 'Abbrechen',
+        },
       });
-      fixture.componentRef.setInput('language', 'de');
       fixture.detectChanges();
 
       component.enterEditMode();
@@ -1432,6 +1435,29 @@ describe('Dashboard', () => {
       const labels = buttons.map((b) => b.textContent?.trim());
       expect(labels).toContain('Speichern');
       expect(labels).toContain('Abbrechen');
+    });
+
+    it('falls back to English for keys omitted from config.i18n', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', {
+        title: 'Operations',
+        editable: true,
+        i18n: {
+          save: 'Speichern',
+        },
+      });
+      fixture.detectChanges();
+
+      component.enterEditMode();
+      fixture.detectChanges();
+
+      const buttons = Array.from(
+        root(fixture).querySelectorAll('.mfp-dashboard__edit-bar ui5-button'),
+      ) as HTMLElement[];
+      const labels = buttons.map((b) => b.textContent?.trim());
+      expect(labels).toContain('Speichern');
+      expect(labels).toContain('Cancel');
     });
   });
 });

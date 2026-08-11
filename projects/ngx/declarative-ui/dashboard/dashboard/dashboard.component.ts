@@ -7,7 +7,6 @@ import { EditCardsDialog } from '../edit-cards-dialog/edit-cards-dialog.componen
 import {
   DASHBOARD_I18N_KEYS,
   DashboardI18nService,
-  DashboardLanguage,
 } from '../i18n';
 import { CardConfig, DashboardConfig, SectionConfig } from '../models';
 import { DashboardSection } from '../section/dashboard-section.component';
@@ -93,7 +92,6 @@ export class Dashboard implements OnInit, OnDestroy {
   sections = model<SectionConfig[]>([]);
   cards = model<CardConfig[]>([]);
   availableCards = input<CardConfig[]>([]);
-  language = input<DashboardLanguage>('en');
 
   readonly saved = output<{ sections: SectionConfig[]; cards: CardConfig[] }>();
   readonly actionButtonClick = output<{
@@ -248,7 +246,7 @@ export class Dashboard implements OnInit, OnDestroy {
       this.unsavedChangesChange.emit(this.hasUnsavedChanges());
     });
     effect(() => {
-      this.i18n.language.set(this.language());
+      this.i18n.overrides.set(this.config().i18n ?? {});
     });
     effect((onCleanup) => {
       const url = this.config().backgroundImageUrl;
