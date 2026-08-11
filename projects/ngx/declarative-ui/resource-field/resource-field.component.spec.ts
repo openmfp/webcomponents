@@ -590,6 +590,30 @@ describe('ResourceField', () => {
       expect(span).toBeNull();
     });
 
+    it('hides the field when resource has no id even if the map has an empty-string key (fail-closed)', () => {
+      // Regression: a `{ '': [...] }` entry must NOT grant access to an
+      // id-less resource. Guarding on a non-empty id closes this bypass.
+      const permissions = { '': [VERB] };
+      const { fixture } = setup(
+        { property: FIELD_PROPERTY, requirePermission: VERB },
+        { action: 'go' }, // no id
+        permissions,
+      );
+      const span = q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`);
+      expect(span).toBeNull();
+    });
+
+    it('hides the field when resource id is an empty string even if the map has an empty-string key (fail-closed)', () => {
+      const permissions = { '': [VERB] };
+      const { fixture } = setup(
+        { property: FIELD_PROPERTY, requirePermission: VERB },
+        { id: '', action: 'go' },
+        permissions,
+      );
+      const span = q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`);
+      expect(span).toBeNull();
+    });
+
     it('hides the field when resource input is undefined (fail-closed)', () => {
       const permissions = { [RESOURCE_ID]: [VERB] };
       // resource not provided → resource() returns undefined

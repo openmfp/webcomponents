@@ -111,8 +111,12 @@ export class ResourceField<
       return true;
     }
 
-    const actions = this.permissions()?.[this.resource()?.id ?? ''];
-    return actions ? actions.includes(perm) : false;
+    const resourceId = this.resource()?.id;
+    if (!resourceId) {
+      return false;
+    }
+
+    return this.permissions()?.[resourceId]?.includes(perm) ?? false;
   });
 
   toggleVisibility(e: Event): void {

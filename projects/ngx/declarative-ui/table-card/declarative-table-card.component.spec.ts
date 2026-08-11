@@ -830,6 +830,116 @@ describe('DeclarativeTableCard', () => {
   });
 
   // -------------------------------------------------------------------------
+  // 9.c openEditDialog() — concurrency / stale-resolver guard
+  // -------------------------------------------------------------------------
+
+  describe('openEditDialog() concurrency', () => {
+    /** A promise plus its resolver, so the test controls when it settles. */
+    function deferred<V>(): { promise: Promise<V>; resolve: (v: V) => void } {
+      let resolve!: (v: V) => void;
+      const promise = new Promise<V>((r) => {
+        resolve = r;
+      });
+      return { promise, resolve };
+    }
+
+    it('ignores a stale field resolver that settles after a newer update action', async () => {
+      const resourceA = RESOURCES[0];
+      const resourceB = RESOURCES[1];
+
+      const fieldsA: FormFieldDefinition[] = [{ name: 'a-only', label: 'A' }];
+      const fieldsB: FormFieldDefinition[] = [{ name: 'b-only', label: 'B' }];
+
+      const deferredA = deferred<FormFieldDefinition[]>();
+      const deferredB = deferred<FormFieldDefinition[]>();
+
+      const config: TableCardConfig = {
+        header: '',
+        tableConfig: READ_CONFIG,
+        // Per-resource edit config, each with a thunk we resolve manually so we
+        // can force the promises to settle out of order.
+        editResourceFormConfig: (resource: GenericResource) => ({
+          title: 'Edit',
+          fields:
+            resource === resourceA
+              ? () => deferredA.promise
+              : () => deferredB.promise,
+        }),
+      };
+
+      const fixture = TestBed.createComponent(
+        DeclarativeTableCard as unknown as typeof DeclarativeTableCard<GenericResource>,
+      );
+      const component = fixture.componentInstance as Comp;
+      fixture.componentRef.setInput('config', config);
+      fixture.componentRef.setInput('resources', RESOURCES);
+      fixture.componentRef.setInput('createFormState', {});
+      fixture.componentRef.setInput('editFormState', {});
+      fixture.detectChanges();
+
+      // First update on A (slow resolver), then a second update on B (fast).
+      component.onButtonClick(makeEvent('update', resourceA));
+      component.onButtonClick(makeEvent('update', resourceB));
+
+      // B's resolver settles first — it is the current pending resource, so it
+      // wins.
+      deferredB.resolve(fieldsB);
+      await Promise.resolve();
+      await Promise.resolve();
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).pendingResource()).toBe(resourceB);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).resolvedEditFields()).toEqual(fieldsB);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).editDialogOpen()).toBe(true);
+
+      // A's resolver settles late — pendingResource is still B, so the stale
+      // result must be dropped (fields stay B's).
+      deferredA.resolve(fieldsA);
+      await Promise.resolve();
+      await Promise.resolve();
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).resolvedEditFields()).toEqual(fieldsB);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).pendingResource()).toBe(resourceB);
+    });
+
+    it('resolves fields from the config bound to the clicked resource', async () => {
+      const resourceA = RESOURCES[0];
+      const resourceB = RESOURCES[1];
+      const fieldsA: FormFieldDefinition[] = [{ name: 'a-only', label: 'A' }];
+      const fieldsB: FormFieldDefinition[] = [{ name: 'b-only', label: 'B' }];
+
+      const config: TableCardConfig = {
+        header: '',
+        tableConfig: READ_CONFIG,
+        editResourceFormConfig: (resource: GenericResource) => ({
+          title: 'Edit',
+          fields: resource === resourceA ? fieldsA : fieldsB,
+        }),
+      };
+
+      const fixture = TestBed.createComponent(
+        DeclarativeTableCard as unknown as typeof DeclarativeTableCard<GenericResource>,
+      );
+      const component = fixture.componentInstance as Comp;
+      fixture.componentRef.setInput('config', config);
+      fixture.componentRef.setInput('resources', RESOURCES);
+      fixture.componentRef.setInput('createFormState', {});
+      fixture.componentRef.setInput('editFormState', {});
+      fixture.detectChanges();
+
+      component.onButtonClick(makeEvent('update', resourceB));
+      await Promise.resolve();
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((component as any).resolvedEditFields()).toEqual(fieldsB);
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // 10. form state and submit flow
   // -------------------------------------------------------------------------
 

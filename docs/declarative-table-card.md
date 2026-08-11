@@ -115,11 +115,11 @@ export class MyComponent {
       title: 'Create Pod',
       confirmLabel: 'Create',
     },
-    deleteResourceConfirmationConfig: {
+    deleteResourceConfirmationConfig: (pod) => ({
       title: 'Delete Pod?',
-      message: 'This action cannot be undone.',
+      message: `This will permanently delete ${pod.metadata.name}.`,
       confirmLabel: 'Delete',
-    },
+    }),
   };
 
   onCreateFieldChange(event: FormFieldChangeEvent): void {
@@ -179,7 +179,7 @@ export class MyComponent {
 | `config`          | `TableCardConfig`    | yes      | -       | Static table, button, and dialog configuration            |
 | `createFormState` | `TableCardFormState` | no       | `{}`    | Runtime validation and submit state for the create dialog |
 | `editFormState`   | `TableCardFormState` | no       | `{}`    | Runtime validation and submit state for the edit dialog   |
-| `permissions`     | `Map<string, string[]>` | no   | —       | Per-row permission map keyed by `resource.id`. Threaded through to `mfp-declarative-table` and each `mfp-resource-field` to evaluate `requirePermission` on column definitions. |
+| `permissions`     | `Record<string, string[]>` | no   | —       | Per-row permission map keyed by `resource.id`. Threaded through to `mfp-declarative-table` and each `mfp-resource-field` to evaluate `requirePermission` on column definitions. |
 
 ### Outputs / Events
 
@@ -234,14 +234,16 @@ All interactive elements carry `data-testid` attributes for reliable E2E targeti
 ## Configuration types
 
 ```ts
-interface TableCardConfig {
+interface TableCardConfig<T extends GenericResource = GenericResource> {
   header: string;
   headerTooltip?: string;
   tableConfig: TableConfig;
   buttonSettings?: TableCardButtonSettings;
   createResourceFormConfig?: ResourceFormConfig;
-  editResourceFormConfig?: ResourceFormConfig;
-  deleteResourceConfirmationConfig?: DeleteResourceConfirmationConfig;
+  editResourceFormConfig?: (resource: T) => ResourceFormConfig;
+  deleteResourceConfirmationConfig?: (
+    resource: T,
+  ) => DeleteResourceConfirmationConfig;
   /** Predefined filters rendered as a horizontal tab strip above the table. */
   filterTabs?: FieldFilterDefinition[];
 }
@@ -312,9 +314,10 @@ private async buildCreateFieldsWithDynamicOptions(): Promise<FormFieldDefinition
 }
 ```
 
-The same applies to `editResourceFormConfig.fields`; its thunk runs when a row's
-edit action opens the edit dialog. A plain array is resolved synchronously and
-needs no `await` — prefer it for static forms.
+The same applies to the `ResourceFormConfig.fields` returned by
+`editResourceFormConfig(resource)`; its thunk runs when a row's edit action
+opens the edit dialog. A plain array is resolved synchronously and needs no
+`await` — prefer it for static forms.
 
 ---
 

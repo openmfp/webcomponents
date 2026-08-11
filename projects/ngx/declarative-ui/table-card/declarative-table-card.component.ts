@@ -47,16 +47,16 @@ import { debounceTime, distinctUntilChanged, filter, map } from 'rxjs';
   encapsulation: ViewEncapsulation.ShadowDom,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class DeclarativeTableCard<T extends GenericResource> {
-  resources = input.required<T[]>();
+export class DeclarativeTableCard<R extends GenericResource> {
+  resources = input.required<R[]>();
   permissions = input<Record<string, string[]>>();
 
-  config = input.required<TableCardConfig<T>>();
+  config = input.required<TableCardConfig<R>>();
   createFormState = input<TableCardFormState>({});
   editFormState = input<TableCardFormState>({});
 
-  readonly actionButtonClick = output<ResourceFieldButtonClickEvent<T>>();
-  readonly tableRowClicked = output<T>();
+  readonly actionButtonClick = output<ResourceFieldButtonClickEvent<R>>();
+  readonly tableRowClicked = output<R>();
   readonly loadMoreResources = output<void>();
   readonly paginationLimitChanged = output<number>();
   readonly pageChange = output<number>();
@@ -64,15 +64,15 @@ export class DeclarativeTableCard<T extends GenericResource> {
   readonly searchChanged = output<string>();
   readonly createFieldChange = output<FormFieldChangeEvent>();
   readonly editFieldChange = output<{
-    resource: T;
+    resource: R;
     formChangeEvent: FormFieldChangeEvent;
   }>();
-  readonly createSubmit = output<T>();
+  readonly createSubmit = output<R>();
   readonly editSubmit = output<{
-    resource: T;
+    resource: R;
     value: Record<string, unknown>;
   }>();
-  readonly deleteSubmit = output<T>();
+  readonly deleteSubmit = output<R>();
   readonly filterTabChanged = output<FieldFilterDefinition | undefined>();
 
   protected searchControl = new FormControl('');
@@ -81,7 +81,7 @@ export class DeclarativeTableCard<T extends GenericResource> {
   protected editDialogOpen = signal(false);
   protected deleteDialogOpen = signal(false);
 
-  protected pendingResource = signal<T | null>(null);
+  protected pendingResource = signal<R | null>(null);
   protected resolvedCreateFields = signal<FormFieldDefinition[]>([]);
   protected resolvedEditFields = signal<FormFieldDefinition[]>([]);
 
@@ -181,7 +181,7 @@ export class DeclarativeTableCard<T extends GenericResource> {
     this.searchChanged.emit(this.searchControl.value ?? '');
   }
 
-  onButtonClick(event: ResourceFieldButtonClickEvent<T>): void {
+  onButtonClick(event: ResourceFieldButtonClickEvent<R>): void {
     if (event.resource?.isAvailable === false) {
       return;
     }
@@ -189,7 +189,7 @@ export class DeclarativeTableCard<T extends GenericResource> {
     const action = event.field.uiSettings?.buttonSettings?.action;
     if (action === 'update' && event.resource) {
       this.pendingResource.set(event.resource);
-      void this.openEditDialog();
+      void this.openEditDialog(event.resource);
       return;
     }
     if (action === 'delete' && event.resource) {
@@ -208,10 +208,17 @@ export class DeclarativeTableCard<T extends GenericResource> {
     this.createDialogOpen.set(true);
   }
 
-  private async openEditDialog(): Promise<void> {
-    this.resolvedEditFields.set(
-      await this.resolveFormFields(this.editFormConfig()?.fields),
-    );
+  private async openEditDialog(resource: R): Promise<void> {
+    const config = this.config().editResourceFormConfig?.(resource);
+    const fields = await this.resolveFormFields(config?.fields);
+    // A newer update action may have replaced the pending resource while we
+    // awaited the field resolver; ignore this stale result so the dialog never
+    // shows one resource's fields with another's initial values.
+    if (this.pendingResource() !== resource) {
+      return;
+    }
+
+    this.resolvedEditFields.set(fields);
     this.editDialogOpen.set(true);
   }
 
@@ -250,7 +257,7 @@ export class DeclarativeTableCard<T extends GenericResource> {
   }
 
   onCreateSubmit(value: Record<string, unknown>): void {
-    this.createSubmit.emit(value as T);
+    this.createSubmit.emit(value as R);
   }
 
   onEditSubmit(value: Record<string, unknown>): void {
@@ -268,7 +275,7 @@ export class DeclarativeTableCard<T extends GenericResource> {
 
   private buildInitialValues(
     fields: FormFieldDefinition[],
-    resource?: T,
+    resource?: R,
   ): Record<string, unknown> {
     if (!resource) return {};
 

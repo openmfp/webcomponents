@@ -83,33 +83,37 @@
   </div>
 </div>
 
-<mfp-resource-form-dialog
-  [open]="createDialogOpen()"
-  [config]="createFormConfig()"
-  [fields]="resolvedCreateFields()"
-  [fieldErrors]="createFormState().fieldErrors ?? {}"
-  [initialValues]="{}"
-  defaultTitle="Create"
-  defaultConfirmLabel="Save"
-  dataTestidPrefix="generic-table-card-create"
-  (fieldChange)="onCreateFieldChange($event)"
-  (submitted)="onCreateSubmit($event)"
-  (cancelled)="closeCreateDialog()"
-/>
+@if (createDialogOpen()) {
+  <mfp-resource-form-dialog
+    [open]="createDialogOpen()"
+    [config]="createFormConfig()"
+    [fields]="resolvedCreateFields()"
+    [fieldErrors]="createFormState().fieldErrors ?? {}"
+    [initialValues]="{}"
+    defaultTitle="Create"
+    defaultConfirmLabel="Save"
+    dataTestidPrefix="generic-table-card-create"
+    (fieldChange)="onCreateFieldChange($event)"
+    (submitted)="onCreateSubmit($event)"
+    (cancelled)="closeCreateDialog()"
+  />
+}
 
-<mfp-resource-form-dialog
-  [open]="editDialogOpen()"
-  [config]="editFormConfig()"
-  [fields]="resolvedEditFields()"
-  [fieldErrors]="editFormState().fieldErrors ?? {}"
-  [initialValues]="editInitialValue()"
-  defaultTitle="Edit"
-  defaultConfirmLabel="Edit"
-  dataTestidPrefix="generic-table-card-edit"
-  (fieldChange)="onEditFieldChange($event)"
-  (submitted)="onEditSubmit($event)"
-  (cancelled)="closeEditDialog()"
-/>
+@if (editDialogOpen()) {
+  <mfp-resource-form-dialog
+    [open]="editDialogOpen()"
+    [config]="editFormConfig()"
+    [fields]="resolvedEditFields()"
+    [fieldErrors]="editFormState().fieldErrors ?? {}"
+    [initialValues]="editInitialValue()"
+    defaultTitle="Edit"
+    defaultConfirmLabel="Edit"
+    dataTestidPrefix="generic-table-card-edit"
+    (fieldChange)="onEditFieldChange($event)"
+    (submitted)="onEditSubmit($event)"
+    (cancelled)="closeEditDialog()"
+  />
+}
 
 <mfp-delete-confirmation-dialog
   [open]="deleteDialogOpen()"

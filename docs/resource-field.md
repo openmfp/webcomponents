@@ -48,7 +48,7 @@ export class MyComponent {
 | ----------------- | ----------------- | -------- | ------- | ------------------------------------------------------ |
 | `fieldDefinition` | `FieldDefinition` | yes      | —       | Describes how to resolve and display the field value    |
 | `resource`        | `GenericResource` | no       | —       | The data object from which the field value is resolved  |
-| `permissions`     | `Map<string, string[]>` | no | —      | Per-row permission map keyed by `resource.id`. Used to evaluate `fieldDefinition.requirePermission`. |
+| `permissions`     | `Record<string, string[]>` | no | —      | Per-row permission map keyed by `resource.id`. Used to evaluate `fieldDefinition.requirePermission`. |
 
 ### Outputs / Events
 
@@ -274,10 +274,10 @@ A field can be hidden unless a specific verb is granted for the current row. Set
 The `permissions` map is keyed by `resource.id`. The value is the list of granted verbs for that row.
 
 ```ts
-const permissions = new Map([
-  ['pod-1', ['get', 'update', 'delete']],
-  ['pod-2', ['get', 'update']],
-]);
+const permissions = {
+  'pod-1': ['get', 'update', 'delete'],
+  'pod-2': ['get', 'update'],
+};
 ```
 
 **Semantics (fail-closed):**
