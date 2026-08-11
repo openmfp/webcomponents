@@ -8,7 +8,7 @@
     <div class="mfp-dashboard__topbar-row">
       <div class="mfp-dashboard__header">
         <div class="mfp-dashboard__title-row">
-          @if (config().title) {
+          @if (i18nService.getTranslation(i18nKeys.TITLE)) {
             <ui5-title
               data-testid="dashboard-title"
               level="H3"
@@ -23,7 +23,9 @@
               <ui5-icon
                 class="mfp-dashboard__unsaved-changes-icon"
                 name="user-edit"
-                [accessibleName]="i18nService.getTranslation(i18nKeys.UNSAVED_CHANGES)"
+                [accessibleName]="
+                  i18nService.getTranslation(i18nKeys.UNSAVED_CHANGES)
+                "
               />
               <span class="mfp-dashboard__unsaved-changes-text">{{
                 i18nService.getTranslation(i18nKeys.UNSAVED_CHANGES)
@@ -31,7 +33,7 @@
             </div>
           }
         </div>
-        @if (config().description) {
+        @if (i18nService.getTranslation(i18nKeys.DESCRIPTION)) {
           <ui5-title
             data-testid="dashboard-description"
             level="H5"
@@ -55,7 +57,7 @@
             [accessibleName]="
               editCardsButton().text ||
               editCardsButton().tooltip ||
-              i18nService.getTranslation(i18nKeys.EDIT_CARDS)
+              i18nService.getTranslation(i18nKeys.EDIT_CARDS_BUTTON)
             "
             [design]="editCardsButton().design"
             [icon]="editCardsButton().icon"
@@ -93,7 +95,7 @@
                 [icon]="editViewButton().icon"
                 [text]="
                   editViewButton().text ||
-                  i18nService.getTranslation(i18nKeys.EDIT_VIEW)
+                  i18nService.getTranslation(i18nKeys.EDIT_HOME_BUTTON)
                 "
               />
               @if (customActions().length) {
@@ -116,7 +118,7 @@
                 [icon]="editViewButton().icon"
                 [text]="
                   editViewButton().text ||
-                  i18nService.getTranslation(i18nKeys.EDIT_VIEW)
+                  i18nService.getTranslation(i18nKeys.EDIT_HOME_BUTTON)
                 "
               />
             }
@@ -128,7 +130,7 @@
               [accessibleName]="
                 editViewButton().text ||
                 editViewButton().tooltip ||
-                i18nService.getTranslation(i18nKeys.EDIT_VIEW)
+                i18nService.getTranslation(i18nKeys.EDIT_HOME_BUTTON)
               "
               [design]="editViewButton().design"
               [icon]="editViewButton().icon"
@@ -157,7 +159,7 @@
               [accessibleName]="
                 editViewButton().text ||
                 editViewButton().tooltip ||
-                i18nService.getTranslation(i18nKeys.EDIT_VIEW)
+                i18nService.getTranslation(i18nKeys.EDIT_HOME_BUTTON)
               "
               [design]="editViewButton().design"
               [icon]="editViewButton().icon"

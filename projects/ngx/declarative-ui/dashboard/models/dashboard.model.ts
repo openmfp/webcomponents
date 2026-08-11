@@ -75,16 +75,10 @@ export interface DashboardButtonsSettings {
 
 /** Top-level configuration for the `<mfp-dashboard>` component. */
 export interface DashboardConfig {
-  /** Dashboard title rendered in the toolbar. */
-  title: string;
-  /** Optional subtitle shown below the title. */
-  description?: string;
   /** URL of the background image applied to the dashboard host element. */
   backgroundImageUrl?: string;
   /** Overrides for the built-in Edit View and Edit Cards toolbar buttons. */
   buttonsSettings?: DashboardButtonsSettings;
-  /** Extra action buttons rendered in the toolbar alongside the built-in ones. */
-  customActions?: ButtonSettings[];
   /** When `true`, shows the Edit View button in the toolbar, allowing the user to enter edit mode. */
   editable?: boolean;
   /** When `true`, the Edit View button is rendered before the custom actions instead of after. Defaults to `false`. */
