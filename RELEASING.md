@@ -23,10 +23,11 @@ A single release produces one git tag, one GitHub Release, and one `CHANGELOG.md
 - **Branch protection.** Make the **PR Title** check required on `main`. Because the release
   workflow commits `CHANGELOG.md` and the version bump back to the branch, allow
   `github-actions[bot]` to bypass push protection on `main` and `release/*` (or supply a token).
-- **Follow-up — enable `check-format` in CI.** The CI pipeline ships with `npm run check-format`
-  commented out because ~74 pre-existing files currently fail Prettier. As an immediate follow-up,
-  run `npm run format` repo-wide, commit the result, then uncomment the step in
-  `.github/workflows/pipeline.yaml`.
+- **Follow-up — enable `lint` and `check-format` in CI.** The CI pipeline ships with both
+  `npm run lint` and `npm run check-format` commented out because pre-existing files fail them
+  (the previous pipeline ran neither). As an immediate follow-up, run `npm run lint:fix` and
+  `npm run format` repo-wide (a couple of lint errors need manual fixes), commit the result, then
+  uncomment both steps in `.github/workflows/pipeline.yaml`.
 
 ## Normal release
 
