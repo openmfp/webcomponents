@@ -13,21 +13,24 @@ The repo publishes two npm packages in lockstep at the same version, taken from 
 
 A single release produces one git tag, one GitHub Release, and one `CHANGELOG.md` entry.
 
-## Prerequisites (one-time, repo admin)
+## How releases are secured
 
-- **npm Trusted Publishing (OIDC).** Publishing uses OIDC — no long-lived npm token. On npmjs.org,
-  configure a Trusted Publisher for **both** packages:
-  - Package → _Settings_ → _Trusted Publishing_ → _GitHub Actions_
-  - Repository: `openmfp/webcomponents`, Workflow: `release.yaml`
-  - Until this is configured for both packages, the publish step will fail.
-- **Branch protection.** Make the **PR Title** check required on `main`. Because the release
-  workflow commits `CHANGELOG.md` and the version bump back to the branch, allow
-  `github-actions[bot]` to bypass push protection on `main` and `release/*` (or supply a token).
-- **Follow-up — enable `lint` and `check-format` in CI.** The CI pipeline ships with both
-  `npm run lint` and `npm run check-format` commented out because pre-existing files fail them
-  (the previous pipeline ran neither). As an immediate follow-up, run `npm run lint:fix` and
-  `npm run format` repo-wide (a couple of lint errors need manual fixes), commit the result, then
-  uncomment both steps in `.github/workflows/pipeline.yaml`.
+Releases publish via **npm Trusted Publishing (OIDC)** — no long-lived npm token. The `release` job
+runs in a GitHub Environment named `release`, which is the primary release gate: it restricts
+publishing to the `main` and `release/*` branches (and, if configured, requires human approval).
+
+This matters because `workflow_dispatch` can be triggered by anyone with write access, the job
+checks out `github.ref_name`, and `id-token: write` mints an npm-usable OIDC token. Trusted
+Publishing binds to the _workflow file_, not to a branch, so without the environment gate a rogue
+branch could publish arbitrary contents under our package names. Both packages share the same
+neutral `release` environment name in their npm Trusted Publisher config, so npm only accepts a
+token that carries the `release` environment claim.
+
+The gate closes the widest hole — write-access → arbitrary publish — but is **not** a complete
+guarantee: it does not vet the _contents_ of protected branches (rely on PR review + branch
+protection), does not stop a compromised **admin**, and does not cover build-time supply-chain
+compromise (mitigated by SHA-pinned actions + lockfile) or npm-side account takeover (mitigated by
+npm 2FA/org controls).
 
 ## Normal release
 

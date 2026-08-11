@@ -23,6 +23,7 @@ concurrency:
 jobs:
   release:
     runs-on: ubuntu-latest
+    environment: release
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -43,6 +44,7 @@ jobs:
         uses: ietf-tools/semver-action@c90370b2958652d71c06a3484129a4d423a6d8a8 # v1.11.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref_name }}
           prefix: ''
           majorList: ''
           minorList: feat
