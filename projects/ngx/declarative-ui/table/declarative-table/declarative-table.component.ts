@@ -49,6 +49,7 @@ export class DeclarativeTable<T extends GenericResource> {
   columns = input.required<TableFieldDefinition[]>();
   resources = input.required<T[]>();
   trackByPath = input<string>('id');
+  permissions = input<Record<string, string[]>>();
 
   totalItemsCount = input<number>();
   paginationLimit = input<number>(5);

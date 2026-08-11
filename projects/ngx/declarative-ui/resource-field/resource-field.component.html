@@ -1,80 +1,82 @@
-@if (isCollection()) {
-  <mfp-resource-collection-field
-    [fieldDefinition]="fieldDefinition()"
-    [resource]="resource()"
-  />
-} @else {
-  @let displayType = displayAs();
-  <span [attr.data-testid]="testId()" [style]="cssStyles()">
-    @if (displayType === 'secret') {
-      <span class="secret-value-container">
-        <mfp-secret-value [isVisible]="isVisible()" [testId]="testId() + '-secret'" [value]="value()" />
-        <ui5-icon
-          class="toggle-icon"
-          mode="Interactive"
-          [accessibleName]="isVisible() ? 'Hide value' : 'Show value'"
-          [attr.data-testid]="testId() + '-secret-toggle'"
-          [name]="isVisible() ? 'hide' : 'show'"
-          (click)="toggleVisibility($event)"
-        />
-      </span>
-    } @else if (displayType === 'boolIcon' && isBoolLike()) {
-      <mfp-boolean-value [boolValue]="boolValue()!" [testId]="testId() + '-boolean'" />
-    } @else if (displayType === 'link' && isUrlValue()) {
-      <mfp-link-value [testId]="testId() + '-link'" [urlValue]="stringValue()!" />
-    } @else if (displayType === 'tooltip') {
-      <ui5-icon
-        [accessibleName]="stringValue()!"
-        [attr.data-testid]="testId() + '-tooltip'"
-        [name]="tooltipIcon() ?? 'hint'"
-        [showTooltip]="true"
-      />
-    } @else if (displayType === 'alert') {
-      @if (!value()) {
-        <ui5-icon
-          design="Critical"
-          name="alert"
-          [accessibleName]="resource()?.accessibleName ?? ''"
-          [attr.data-testid]="testId() + '-icon'"
-          [showTooltip]="true"
-          (click)="$event.stopPropagation()"
-        />
-      }
-    } @else if (displayType === 'img' && value()) {
-      <img alt="Resource image" class="image-cell" [src]="value()" />
-    } @else if (displayType === 'button') {
-      @let buttonSettings = uiSettings()?.buttonSettings;
-      <ui5-button
-        [accessibleName]="buttonAccessibleName()"
-        [attr.data-testid]="testId() + '-button'"
-        [design]="buttonSettings?.design"
-        [disabled]="buttonDisabled()"
-        [endIcon]="buttonSettings?.endIcon"
-        [icon]="buttonSettings?.icon"
-        [tooltip]="buttonSettings?.tooltip"
-        (click)="buttonClicked($event)"
-        >{{ buttonSettings?.text }}</ui5-button
-      >&nbsp;
-    } @else if (displayType === 'tag') {
-      <mfp-tag-list-value
-        [tagSettings]="uiSettings()?.tagSettings"
-        [tags]="tags()"
-        [testId]="testId() + '-tags'"
-      />
-    } @else {
-      {{ displayValue() }}
-    }
-  </span>
-
-  @if (withCopyButton()) {
-    <ui5-icon
-      class="toggle-icon"
-      mode="Interactive"
-      [accessibleName]="copySuccess() ? 'Copied' : 'Copy value'"
-      [attr.data-testid]="testId() + '-copy'"
-      [design]="copySuccess() ? 'Positive' : 'Default'"
-      [name]="copySuccess() ? 'accept' : 'copy'"
-      (click)="copyValue($event)"
+@if (canRenderField()) {
+  @if (isCollection()) {
+    <mfp-resource-collection-field
+      [fieldDefinition]="fieldDefinition()"
+      [resource]="resource()"
     />
+  } @else {
+    @let displayType = displayAs();
+    <span [attr.data-testid]="testId()" [style]="cssStyles()">
+      @if (displayType === 'secret') {
+        <span class="secret-value-container">
+          <mfp-secret-value [isVisible]="isVisible()" [testId]="testId() + '-secret'" [value]="value()" />
+          <ui5-icon
+            class="toggle-icon"
+            mode="Interactive"
+            [accessibleName]="isVisible() ? 'Hide value' : 'Show value'"
+            [attr.data-testid]="testId() + '-secret-toggle'"
+            [name]="isVisible() ? 'hide' : 'show'"
+            (click)="toggleVisibility($event)"
+          />
+        </span>
+      } @else if (displayType === 'boolIcon' && isBoolLike()) {
+        <mfp-boolean-value [boolValue]="boolValue()!" [testId]="testId() + '-boolean'" />
+      } @else if (displayType === 'link' && isUrlValue()) {
+        <mfp-link-value [testId]="testId() + '-link'" [urlValue]="stringValue()!" />
+      } @else if (displayType === 'tooltip') {
+        <ui5-icon
+          [accessibleName]="stringValue()!"
+          [attr.data-testid]="testId() + '-tooltip'"
+          [name]="tooltipIcon() ?? 'hint'"
+          [showTooltip]="true"
+        />
+      } @else if (displayType === 'alert') {
+        @if (!value()) {
+          <ui5-icon
+            design="Critical"
+            name="alert"
+            [accessibleName]="resource()?.accessibleName ?? ''"
+            [attr.data-testid]="testId() + '-icon'"
+            [showTooltip]="true"
+            (click)="$event.stopPropagation()"
+          />
+        }
+      } @else if (displayType === 'img' && value()) {
+        <img alt="Resource image" class="image-cell" [src]="value()" />
+      } @else if (displayType === 'button') {
+        @let buttonSettings = uiSettings()?.buttonSettings;
+        <ui5-button
+          [attr.data-testid]="testId() + '-button'"
+          [accessibleName]="buttonAccessibleName()"
+          [design]="buttonSettings?.design"
+          [endIcon]="buttonSettings?.endIcon"
+          [disabled]="buttonDisabled()"
+          [icon]="buttonSettings?.icon"
+          [tooltip]="buttonSettings?.tooltip"
+          (click)="buttonClicked($event)"
+          >{{ buttonSettings?.text }}</ui5-button
+        >&nbsp;
+      } @else if (displayType === 'tag') {
+        <mfp-tag-list-value
+          [tagSettings]="uiSettings()?.tagSettings"
+          [tags]="tags()"
+          [testId]="testId() + '-tags'"
+        />
+      } @else {
+        {{ displayValue() }}
+      }
+    </span>
+
+    @if (withCopyButton()) {
+      <ui5-icon
+        class="toggle-icon"
+        mode="Interactive"
+        [accessibleName]="copySuccess() ? 'Copied' : 'Copy value'"
+        [attr.data-testid]="testId() + '-copy'"
+        [design]="copySuccess() ? 'Positive' : 'Default'"
+        [name]="copySuccess() ? 'accept' : 'copy'"
+        (click)="copyValue($event)"
+      />
+    }
   }
 }
