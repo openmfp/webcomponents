@@ -1,7 +1,10 @@
 {
+  "title": "Hi!",
+  "description": "You're on the Dashboard",
+  "editHomeButton": "Edit Home",
+  "editCardsButton": "Edit Cards",
   "unsavedChanges": "Unsaved Changes",
   "editCards": "Edit Cards",
-  "editView": "Edit View",
   "actions": "Actions",
   "save": "Save",
   "cancel": "Cancel",
