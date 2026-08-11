@@ -22,7 +22,8 @@ The dashboard is shipped as a **dedicated standalone bundle** `mfp-wc-dashboard.
 
 <script type="module">
   const el = document.getElementById('dashboard');
-  el.config = { title: 'Platform Overview' };
+  el.config = {};
+  el.i18n = { ...EN_DEFAULTS, title: 'Platform Overview' };
   el.sections = [{ id: 'runtime', title: 'Runtime', w: 12 }];
   el.cards = [
     {
@@ -60,6 +61,7 @@ Dashboard.registerAngularComponents([VisitedServiceCard]);
   template: `
     <mfp-dashboard
       [config]="config"
+      [i18n]="i18n"
       [sections]="sections"
       [cards]="cards"
       [availableCards]="availableCards"
@@ -69,9 +71,12 @@ Dashboard.registerAngularComponents([VisitedServiceCard]);
 })
 export class DashboardPage {
   config: DashboardConfig = {
+    backgroundImageUrl: '/assets/dashboard-bg.png',
+  };
+  i18n: DashboardTranslations = {
+    ...EN_DEFAULTS,
     title: 'Platform Overview',
     description: 'Service health and team activity',
-    backgroundImageUrl: '/assets/dashboard-bg.png',
   };
 
   sections: SectionConfig[] = [
@@ -196,7 +201,7 @@ const cards: CardConfig[] = [
 | `sections`       | `SectionConfig[]` | no       | `[]`    | Named dashboard sections rendered above the loose-card grid |
 | `cards`          | `CardConfig[]`    | no       | `[]`    | All cards shown in sections or in the grid                  |
 | `availableCards` | `CardConfig[]`    | no       | `[]`    | Card templates that can be added in edit mode               |
-| `i18n`           | `Partial<DashboardTranslations>` | no | `{}` | Translations for the dashboard chrome (toolbar buttons, dialogs, a11y labels). Omitted keys fall back to the English default. See [Localization](#localization). |
+| `i18n`           | `DashboardTranslations \| null \| undefined` | no | `EN_DEFAULTS` | Full set of dashboard chrome + title/description strings. When `null`, `undefined`, or `{}`, the built-in English defaults are used; when provided, it must be the complete `DashboardTranslations`. See [Localization](#localization). |
 
 ### Outputs
 
@@ -235,7 +240,9 @@ const cards: CardConfig[] = [
 
 ## Localization
 
-The dashboard chrome (toolbar buttons, dialogs, accessibility labels, the **Unsaved Changes** badge) is rendered from a fixed set of string keys. The library ships **English only** as the built-in default. To render the chrome in any other language, the client application supplies the translated strings through the `i18n` input; to switch language at runtime, swap the object passed to `i18n` (any key you omit falls back to the English default).
+The dashboard title, description, chrome (toolbar buttons, dialogs, accessibility labels, the **Unsaved Changes** badge) are rendered from a fixed set of string keys. The library ships **English only** as the built-in default. To render the dashboard in any other language, the client application supplies a **complete** `DashboardTranslations` object through the `i18n` input; to switch language at runtime, bind a new object.
+
+When `i18n` is `null`, `undefined`, or an empty object (`{}`), the dashboard falls back entirely to the built-in English defaults (`EN_DEFAULTS`). When a non-empty object is provided it is treated as authoritative and **must contain all keys** — the type is the full `DashboardTranslations`, not a partial.
 
 This keeps the library free of a hardcoded language list: the set of supported languages is entirely the client's decision.
 
@@ -243,7 +250,7 @@ The key contract is exported for type-safe usage:
 
 ```ts
 import {
-  DashboardI18nKey, // union of the 13 key strings
+  DashboardI18nKey, // union of the 17 key strings
   DashboardTranslations, // Record<DashboardI18nKey, string>
   EN_DEFAULTS, // the built-in English strings
 } from '@openmfp/ngx';
@@ -252,18 +259,21 @@ import {
 ### Angular usage
 
 ```ts
-germanChrome: Partial<DashboardTranslations> = {
+germanStrings: DashboardTranslations = {
+  ...EN_DEFAULTS, // start from the English contract, then translate
+  title: 'Hallo!',
+  description: 'Sie befinden sich im Dashboard',
   save: 'Speichern',
   cancel: 'Abbrechen',
-  // …the remaining keys; omitted keys fall back to English
+  // …all remaining keys
 };
 ```
 
 ```html
-<mfp-dashboard [config]="config" [i18n]="germanChrome" />
+<mfp-dashboard [config]="config" [i18n]="germanStrings" />
 ```
 
-Switch language by binding a new object to `i18n` — the change is forwarded to every nested dashboard component (sections, cards, all three dialogs) via a shared `DashboardI18nService`, so every chrome label re-renders in place.
+Switch language by binding a new object to `i18n` — the change is forwarded to every nested dashboard component (sections, cards, all three dialogs) via a shared `DashboardI18nService`, so every label re-renders in place.
 
 ### Web-component usage
 
@@ -276,13 +286,16 @@ el.i18n = spanishStrings;
 
 ### Translated keys
 
-The 13 keys and their built-in English defaults (the exact strings in `EN_DEFAULTS`). Client applications provide a value per key for each language they support:
+The 17 keys and their built-in English defaults (the exact strings in `EN_DEFAULTS`). A provided `i18n` object must supply all of them:
 
 | Key                  | English default (built-in)                                                                       |
 | -------------------- | ------------------------------------------------------------------------------------------------ |
+| `title`              | Hi!                                                                                              |
+| `description`        | You're on the Dashboard                                                                          |
+| `editHomeButton`     | Edit Home                                                                                         |
+| `editCardsButton`    | Edit Cards                                                                                       |
 | `unsavedChanges`     | Unsaved Changes                                                                                  |
 | `editCards`          | Edit Cards                                                                                        |
-| `editView`           | Edit View                                                                                         |
 | `actions`            | Actions                                                                                           |
 | `save`               | Save                                                                                              |
 | `cancel`             | Cancel                                                                                            |
@@ -295,13 +308,14 @@ The 13 keys and their built-in English defaults (the exact strings in `EN_DEFAUL
 | `removeCard`         | Remove card                                                                                        |
 | `resizable`          | Resizable                                                                                          |
 
+`title` and `description` accept plain strings or HTML markup. Safe HTML tags (e.g. `<b>`, `<em>`, `<a>`) are rendered; dangerous content such as `<script>` is stripped. The title renders as an `<h3>` heading and the description as an `<h5>` heading (hidden when `description` is empty). `editHomeButton` is the text of the built-in Edit View button and `editCardsButton` is the text of the built-in Edit Cards button (both win over any `buttonsSettings` text).
+
 ### What is NOT translated
 
-The dashboard does **not** translate consumer-supplied strings — those are passed through verbatim because the consumer already controls them:
+The dashboard does **not** translate the remaining consumer-supplied strings — those are passed through verbatim because the consumer already controls them:
 
-- `config.title` and `config.description`
 - `config.customActions[].text` / `tooltip`
-- `config.buttonsSettings.editViewButton.text` / `tooltip` and the Edit Cards equivalents (overrides win over the translated defaults)
+- `config.buttonsSettings` `icon` / `design` (the built-in button **texts** come from `i18n.editHomeButton` and `i18n.editCardsButton`)
 - Card `label`s shown in the Edit Cards dialog list
 
 Translate these in your application before passing them to the dashboard — typically alongside the same language switch that swaps the `i18n` input.
@@ -523,8 +537,6 @@ Two-button popup shown when the user clicks the Cancel button on the in-page edi
 
 ```ts
 interface DashboardConfig {
-  title: string;
-  description?: string;
   backgroundImageUrl?: string;
   buttonsSettings?: DashboardButtonsSettings;
   customActions?: ButtonSettings[];
@@ -536,7 +548,7 @@ interface DashboardConfig {
 }
 ```
 
-`title` and `description` accept plain strings or HTML markup. Safe HTML tags (e.g. `<b>`, `<em>`, `<a>`) are rendered; dangerous content such as `<script>` tags is stripped automatically. The title is rendered as an `<h3>` heading and the description as an `<h5>` heading.
+The dashboard title and description are no longer part of `DashboardConfig` — they come from the `i18n` input (`i18n.title` / `i18n.description`). See [Localization](#localization).
 
 #### `zFlow` — reflow layout mode
 
@@ -573,7 +585,6 @@ The "full" step is screen-width-dependent: on XL-width pages (≥ 1440 px) a ful
 
 ```ts
 const config: DashboardConfig = {
-  title: 'Platform Overview',
   zFlow: { cardHeight: 30 }, // each loose card is 30 rows (300 px) tall
 };
 ```
@@ -598,7 +609,6 @@ interface DashboardButtonsSettings {
 
 ```ts
 const config: DashboardConfig = {
-  title: 'Platform Overview',
   editable: true,
   buttonsSettings: {
     editViewButton: {
@@ -625,7 +635,6 @@ By default the **Edit View** button is rendered _after_ all `customActions` (in 
 
 ```ts
 const config: DashboardConfig = {
-  title: 'Platform Overview',
   editable: true,
   editButtonFirst: true,
   customActions: [
@@ -745,8 +754,8 @@ All interactive elements carry `data-testid` attributes for reliable E2E targeti
 | Element | `data-testid` | Notes |
 |---|---|---|
 | Root container | `dashboard` | |
-| Title | `dashboard-title` | Present when `config.title` is set |
-| Description | `dashboard-description` | Present when `config.description` is set |
+| Title | `dashboard-title` | Present when `i18n.title` is non-empty |
+| Description | `dashboard-description` | Present when `i18n.description` is non-empty |
 | Edit-cards button | `dashboard-edit-cards-btn` | Visible in edit mode |
 | Compact menu toggle | `dashboard-toolbar-menu-btn` | Compact toolbar mode only |
 | Compact dropdown menu | `dashboard-toolbar-menu` | |

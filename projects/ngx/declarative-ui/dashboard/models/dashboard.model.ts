@@ -75,10 +75,6 @@ export interface DashboardButtonsSettings {
 
 /** Top-level configuration for the `<mfp-dashboard>` component. */
 export interface DashboardConfig {
-  /** Dashboard title rendered in the toolbar. */
-  title: string;
-  /** Optional subtitle shown below the title. */
-  description?: string;
   /** URL of the background image applied to the dashboard host element. */
   backgroundImageUrl?: string;
   /** Overrides for the built-in Edit View and Edit Cards toolbar buttons. */

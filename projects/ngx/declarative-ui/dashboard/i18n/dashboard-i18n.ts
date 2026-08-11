@@ -1,9 +1,12 @@
 import en from './en.json';
 
 export const DASHBOARD_I18N_KEYS = {
+  TITLE: 'title',
+  DESCRIPTION: 'description',
+  EDIT_HOME_BUTTON: 'editHomeButton',
+  EDIT_CARDS_BUTTON: 'editCardsButton',
   UNSAVED_CHANGES: 'unsavedChanges',
   EDIT_CARDS: 'editCards',
-  EDIT_VIEW: 'editView',
   ACTIONS: 'actions',
   SAVE: 'save',
   CANCEL: 'cancel',

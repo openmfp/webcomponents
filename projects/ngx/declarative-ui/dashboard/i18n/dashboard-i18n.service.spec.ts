@@ -10,6 +10,17 @@ describe('DashboardI18nService', () => {
     );
   });
 
+  it('exposes title/description/button defaults as part of the contract', () => {
+    const service = new DashboardI18nService();
+    expect(service.getTranslation(DASHBOARD_I18N_KEYS.TITLE)).toBe('Hi!');
+    expect(service.getTranslation(DASHBOARD_I18N_KEYS.EDIT_HOME_BUTTON)).toBe(
+      'Edit Home',
+    );
+    expect(service.getTranslation(DASHBOARD_I18N_KEYS.EDIT_CARDS_BUTTON)).toBe(
+      'Edit Cards',
+    );
+  });
+
   it('uses client-supplied overrides when provided', () => {
     const service = new DashboardI18nService();
     service.overrides.set({

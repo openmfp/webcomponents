@@ -8,6 +8,7 @@ import {
   DASHBOARD_I18N_KEYS,
   DashboardI18nService,
   DashboardTranslations,
+  EN_DEFAULTS,
 } from '../i18n';
 import { CardConfig, DashboardConfig, SectionConfig } from '../models';
 import { DashboardSection } from '../section/dashboard-section.component';
@@ -94,13 +95,14 @@ export class Dashboard implements OnInit, OnDestroy {
   cards = model<CardConfig[]>([]);
   availableCards = input<CardConfig[]>([]);
   /**
-   * Translations for the built-in dashboard chrome (toolbar buttons, dialogs,
-   * a11y labels). The library ships English only; supply this map to render the
-   * chrome in another language, and swap it to switch language. Any key omitted
-   * falls back to the built-in English default. See `DashboardTranslations` /
-   * `DashboardI18nKey` for the full key contract.
+   * Full set of dashboard-chrome translations (title, description, toolbar
+   * buttons, dialogs, a11y labels). The library ships English only. Provide a
+   * complete `DashboardTranslations` to render the dashboard in another
+   * language, and swap it to switch language. When `null`, `undefined`, or an
+   * empty object, the built-in English defaults (`EN_DEFAULTS`) are used. See
+   * `DashboardTranslations` / `DashboardI18nKey` for the full key contract.
    */
-  i18n = input<Partial<DashboardTranslations>>({});
+  i18n = input<DashboardTranslations | null | undefined>(EN_DEFAULTS);
 
   readonly saved = output<{ sections: SectionConfig[]; cards: CardConfig[] }>();
   readonly actionButtonClick = output<{
@@ -139,11 +141,16 @@ export class Dashboard implements OnInit, OnDestroy {
   });
   protected safeTitle = computed((): SafeHtml => {
     const clean =
-      this.sanitizer.sanitize(SecurityContext.HTML, this.config().title) ?? '';
+      this.sanitizer.sanitize(
+        SecurityContext.HTML,
+        this.i18nService.getTranslation(DASHBOARD_I18N_KEYS.TITLE),
+      ) ?? '';
     return this.sanitizer.bypassSecurityTrustHtml(clean);
   });
   protected safeDescription = computed((): SafeHtml | null => {
-    const desc = this.config().description;
+    const desc = this.i18nService.getTranslation(
+      DASHBOARD_I18N_KEYS.DESCRIPTION,
+    );
     if (!desc) return null;
 
     const clean = this.sanitizer.sanitize(SecurityContext.HTML, desc) ?? '';
@@ -179,16 +186,18 @@ export class Dashboard implements OnInit, OnDestroy {
   protected editViewButton = computed(() => ({
     icon: 'action-settings',
     design: 'Transparent' as const,
-    tooltip: this.i18nService.getTranslation(DASHBOARD_I18N_KEYS.EDIT_VIEW),
-    text: '',
+    tooltip: this.i18nService.getTranslation(
+      DASHBOARD_I18N_KEYS.EDIT_HOME_BUTTON,
+    ),
     ...this.config().buttonsSettings?.editViewButton,
+    text: this.i18nService.getTranslation(DASHBOARD_I18N_KEYS.EDIT_HOME_BUTTON),
   }));
   protected editCardsButton = computed(() => ({
     icon: '',
     design: 'Default' as const,
     tooltip: '',
-    text: this.i18nService.getTranslation(DASHBOARD_I18N_KEYS.EDIT_CARDS),
     ...this.config().buttonsSettings?.editCardsButton,
+    text: this.i18nService.getTranslation(DASHBOARD_I18N_KEYS.EDIT_CARDS_BUTTON),
   }));
 
   protected sectionCards = computed(() => {
@@ -255,7 +264,10 @@ export class Dashboard implements OnInit, OnDestroy {
       this.unsavedChangesChange.emit(this.hasUnsavedChanges());
     });
     effect(() => {
-      this.i18nService.overrides.set(this.i18n());
+      const supplied = this.i18n();
+      const resolved =
+        supplied && Object.keys(supplied).length > 0 ? supplied : EN_DEFAULTS;
+      this.i18nService.overrides.set(resolved);
     });
     effect((onCleanup) => {
       const url = this.config().backgroundImageUrl;

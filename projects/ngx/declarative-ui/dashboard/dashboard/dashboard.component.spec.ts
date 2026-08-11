@@ -1,5 +1,6 @@
 import { resetDashboardCardRegistry } from '../card/utils/dashboard-card-registry';
 import { DASHBOARD_CARD_DRAG_ORIGIN_CLASS, XL_PAGE } from '../constants';
+import { EN_DEFAULTS } from '../i18n';
 import { CardConfig, SectionConfig } from '../models';
 import { Dashboard } from './dashboard.component';
 import { ZflowGridStackEngine } from './engines/zflow/z-flow-engine';
@@ -97,7 +98,9 @@ describe('Dashboard', () => {
   it('renders dashboard metadata, sections and loose cards from the provided inputs', () => {
     const { fixture, component } = setup();
 
-    fixture.componentRef.setInput('config', {
+    fixture.componentRef.setInput('config', {});
+    fixture.componentRef.setInput('i18n', {
+      ...EN_DEFAULTS,
       title: 'Operations',
       description: 'Platform status',
     });
@@ -670,7 +673,11 @@ describe('Dashboard', () => {
     it('renders title inside a ui5-title with level H3', () => {
       const { fixture } = setup();
 
-      fixture.componentRef.setInput('config', { title: 'My Dashboard' });
+      fixture.componentRef.setInput('config', {});
+      fixture.componentRef.setInput('i18n', {
+        ...EN_DEFAULTS,
+        title: 'My Dashboard',
+      });
       fixture.detectChanges();
 
       const titleEl = root(fixture).querySelector('ui5-title[level="H3"]');
@@ -681,8 +688,9 @@ describe('Dashboard', () => {
     it('renders description inside a ui5-title with level H5', () => {
       const { fixture } = setup();
 
-      fixture.componentRef.setInput('config', {
-        title: 'T',
+      fixture.componentRef.setInput('config', {});
+      fixture.componentRef.setInput('i18n', {
+        ...EN_DEFAULTS,
         description: 'Platform status',
       });
       fixture.detectChanges();
@@ -695,7 +703,11 @@ describe('Dashboard', () => {
     it('renders safe HTML markup in the title', () => {
       const { fixture } = setup();
 
-      fixture.componentRef.setInput('config', { title: 'Hello <b>World</b>' });
+      fixture.componentRef.setInput('config', {});
+      fixture.componentRef.setInput('i18n', {
+        ...EN_DEFAULTS,
+        title: 'Hello <b>World</b>',
+      });
       fixture.detectChanges();
 
       const span = root(fixture).querySelector('ui5-title[level="H3"] span');
@@ -706,8 +718,9 @@ describe('Dashboard', () => {
     it('renders safe HTML markup in the description', () => {
       const { fixture } = setup();
 
-      fixture.componentRef.setInput('config', {
-        title: 'T',
+      fixture.componentRef.setInput('config', {});
+      fixture.componentRef.setInput('i18n', {
+        ...EN_DEFAULTS,
         description: 'Status in <b>real time</b>.',
       });
       fixture.detectChanges();
@@ -720,7 +733,9 @@ describe('Dashboard', () => {
     it('strips dangerous script tags from the title', () => {
       const { fixture } = setup();
 
-      fixture.componentRef.setInput('config', {
+      fixture.componentRef.setInput('config', {});
+      fixture.componentRef.setInput('i18n', {
+        ...EN_DEFAULTS,
         title: 'Safe<script>alert(1)</script>',
       });
       fixture.detectChanges();
@@ -733,8 +748,9 @@ describe('Dashboard', () => {
     it('strips dangerous script tags from the description', () => {
       const { fixture } = setup();
 
-      fixture.componentRef.setInput('config', {
-        title: 'T',
+      fixture.componentRef.setInput('config', {});
+      fixture.componentRef.setInput('i18n', {
+        ...EN_DEFAULTS,
         description: 'Info<script>alert(1)</script>',
       });
       fixture.detectChanges();
@@ -744,10 +760,14 @@ describe('Dashboard', () => {
       expect(span?.textContent).toContain('Info');
     });
 
-    it('does not render the description block when description is absent', () => {
+    it('does not render the description block when description is empty', () => {
       const { fixture } = setup();
 
-      fixture.componentRef.setInput('config', { title: 'T' });
+      fixture.componentRef.setInput('config', {});
+      fixture.componentRef.setInput('i18n', {
+        ...EN_DEFAULTS,
+        description: '',
+      });
       fixture.detectChanges();
 
       expect(root(fixture).querySelector('ui5-title[level="H5"]')).toBeNull();
@@ -755,17 +775,22 @@ describe('Dashboard', () => {
   });
 
   describe('editCardsButton', () => {
-    it('uses buttonsSettings.editCardsButton overrides', () => {
+    it('takes design from buttonsSettings but text from i18n.editCardsButton', () => {
       const { fixture, component } = setup();
 
       fixture.componentRef.setInput('config', {
-        title: 'T',
         buttonsSettings: {
-          editCardsButton: { text: 'Add Card', design: 'Emphasized' },
+          editCardsButton: { text: 'ignored override', design: 'Emphasized' },
         },
       });
+      fixture.componentRef.setInput('i18n', {
+        ...EN_DEFAULTS,
+        editCardsButton: 'Karte hinzufügen',
+      });
+      fixture.detectChanges();
 
-      expect(component['editCardsButton']().text).toBe('Add Card');
+      // i18n wins over buttonsSettings for the text; design is still overridable.
+      expect(component['editCardsButton']().text).toBe('Karte hinzufügen');
       expect(component['editCardsButton']().design).toBe('Emphasized');
     });
   });
