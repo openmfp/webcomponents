@@ -21,7 +21,11 @@
       </button>
 
       @if (expanded) {
-        <div class="card__body">
+        <!-- Not an interactive control: the click guard only stops expanded-card
+             clicks from bubbling to the enclosing clickable `ui5-table-row`
+             (`onRowClick`). No keyboard/focus semantics are needed. -->
+        <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+        <div class="card__body" (click)="$event.stopPropagation()">
           @for (row of rows(); track row.field.property) {
             <div class="row">
               <span class="row__label">{{ row.label }}:</span>
