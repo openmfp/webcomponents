@@ -74,10 +74,7 @@ describe('rules.engine', () => {
 
       expect(ruleResolver(stringContainsRule, 'hello world')).toBe(true);
       expect(
-        ruleResolver(arrayContainsRule, [
-          'blue',
-          'green',
-        ] as unknown as string),
+        ruleResolver(arrayContainsRule, ['blue', 'green'] as unknown as string),
       ).toBe(true);
       expect(ruleResolver(stringContainsRule, 'hello')).toBe(false);
     });

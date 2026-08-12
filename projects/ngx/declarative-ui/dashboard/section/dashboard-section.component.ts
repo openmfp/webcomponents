@@ -1,8 +1,14 @@
 import { DashboardCard } from '../card/dashboard-card.component';
-import { CardConfig, SectionConfig } from '../models';
-import { Component, ViewEncapsulation, inject, input, output } from '@angular/core';
-import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 import { DASHBOARD_I18N_KEYS, DashboardI18nService } from '../i18n';
+import { CardConfig, SectionConfig } from '../models';
+import {
+  Component,
+  ViewEncapsulation,
+  inject,
+  input,
+  output,
+} from '@angular/core';
+import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 
 @Component({
   selector: 'mfp-dashboard-section',

@@ -137,9 +137,7 @@ describe('z-flow helpers', () => {
 
 describe('hasZFlowOrder', () => {
   it('returns true when at least one node has a zFlowOrder', () => {
-    expect(
-      hasZFlowOrder([{ id: 'a' }, { id: 'b', zFlowOrder: 0 }]),
-    ).toBe(true);
+    expect(hasZFlowOrder([{ id: 'a' }, { id: 'b', zFlowOrder: 0 }])).toBe(true);
   });
 
   it('returns false when no node has a zFlowOrder', () => {
@@ -284,7 +282,10 @@ describe('sortNodesByZFlowOrder', () => {
 describe('getZFlowRowHeight', () => {
   it('returns the tallest card height', () => {
     expect(
-      getZFlowRowHeight([{ id: 'a', h: 10 }, { id: 'b', h: 17 }]),
+      getZFlowRowHeight([
+        { id: 'a', h: 10 },
+        { id: 'b', h: 17 },
+      ]),
     ).toBe(17);
   });
 

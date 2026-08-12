@@ -17,7 +17,12 @@ export function resolveResizeWidthStep(
   minWidth = 1,
   effectiveMax = columnCount,
 ): number {
-  const allowed = getAllowedResizeWidths(maxWidth, columnCount, minWidth, effectiveMax);
+  const allowed = getAllowedResizeWidths(
+    maxWidth,
+    columnCount,
+    minWidth,
+    effectiveMax,
+  );
 
   if (!allowed.length) {
     return effectiveMax;

@@ -11,7 +11,9 @@ function setup() {
   class FakeElement {
     ngElementStrategy?: { componentRef?: { instance?: Dashboard } };
   }
-  defineDashboardElementMethods(FakeElement as unknown as CustomElementConstructor);
+  defineDashboardElementMethods(
+    FakeElement as unknown as CustomElementConstructor,
+  );
 
   const instance = {
     // Mimic the "unsaved changes → dialog opened, do not navigate" path.

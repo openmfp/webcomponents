@@ -12,12 +12,15 @@ and [releases](https://github.com/openmfp/webcomponents/releases) for details.
 ## [0.19.0] - 2026-08-12
 
 ### Features
-- *(dashboard)* [**breaking**] Move chrome translations into DashboardConfig.i18n (#246)
+
+- _(dashboard)_ [**breaking**] Move chrome translations into DashboardConfig.i18n (#246)
 
 ### Bug Fixes
+
 - Release pipeline uses publisher app identity (#249)
 
 ### Chore
+
 - [**breaking**] Manual release process (#242)
 
 ## [0.18.11] - 2026-08-10

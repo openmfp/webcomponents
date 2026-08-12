@@ -3,7 +3,8 @@ import { Icon } from '@fundamental-ngx/ui5-webcomponents/icon';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 
 /** Possible health states for a service. */
-export type ServiceStatusValue = 'operational' | 'degraded' | 'outage' | 'maintenance';
+export type ServiceStatusValue =
+  'operational' | 'degraded' | 'outage' | 'maintenance';
 
 /** A single service entry displayed in the service-status card. */
 export interface ServiceStatusItem {
@@ -20,7 +21,7 @@ export interface ServiceStatusItem {
   imports: [Icon, Title],
   templateUrl: './service-status-card.component.html',
   styleUrl: './service-status-card.component.scss',
-  encapsulation: ViewEncapsulation.ShadowDom
+  encapsulation: ViewEncapsulation.ShadowDom,
 })
 export class ServiceStatusCard {
   readonly services: ServiceStatusItem[] = [
@@ -32,10 +33,29 @@ export class ServiceStatusCard {
     { name: 'Audit Log', icon: 'log', status: 'outage' },
   ];
 
-  readonly statusConfig: Record<ServiceStatusValue, { label: string; icon: string; colorClass: string }> = {
-    operational: { label: 'Operational', icon: 'status-positive', colorClass: 'status--operational' },
-    degraded:    { label: 'Degraded',    icon: 'status-critical', colorClass: 'status--degraded' },
-    outage:      { label: 'Outage',      icon: 'status-negative', colorClass: 'status--outage' },
-    maintenance: { label: 'Maintenance', icon: 'status-inactive', colorClass: 'status--maintenance' },
+  readonly statusConfig: Record<
+    ServiceStatusValue,
+    { label: string; icon: string; colorClass: string }
+  > = {
+    operational: {
+      label: 'Operational',
+      icon: 'status-positive',
+      colorClass: 'status--operational',
+    },
+    degraded: {
+      label: 'Degraded',
+      icon: 'status-critical',
+      colorClass: 'status--degraded',
+    },
+    outage: {
+      label: 'Outage',
+      icon: 'status-negative',
+      colorClass: 'status--outage',
+    },
+    maintenance: {
+      label: 'Maintenance',
+      icon: 'status-inactive',
+      colorClass: 'status--maintenance',
+    },
   };
 }

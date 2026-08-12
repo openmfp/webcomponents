@@ -5,7 +5,6 @@ import {
   reflectComponentType,
 } from '@angular/core';
 
-
 export interface RegisteredDashboardCardComponent {
   componentType: Type<unknown>;
   selector: string;

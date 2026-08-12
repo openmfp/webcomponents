@@ -28,13 +28,7 @@ jobs:
           node-version: '24'
           registry-url: https://registry.npmjs.org
       - run: npm ci
-      # TODO(follow-up): re-enable once the pre-existing ESLint violations are fixed
-      # (`npm run lint:fix` covers most; a couple need manual changes). The previous pipeline
-      # never linted, so enabling this now would fail CI on unrelated files.
-      # - run: npm run lint
-      # TODO(follow-up): re-enable once the ~74 pre-existing Prettier violations are fixed
-      # repo-wide (`npm run format`). The previous pipeline never format-checked, so enabling
-      # this now would fail CI on unrelated files. Track as an immediate follow-up.
-      # - run: npm run check-format
+      - run: npm run lint
+      - run: npm run check-format
       - run: npm test
       - run: npm run build

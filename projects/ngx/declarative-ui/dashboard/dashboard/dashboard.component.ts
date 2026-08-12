@@ -159,9 +159,8 @@ export class Dashboard implements OnInit, OnDestroy {
     return this.sanitizer.bypassSecurityTrustHtml(clean);
   });
 
-  protected engineProfile = computed(
-    (): EngineProfile =>
-      this.config().zFlow ? ENGINE_PROFILES.zFlow : ENGINE_PROFILES.default,
+  protected engineProfile = computed((): EngineProfile =>
+    this.config().zFlow ? ENGINE_PROFILES.zFlow : ENGINE_PROFILES.default,
   );
 
   protected gridStackEngine = computed(() => this.engineProfile().engineClass);
@@ -198,7 +197,9 @@ export class Dashboard implements OnInit, OnDestroy {
     design: 'Default' as const,
     tooltip: '',
     ...this.config().buttonsSettings?.editCardsButton,
-    text: this.i18nService.getTranslation(DASHBOARD_I18N_KEYS.EDIT_CARDS_BUTTON),
+    text: this.i18nService.getTranslation(
+      DASHBOARD_I18N_KEYS.EDIT_CARDS_BUTTON,
+    ),
   }));
 
   protected sectionCards = computed(() => {
@@ -218,24 +219,22 @@ export class Dashboard implements OnInit, OnDestroy {
     }));
   });
 
-  protected gridOptions = computed(
-    (): GridStackOptions => ({
-      cellHeight: CELL_HEIGHT,
-      sizeToContent: true,
-      disableResize: !this.editMode(),
-      disableDrag: !this.editMode(),
-      marginBottom: 0,
-      marginLeft: 0,
-      marginRight: 0,
-      engineClass: this.gridStackEngine(),
-      columnOpts: {
-        // Source of truth: ../constants/breakpoints.ts — active profile's
-        // breakpoints (paired with ../constants/_breakpoints.scss for the
-        // section grid's container queries via --dashboard-cols-* CSS vars).
-        breakpoints: this.gridBreakpoints(),
-      },
-    }),
-  );
+  protected gridOptions = computed((): GridStackOptions => ({
+    cellHeight: CELL_HEIGHT,
+    sizeToContent: true,
+    disableResize: !this.editMode(),
+    disableDrag: !this.editMode(),
+    marginBottom: 0,
+    marginLeft: 0,
+    marginRight: 0,
+    engineClass: this.gridStackEngine(),
+    columnOpts: {
+      // Source of truth: ../constants/breakpoints.ts — active profile's
+      // breakpoints (paired with ../constants/_breakpoints.scss for the
+      // section grid's container queries via --dashboard-cols-* CSS vars).
+      breakpoints: this.gridBreakpoints(),
+    },
+  }));
 
   /** JSON snapshots of sections/cards taken on entering edit mode, used to detect changes. */
   private sectionsSnapshotJson = '';

@@ -38,7 +38,7 @@ The script registers the custom elements globally. After it loads, use the tags 
 <mfp-wc-declarative-table id="my-table"></mfp-wc-declarative-table>
 
 <script type="module">
-  document.getElementById('my-table').config = { /* JSON schema config */ };
+  document.getElementById('my-table').config = {/* JSON schema config */};
 </script>
 ```
 
@@ -48,17 +48,17 @@ The script registers the custom elements globally. After it loads, use the tags 
 
 ### `mfp-webcomponents.js` — full bundle
 
-| Custom element | Description | Documentation |
-|---|---|---|
-| `<mfp-wc-declarative-table>` | Data table driven by a JSON schema | [docs/declarative-table.md](https://github.com/openmfp/webcomponents/blob/main/docs/declarative-table.md) |
-| `<mfp-wc-declarative-form>` | Form driven by a JSON schema | [docs/declarative-form.md](https://github.com/openmfp/webcomponents/blob/main/docs/declarative-form.md) |
+| Custom element                    | Description                                            | Documentation                                                                                                       |
+| --------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| `<mfp-wc-declarative-table>`      | Data table driven by a JSON schema                     | [docs/declarative-table.md](https://github.com/openmfp/webcomponents/blob/main/docs/declarative-table.md)           |
+| `<mfp-wc-declarative-form>`       | Form driven by a JSON schema                           | [docs/declarative-form.md](https://github.com/openmfp/webcomponents/blob/main/docs/declarative-form.md)             |
 | `<mfp-wc-declarative-table-card>` | Table with card wrapper and create/edit/delete dialogs | [docs/declarative-table-card.md](https://github.com/openmfp/webcomponents/blob/main/docs/declarative-table-card.md) |
-| `<mfp-wc-visited-service-card>` | Recently visited services card | — |
+| `<mfp-wc-visited-service-card>`   | Recently visited services card                         | —                                                                                                                   |
 
 ### `mfp-wc-dashboard.js` — dashboard-only bundle
 
-| Custom element | Description | Documentation |
-|---|---|---|
+| Custom element       | Description                    | Documentation                                                                             |
+| -------------------- | ------------------------------ | ----------------------------------------------------------------------------------------- |
 | `<mfp-wc-dashboard>` | Drag-and-drop dashboard layout | [docs/dashboard.md](https://github.com/openmfp/webcomponents/blob/main/docs/dashboard.md) |
 
 ### Declarative Form API
@@ -68,7 +68,7 @@ The script registers the custom elements globally. After it loads, use the tags 
 ```js
 const form = document.querySelector('mfp-wc-declarative-form');
 form.submit(); // triggers form submission
-form.clear();  // resets all fields
+form.clear(); // resets all fields
 ```
 
 ### Declarative Table API

@@ -1,3 +1,9 @@
+import { CardConfig } from '../../models';
+import {
+  addComponentToRegistry,
+  resetDashboardCardRegistry,
+} from './dashboard-card-registry';
+import { mountAngularCard } from './mount-angular-card';
 import {
   ChangeDetectorRef,
   Component,
@@ -5,12 +11,6 @@ import {
   ViewContainerRef,
   input,
 } from '@angular/core';
-import { mountAngularCard } from './mount-angular-card';
-import {
-  addComponentToRegistry,
-  resetDashboardCardRegistry,
-} from './dashboard-card-registry';
-import { CardConfig } from '../../models';
 
 @Component({
   selector: 'mfp-test-angular-card',
@@ -80,7 +80,7 @@ describe('mountAngularCard', () => {
     mountAngularCard(makeCfg(), vcr, onCleanup);
 
     expect(
-      (vcr.createComponent as ReturnType<typeof vi.fn>),
+      vcr.createComponent as ReturnType<typeof vi.fn>,
     ).toHaveBeenCalledWith(TestAngularCard);
   });
 
@@ -132,7 +132,7 @@ describe('mountAngularCard', () => {
     mountAngularCard(makeCfg({ component: 'unknown-card' }), vcr, onCleanup);
 
     expect(
-      (vcr.createComponent as ReturnType<typeof vi.fn>),
+      vcr.createComponent as ReturnType<typeof vi.fn>,
     ).not.toHaveBeenCalled();
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining('"unknown-card" is not registered'),

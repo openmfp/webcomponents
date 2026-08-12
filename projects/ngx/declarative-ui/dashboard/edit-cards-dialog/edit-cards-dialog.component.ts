@@ -1,5 +1,5 @@
-import { CardConfig } from '../models';
 import { DASHBOARD_I18N_KEYS, DashboardI18nService } from '../i18n';
+import { CardConfig } from '../models';
 import {
   Component,
   ElementRef,

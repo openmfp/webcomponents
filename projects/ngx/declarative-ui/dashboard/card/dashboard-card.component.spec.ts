@@ -1,6 +1,6 @@
-import { DashboardCard } from './dashboard-card.component';
 import { DASHBOARD_CARD_DRAG_ORIGIN_CLASS } from '../constants';
 import { DashboardI18nService } from '../i18n';
+import { DashboardCard } from './dashboard-card.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 type Fixture = ComponentFixture<DashboardCard>;
@@ -66,8 +66,7 @@ describe('DashboardCard', () => {
     fixture.detectChanges();
 
     const element = root(fixture).querySelector('demo-widget') as
-      | (HTMLElement & { title?: string; count?: number })
-      | null;
+      (HTMLElement & { title?: string; count?: number }) | null;
 
     expect(element).not.toBeNull();
     expect(element?.title).toBe('Pods');
@@ -91,8 +90,7 @@ describe('DashboardCard', () => {
     fixture.detectChanges();
 
     const current = root(fixture).querySelector('next-widget') as
-      | (HTMLElement & { title?: string })
-      | null;
+      (HTMLElement & { title?: string }) | null;
 
     expect(root(fixture).querySelector('demo-widget')).toBeNull();
     expect(current?.title).toBe('Services');
@@ -203,7 +201,9 @@ describe('DashboardCard', () => {
 
       const btn = root(fixture).querySelector('.card__remove');
       expect(btn).not.toBeNull();
-      expect(btn?.getAttribute('data-testid')).toBe('dashboard-card-card-42-remove');
+      expect(btn?.getAttribute('data-testid')).toBe(
+        'dashboard-card-card-42-remove',
+      );
     });
   });
 

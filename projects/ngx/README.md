@@ -25,7 +25,7 @@ npm install @openmfp/ngx
 All components are standalone — import them directly in your component or module:
 
 ```typescript
-import { DeclarativeTable, DeclarativeForm, Dashboard } from '@openmfp/ngx';
+import { Dashboard, DeclarativeForm, DeclarativeTable } from '@openmfp/ngx';
 
 @Component({
   imports: [DeclarativeTable],
@@ -38,12 +38,12 @@ export class MyComponent {}
 
 ### Declarative UI
 
-| Selector | Description | Documentation |
-|---|---|---|
-| `<mfp-declarative-table>` | Data table driven by a JSON schema | [docs/declarative-table.md](https://github.com/openmfp/webcomponents/blob/main/docs/declarative-table.md) |
-| `<mfp-declarative-form>` | Form driven by a JSON schema | [docs/declarative-form.md](https://github.com/openmfp/webcomponents/blob/main/docs/declarative-form.md) |
+| Selector                       | Description                                            | Documentation                                                                                                       |
+| ------------------------------ | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| `<mfp-declarative-table>`      | Data table driven by a JSON schema                     | [docs/declarative-table.md](https://github.com/openmfp/webcomponents/blob/main/docs/declarative-table.md)           |
+| `<mfp-declarative-form>`       | Form driven by a JSON schema                           | [docs/declarative-form.md](https://github.com/openmfp/webcomponents/blob/main/docs/declarative-form.md)             |
 | `<mfp-declarative-table-card>` | Table with card wrapper and create/edit/delete dialogs | [docs/declarative-table-card.md](https://github.com/openmfp/webcomponents/blob/main/docs/declarative-table-card.md) |
-| `<mfp-dashboard>` | Drag-and-drop dashboard layout | [docs/dashboard.md](https://github.com/openmfp/webcomponents/blob/main/docs/dashboard.md) |
+| `<mfp-dashboard>`              | Drag-and-drop dashboard layout                         | [docs/dashboard.md](https://github.com/openmfp/webcomponents/blob/main/docs/dashboard.md)                           |
 
 ## NeoNephos Foundation
 

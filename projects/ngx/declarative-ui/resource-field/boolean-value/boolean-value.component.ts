@@ -13,7 +13,8 @@ import {
 } from '@angular/core';
 import { Icon } from '@fundamental-ngx/ui5-webcomponents/icon';
 
-export type IconDesignType = typeof ICON_DESIGN_POSITIVE | typeof ICON_DESIGN_NEGATIVE;
+export type IconDesignType =
+  typeof ICON_DESIGN_POSITIVE | typeof ICON_DESIGN_NEGATIVE;
 
 @Component({
   selector: 'mfp-boolean-value',
@@ -21,7 +22,7 @@ export type IconDesignType = typeof ICON_DESIGN_POSITIVE | typeof ICON_DESIGN_NE
   templateUrl: './boolean-value.component.html',
   styleUrl: './boolean-value.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class BooleanValue {
   boolValue = input.required<boolean>();

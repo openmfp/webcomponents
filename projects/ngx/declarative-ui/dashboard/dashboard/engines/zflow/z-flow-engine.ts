@@ -148,8 +148,7 @@ export class ZflowGridStackEngine extends GridStackEngine {
       projected.length > 0 ? Math.max(...projected.map((p) => p.row)) + 1 : 1;
 
     const sourceNode = nodes.find((n) => n.id === node.id) as
-      | ZFlowGridStackNode
-      | undefined;
+      ZFlowGridStackNode | undefined;
     const sourceProjected = projected.find((p) => p.id === node.id);
     const previousRow = sourceProjected?.row ?? 0;
 

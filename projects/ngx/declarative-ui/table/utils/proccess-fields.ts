@@ -5,7 +5,10 @@ type ProcessedGroup = GroupBase & {
   fields?: TableFieldDefinition[];
 };
 
-export type ProcessedTableFieldDefinition = Omit<TableFieldDefinition, 'group'> & {
+export type ProcessedTableFieldDefinition = Omit<
+  TableFieldDefinition,
+  'group'
+> & {
   group?: ProcessedGroup;
 };
 
@@ -38,7 +41,9 @@ const collectGroupFields = (
   );
 };
 
-const combineGroupFields = (fields: TableFieldDefinition[]): ProcessedTableFieldDefinition[] => {
+const combineGroupFields = (
+  fields: TableFieldDefinition[],
+): ProcessedTableFieldDefinition[] => {
   const seenGroup = new Set<string>();
   const groupFields = collectGroupFields(fields);
   const result: ProcessedTableFieldDefinition[] = [];

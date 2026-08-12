@@ -16,7 +16,9 @@ export const parseStringValue = (value: string) => {
   return value;
 };
 
-interface ConditionRule { if: { condition: RuleCondition; value: string } }
+interface ConditionRule {
+  if: { condition: RuleCondition; value: string };
+}
 
 export const ruleResolver = (
   rule: ConditionRule,

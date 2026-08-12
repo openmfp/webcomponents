@@ -3,12 +3,12 @@
     @let expanded = expandedIndex() === index;
     <div
       class="card"
-      [class.card--expanded]="expanded"
       [attr.data-testid]="'resource-collection-item-' + index"
+      [class.card--expanded]="expanded"
     >
       <button
-        type="button"
         class="card__header"
+        type="button"
         [attr.aria-expanded]="expanded"
         [attr.data-testid]="'resource-collection-item-' + index + '-toggle'"
         (click)="toggle(index, $event)"
@@ -21,7 +21,7 @@
       </button>
 
       @if (expanded) {
-        <div class="card__body" (click)="$event.stopPropagation()">
+        <div class="card__body">
           @for (row of rows(); track row.field.property) {
             <div class="row">
               <span class="row__label">{{ row.label }}:</span>

@@ -1,5 +1,5 @@
-import { UnsavedChangesDialog } from './unsaved-changes-dialog.component';
 import { DashboardI18nService } from '../i18n';
+import { UnsavedChangesDialog } from './unsaved-changes-dialog.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 type Fixture = ComponentFixture<UnsavedChangesDialog>;
@@ -31,7 +31,9 @@ describe('UnsavedChangesDialog', () => {
 
       const r = root(fixture);
       expect(r.querySelector('ui5-icon')).toBeNull();
-      expect(r.querySelector('ui5-dialog')?.getAttribute('state')).toBe('Critical');
+      expect(r.querySelector('ui5-dialog')?.getAttribute('state')).toBe(
+        'Critical',
+      );
       expect(r.querySelector('ui5-title')?.textContent?.trim()).toBe(
         'Unsaved Changes',
       );

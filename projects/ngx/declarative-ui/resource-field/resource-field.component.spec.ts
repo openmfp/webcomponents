@@ -6,7 +6,9 @@ import {
 import { ResourceField } from './resource-field.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-type Fixture = ComponentFixture<ResourceField<GenericResource, FieldDefinition>>;
+type Fixture = ComponentFixture<
+  ResourceField<GenericResource, FieldDefinition>
+>;
 type Comp = ResourceField<GenericResource, FieldDefinition>;
 
 function setup(
@@ -15,7 +17,10 @@ function setup(
   permissions?: Record<string, string[]>,
 ): { fixture: Fixture; component: Comp } {
   const fixture: Fixture = TestBed.createComponent(
-    ResourceField as unknown as typeof ResourceField<GenericResource, FieldDefinition>,
+    ResourceField as unknown as typeof ResourceField<
+      GenericResource,
+      FieldDefinition
+    >,
   );
   const component = fixture.componentInstance;
   fixture.componentRef.setInput('fieldDefinition', field);
@@ -399,7 +404,10 @@ describe('ResourceField', () => {
       const { component } = setup(
         {
           property: 'envs',
-          uiSettings: { displayAs: 'tag', tagSettings: { valueSeparator: '|' } },
+          uiSettings: {
+            displayAs: 'tag',
+            tagSettings: { valueSeparator: '|' },
+          },
         },
         { envs: 'prod|staging|dev' },
       );
@@ -454,7 +462,10 @@ describe('ResourceField', () => {
             valueRules: [
               { if: { condition: 'lessThan', value: '20' }, then: 'Low' },
               { if: { condition: 'lessThan', value: '60' }, then: 'Medium' },
-              { if: { condition: 'greaterThanOrEqual', value: '60' }, then: 'High' },
+              {
+                if: { condition: 'greaterThanOrEqual', value: '60' },
+                then: 'High',
+              },
             ],
           },
         },
@@ -518,7 +529,10 @@ describe('ResourceField', () => {
         { property: FIELD_PROPERTY },
         { id: RESOURCE_ID, action: 'go' },
       );
-      const span = q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`);
+      const span = q(
+        fixture,
+        `[data-testid="resource-field-${FIELD_PROPERTY}"]`,
+      );
       expect(span).not.toBeNull();
     });
 
@@ -528,29 +542,38 @@ describe('ResourceField', () => {
         { id: RESOURCE_ID, action: 'go' },
         undefined,
       );
-      const span = q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`);
+      const span = q(
+        fixture,
+        `[data-testid="resource-field-${FIELD_PROPERTY}"]`,
+      );
       expect(span).not.toBeNull();
     });
 
-    it('renders the field when verb is present in the row\'s granted actions', () => {
+    it("renders the field when verb is present in the row's granted actions", () => {
       const permissions = { [RESOURCE_ID]: [VERB, 'get'] };
       const { fixture } = setup(
         { property: FIELD_PROPERTY, requirePermission: VERB },
         { id: RESOURCE_ID, action: 'go' },
         permissions,
       );
-      const span = q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`);
+      const span = q(
+        fixture,
+        `[data-testid="resource-field-${FIELD_PROPERTY}"]`,
+      );
       expect(span).not.toBeNull();
     });
 
-    it('hides the field when verb is absent from the row\'s granted actions', () => {
+    it("hides the field when verb is absent from the row's granted actions", () => {
       const permissions = { [RESOURCE_ID]: ['get', 'list'] };
       const { fixture } = setup(
         { property: FIELD_PROPERTY, requirePermission: VERB },
         { id: RESOURCE_ID, action: 'go' },
         permissions,
       );
-      const span = q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`);
+      const span = q(
+        fixture,
+        `[data-testid="resource-field-${FIELD_PROPERTY}"]`,
+      );
       expect(span).toBeNull();
     });
 
@@ -562,7 +585,10 @@ describe('ResourceField', () => {
         { id: RESOURCE_ID, action: 'go' },
         permissions,
       );
-      const span = q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`);
+      const span = q(
+        fixture,
+        `[data-testid="resource-field-${FIELD_PROPERTY}"]`,
+      );
       expect(span).toBeNull();
     });
 
@@ -573,7 +599,10 @@ describe('ResourceField', () => {
         { id: RESOURCE_ID, action: 'go' },
         undefined,
       );
-      const span = q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`);
+      const span = q(
+        fixture,
+        `[data-testid="resource-field-${FIELD_PROPERTY}"]`,
+      );
       expect(span).toBeNull();
     });
 
@@ -586,7 +615,10 @@ describe('ResourceField', () => {
         { action: 'go' }, // no id — id resolves to ''
         permissions,
       );
-      const span = q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`);
+      const span = q(
+        fixture,
+        `[data-testid="resource-field-${FIELD_PROPERTY}"]`,
+      );
       expect(span).toBeNull();
     });
 
@@ -599,7 +631,10 @@ describe('ResourceField', () => {
         { action: 'go' }, // no id
         permissions,
       );
-      const span = q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`);
+      const span = q(
+        fixture,
+        `[data-testid="resource-field-${FIELD_PROPERTY}"]`,
+      );
       expect(span).toBeNull();
     });
 
@@ -610,7 +645,10 @@ describe('ResourceField', () => {
         { id: '', action: 'go' },
         permissions,
       );
-      const span = q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`);
+      const span = q(
+        fixture,
+        `[data-testid="resource-field-${FIELD_PROPERTY}"]`,
+      );
       expect(span).toBeNull();
     });
 
@@ -622,7 +660,10 @@ describe('ResourceField', () => {
         undefined,
         permissions,
       );
-      const span = q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`);
+      const span = q(
+        fixture,
+        `[data-testid="resource-field-${FIELD_PROPERTY}"]`,
+      );
       expect(span).toBeNull();
     });
 
@@ -634,7 +675,10 @@ describe('ResourceField', () => {
         { id: RESOURCE_ID, action: 'go' },
         permissions,
       );
-      const span = q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`);
+      const span = q(
+        fixture,
+        `[data-testid="resource-field-${FIELD_PROPERTY}"]`,
+      );
       expect(span).toBeNull();
     });
 
@@ -670,10 +714,7 @@ describe('ResourceField', () => {
         q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`),
       ).toBeNull();
 
-      fixture.componentRef.setInput(
-        'permissions',
-        { [RESOURCE_ID]: [VERB] },
-      );
+      fixture.componentRef.setInput('permissions', { [RESOURCE_ID]: [VERB] });
       fixture.detectChanges();
 
       expect(

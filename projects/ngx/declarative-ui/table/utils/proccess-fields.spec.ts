@@ -1,5 +1,5 @@
-import { processGroupFields } from './proccess-fields';
 import { TableFieldDefinition } from '../models';
+import { processGroupFields } from './proccess-fields';
 
 describe('proccess-fields', () => {
   describe('processFields', () => {

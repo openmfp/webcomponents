@@ -195,45 +195,45 @@ const cards: CardConfig[] = [
 
 ### Inputs
 
-| Input            | Type              | Required | Default | Description                                                 |
-| ---------------- | ----------------- | -------- | ------- | ----------------------------------------------------------- |
-| `config`         | `DashboardConfig` | yes      | —       | Header text and optional background image                   |
-| `sections`       | `SectionConfig[]` | no       | `[]`    | Named dashboard sections rendered above the loose-card grid |
-| `cards`          | `CardConfig[]`    | no       | `[]`    | All cards shown in sections or in the grid                  |
-| `availableCards` | `CardConfig[]`    | no       | `[]`    | Card templates that can be added in edit mode               |
-| `customActions`  | `ButtonSettings[]` | no      | `[]`    | Extra action buttons rendered in the toolbar alongside the built-in ones. Clicking one emits `actionButtonClick`. |
-| `i18n`           | `DashboardTranslations \| null \| undefined` | no | `EN_DEFAULTS` | Full set of dashboard chrome + title/description strings. When `null`, `undefined`, or `{}`, the built-in English defaults are used; when provided, it must be the complete `DashboardTranslations`. See [Localization](#localization). |
+| Input            | Type                                         | Required | Default       | Description                                                                                                                                                                                                                             |
+| ---------------- | -------------------------------------------- | -------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `config`         | `DashboardConfig`                            | yes      | —             | Header text and optional background image                                                                                                                                                                                               |
+| `sections`       | `SectionConfig[]`                            | no       | `[]`          | Named dashboard sections rendered above the loose-card grid                                                                                                                                                                             |
+| `cards`          | `CardConfig[]`                               | no       | `[]`          | All cards shown in sections or in the grid                                                                                                                                                                                              |
+| `availableCards` | `CardConfig[]`                               | no       | `[]`          | Card templates that can be added in edit mode                                                                                                                                                                                           |
+| `customActions`  | `ButtonSettings[]`                           | no       | `[]`          | Extra action buttons rendered in the toolbar alongside the built-in ones. Clicking one emits `actionButtonClick`.                                                                                                                       |
+| `i18n`           | `DashboardTranslations \| null \| undefined` | no       | `EN_DEFAULTS` | Full set of dashboard chrome + title/description strings. When `null`, `undefined`, or `{}`, the built-in English defaults are used; when provided, it must be the complete `DashboardTranslations`. See [Localization](#localization). |
 
 ### Outputs
 
-| Output               | Payload                                              | Description                                                      |
-| -------------------- | ---------------------------------------------------- | ---------------------------------------------------------------- |
-| `saved`              | `{ sections: SectionConfig[]; cards: CardConfig[] }` | Emits when the user saves edits                                  |
-| `actionButtonClick`  | `{ event: MouseEvent; action: ButtonSettings }`      | Emits when a custom action button from the `customActions` input is clicked |
-| `unsavedChangesChange` | `boolean`                                          | Emits whenever the unsaved-changes state flips — `true` when the user first makes an unsaved edit, `false` after save/discard. Use this to drive your own navigation guard (see [Showing your own dialog instead](#showing-your-own-dialog-instead)). |
+| Output                 | Payload                                              | Description                                                                                                                                                                                                                                           |
+| ---------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `saved`                | `{ sections: SectionConfig[]; cards: CardConfig[] }` | Emits when the user saves edits                                                                                                                                                                                                                       |
+| `actionButtonClick`    | `{ event: MouseEvent; action: ButtonSettings }`      | Emits when a custom action button from the `customActions` input is clicked                                                                                                                                                                           |
+| `unsavedChangesChange` | `boolean`                                            | Emits whenever the unsaved-changes state flips — `true` when the user first makes an unsaved edit, `false` after save/discard. Use this to drive your own navigation guard (see [Showing your own dialog instead](#showing-your-own-dialog-instead)). |
 
 ### Public methods
 
-| Method                                            | Returns   | Description                                                                                                  |
-| ------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------ |
-| `requestNavigation(proceed: () => void)`          | `boolean` | Framework-agnostic navigation guard — see [Unsaved-changes guard](#unsaved-changes-guard).                  |
-| `saveEdit()`                                      | `void`    | Persists changes (fires the `saved` event) and exits edit mode.                                             |
-| `cancelEdit()`                                    | `void`    | Requests to leave edit mode. Opens `DiscardChangesDialog` if there are unsaved changes; otherwise discards immediately. |
-| `confirmDiscard()`                                | `void`    | Confirms the discard, closes `DiscardChangesDialog`, and reverts to the snapshot taken on entering edit mode. |
-| `onUnsavedNavSave()`                              | `void`    | Save handler for a custom in-app-navigation dialog — closes the popup, saves, then resumes the queued navigation. |
-| `onUnsavedNavDiscard()`                           | `void`    | Discard handler for a custom in-app-navigation dialog — closes the popup, reverts, then resumes the queued navigation. |
-| `onUnsavedNavCancel()`                            | `void`    | Cancel handler for a custom in-app-navigation dialog — closes the popup and drops the queued navigation.    |
-| `Dashboard.registerAngularComponents(types[])`    | `void`    | Static — registers standalone Angular card components by their element selector name.                       |
+| Method                                         | Returns   | Description                                                                                                             |
+| ---------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `requestNavigation(proceed: () => void)`       | `boolean` | Framework-agnostic navigation guard — see [Unsaved-changes guard](#unsaved-changes-guard).                              |
+| `saveEdit()`                                   | `void`    | Persists changes (fires the `saved` event) and exits edit mode.                                                         |
+| `cancelEdit()`                                 | `void`    | Requests to leave edit mode. Opens `DiscardChangesDialog` if there are unsaved changes; otherwise discards immediately. |
+| `confirmDiscard()`                             | `void`    | Confirms the discard, closes `DiscardChangesDialog`, and reverts to the snapshot taken on entering edit mode.           |
+| `onUnsavedNavSave()`                           | `void`    | Save handler for a custom in-app-navigation dialog — closes the popup, saves, then resumes the queued navigation.       |
+| `onUnsavedNavDiscard()`                        | `void`    | Discard handler for a custom in-app-navigation dialog — closes the popup, reverts, then resumes the queued navigation.  |
+| `onUnsavedNavCancel()`                         | `void`    | Cancel handler for a custom in-app-navigation dialog — closes the popup and drops the queued navigation.                |
+| `Dashboard.registerAngularComponents(types[])` | `void`    | Static — registers standalone Angular card components by their element selector name.                                   |
 
 > **Web-component consumers:** `@angular/elements` only proxies inputs and outputs onto the custom element — instance methods are **not** reachable on the DOM node by default. The dashboard's WC bundle (`mfp-wc-dashboard.js`) explicitly forwards all of the methods above onto `<mfp-wc-dashboard>`, so they are callable directly on the DOM element (e.g. `document.querySelector('mfp-wc-dashboard').saveEdit()`). If the Angular component has not been created yet, `requestNavigation()` runs its callback synchronously and returns `true`, and the void handlers are no-ops.
 
 ### Reactive state
 
-| Signal                  | Type                  | Description                                                                                                                                |
-| ----------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `editMode()`            | `signal<boolean>`     | `true` while the user is in the dashboard's edit mode.                                                                                     |
-| `unsavedNavDialogOpen()`| `signal<boolean>`     | `true` while the unsaved-changes navigation popup is shown. Driven by `requestNavigation()`; consumers normally don't read it directly.    |
-| `discardDialogOpen()`   | `signal<boolean>`     | `true` while the discard-confirmation popup (Cancel button on the edit-bar) is shown.                                                      |
+| Signal                   | Type              | Description                                                                                                                             |
+| ------------------------ | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `editMode()`             | `signal<boolean>` | `true` while the user is in the dashboard's edit mode.                                                                                  |
+| `unsavedNavDialogOpen()` | `signal<boolean>` | `true` while the unsaved-changes navigation popup is shown. Driven by `requestNavigation()`; consumers normally don't read it directly. |
+| `discardDialogOpen()`    | `signal<boolean>` | `true` while the discard-confirmation popup (Cancel button on the edit-bar) is shown.                                                   |
 
 > **Note:** The dashboard also tracks a `hasUnsavedChanges` computed internally (`true` while the user is in edit mode AND has changed sections, cards, or grid positions; resets after save / discard), but it is `protected` and **not** readable from a consumer's dashboard reference. To react to that state from your own code, listen to the [`unsavedChangesChange`](#outputs) output instead.
 
@@ -251,8 +251,10 @@ The key contract is exported for type-safe usage:
 
 ```ts
 import {
-  DashboardI18nKey, // union of the 17 key strings
-  DashboardTranslations, // Record<DashboardI18nKey, string>
+  DashboardI18nKey,
+  // union of the 17 key strings
+  DashboardTranslations,
+  // Record<DashboardI18nKey, string>
   EN_DEFAULTS, // the built-in English strings
 } from '@openmfp/ngx';
 ```
@@ -293,21 +295,21 @@ The 17 keys and their built-in English defaults (the exact strings in `EN_DEFAUL
 | -------------------- | ------------------------------------------------------------------------------------------------ |
 | `title`              | Hi!                                                                                              |
 | `description`        | You're on the Dashboard                                                                          |
-| `editHomeButton`     | Edit Home                                                                                         |
+| `editHomeButton`     | Edit Home                                                                                        |
 | `editCardsButton`    | Edit Cards                                                                                       |
 | `unsavedChanges`     | Unsaved Changes                                                                                  |
-| `editCards`          | Edit Cards                                                                                        |
-| `actions`            | Actions                                                                                           |
-| `save`               | Save                                                                                              |
-| `cancel`             | Cancel                                                                                            |
-| `discard`            | Discard                                                                                           |
-| `discardChanges`     | Discard Changes                                                                                   |
+| `editCards`          | Edit Cards                                                                                       |
+| `actions`            | Actions                                                                                          |
+| `save`               | Save                                                                                             |
+| `cancel`             | Cancel                                                                                           |
+| `discard`            | Discard                                                                                          |
+| `discardChanges`     | Discard Changes                                                                                  |
 | `discardConfirmBody` | Discard the changes? This action cannot be undone.                                               |
 | `unsavedNavBody`     | You are leaving this page. Save or discard the changes to proceed. This action cannot be undone. |
-| `noCardsAvailable`   | No cards available.                                                                               |
-| `removeSection`      | Remove section                                                                                    |
-| `removeCard`         | Remove card                                                                                        |
-| `resizable`          | Resizable                                                                                          |
+| `noCardsAvailable`   | No cards available.                                                                              |
+| `removeSection`      | Remove section                                                                                   |
+| `removeCard`         | Remove card                                                                                      |
+| `resizable`          | Resizable                                                                                        |
 
 `title` and `description` accept plain strings or HTML markup. Safe HTML tags (e.g. `<b>`, `<em>`, `<a>`) are rendered; dangerous content such as `<script>` is stripped. The title renders as an `<h3>` heading and the description as an `<h5>` heading (hidden when `description` is empty). `editHomeButton` is the text of the built-in Edit View button and `editCardsButton` is the text of the built-in Edit Cards button (both win over any `buttonsSettings` text).
 
@@ -329,18 +331,18 @@ The `EditCardsDialog` component (`mfp-edit-cards-dialog`) is rendered inside the
 
 ### Inputs
 
-| Input            | Type           | Default      | Description                              |
-| ---------------- | -------------- | ------------ | ---------------------------------------- |
-| `availableCards` | `CardConfig[]` | `[]`         | Full list of cards the user may add/remove |
-| `addedCardsIds`  | `Set<string>`  | `new Set()`  | IDs of cards currently on the dashboard  |
-| `open`           | `boolean`      | `false`      | Controls dialog visibility               |
+| Input            | Type           | Default     | Description                                |
+| ---------------- | -------------- | ----------- | ------------------------------------------ |
+| `availableCards` | `CardConfig[]` | `[]`        | Full list of cards the user may add/remove |
+| `addedCardsIds`  | `Set<string>`  | `new Set()` | IDs of cards currently on the dashboard    |
+| `open`           | `boolean`      | `false`     | Controls dialog visibility                 |
 
 ### Outputs
 
-| Output      | Payload                                         | Description                                           |
-| ----------- | ----------------------------------------------- | ----------------------------------------------------- |
-| `confirm`   | `{ added: CardConfig[]; removed: string[] }`    | Emits the diff when the user clicks **Save**          |
-| `cancelled` | `void`                                          | Emits when the user clicks **Cancel** or presses Esc  |
+| Output      | Payload                                      | Description                                          |
+| ----------- | -------------------------------------------- | ---------------------------------------------------- |
+| `confirm`   | `{ added: CardConfig[]; removed: string[] }` | Emits the diff when the user clicks **Save**         |
+| `cancelled` | `void`                                       | Emits when the user clicks **Cancel** or presses Esc |
 
 ---
 
@@ -367,10 +369,10 @@ const proceeded: boolean = dashboard.requestNavigation(() => {
 
 Behaviour:
 
-| Dashboard state              | What `requestNavigation` does                                                  | Return value |
-| ---------------------------- | ------------------------------------------------------------------------------ | ------------ |
-| No unsaved changes           | Calls `proceed()` synchronously. The host can navigate immediately.            | `true`       |
-| Unsaved changes              | Opens `UnsavedChangesDialog` and stores `proceed` as a pending callback. Host **must NOT** navigate. | `false`      |
+| Dashboard state    | What `requestNavigation` does                                                                        | Return value |
+| ------------------ | ---------------------------------------------------------------------------------------------------- | ------------ |
+| No unsaved changes | Calls `proceed()` synchronously. The host can navigate immediately.                                  | `true`       |
+| Unsaved changes    | Opens `UnsavedChangesDialog` and stores `proceed` as a pending callback. Host **must NOT** navigate. | `false`      |
 
 If the user picks…
 
@@ -499,9 +501,9 @@ Two-button popup shown when the user clicks the Cancel button on the in-page edi
 
 ### Inputs
 
-| Input      | Type                    | Default | Description                                                                  |
-| ---------- | ----------------------- | ------- | ---------------------------------------------------------------------------- |
-| `open`     | `boolean`               | `false` | Controls dialog visibility                                                   |
+| Input  | Type      | Default | Description                |
+| ------ | --------- | ------- | -------------------------- |
+| `open` | `boolean` | `false` | Controls dialog visibility |
 
 ### Outputs
 
@@ -518,9 +520,9 @@ Two-button popup shown when the user clicks the Cancel button on the in-page edi
 
 ### Inputs
 
-| Input      | Type                    | Default | Description                                                                  |
-| ---------- | ----------------------- | ------- | ---------------------------------------------------------------------------- |
-| `open`     | `boolean`               | `false` | Controls dialog visibility                                                   |
+| Input  | Type      | Default | Description                |
+| ------ | --------- | ------- | -------------------------- |
+| `open` | `boolean` | `false` | Controls dialog visibility |
 
 ### Outputs
 
@@ -554,7 +556,7 @@ The dashboard title and description are no longer part of `DashboardConfig` — 
 
 Providing `zFlow` switches the loose-card grid from the default free-placement engine to the **z-flow engine**. It changes two things fundamentally: how cards are ordered, and how they can be resized.
 
-**What z-flow is.** In z-flow the loose cards are a single **linear list**, not a set of free (x, y) coordinates. The grid only *renders* that list left-to-right, then wraps to the next row and continues left-to-right — the reading path traces a `Z`, hence the name (it has nothing to do with CSS `z-index`). The card's position is its index in the list:
+**What z-flow is.** In z-flow the loose cards are a single **linear list**, not a set of free (x, y) coordinates. The grid only _renders_ that list left-to-right, then wraps to the next row and continues left-to-right — the reading path traces a `Z`, hence the name (it has nothing to do with CSS `z-index`). The card's position is its index in the list:
 
 ```text
 list:  [A, B, C, D, E, F]      4 columns:   [A] [B] [C] [D]
@@ -573,11 +575,11 @@ before            after
 
 **Snapped (stepped) resize.** Instead of allowing any column count, the z-flow engine snaps every resize to three fixed fractions of the dashboard width — the drag handle jumps between them rather than moving pixel by pixel:
 
-| Card Size | Width | Fraction of the row                                   |
-| --------- | ----- | ----------------------------------------------------- |
-| S         | 1     | ¼                                                     |
-| M         | 2     | ½                                                     |
-| XL        | 3     | ¾ on XL Page (min-width: 1440) / full-width below XL  |
+| Card Size | Width | Fraction of the row                                  |
+| --------- | ----- | ---------------------------------------------------- |
+| S         | 1     | ¼                                                    |
+| M         | 2     | ½                                                    |
+| XL        | 3     | ¾ on XL Page (min-width: 1440) / full-width below XL |
 
 The "full" step is screen-width-dependent: on XL-width pages (≥ 1440 px) a full card fills **3 of 4** columns of the row (¾), and below that it fills **4 of 4** (full-width) so it always fills the row. Cards already sized to the old full-width value are re-snapped automatically when the viewport crosses the 1440 px boundary.
 
@@ -600,10 +602,10 @@ interface DashboardButtonsSettings {
 }
 ```
 
-| Button            | Default `icon`    | Default `design` | Default `tooltip` | Default `text`  |
-| ----------------- | ----------------- | ---------------- | ----------------- | --------------- |
+| Button            | Default `icon`    | Default `design` | Default `tooltip` | Default `text`        |
+| ----------------- | ----------------- | ---------------- | ----------------- | --------------------- |
 | `editViewButton`  | `action-settings` | `Transparent`    | `Edit View`       | _(empty — icon only)_ |
-| `editCardsButton` | _(none)_          | `Default`        | _(none)_          | `Edit Cards`    |
+| `editCardsButton` | _(none)_          | `Default`        | _(none)_          | `Edit Cards`          |
 
 **Example — text-only buttons without icons:**
 
@@ -642,7 +644,7 @@ const config: DashboardConfig = {
 // customActions is a separate input, not part of config:
 const customActions: ButtonSettings[] = [
   { action: 'export', text: 'Export', icon: 'download' },
-  { action: 'share',  text: 'Share',  icon: 'share' },
+  { action: 'share', text: 'Share', icon: 'share' },
 ];
 ```
 
@@ -650,10 +652,10 @@ const customActions: ButtonSettings[] = [
 <mfp-dashboard [config]="config" [customActions]="customActions" />
 ```
 
-| `editButtonFirst` | Resulting toolbar order                          |
-| ----------------- | ------------------------------------------------ |
-| `false` (default) | _custom actions_ → Edit View                     |
-| `true`            | Edit View → _custom actions_                     |
+| `editButtonFirst` | Resulting toolbar order      |
+| ----------------- | ---------------------------- |
+| `false` (default) | _custom actions_ → Edit View |
+| `true`            | Edit View → _custom actions_ |
 
 The flag has no effect when `editable` is `false` (the Edit View button is not rendered at all). In the compact burger menu, the menu separator between Edit View and the custom actions is only inserted when there is at least one custom action to separate from.
 
@@ -757,59 +759,59 @@ All interactive elements carry `data-testid` attributes for reliable E2E targeti
 
 ### Main component
 
-| Element | `data-testid` | Notes |
-|---|---|---|
-| Root container | `dashboard` | |
-| Title | `dashboard-title` | Present when `i18n.title` is non-empty |
-| Description | `dashboard-description` | Present when `i18n.description` is non-empty |
-| Edit-cards button | `dashboard-edit-cards-btn` | Visible in edit mode |
-| Compact menu toggle | `dashboard-toolbar-menu-btn` | Compact toolbar mode only |
-| Compact dropdown menu | `dashboard-toolbar-menu` | |
-| Edit-view menu item | `dashboard-action-edit-view` | Inside compact menu when `config.editable` is true |
-| Custom action (menu item or button) | `dashboard-action-{action}` | `action` = `customAction.action` |
-| Edit-view button | `dashboard-edit-view-btn` | Full toolbar |
-| Grid | `dashboard-grid` | |
-| Save button | `dashboard-save-btn` | Visible in edit mode |
-| Cancel button | `dashboard-cancel-btn` | Visible in edit mode |
+| Element                             | `data-testid`                | Notes                                              |
+| ----------------------------------- | ---------------------------- | -------------------------------------------------- |
+| Root container                      | `dashboard`                  |                                                    |
+| Title                               | `dashboard-title`            | Present when `i18n.title` is non-empty             |
+| Description                         | `dashboard-description`      | Present when `i18n.description` is non-empty       |
+| Edit-cards button                   | `dashboard-edit-cards-btn`   | Visible in edit mode                               |
+| Compact menu toggle                 | `dashboard-toolbar-menu-btn` | Compact toolbar mode only                          |
+| Compact dropdown menu               | `dashboard-toolbar-menu`     |                                                    |
+| Edit-view menu item                 | `dashboard-action-edit-view` | Inside compact menu when `config.editable` is true |
+| Custom action (menu item or button) | `dashboard-action-{action}`  | `action` = `customAction.action`                   |
+| Edit-view button                    | `dashboard-edit-view-btn`    | Full toolbar                                       |
+| Grid                                | `dashboard-grid`             |                                                    |
+| Save button                         | `dashboard-save-btn`         | Visible in edit mode                               |
+| Cancel button                       | `dashboard-cancel-btn`       | Visible in edit mode                               |
 
 ### DashboardCard
 
-| Element | `data-testid` | Notes |
-|---|---|---|
-| Card root | `dashboard-card-{id}` | `id` = `card.id` |
+| Element       | `data-testid`                | Notes                |
+| ------------- | ---------------------------- | -------------------- |
+| Card root     | `dashboard-card-{id}`        | `id` = `card.id`     |
 | Remove button | `dashboard-card-{id}-remove` | Visible in edit mode |
 
 ### DashboardSection
 
-| Element | `data-testid` | Notes |
-|---|---|---|
-| Section root | `dashboard-section-{id}` | `id` = `section.id` |
+| Element       | `data-testid`                   | Notes                                   |
+| ------------- | ------------------------------- | --------------------------------------- |
+| Section root  | `dashboard-section-{id}`        | `id` = `section.id`                     |
 | Remove button | `dashboard-section-{id}-remove` | Edit mode, `section.editable !== false` |
-| Section title | `dashboard-section-{id}-title` | Present when `section.title` is set |
+| Section title | `dashboard-section-{id}-title`  | Present when `section.title` is set     |
 
 ### EditCardsDialog
 
-| Element | `data-testid` | Notes |
-|---|---|---|
-| Dialog | `dashboard-edit-cards-dialog` | |
-| Card row | `dashboard-edit-cards-row-{id}` | `id` = `availableCard.id` |
-| Toggle switch | `dashboard-edit-cards-switch-{id}` | |
-| Save button | `dashboard-edit-cards-save-btn` | |
-| Cancel button | `dashboard-edit-cards-cancel-btn` | |
+| Element       | `data-testid`                      | Notes                     |
+| ------------- | ---------------------------------- | ------------------------- |
+| Dialog        | `dashboard-edit-cards-dialog`      |                           |
+| Card row      | `dashboard-edit-cards-row-{id}`    | `id` = `availableCard.id` |
+| Toggle switch | `dashboard-edit-cards-switch-{id}` |                           |
+| Save button   | `dashboard-edit-cards-save-btn`    |                           |
+| Cancel button | `dashboard-edit-cards-cancel-btn`  |                           |
 
 ### DiscardChangesDialog
 
-| Element | `data-testid` |
-|---|---|
-| Dialog | `dashboard-discard-changes-dialog` |
+| Element        | `data-testid`                           |
+| -------------- | --------------------------------------- |
+| Dialog         | `dashboard-discard-changes-dialog`      |
 | Confirm button | `dashboard-discard-changes-confirm-btn` |
-| Cancel button | `dashboard-discard-changes-cancel-btn` |
+| Cancel button  | `dashboard-discard-changes-cancel-btn`  |
 
 ### UnsavedChangesDialog
 
-| Element | `data-testid` |
-|---|---|
-| Dialog | `dashboard-unsaved-changes-dialog` |
-| Save button | `dashboard-unsaved-changes-save-btn` |
+| Element        | `data-testid`                           |
+| -------------- | --------------------------------------- |
+| Dialog         | `dashboard-unsaved-changes-dialog`      |
+| Save button    | `dashboard-unsaved-changes-save-btn`    |
 | Discard button | `dashboard-unsaved-changes-discard-btn` |
-| Cancel button | `dashboard-unsaved-changes-cancel-btn` |
+| Cancel button  | `dashboard-unsaved-changes-cancel-btn`  |

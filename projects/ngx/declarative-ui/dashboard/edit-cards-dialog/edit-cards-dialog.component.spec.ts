@@ -1,5 +1,5 @@
-import { CardConfig } from '../models';
 import { DashboardI18nService } from '../i18n';
+import { CardConfig } from '../models';
 import { EditCardsDialog } from './edit-cards-dialog.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
@@ -15,9 +15,21 @@ function root(fixture: Fixture): ShadowRoot | HTMLElement {
   return fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
 }
 
-const CARD_A: CardConfig = { id: 'card-1', component: 'mfp-a', label: 'Card A' };
-const CARD_B: CardConfig = { id: 'card-2', component: 'mfp-b', label: 'Card B' };
-const SECTION_CARD: CardConfig = { id: 'section-card-1', component: 'mfp-section', sectionId: 'section-1' };
+const CARD_A: CardConfig = {
+  id: 'card-1',
+  component: 'mfp-a',
+  label: 'Card A',
+};
+const CARD_B: CardConfig = {
+  id: 'card-2',
+  component: 'mfp-b',
+  label: 'Card B',
+};
+const SECTION_CARD: CardConfig = {
+  id: 'section-card-1',
+  component: 'mfp-section',
+  sectionId: 'section-1',
+};
 
 describe('EditCardsDialog', () => {
   beforeEach(async () => {
@@ -35,9 +47,8 @@ describe('EditCardsDialog', () => {
       fixture.componentRef.setInput('availableCards', []);
       fixture.detectChanges();
 
-      const list = root(fixture).querySelector(
-        'ui5-list',
-      ) as (HTMLElement & { noDataText?: string }) | null;
+      const list = root(fixture).querySelector('ui5-list') as
+        (HTMLElement & { noDataText?: string }) | null;
       expect(list?.noDataText).toBe('No cards available.');
     });
   });
@@ -130,7 +141,10 @@ describe('EditCardsDialog', () => {
 
       component.confirm.subscribe((v) => emitted.push(v));
       fixture.componentRef.setInput('availableCards', [CARD_A, CARD_B]);
-      fixture.componentRef.setInput('addedCardsIds', new Set(['card-1', 'card-2']));
+      fixture.componentRef.setInput(
+        'addedCardsIds',
+        new Set(['card-1', 'card-2']),
+      );
       fixture.componentRef.setInput('open', true);
       fixture.detectChanges();
 
@@ -181,7 +195,10 @@ describe('EditCardsDialog', () => {
 
       component.confirm.subscribe((v) => emitted.push(v));
       fixture.componentRef.setInput('availableCards', [CARD_A, CARD_B]);
-      fixture.componentRef.setInput('addedCardsIds', new Set(['card-1', SECTION_CARD.id]));
+      fixture.componentRef.setInput(
+        'addedCardsIds',
+        new Set(['card-1', SECTION_CARD.id]),
+      );
       fixture.componentRef.setInput('open', true);
       fixture.detectChanges();
 

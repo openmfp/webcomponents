@@ -15,8 +15,8 @@
         <mfp-form-collection-field
           [attr.data-testid]="'generic-form-field-' + field.name"
           [fields]="field.propertyCollection!"
-          [label]="field.label"
           [initialEntries]="collectionEntries(field)"
+          [label]="field.label"
           (valueChange)="onCollectionValueChange(field, $event)"
         />
         @if (getError(field.name); as error) {

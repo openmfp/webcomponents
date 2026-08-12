@@ -1,17 +1,21 @@
 @if (card().component) {
-  <div class="component-card" [attr.data-testid]="'dashboard-card-' + card().id" [class.component-card--editing]="editMode()">
+  <div
+    class="component-card"
+    [attr.data-testid]="'dashboard-card-' + card().id"
+    [class.component-card--editing]="editMode()"
+  >
     @if (editMode()) {
       <div class="remove-wrapper">
         <ui5-button
           class="card__remove"
           design="Default"
           icon="decline"
-          [attr.data-testid]="'dashboard-card-' + card().id + '-remove'"
           [accessibleName]="
             i18n.getTranslation(i18nKeys.REMOVE_CARD) +
             ': ' +
             (card().label || card().component)
           "
+          [attr.data-testid]="'dashboard-card-' + card().id + '-remove'"
           (click)="removeCard.emit()"
         />
       </div>

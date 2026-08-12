@@ -1,6 +1,10 @@
-import { EffectCleanupRegisterFn, Renderer2, ViewContainerRef } from '@angular/core';
-import { mountWcCard } from './mount-wc-card';
 import { CardConfig } from '../../models';
+import { mountWcCard } from './mount-wc-card';
+import {
+  EffectCleanupRegisterFn,
+  Renderer2,
+  ViewContainerRef,
+} from '@angular/core';
 
 function makeCleanup(): {
   onCleanup: EffectCleanupRegisterFn;
@@ -18,16 +22,20 @@ function makeCleanup(): {
 function makeContainer(): { container: ViewContainerRef; el: HTMLElement } {
   const el = document.createElement('div');
   document.body.appendChild(el);
-  const container = { element: { nativeElement: el } } as unknown as ViewContainerRef;
+  const container = {
+    element: { nativeElement: el },
+  } as unknown as ViewContainerRef;
   return { container, el };
 }
 
 function makeRenderer(): Renderer2 {
   return {
     createElement: vi.fn((tag: string) => document.createElement(tag)),
-    setProperty: vi.fn((el: Record<string, unknown>, key: string, value: unknown) => {
-      el[key] = value;
-    }),
+    setProperty: vi.fn(
+      (el: Record<string, unknown>, key: string, value: unknown) => {
+        el[key] = value;
+      },
+    ),
     appendChild: vi.fn((parent: HTMLElement, child: HTMLElement) => {
       parent.appendChild(child);
     }),
@@ -68,7 +76,12 @@ describe('mountWcCard', () => {
   it('renders without errors when componentInputs is omitted', () => {
     const { onCleanup } = makeCleanup();
     expect(() => {
-      mountWcCard(makeCfg(), makeContainer().container, onCleanup, makeRenderer());
+      mountWcCard(
+        makeCfg(),
+        makeContainer().container,
+        onCleanup,
+        makeRenderer(),
+      );
     }).not.toThrow();
   });
 

@@ -20,7 +20,7 @@ import type { Meta, StoryObj } from '@storybook/angular';
         Card clicked — would navigate to: {{ path }}
       </ui5-message-strip>
     }
-  `
+  `,
 })
 class VisitedServiceCardStory {
   @Input() serviceType = '';

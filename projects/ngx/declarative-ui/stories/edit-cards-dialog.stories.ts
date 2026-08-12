@@ -52,7 +52,9 @@ class EditCardsDialogStory {
     this.open = false;
     const parts: string[] = [];
     if (event.added.length) {
-      parts.push(`Added: ${event.added.map((c) => c.label || c.component).join(', ')}`);
+      parts.push(
+        `Added: ${event.added.map((c) => c.label || c.component).join(', ')}`,
+      );
     }
     if (event.removed.length) {
       parts.push(`Removed: ${event.removed.join(', ')}`);

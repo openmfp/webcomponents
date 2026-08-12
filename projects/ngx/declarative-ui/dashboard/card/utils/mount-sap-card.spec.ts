@@ -1,6 +1,6 @@
-import { EffectCleanupRegisterFn, ViewContainerRef } from '@angular/core';
-import { mountSapCard } from './mount-sap-card';
 import { CardConfig } from '../../models';
+import { mountSapCard } from './mount-sap-card';
+import { EffectCleanupRegisterFn, ViewContainerRef } from '@angular/core';
 
 function makeCleanup(): {
   onCleanup: EffectCleanupRegisterFn;
@@ -18,12 +18,19 @@ function makeCleanup(): {
 function makeContainer(): { container: ViewContainerRef; el: HTMLElement } {
   const el = document.createElement('div');
   document.body.appendChild(el);
-  const container = { element: { nativeElement: el } } as unknown as ViewContainerRef;
+  const container = {
+    element: { nativeElement: el },
+  } as unknown as ViewContainerRef;
   return { container, el };
 }
 
 function makeCfg(overrides: Partial<CardConfig> = {}): CardConfig {
-  return { id: 'card-1', component: 'my.sap.App', type: 'sap-ui', ...overrides };
+  return {
+    id: 'card-1',
+    component: 'my.sap.App',
+    type: 'sap-ui',
+    ...overrides,
+  };
 }
 
 describe('mountSapCard', () => {

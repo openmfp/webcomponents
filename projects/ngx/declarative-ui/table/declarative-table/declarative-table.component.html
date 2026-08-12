@@ -34,7 +34,9 @@
       @for (column of viewColumns(); track columnTrackBy(column, $index)) {
         @if (column.group) {
           <ui5-table-cell
-            [attr.data-testid]="'generic-table-cell-' + i + '-' + column.group.name"
+            [attr.data-testid]="
+              'generic-table-cell-' + i + '-' + column.group.name
+            "
           >
             @let isMultiline = column.group.multiline ?? true;
             <div
@@ -66,8 +68,8 @@
                   }
                   <mfp-resource-field
                     [fieldDefinition]="field"
-                    [resource]="item"
                     [permissions]="permissions()"
+                    [resource]="item"
                     (buttonClick)="buttonClick.emit($event)"
                   />
                 </span>
@@ -79,13 +81,15 @@
           </ui5-table-cell>
         } @else {
           <ui5-table-cell
-            [attr.data-testid]="'generic-table-cell-' + i + '-' + column.property"
+            [attr.data-testid]="
+              'generic-table-cell-' + i + '-' + column.property
+            "
           >
             <div class="flex" [style.justifyContent]="column.uiSettings?.align">
               <mfp-resource-field
                 [fieldDefinition]="column"
-                [resource]="item"
                 [permissions]="permissions()"
+                [resource]="item"
                 (buttonClick)="buttonClick.emit($event)"
               />
             </div>
@@ -128,8 +132,13 @@
     border-top: 1px solid var(--sapList_BorderColor);
   "
 >
-  <div class="pagination-footer__side" style="display: flex; align-items: center; gap: 0.5rem">
-    <span style="color: var(--sapTextColor); font-size: var(--sapFontSmallSize)">
+  <div
+    class="pagination-footer__side"
+    style="display: flex; align-items: center; gap: 0.5rem"
+  >
+    <span
+      style="color: var(--sapTextColor); font-size: var(--sapFontSmallSize)"
+    >
       {{ isPagerMode() ? 'Items per page:' : 'Items per load:' }}
     </span>
     <ui5-select
@@ -171,7 +180,9 @@
         data-testid="generic-table-pager-indicator"
         >{{
           knowsTotal()
-            ? (hasResults() ? currentPage() + ' / ' + totalPages() : '–')
+            ? hasResults()
+              ? currentPage() + ' / ' + totalPages()
+              : '–'
             : currentPage()
         }}</span
       >
@@ -195,16 +206,16 @@
       }
     </div>
     <div class="pagination-footer__side pagination-footer__side--end">
-        @if (knowsTotal()) {
-          <span
-            data-testid="generic-table-item-count"
-            style="color: var(--sapTextColor); font-size: var(--sapFontSmallSize)"
-          >
-            <b style="font-size: var(--sapFontSize)">{{ totalItemsCount() }}</b>
-            Items
-          </span>
+      @if (knowsTotal()) {
+        <span
+          data-testid="generic-table-item-count"
+          style="color: var(--sapTextColor); font-size: var(--sapFontSmallSize)"
+        >
+          <b style="font-size: var(--sapFontSize)">{{ totalItemsCount() }}</b>
+          Items
+        </span>
       }
-      </div>
+    </div>
   } @else {
     <div class="pagination-footer__side pagination-footer__side--end">
       <span

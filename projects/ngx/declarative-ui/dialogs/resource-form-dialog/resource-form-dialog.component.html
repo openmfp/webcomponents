@@ -1,12 +1,14 @@
 <ui5-dialog
-  [attr.data-testid]="dataTestidPrefix() + '-dialog'"
   [accessibleName]="config()?.title ?? defaultTitle()"
+  [attr.data-testid]="dataTestidPrefix() + '-dialog'"
   [open]="open()"
   (ui5BeforeClose)="cancelled.emit()"
 >
   <div class="dialog__header" slot="header">
     <ui5-title level="H5">
-      <span [innerHTML]="(config()?.title ?? defaultTitle()) | sanitizeHtml"></span>
+      <span
+        [innerHTML]="config()?.title ?? defaultTitle() | sanitizeHtml"
+      ></span>
     </ui5-title>
   </div>
   <div class="dialog__body">
@@ -21,16 +23,16 @@
   </div>
   <div class="dialog__footer" slot="footer">
     <ui5-button
-      [attr.data-testid]="dataTestidPrefix() + '-confirm'"
       design="Emphasized"
+      [attr.data-testid]="dataTestidPrefix() + '-confirm'"
       [disabled]="hasErrors()"
       (click)="form.submit()"
     >
       {{ config()?.confirmLabel ?? defaultConfirmLabel() }}
     </ui5-button>
     <ui5-button
-      [attr.data-testid]="dataTestidPrefix() + '-cancel'"
       design="Transparent"
+      [attr.data-testid]="dataTestidPrefix() + '-cancel'"
       (click)="cancelled.emit()"
     >
       {{ config()?.cancelLabel ?? defaultCancelLabel() }}

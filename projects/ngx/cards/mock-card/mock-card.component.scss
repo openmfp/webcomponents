@@ -9,7 +9,10 @@
   height: 100%;
   background: var(--sapTile_Background, #fff);
   border-radius: 12px;
-  border: var(--_ui5_card_border, 1px solid var(--sapTile_BorderColor, #e5e5e5));
+  border: var(
+    --_ui5_card_border,
+    1px solid var(--sapTile_BorderColor, #e5e5e5)
+  );
   box-shadow: var(--_ui5_card_box_shadow, var(--sapContent_Shadow0));
   overflow: hidden;
 

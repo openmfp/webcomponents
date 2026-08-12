@@ -1,4 +1,7 @@
-import { getAllowedResizeWidths, resolveResizeWidthStep } from './resize.helpers';
+import {
+  getAllowedResizeWidths,
+  resolveResizeWidthStep,
+} from './resize.helpers';
 
 describe('getAllowedResizeWidths', () => {
   describe('normal case', () => {

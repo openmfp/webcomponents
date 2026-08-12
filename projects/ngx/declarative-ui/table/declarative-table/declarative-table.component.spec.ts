@@ -1,8 +1,12 @@
+import { ResourceField } from '../../resource-field/resource-field.component';
+import {
+  GenericResource,
+  ResourceFieldButtonClickEvent,
+  TableFieldDefinition,
+} from '../models';
+import { DeclarativeTable } from './declarative-table.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { DeclarativeTable } from './declarative-table.component';
-import { GenericResource, TableFieldDefinition, ResourceFieldButtonClickEvent } from '../models';
-import { ResourceField } from '../../resource-field/resource-field.component';
 
 type Fixture = ComponentFixture<DeclarativeTable<GenericResource>>;
 type Comp = DeclarativeTable<GenericResource>;
@@ -26,15 +30,27 @@ function setup(opts: {
   const component = fixture.componentInstance;
   fixture.componentRef.setInput('columns', opts.columns);
   fixture.componentRef.setInput('resources', opts.resources ?? []);
-  if (opts.trackByPath !== undefined) fixture.componentRef.setInput('trackByPath', opts.trackByPath);
-  if (opts.totalItemsCount !== undefined) fixture.componentRef.setInput('totalItemsCount', opts.totalItemsCount);
-  if (opts.paginationLimit !== undefined) fixture.componentRef.setInput('paginationLimit', opts.paginationLimit);
-  if (opts.hasMore !== undefined) fixture.componentRef.setInput('hasMore', opts.hasMore);
-  if (opts.loadMode !== undefined) fixture.componentRef.setInput('loadMode', opts.loadMode);
-  if (opts.loadMoreButtonText !== undefined) fixture.componentRef.setInput('loadMoreButtonText', opts.loadMoreButtonText);
-  if (opts.height !== undefined) fixture.componentRef.setInput('height', opts.height);
-  if (opts.currentPage !== undefined) fixture.componentRef.setInput('currentPage', opts.currentPage);
-  if (opts.permissions !== undefined) fixture.componentRef.setInput('permissions', opts.permissions);
+  if (opts.trackByPath !== undefined)
+    fixture.componentRef.setInput('trackByPath', opts.trackByPath);
+  if (opts.totalItemsCount !== undefined)
+    fixture.componentRef.setInput('totalItemsCount', opts.totalItemsCount);
+  if (opts.paginationLimit !== undefined)
+    fixture.componentRef.setInput('paginationLimit', opts.paginationLimit);
+  if (opts.hasMore !== undefined)
+    fixture.componentRef.setInput('hasMore', opts.hasMore);
+  if (opts.loadMode !== undefined)
+    fixture.componentRef.setInput('loadMode', opts.loadMode);
+  if (opts.loadMoreButtonText !== undefined)
+    fixture.componentRef.setInput(
+      'loadMoreButtonText',
+      opts.loadMoreButtonText,
+    );
+  if (opts.height !== undefined)
+    fixture.componentRef.setInput('height', opts.height);
+  if (opts.currentPage !== undefined)
+    fixture.componentRef.setInput('currentPage', opts.currentPage);
+  if (opts.permissions !== undefined)
+    fixture.componentRef.setInput('permissions', opts.permissions);
   fixture.detectChanges();
   return { fixture, component };
 }
@@ -51,7 +67,9 @@ describe('DeclarativeTable', () => {
   beforeEach(async () => {
     vi.useFakeTimers();
     await TestBed.configureTestingModule({
-      imports: [DeclarativeTable as unknown as typeof DeclarativeTable<GenericResource>],
+      imports: [
+        DeclarativeTable as unknown as typeof DeclarativeTable<GenericResource>,
+      ],
     }).compileComponents();
   });
 
@@ -74,8 +92,16 @@ describe('DeclarativeTable', () => {
     it('renders group header with group label and test-id from group name', () => {
       const { fixture } = setup({
         columns: [
-          { property: 'city', label: 'City', group: { name: 'location', label: 'Location' } },
-          { property: 'country', label: 'Country', group: { name: 'location', label: 'Location' } },
+          {
+            property: 'city',
+            label: 'City',
+            group: { name: 'location', label: 'Location' },
+          },
+          {
+            property: 'country',
+            label: 'Country',
+            group: { name: 'location', label: 'Location' },
+          },
         ],
       });
       const header = el(fixture, 'generic-table-header-location');
@@ -85,9 +111,7 @@ describe('DeclarativeTable', () => {
 
     it('renders group header with group name when no label', () => {
       const { fixture } = setup({
-        columns: [
-          { property: 'city', group: { name: 'location' } },
-        ],
+        columns: [{ property: 'city', group: { name: 'location' } }],
       });
       const header = el(fixture, 'generic-table-header-location');
       expect(header?.textContent?.trim()).toBe('location');
@@ -104,7 +128,10 @@ describe('DeclarativeTable', () => {
 
   describe('no-data state', () => {
     it('renders no-data illustrated message when resources is empty', () => {
-      const { fixture } = setup({ columns: [{ property: 'name' }], resources: [] });
+      const { fixture } = setup({
+        columns: [{ property: 'name' }],
+        resources: [],
+      });
       expect(el(fixture, 'generic-table-view-nodata')).not.toBeNull();
     });
 
@@ -121,7 +148,10 @@ describe('DeclarativeTable', () => {
     it('renders a row for each resource', () => {
       const { fixture } = setup({
         columns: [{ property: 'name' }],
-        resources: [{ id: '1', name: 'Alice' }, { id: '2', name: 'Bob' }],
+        resources: [
+          { id: '1', name: 'Alice' },
+          { id: '2', name: 'Bob' },
+        ],
       });
       expect(el(fixture, 'generic-table-row-0')).not.toBeNull();
       expect(el(fixture, 'generic-table-row-1')).not.toBeNull();
@@ -167,7 +197,9 @@ describe('DeclarativeTable', () => {
         resources: [{ id: '1', city: 'Berlin', country: 'Germany' }],
       });
       expect(el(fixture, 'generic-table-cell-0-location-city')).not.toBeNull();
-      expect(el(fixture, 'generic-table-cell-0-location-country')).not.toBeNull();
+      expect(
+        el(fixture, 'generic-table-cell-0-location-country'),
+      ).not.toBeNull();
     });
 
     it('renders field label inside group cell when label is set', () => {
@@ -226,7 +258,10 @@ describe('DeclarativeTable', () => {
     it('bubbles buttonClick from resource-field', () => {
       const field: TableFieldDefinition = {
         property: 'action',
-        uiSettings: { displayAs: 'button', buttonSettings: { text: 'Go', action: 'navigate' } },
+        uiSettings: {
+          displayAs: 'button',
+          buttonSettings: { text: 'Go', action: 'navigate' },
+        },
       };
       const resource = { id: '1', action: 'go' };
       const { fixture, component } = setup({
@@ -240,8 +275,13 @@ describe('DeclarativeTable', () => {
       // The button lives inside resource-field's shadow root, unreachable via DOM
       // querySelector in jsdom. Get the ResourceField instance directly
       // and invoke its buttonClicked method to test the event chain.
-      const resourceFieldDe = fixture.debugElement.query(By.directive(ResourceField));
-      const resourceFieldComp: ResourceField<GenericResource, TableFieldDefinition> = resourceFieldDe.componentInstance;
+      const resourceFieldDe = fixture.debugElement.query(
+        By.directive(ResourceField),
+      );
+      const resourceFieldComp: ResourceField<
+        GenericResource,
+        TableFieldDefinition
+      > = resourceFieldDe.componentInstance;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- accessing protected method for testing
       (resourceFieldComp as any).buttonClicked(new MouseEvent('click'));
       fixture.detectChanges();
@@ -286,7 +326,10 @@ describe('DeclarativeTable', () => {
     it('displays loaded count vs total', () => {
       const { fixture } = setup({
         columns: [{ property: 'name' }],
-        resources: [{ id: '1', name: 'Alice' }, { id: '2', name: 'Bob' }],
+        resources: [
+          { id: '1', name: 'Alice' },
+          { id: '2', name: 'Bob' },
+        ],
         totalItemsCount: 10,
       });
       const text = root(fixture).textContent;
@@ -303,9 +346,14 @@ describe('DeclarativeTable', () => {
       const emitted: number[] = [];
       component.paginationLimitChanged.subscribe((v) => emitted.push(v));
 
-      const select = root(fixture).querySelector('ui5-select') as HTMLElement & { value: string };
+      const select = root(fixture).querySelector(
+        'ui5-select',
+      ) as HTMLElement & { value: string };
       if (select) {
-        Object.defineProperty(select, 'value', { value: '50', configurable: true });
+        Object.defineProperty(select, 'value', {
+          value: '50',
+          configurable: true,
+        });
         select.dispatchEvent(new Event('change'));
         fixture.detectChanges();
       }
@@ -347,7 +395,10 @@ describe('DeclarativeTable', () => {
         resources: [{ id: '1', metadata: { name: 'pod-1' } }],
         trackByPath: 'metadata.name',
       });
-      const result = component.rowTrackBy(0, { id: '1', metadata: { name: 'pod-1' } });
+      const result = component.rowTrackBy(0, {
+        id: '1',
+        metadata: { name: 'pod-1' },
+      });
       expect(result).toBe('pod-1');
     });
 
@@ -388,7 +439,10 @@ describe('DeclarativeTable', () => {
     });
 
     it('accepts height via input signal', () => {
-      const { component } = setup({ columns: [{ property: 'name' }], height: 400 });
+      const { component } = setup({
+        columns: [{ property: 'name' }],
+        height: 400,
+      });
       expect(component.height()).toBe(400);
     });
   });
@@ -405,7 +459,9 @@ describe('DeclarativeTable', () => {
         loadMode: 'scroll',
         height: 300,
       });
-      const headerRowEl = root(fixture).querySelector('ui5-table-header-row') as HTMLElement & { sticky: boolean };
+      const headerRowEl = root(fixture).querySelector(
+        'ui5-table-header-row',
+      ) as HTMLElement & { sticky: boolean };
       expect(headerRowEl.sticky).toBe(true);
     });
 
@@ -414,7 +470,9 @@ describe('DeclarativeTable', () => {
         columns: [{ property: 'name' }],
         height: 300,
       });
-      const headerRowEl = root(fixture).querySelector('ui5-table-header-row') as HTMLElement & { sticky: boolean };
+      const headerRowEl = root(fixture).querySelector(
+        'ui5-table-header-row',
+      ) as HTMLElement & { sticky: boolean };
       expect(headerRowEl.sticky).toBe(false);
     });
 
@@ -423,7 +481,9 @@ describe('DeclarativeTable', () => {
         columns: [{ property: 'name' }],
         loadMode: 'scroll',
       });
-      const headerRowEl = root(fixture).querySelector('ui5-table-header-row') as HTMLElement & { sticky: boolean };
+      const headerRowEl = root(fixture).querySelector(
+        'ui5-table-header-row',
+      ) as HTMLElement & { sticky: boolean };
       expect(headerRowEl.sticky).toBe(false);
     });
 
@@ -461,9 +521,7 @@ describe('DeclarativeTable', () => {
   });
 
   describe('pager mode', () => {
-    const pagerSetup = (
-      overrides: Partial<Parameters<typeof setup>[0]> = {},
-    ) =>
+    const pagerSetup = (overrides: Partial<Parameters<typeof setup>[0]> = {}) =>
       setup({
         columns: [{ property: 'name' }],
         resources: [{ id: '1' }, { id: '2' }],
@@ -507,10 +565,14 @@ describe('DeclarativeTable', () => {
     it('disables first and previous on the first page', () => {
       const { fixture } = pagerSetup({ currentPage: 1 });
       // canPrev is false on page 1 regardless of totalItemsCount
-      const prev = el(fixture, 'generic-table-pager-prev') as HTMLElement & { disabled: boolean };
+      const prev = el(fixture, 'generic-table-pager-prev') as HTMLElement & {
+        disabled: boolean;
+      };
       expect(prev.disabled).toBe(true);
       // first button is only rendered when knowsTotal=true (totalItemsCount set)
-      const first = el(fixture, 'generic-table-pager-first') as HTMLElement & { disabled: boolean };
+      const first = el(fixture, 'generic-table-pager-first') as HTMLElement & {
+        disabled: boolean;
+      };
       expect(first.disabled).toBe(true);
     });
 
@@ -520,8 +582,12 @@ describe('DeclarativeTable', () => {
         totalItemsCount: 12,
         paginationLimit: 5,
       });
-      const next = el(fixture, 'generic-table-pager-next') as HTMLElement & { disabled: boolean };
-      const last = el(fixture, 'generic-table-pager-last') as HTMLElement & { disabled: boolean };
+      const next = el(fixture, 'generic-table-pager-next') as HTMLElement & {
+        disabled: boolean;
+      };
+      const last = el(fixture, 'generic-table-pager-last') as HTMLElement & {
+        disabled: boolean;
+      };
       expect(next.disabled).toBe(true);
       expect(last.disabled).toBe(true);
     });
@@ -590,8 +656,12 @@ describe('DeclarativeTable', () => {
         expect(btn.disabled).toBe(true);
       }
       // first/last are still rendered (knowsTotal=true) but also disabled
-      const first = el(fixture, 'generic-table-pager-first') as HTMLElement & { disabled: boolean };
-      const last = el(fixture, 'generic-table-pager-last') as HTMLElement & { disabled: boolean };
+      const first = el(fixture, 'generic-table-pager-first') as HTMLElement & {
+        disabled: boolean;
+      };
+      const last = el(fixture, 'generic-table-pager-last') as HTMLElement & {
+        disabled: boolean;
+      };
       expect(first.disabled).toBe(true);
       expect(last.disabled).toBe(true);
       expect(component.canPrev()).toBe(false);
@@ -601,19 +671,25 @@ describe('DeclarativeTable', () => {
     it('renders the total item count as "<n> Items" in pager mode', () => {
       const { fixture } = pagerSetup({ totalItemsCount: 145 });
       expect(
-        el(fixture, 'generic-table-item-count')?.textContent?.replace(/\s+/g, ' ').trim(),
+        el(fixture, 'generic-table-item-count')
+          ?.textContent?.replace(/\s+/g, ' ')
+          .trim(),
       ).toBe('145 Items');
     });
 
     it('shows "0 Items" when there are no results', () => {
       const { fixture } = pagerSetup({ resources: [], totalItemsCount: 0 });
       expect(
-        el(fixture, 'generic-table-item-count')?.textContent?.replace(/\s+/g, ' ').trim(),
+        el(fixture, 'generic-table-item-count')
+          ?.textContent?.replace(/\s+/g, ' ')
+          .trim(),
       ).toBe('0 Items');
     });
 
     describe('cursor-based mode (totalItemsCount undefined)', () => {
-      const cursorSetup = (overrides: Partial<Parameters<typeof setup>[0]> = {}) =>
+      const cursorSetup = (
+        overrides: Partial<Parameters<typeof setup>[0]> = {},
+      ) =>
         setup({
           columns: [{ property: 'name' }],
           resources: [{ id: '1' }, { id: '2' }],

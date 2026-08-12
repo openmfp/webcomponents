@@ -207,15 +207,24 @@ export const ValueRules: Story = {
           valueRules: [
             { if: { condition: 'lessThan', value: '20' }, then: 'Low' },
             { if: { condition: 'lessThan', value: '60' }, then: 'Medium' },
-            { if: { condition: 'greaterThanOrEqual', value: '60' }, then: 'High' },
+            {
+              if: { condition: 'greaterThanOrEqual', value: '60' },
+              then: 'High',
+            },
           ],
           cssRules: [
-            { if: { condition: 'lessThan', value: '20' }, styles: { color: 'red' } },
+            {
+              if: { condition: 'lessThan', value: '20' },
+              styles: { color: 'red' },
+            },
             {
               if: { condition: 'greaterThanOrEqual', value: '20' },
               styles: { color: 'darkorange' },
             },
-            { if: { condition: 'greaterThanOrEqual', value: '60' }, styles: { color: 'green' } },
+            {
+              if: { condition: 'greaterThanOrEqual', value: '60' },
+              styles: { color: 'green' },
+            },
           ],
         },
       },

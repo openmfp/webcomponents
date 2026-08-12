@@ -6,11 +6,6 @@
     "skipLibCheck": true,
     "emitDecoratorMetadata": true
   },
-  "include": [
-    "projects/ngx/**/*.ts",
-    ".storybook/preview.ts"
-  ],
-  "exclude": [
-    "projects/**/*.spec.ts"
-  ]
+  "include": ["projects/ngx/**/*.ts", ".storybook/preview.ts"],
+  "exclude": ["projects/**/*.spec.ts"]
 }
