@@ -10,33 +10,31 @@ on:
       - synchronize
 
 permissions:
-  contents: write
-  id-token: write
+  contents: read
 
 concurrency:
   group: ${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  pipe:
-    uses: openmfp/gha/.github/workflows/pipeline-node-module.yml@main
-    secrets: inherit
-    with:
-      publishFromDist: true
-      workingDirectoryDist: ./dist/webcomponents
-      artifactPath: dist
-      environment: npmjs:@openmfp/webcomponents
-
-  publish-ngx:
-    if: ${{ (github.head_ref || github.ref) == 'refs/heads/main' }}
-    needs: [pipe]
-    uses: openmfp/gha/.github/workflows/job-node-publish.yml@main
-    secrets: inherit
-    with:
-      version: ${{ needs.pipe.outputs.strictVersion }}
-      publishFromDist: true
-      workingDirectoryDist: ./dist/ngx
-      artifactPath: dist
-      artifactName: target
-      environment: npmjs:@openmfp/ngx
-      skipVersionCommit: true
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org
+      - run: npm ci
+      # TODO(follow-up): re-enable once the pre-existing ESLint violations are fixed
+      # (`npm run lint:fix` covers most; a couple need manual changes). The previous pipeline
+      # never linted, so enabling this now would fail CI on unrelated files.
+      # - run: npm run lint
+      # TODO(follow-up): re-enable once the ~74 pre-existing Prettier violations are fixed
+      # repo-wide (`npm run format`). The previous pipeline never format-checked, so enabling
+      # this now would fail CI on unrelated files. Track as an immediate follow-up.
+      # - run: npm run check-format
+      - run: npm test
+      - run: npm run build

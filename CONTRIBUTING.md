@@ -5,6 +5,7 @@ We want to make contributing to this project as easy and transparent as possible
 ## Development Setup
 
 Prerequisites:
+
 - Node.js >= 20.0.0
 - npm >= 10.0.0
 
@@ -65,6 +66,30 @@ npm run format
 # Check formatting
 npm run check-format
 ```
+
+## Commit conventions & versioning
+
+This repository squash-merges pull requests, so **the PR title becomes the commit that lands on
+`main`**. That title must follow [Conventional Commits](https://www.conventionalcommits.org) — it
+is the only message that drives versioning and the changelog. A required check lints the PR title
+and blocks merge if it does not conform. Individual in-branch commits are not constrained.
+
+Allowed types: `feat`, `fix`, `perf`, `docs`, `chore`, `ci`, `build`, `refactor`, `test`, `style`,
+`revert`. The type determines the version increment on the next release:
+
+| PR title                                                               | Increment        | Example (pre-1.0) |
+| ---------------------------------------------------------------------- | ---------------- | ----------------- |
+| `feat: …`                                                              | minor            | 0.18.11 → 0.19.0  |
+| `fix: …` / `perf: …`                                                   | patch            | 0.18.11 → 0.18.12 |
+| `feat!: …` or a `BREAKING CHANGE:` footer                              | minor (see note) | 0.18.11 → 0.19.0  |
+| `docs:` `chore:` `ci:` `build:` `refactor:` `test:` `style:` `revert:` | none             | —                 |
+
+> **Pre-1.0 breaking changes.** While the project is on `0.y.z` the public API is not considered
+> stable (SemVer §4), so breaking changes bump the **minor** version rather than jumping to `1.0.0`.
+> Promotion to `1.0.0` is a deliberate action via the release workflow's `release-as` input.
+
+A period of only housekeeping PRs (`docs`/`chore`/…) intentionally produces no release. See
+[RELEASING.md](RELEASING.md) for how releases are cut.
 
 ## Pull Requests
 
