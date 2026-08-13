@@ -1,27 +1,22 @@
 <div class="filter-tabs">
   @if (canScrollLeft()) {
     <button
-      type="button"
-      class="filter-tabs__chevron filter-tabs__chevron--left"
       aria-label="Scroll filters left"
+      class="filter-tabs__chevron filter-tabs__chevron--left"
+      type="button"
       (click)="scroll('left')"
     >
       <ui5-icon name="navigation-left-arrow" />
     </button>
   }
-  <div
-    #strip
-    class="filter-tabs__strip"
-    role="tablist"
-    (scroll)="onScroll()"
-  >
+  <div #strip class="filter-tabs__strip" role="tablist" (scroll)="onScroll()">
     @for (tab of tabs(); track tab.property + ':' + tab.value) {
       <button
-        type="button"
-        role="tab"
         class="filter-tabs__tab"
-        [class.filter-tabs__tab--active]="activeTab() === tab"
+        role="tab"
+        type="button"
         [attr.aria-selected]="activeTab() === tab"
+        [class.filter-tabs__tab--active]="activeTab() === tab"
         (click)="select(tab)"
       >
         {{ tab.label }}
@@ -30,9 +25,9 @@
   </div>
   @if (canScrollRight()) {
     <button
-      type="button"
-      class="filter-tabs__chevron filter-tabs__chevron--right"
       aria-label="Scroll filters right"
+      class="filter-tabs__chevron filter-tabs__chevron--right"
+      type="button"
       (click)="scroll('right')"
     >
       <ui5-icon name="navigation-right-arrow" />

@@ -1,4 +1,9 @@
-import { CUSTOM_ELEMENTS_SCHEMA, ChangeDetectionStrategy, Component, input } from '@angular/core';
+import {
+  CUSTOM_ELEMENTS_SCHEMA,
+  ChangeDetectionStrategy,
+  Component,
+  input,
+} from '@angular/core';
 import { Link } from '@fundamental-ngx/ui5-webcomponents/link';
 
 @Component({
@@ -7,7 +12,7 @@ import { Link } from '@fundamental-ngx/ui5-webcomponents/link';
   templateUrl: './link-value.component.html',
   styleUrl: './link-value.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class LinkValue {
   urlValue = input.required<string>();

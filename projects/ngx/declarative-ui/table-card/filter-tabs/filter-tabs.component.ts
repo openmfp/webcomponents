@@ -39,8 +39,8 @@ import '@ui5/webcomponents-icons/dist/navigation-right-arrow.js';
  */
 @Component({
   selector: 'mfp-filter-tabs',
-  standalone: true,
   imports: [Icon],
+  standalone: true,
   templateUrl: './filter-tabs.component.html',
   styleUrl: './filter-tabs.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -63,18 +63,23 @@ export class FilterTabs implements OnDestroy {
       const tabs = this.tabs();
       const next = tabs.find((t) => t.default) ?? tabs[0];
       this.activeTab.set(next);
-      afterNextRender(() => this.recomputeScrollState(), {
-        injector: this.injector,
-      });
+      afterNextRender(
+        () => {
+          this.recomputeScrollState();
+        },
+        {
+          injector: this.injector,
+        },
+      );
     });
 
     afterNextRender(
       () => {
         const el = this.stripRef()?.nativeElement;
         if (!el) return;
-        this.resizeObserver = new ResizeObserver(() =>
-          this.recomputeScrollState(),
-        );
+        this.resizeObserver = new ResizeObserver(() => {
+          this.recomputeScrollState();
+        });
         this.resizeObserver.observe(el);
         this.recomputeScrollState();
       },

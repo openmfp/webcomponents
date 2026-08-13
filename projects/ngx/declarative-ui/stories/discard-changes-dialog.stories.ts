@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
-import type { Meta, StoryObj } from '@storybook/angular';
 import { DiscardChangesDialog } from '../dashboard/discard-changes-dialog/discard-changes-dialog.component';
 import { DashboardI18nService } from '../dashboard/i18n';
+import { Component } from '@angular/core';
+import type { Meta, StoryObj } from '@storybook/angular';
 
 @Component({
   selector: 'mfp-discard-changes-dialog-story',

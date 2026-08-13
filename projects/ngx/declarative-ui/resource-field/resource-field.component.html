@@ -9,7 +9,11 @@
     <span [attr.data-testid]="testId()" [style]="cssStyles()">
       @if (displayType === 'secret') {
         <span class="secret-value-container">
-          <mfp-secret-value [isVisible]="isVisible()" [testId]="testId() + '-secret'" [value]="value()" />
+          <mfp-secret-value
+            [isVisible]="isVisible()"
+            [testId]="testId() + '-secret'"
+            [value]="value()"
+          />
           <ui5-icon
             class="toggle-icon"
             mode="Interactive"
@@ -20,9 +24,15 @@
           />
         </span>
       } @else if (displayType === 'boolIcon' && isBoolLike()) {
-        <mfp-boolean-value [boolValue]="boolValue()!" [testId]="testId() + '-boolean'" />
+        <mfp-boolean-value
+          [boolValue]="boolValue()!"
+          [testId]="testId() + '-boolean'"
+        />
       } @else if (displayType === 'link' && isUrlValue()) {
-        <mfp-link-value [testId]="testId() + '-link'" [urlValue]="stringValue()!" />
+        <mfp-link-value
+          [testId]="testId() + '-link'"
+          [urlValue]="stringValue()!"
+        />
       } @else if (displayType === 'tooltip') {
         <ui5-icon
           [accessibleName]="stringValue()!"
@@ -46,11 +56,11 @@
       } @else if (displayType === 'button') {
         @let buttonSettings = uiSettings()?.buttonSettings;
         <ui5-button
-          [attr.data-testid]="testId() + '-button'"
           [accessibleName]="buttonAccessibleName()"
+          [attr.data-testid]="testId() + '-button'"
           [design]="buttonSettings?.design"
-          [endIcon]="buttonSettings?.endIcon"
           [disabled]="buttonDisabled()"
+          [endIcon]="buttonSettings?.endIcon"
           [icon]="buttonSettings?.icon"
           [tooltip]="buttonSettings?.tooltip"
           (click)="buttonClicked($event)"

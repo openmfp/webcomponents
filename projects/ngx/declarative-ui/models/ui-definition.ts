@@ -2,11 +2,7 @@ import { GenericResource } from './resource';
 
 /** Text transformation applied to a field value before display. */
 export type TransformType =
-  | 'uppercase'
-  | 'lowercase'
-  | 'capitalize'
-  | 'decode'
-  | 'encode';
+  'uppercase' | 'lowercase' | 'capitalize' | 'decode' | 'encode';
 
 /** Resolves a field value via a property path with optional transforms. */
 export interface PropertyField {

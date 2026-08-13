@@ -36,6 +36,11 @@ type TableCardDeleteConfig = DeleteResourceConfirmationConfig & {
 type Comp = DeclarativeTableCard<GenericResource>;
 type Fixture = ComponentFixture<Comp>;
 
+/** Exposes the component's `protected filterTabs` computed for assertions. */
+interface WithFilterTabs {
+  filterTabs: () => FieldFilterDefinition[];
+}
+
 const COLUMNS: TableFieldDefinition[] = [
   { label: 'Name', property: 'metadata.name' },
   { label: 'Namespace', property: 'metadata.namespace' },
@@ -510,10 +515,8 @@ describe('DeclarativeTableCard', () => {
           value: 'Failed',
         },
       });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const rendered = (
-        component as any
-      ).filterTabs() as FieldFilterDefinition[];
+
+      const rendered = (component as unknown as WithFilterTabs).filterTabs();
       const defaults = rendered.filter((t) => t.default);
       expect(defaults).toHaveLength(1);
       expect(defaults[0].value).toBe('Failed');
@@ -528,10 +531,8 @@ describe('DeclarativeTableCard', () => {
           value: 'Failed',
         },
       });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const rendered = (
-        component as any
-      ).filterTabs() as FieldFilterDefinition[];
+
+      const rendered = (component as unknown as WithFilterTabs).filterTabs();
       // Pending had default:true in TABS — after promotion of Failed it must be cleared.
       const pending = rendered.find((t) => t.value === 'Pending');
       expect(pending?.default).toBe(false);
@@ -549,10 +550,8 @@ describe('DeclarativeTableCard', () => {
           value: 'Ghost',
         },
       });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const rendered = (
-        component as any
-      ).filterTabs() as FieldFilterDefinition[];
+
+      const rendered = (component as unknown as WithFilterTabs).filterTabs();
       const defaults = rendered.filter((t) => t.default);
       expect(defaults).toHaveLength(1);
       expect(defaults[0].value).toBe('Pending');
@@ -596,10 +595,7 @@ describe('DeclarativeTableCard', () => {
       } satisfies TableCardConfig);
       fixture.detectChanges();
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const rendered = (
-        component as any
-      ).filterTabs() as FieldFilterDefinition[];
+      const rendered = (component as unknown as WithFilterTabs).filterTabs();
       const defaults = rendered.filter((t) => t.default);
       expect(defaults).toHaveLength(1);
       expect(defaults[0].value).toBe('Running');
@@ -607,10 +603,8 @@ describe('DeclarativeTableCard', () => {
 
     it('passes filterTabs through untouched when initialFilter is absent', () => {
       const { component } = setupWithSearchConfig({ filterTabs: TABS });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const rendered = (
-        component as any
-      ).filterTabs() as FieldFilterDefinition[];
+
+      const rendered = (component as unknown as WithFilterTabs).filterTabs();
       // The array is passed through — reference equality isn't guaranteed
       // (the computed may or may not identity-preserve), but the shape is.
       expect(rendered).toEqual(TABS);

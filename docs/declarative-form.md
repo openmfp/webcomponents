@@ -20,7 +20,12 @@ A dynamic form web component that renders fields from a declarative field defini
   const form = document.getElementById('form');
 
   form.fields = [
-    { name: 'metadata.name', label: 'Name', required: true, validation: 'onChange' },
+    {
+      name: 'metadata.name',
+      label: 'Name',
+      required: true,
+      validation: 'onChange',
+    },
     { name: 'metadata.namespace', label: 'Namespace', validation: 'onBlur' },
   ];
 
@@ -78,7 +83,12 @@ import {
 })
 export class MyComponent {
   fields: FormFieldDefinition[] = [
-    { name: 'metadata.name', label: 'Name', required: true, validation: 'onChange' },
+    {
+      name: 'metadata.name',
+      label: 'Name',
+      required: true,
+      validation: 'onChange',
+    },
     { name: 'metadata.namespace', label: 'Namespace', validation: 'onBlur' },
   ];
 
@@ -118,11 +128,11 @@ export class MyComponent {
 
 ### Outputs / Events
 
-| Event              | Detail payload              | Description                                                        |
-| ------------------ | --------------------------- | ------------------------------------------------------------------ |
-| `fieldChange`      | `FormFieldChangeEvent`      | Fires per-field based on the field's `validation` strategy         |
-| `formValueChange`  | `Record<string, unknown>`   | Fires on every user-driven change with the flat `form.value` map (all fields keyed by their `name`). Emitted only from user input events — programmatic seeding via `initialValues` does NOT trigger it, so consumers can echo the value back into `initialValues` without creating a loop |
-| `formSubmit`       | `Record<string, unknown>`   | Fires when `submit()` is called; value is nested                   |
+| Event             | Detail payload            | Description                                                                                                                                                                                                                                                                                |
+| ----------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `fieldChange`     | `FormFieldChangeEvent`    | Fires per-field based on the field's `validation` strategy                                                                                                                                                                                                                                 |
+| `formValueChange` | `Record<string, unknown>` | Fires on every user-driven change with the flat `form.value` map (all fields keyed by their `name`). Emitted only from user input events — programmatic seeding via `initialValues` does NOT trigger it, so consumers can echo the value back into `initialValues` without creating a loop |
+| `formSubmit`      | `Record<string, unknown>` | Fires when `submit()` is called; value is nested                                                                                                                                                                                                                                           |
 
 ---
 
@@ -130,18 +140,18 @@ export class MyComponent {
 
 ```ts
 interface FormFieldDefinition {
-  name: string;                            // Field key; dots create nested submit output paths
-  label: string;                           // Display label shown above the field
-  required?: boolean;                      // Visual required marker only
-  values?: string[];                       // Static select options
-  disabled?: boolean;                      // Disables the field
-  validation?: 'onBlur' | 'onChange';      // When to emit fieldChange for this field
+  name: string; // Field key; dots create nested submit output paths
+  label: string; // Display label shown above the field
+  required?: boolean; // Visual required marker only
+  values?: string[]; // Static select options
+  disabled?: boolean; // Disables the field
+  validation?: 'onBlur' | 'onChange'; // When to emit fieldChange for this field
   propertyCollection?: FormFieldDefinition[]; // Sub-fields for an array-of-objects field; see "Collection fields" below
 }
 
 interface FormFieldChangeEvent {
-  fieldProperty: string;  // The field property name (matches field.name)
-  value: unknown;         // Current value of the control; for a `propertyCollection` field this is the full `Array<Record<string, unknown>>`
+  fieldProperty: string; // The field property name (matches field.name)
+  value: unknown; // Current value of the control; for a `propertyCollection` field this is the full `Array<Record<string, unknown>>`
 }
 
 type FormFieldErrors = Record<string, string | null>;
@@ -204,13 +214,18 @@ Set `propertyCollection` on a `FormFieldDefinition` to declare that the value at
 
 ```ts
 const fields: FormFieldDefinition[] = [
-  { name: 'metadata.name', label: 'Name', required: true, validation: 'onChange' },
+  {
+    name: 'metadata.name',
+    label: 'Name',
+    required: true,
+    validation: 'onChange',
+  },
   {
     name: 'spec.artifacts',
     label: 'Artifacts',
     propertyCollection: [
       { name: 'name', label: 'Name', required: true },
-      { name: 'url',  label: 'URL' },
+      { name: 'url', label: 'URL' },
       { name: 'type', label: 'Type', values: ['image', 'chart', 'file'] },
     ],
   },
@@ -246,25 +261,27 @@ const initialValues = {
 
 All interactive elements carry `data-testid` attributes for reliable E2E targeting. See [docs/test-ids.md](./test-ids.md) for the full naming convention.
 
-| Element | `data-testid` | Notes |
-|---|---|---|
-| Form element | `generic-form` | |
-| Field container | `generic-form-field-container-{name}` | `name` = `field.name` (dot notation) |
-| Field label | `generic-form-field-label-{name}` | |
-| Input or select | `generic-form-field-{name}` | `<ui5-input>` or `<ui5-select>` |
-| Select option | `generic-form-field-{name}-option-{value}` | `value` = option string or `empty` for the blank placeholder |
-| Collection container | `collection-field` | Rendered inside a `propertyCollection` field |
-| Collection item | `collection-item-{index}` | Zero-based array index |
-| Collection item toggle | `collection-item-{index}-toggle` | Expand / collapse header |
-| Collection item remove | `collection-item-{index}-remove` | Trash icon |
-| Collection item form | `collection-item-{index}-form` | Nested `<mfp-declarative-form>` for the expanded card |
-| Collection Add button | `collection-add` | Appends a new empty entry |
+| Element                | `data-testid`                              | Notes                                                        |
+| ---------------------- | ------------------------------------------ | ------------------------------------------------------------ |
+| Form element           | `generic-form`                             |                                                              |
+| Field container        | `generic-form-field-container-{name}`      | `name` = `field.name` (dot notation)                         |
+| Field label            | `generic-form-field-label-{name}`          |                                                              |
+| Input or select        | `generic-form-field-{name}`                | `<ui5-input>` or `<ui5-select>`                              |
+| Select option          | `generic-form-field-{name}-option-{value}` | `value` = option string or `empty` for the blank placeholder |
+| Collection container   | `collection-field`                         | Rendered inside a `propertyCollection` field                 |
+| Collection item        | `collection-item-{index}`                  | Zero-based array index                                       |
+| Collection item toggle | `collection-item-{index}-toggle`           | Expand / collapse header                                     |
+| Collection item remove | `collection-item-{index}-remove`           | Trash icon                                                   |
+| Collection item form   | `collection-item-{index}-form`             | Nested `<mfp-declarative-form>` for the expanded card        |
+| Collection Add button  | `collection-add`                           | Appends a new empty entry                                    |
 
 **Example** — a field `{ name: 'metadata.name', label: 'Name' }` renders:
 
 ```html
 <div data-testid="generic-form-field-container-metadata.name">
-  <ui5-label data-testid="generic-form-field-label-metadata.name">Name</ui5-label>
+  <ui5-label data-testid="generic-form-field-label-metadata.name"
+    >Name</ui5-label
+  >
   <ui5-input data-testid="generic-form-field-metadata.name" />
 </div>
 ```

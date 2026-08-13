@@ -1,6 +1,13 @@
-<ui5-dialog data-testid="dashboard-edit-cards-dialog" class="edit-cards-dialog-container" [open]="open()" (ui5BeforeClose)="cancelled.emit()">
+<ui5-dialog
+  class="edit-cards-dialog-container"
+  data-testid="dashboard-edit-cards-dialog"
+  [open]="open()"
+  (ui5BeforeClose)="cancelled.emit()"
+>
   <div class="edit-cards-dialog__header" slot="header">
-    <ui5-title level="H5">{{ i18n.getTranslation(i18nKeys.EDIT_CARDS) }}</ui5-title>
+    <ui5-title level="H5">{{
+      i18n.getTranslation(i18nKeys.EDIT_CARDS)
+    }}</ui5-title>
   </div>
   <div class="edit-cards-dialog">
     <ui5-list
@@ -10,15 +17,17 @@
     >
       @for (availableCard of availableCards(); track availableCard.id) {
         <ui5-li-custom
-          [attr.data-testid]="'dashboard-edit-cards-row-' + availableCard.id"
           class="edit-cards-dialog__list-item-container"
           [accessibleName]="availableCard.label || availableCard.component"
+          [attr.data-testid]="'dashboard-edit-cards-row-' + availableCard.id"
         >
           <div class="edit-cards-dialog__list-item">
             <span>{{ availableCard.label || availableCard.component }}</span>
             <ui5-switch
-              [attr.data-testid]="'dashboard-edit-cards-switch-' + availableCard.id"
               [accessibleName]="availableCard.label || availableCard.component"
+              [attr.data-testid]="
+                'dashboard-edit-cards-switch-' + availableCard.id
+              "
               [checked]="selectedIds().has(availableCard.id)"
               (keydown)="onSwitchKeydown($event, availableCard.id)"
               (ui5Change)="toggle(availableCard.id)"
@@ -29,7 +38,17 @@
     </ui5-list>
   </div>
   <div class="edit-cards-dialog__footer" slot="footer">
-    <ui5-button data-testid="dashboard-edit-cards-save-btn" design="Emphasized" (click)="confirmSave()">{{ i18n.getTranslation(i18nKeys.SAVE) }}</ui5-button>
-    <ui5-button data-testid="dashboard-edit-cards-cancel-btn" design="Transparent" (click)="cancelled.emit()">{{ i18n.getTranslation(i18nKeys.CANCEL) }}</ui5-button>
+    <ui5-button
+      data-testid="dashboard-edit-cards-save-btn"
+      design="Emphasized"
+      (click)="confirmSave()"
+      >{{ i18n.getTranslation(i18nKeys.SAVE) }}</ui5-button
+    >
+    <ui5-button
+      data-testid="dashboard-edit-cards-cancel-btn"
+      design="Transparent"
+      (click)="cancelled.emit()"
+      >{{ i18n.getTranslation(i18nKeys.CANCEL) }}</ui5-button
+    >
   </div>
 </ui5-dialog>

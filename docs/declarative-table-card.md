@@ -173,29 +173,29 @@ export class MyComponent {
 
 ### Inputs
 
-| Input             | Type                 | Required | Default | Description                                               |
-| ----------------- | -------------------- | -------- | ------- | --------------------------------------------------------- |
-| `resources`       | `T[]`                | yes      | -       | Data rows passed to the inner table                       |
-| `config`          | `TableCardConfig`    | yes      | -       | Static table, button, and dialog configuration            |
-| `createFormState` | `TableCardFormState` | no       | `{}`    | Runtime validation and submit state for the create dialog |
-| `editFormState`   | `TableCardFormState` | no       | `{}`    | Runtime validation and submit state for the edit dialog   |
-| `permissions`     | `Record<string, string[]>` | no   | —       | Per-row permission map keyed by `resource.id`. Threaded through to `mfp-declarative-table` and each `mfp-resource-field` to evaluate `requirePermission` on column definitions. |
+| Input             | Type                       | Required | Default | Description                                                                                                                                                                     |
+| ----------------- | -------------------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `resources`       | `T[]`                      | yes      | -       | Data rows passed to the inner table                                                                                                                                             |
+| `config`          | `TableCardConfig`          | yes      | -       | Static table, button, and dialog configuration                                                                                                                                  |
+| `createFormState` | `TableCardFormState`       | no       | `{}`    | Runtime validation and submit state for the create dialog                                                                                                                       |
+| `editFormState`   | `TableCardFormState`       | no       | `{}`    | Runtime validation and submit state for the edit dialog                                                                                                                         |
+| `permissions`     | `Record<string, string[]>` | no       | —       | Per-row permission map keyed by `resource.id`. Threaded through to `mfp-declarative-table` and each `mfp-resource-field` to evaluate `requirePermission` on column definitions. |
 
 ### Outputs / Events
 
-| Event                    | Payload                                           | Description                                                  |
-| ------------------------ | ------------------------------------------------- | ------------------------------------------------------------ |
-| `createFieldChange`       | `FormFieldChangeEvent`                            | Re-emits per-field change from the create form               |
-| `editFieldChange`         | `{ resource: T; formChangeEvent: FormFieldChangeEvent }` | Re-emits per-field change from the edit form with resource   |
-| `createSubmit`           | `Record<string, unknown>`                         | Fires when the create dialog Save button is clicked          |
-| `editSubmit`             | `{ resource: T; value: Record<string, unknown> }` | Fires when the edit dialog Save button is clicked            |
-| `deleteSubmit`           | `T`                                               | Fires when the delete dialog Delete button is clicked        |
-| `searchChanged`          | `string`                                          | Emits 300 ms after the search input changes                  |
-| `filterTabChanged`       | `FieldFilterDefinition \| undefined`              | Emits when the user picks a filter tab |
-| `tableRowClicked`        | `T`                                               | Emits when a table row is clicked                            |
-| `loadMoreResources`      | -                                                 | Emits when the user triggers load more                       |
-| `paginationLimitChanged` | `number`                                          | Emits when the user changes page size                        |
-| `actionButtonClick`      | `ResourceFieldButtonClickEvent<T>`                    | Emits for row-action buttons other than built-in edit/delete |
+| Event                    | Payload                                                  | Description                                                  |
+| ------------------------ | -------------------------------------------------------- | ------------------------------------------------------------ |
+| `createFieldChange`      | `FormFieldChangeEvent`                                   | Re-emits per-field change from the create form               |
+| `editFieldChange`        | `{ resource: T; formChangeEvent: FormFieldChangeEvent }` | Re-emits per-field change from the edit form with resource   |
+| `createSubmit`           | `Record<string, unknown>`                                | Fires when the create dialog Save button is clicked          |
+| `editSubmit`             | `{ resource: T; value: Record<string, unknown> }`        | Fires when the edit dialog Save button is clicked            |
+| `deleteSubmit`           | `T`                                                      | Fires when the delete dialog Delete button is clicked        |
+| `searchChanged`          | `string`                                                 | Emits 300 ms after the search input changes                  |
+| `filterTabChanged`       | `FieldFilterDefinition \| undefined`                     | Emits when the user picks a filter tab                       |
+| `tableRowClicked`        | `T`                                                      | Emits when a table row is clicked                            |
+| `loadMoreResources`      | -                                                        | Emits when the user triggers load more                       |
+| `paginationLimitChanged` | `number`                                                 | Emits when the user changes page size                        |
+| `actionButtonClick`      | `ResourceFieldButtonClickEvent<T>`                       | Emits for row-action buttons other than built-in edit/delete |
 
 ### Methods
 
@@ -213,21 +213,21 @@ Submit events do not close dialogs automatically. Close the dialog after success
 
 All interactive elements carry `data-testid` attributes for reliable E2E targeting. See [docs/test-ids.md](./test-ids.md) for the full naming convention.
 
-| Element | `data-testid` |
-|---|---|
-| Card root | `generic-table-card` |
-| Search button | `generic-table-card-search-btn` |
-| Search input | `generic-table-card-search-input` |
-| Create button | `generic-table-card-create-btn` |
-| Create dialog | `generic-table-card-create-dialog` |
+| Element               | `data-testid`                       |
+| --------------------- | ----------------------------------- |
+| Card root             | `generic-table-card`                |
+| Search button         | `generic-table-card-search-btn`     |
+| Search input          | `generic-table-card-search-input`   |
+| Create button         | `generic-table-card-create-btn`     |
+| Create dialog         | `generic-table-card-create-dialog`  |
 | Create confirm button | `generic-table-card-create-confirm` |
-| Create cancel button | `generic-table-card-create-cancel` |
-| Edit dialog | `generic-table-card-edit-dialog` |
-| Edit confirm button | `generic-table-card-edit-confirm` |
-| Edit cancel button | `generic-table-card-edit-cancel` |
-| Delete dialog | `generic-table-card-delete-dialog` |
+| Create cancel button  | `generic-table-card-create-cancel`  |
+| Edit dialog           | `generic-table-card-edit-dialog`    |
+| Edit confirm button   | `generic-table-card-edit-confirm`   |
+| Edit cancel button    | `generic-table-card-edit-cancel`    |
+| Delete dialog         | `generic-table-card-delete-dialog`  |
 | Delete confirm button | `generic-table-card-delete-confirm` |
-| Delete cancel button | `generic-table-card-delete-cancel` |
+| Delete cancel button  | `generic-table-card-delete-cancel`  |
 
 ---
 
@@ -264,9 +264,9 @@ interface TableConfig {
   totalItemsCount?: number;
   paginationLimit?: number;
   hasMore?: boolean;
-  height?: number;           // fixed table height in pixels; enables scrollable body
+  height?: number; // fixed table height in pixels; enables scrollable body
   growMode?: 'Button' | 'Scroll'; // default: 'Button'
-  loadMoreButtonText?: string;    // button label when growMode is 'Button'; default: 'Load More'
+  loadMoreButtonText?: string; // button label when growMode is 'Button'; default: 'Load More'
 }
 
 interface ResourceFormConfig {
@@ -327,11 +327,11 @@ When `filterTabs` is set on `TableCardConfig`, the card renders a horizontal tab
 
 ### Visual behavior
 
-| State | Styling |
-| ----- | ------- |
-| Inactive tab | Standard text color, no underline |
-| Active tab | SAP blue (`var(--sapButton_Selected_TextColor)`) + 3 px blue underline bar directly below the label |
-| Hover (inactive) | Subtle color shift toward the link color |
+| State            | Styling                                                                                             |
+| ---------------- | --------------------------------------------------------------------------------------------------- |
+| Inactive tab     | Standard text color, no underline                                                                   |
+| Active tab       | SAP blue (`var(--sapButton_Selected_TextColor)`) + 3 px blue underline bar directly below the label |
+| Hover (inactive) | Subtle color shift toward the link color                                                            |
 
 When the combined tab width exceeds the card width, the strip becomes a **horizontal carousel**: left/right chevron buttons appear at the edges only when there's room to scroll that direction. Each chevron click scrolls by ~70 % of the visible width so one tab overlaps for context. The native scrollbar is hidden; navigation is via the chevrons (with a `ResizeObserver` watching the strip to keep the chevron-visibility state in sync as the card resizes).
 
@@ -382,7 +382,7 @@ export class MyComponent {
         default: true,
       },
       { label: 'Pending', property: 'status.phase', value: 'Pending' },
-      { label: 'Failed',  property: 'status.phase', value: 'Failed'  },
+      { label: 'Failed', property: 'status.phase', value: 'Failed' },
     ],
   };
 
@@ -451,20 +451,24 @@ Use `buttonSettings` inside `TableCardConfig` to override the default icon, text
 config: TableCardConfig = {
   // ...
   buttonSettings: {
-    editButton:   { text: 'Edit resource',   icon: 'edit',    action: 'edit' },
-    deleteButton: { text: 'Delete resource', icon: 'decline', action: 'delete' },
+    editButton: { text: 'Edit resource', icon: 'edit', action: 'edit' },
+    deleteButton: {
+      text: 'Delete resource',
+      icon: 'decline',
+      action: 'delete',
+    },
   },
 };
 ```
 
 `ButtonSettings` fields available for each button:
 
-| Field    | Type     | Description                                                       |
-| -------- | -------- | ----------------------------------------------------------------- |
-| `text`   | `string` | Button label (icon-only when omitted)                             |
-| `icon`   | `string` | UI5 icon name                                                     |
+| Field    | Type     | Description                                                      |
+| -------- | -------- | ---------------------------------------------------------------- |
+| `text`   | `string` | Button label (icon-only when omitted)                            |
+| `icon`   | `string` | UI5 icon name                                                    |
 | `design` | `string` | `'Default'` \| `'Transparent'` \| `'Emphasized'` \| …            |
-| `action` | `string` | Must stay `'edit'` / `'delete'` to keep built-in dialog handling  |
+| `action` | `string` | Must stay `'edit'` / `'delete'` to keep built-in dialog handling |
 
 ### Adding custom action buttons
 

@@ -1,5 +1,5 @@
-import { DiscardChangesDialog } from './discard-changes-dialog.component';
 import { DashboardI18nService } from '../i18n';
+import { DiscardChangesDialog } from './discard-changes-dialog.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 type Fixture = ComponentFixture<DiscardChangesDialog>;
@@ -31,7 +31,9 @@ describe('DiscardChangesDialog', () => {
 
       const r = root(fixture);
       expect(r.querySelector('ui5-icon')).toBeNull();
-      expect(r.querySelector('ui5-dialog')?.getAttribute('state')).toBe('Critical');
+      expect(r.querySelector('ui5-dialog')?.getAttribute('state')).toBe(
+        'Critical',
+      );
       expect(r.querySelector('ui5-title')?.textContent?.trim()).toBe(
         'Discard Changes',
       );
@@ -51,9 +53,9 @@ describe('DiscardChangesDialog', () => {
       fixture.componentRef.setInput('open', true);
       fixture.detectChanges();
 
-      const dialog = root(fixture).querySelector<HTMLElement & { open?: boolean }>(
-        'ui5-dialog',
-      );
+      const dialog = root(fixture).querySelector<
+        HTMLElement & { open?: boolean }
+      >('ui5-dialog');
       expect(dialog?.open).toBe(true);
     });
   });

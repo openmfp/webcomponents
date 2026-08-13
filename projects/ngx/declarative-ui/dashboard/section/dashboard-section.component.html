@@ -8,18 +8,22 @@
       class="section__remove"
       design="Default"
       icon="decline"
-      [attr.data-testid]="'dashboard-section-' + section().id + '-remove'"
       [accessibleName]="
         i18n.getTranslation(i18nKeys.REMOVE_SECTION) +
         ': ' +
         (section().title || section().id)
       "
+      [attr.data-testid]="'dashboard-section-' + section().id + '-remove'"
       (click)="removeSection.emit()"
     />
   }
   @if (section().title) {
     <div class="section__header">
-      <span class="section__title" [attr.data-testid]="'dashboard-section-' + section().id + '-title'">{{ section().title }}</span>
+      <span
+        class="section__title"
+        [attr.data-testid]="'dashboard-section-' + section().id + '-title'"
+        >{{ section().title }}</span
+      >
     </div>
   }
   <div class="section__grid" [style.--cols]="columns() ?? null">

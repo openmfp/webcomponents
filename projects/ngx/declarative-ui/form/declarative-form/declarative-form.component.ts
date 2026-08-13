@@ -86,9 +86,7 @@ export class DeclarativeForm<T extends GenericResource> {
 
   setFormControlValue($event: Event, field: FormFieldDefinition): void {
     const target = $event.target as
-      | HTMLInputElement
-      | HTMLTextAreaElement
-      | HTMLSelectElement;
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 
     const control = this.form.controls[field.name];
     control.setValue(target.value);

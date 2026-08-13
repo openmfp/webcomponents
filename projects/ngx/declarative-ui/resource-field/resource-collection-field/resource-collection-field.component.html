@@ -3,12 +3,12 @@
     @let expanded = expandedIndex() === index;
     <div
       class="card"
-      [class.card--expanded]="expanded"
       [attr.data-testid]="'resource-collection-item-' + index"
+      [class.card--expanded]="expanded"
     >
       <button
-        type="button"
         class="card__header"
+        type="button"
         [attr.aria-expanded]="expanded"
         [attr.data-testid]="'resource-collection-item-' + index + '-toggle'"
         (click)="toggle(index, $event)"
@@ -21,6 +21,10 @@
       </button>
 
       @if (expanded) {
+        <!-- Not an interactive control: the click guard only stops expanded-card
+             clicks from bubbling to the enclosing clickable `ui5-table-row`
+             (`onRowClick`). No keyboard/focus semantics are needed. -->
+        <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
         <div class="card__body" (click)="$event.stopPropagation()">
           @for (row of rows(); track row.field.property) {
             <div class="row">

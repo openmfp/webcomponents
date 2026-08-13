@@ -63,7 +63,9 @@
   --sapGroup_ContentBorderColor: var(--sapHighlightColor, #0070f2);
 }
 
-:host-context(.ui-draggable-dragging) .component-card--editing .card__resize-indicator {
+:host-context(.ui-draggable-dragging)
+  .component-card--editing
+  .card__resize-indicator {
   opacity: 1;
 }
 

@@ -19,7 +19,11 @@ export function setPropertyByPath<T extends Record<string, unknown>>(
 
     const existing = current[key];
 
-    if (existing === undefined || existing === null || typeof existing !== 'object') {
+    if (
+      existing === undefined ||
+      existing === null ||
+      typeof existing !== 'object'
+    ) {
       current[key] = {};
     }
 

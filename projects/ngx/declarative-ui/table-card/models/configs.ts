@@ -2,11 +2,6 @@ import { FormFieldDefinition, FormFieldErrors } from '../../form';
 import { ButtonSettings, GenericResource } from '../../models';
 import { TableFieldDefinition } from '../../table';
 
-
-
-
-
-
 /** Configuration for the create/edit resource form rendered inside the table card dialogs. */
 export interface ResourceFormConfig {
   /**

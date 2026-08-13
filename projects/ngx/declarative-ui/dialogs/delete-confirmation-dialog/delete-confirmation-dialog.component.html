@@ -5,9 +5,11 @@
   (ui5BeforeClose)="cancelled.emit()"
 >
   <div class="dialog__header" slot="header">
-    <ui5-icon class="dialog__header-icon" name="alert" design="Critical"></ui5-icon>
+    <ui5-icon class="dialog__header-icon" design="Critical" name="alert" />
     <ui5-title level="H5">
-      <span [innerHTML]="(config()?.title ?? 'Confirm Delete') | sanitizeHtml"></span>
+      <span
+        [innerHTML]="config()?.title ?? 'Confirm Delete' | sanitizeHtml"
+      ></span>
     </ui5-title>
   </div>
   @if (config()?.message || requiresConfirmation()) {
@@ -21,8 +23,14 @@
             class="dialog__confirmation-input"
             data-testid="generic-table-card-delete-confirmation-input"
             [formControl]="confirmationControl"
-            [placeholder]="config()?.confirmationPlaceholder ?? 'Type to confirm'"
-            [valueState]="confirmationControl.invalid && confirmationControl.dirty ? 'Negative' : 'None'"
+            [placeholder]="
+              config()?.confirmationPlaceholder ?? 'Type to confirm'
+            "
+            [valueState]="
+              confirmationControl.invalid && confirmationControl.dirty
+                ? 'Negative'
+                : 'None'
+            "
           />
         </p>
       }

@@ -1,5 +1,13 @@
 import { build } from 'esbuild';
-import { readdirSync, unlinkSync, rmSync, mkdirSync, copyFileSync, writeFileSync, readFileSync } from 'fs';
+import {
+  copyFileSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  unlinkSync,
+  writeFileSync,
+} from 'fs';
 import { join, resolve } from 'path';
 
 const publicDir = resolve('public');
@@ -35,7 +43,9 @@ await build({
 unlinkSync(entry);
 cleanDist(dist);
 
-console.log('Single-file bundle written to dist/webcomponents/mfp-webcomponents.js');
+console.log(
+  'Single-file bundle written to dist/webcomponents/mfp-webcomponents.js',
+);
 copyFileSync(out, join(publicDir, 'mfp-webcomponents.js'));
 console.log('Copied to public/mfp-webcomponents.js');
 
@@ -57,7 +67,9 @@ unlinkSync(dashEntry);
 cleanDist(dashDist);
 rmSync(dashDist, { recursive: true });
 
-console.log('Single-file bundle written to dist/webcomponents/mfp-wc-dashboard.js');
+console.log(
+  'Single-file bundle written to dist/webcomponents/mfp-wc-dashboard.js',
+);
 copyFileSync(dashOut, join(publicDir, 'mfp-wc-dashboard.js'));
 console.log('Copied to public/mfp-wc-dashboard.js');
 
@@ -76,8 +88,14 @@ const wcPkg = {
   },
   files: ['mfp-webcomponents.js', 'mfp-wc-dashboard.js'],
 };
-writeFileSync(join(dist, 'package.json'), JSON.stringify(wcPkg, null, 2) + '\n');
+writeFileSync(
+  join(dist, 'package.json'),
+  JSON.stringify(wcPkg, null, 2) + '\n',
+);
 console.log('Generated dist/webcomponents/package.json');
 
-copyFileSync(resolve('projects/webcomponents/README.md'), join(dist, 'README.md'));
+copyFileSync(
+  resolve('projects/webcomponents/README.md'),
+  join(dist, 'README.md'),
+);
 console.log('Copied README.md to dist/webcomponents/README.md');

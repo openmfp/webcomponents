@@ -4,8 +4,8 @@ A standalone field renderer that displays a single field value from a resource o
 
 ## Tags
 
-| Usage             | Tag               |
-| ----------------- | ----------------- |
+| Usage             | Tag                    |
+| ----------------- | ---------------------- |
 | Angular component | `<mfp-resource-field>` |
 
 > `ResourceField` is an Angular-only component. It is not shipped as a standalone web component bundle.
@@ -44,22 +44,22 @@ export class MyComponent {
 
 ### Inputs
 
-| Input             | Type              | Required | Default | Description                                            |
-| ----------------- | ----------------- | -------- | ------- | ------------------------------------------------------ |
-| `fieldDefinition` | `FieldDefinition` | yes      | —       | Describes how to resolve and display the field value    |
-| `resource`        | `GenericResource` | no       | —       | The data object from which the field value is resolved  |
-| `permissions`     | `Record<string, string[]>` | no | —      | Per-row permission map keyed by `resource.id`. Used to evaluate `fieldDefinition.requirePermission`. |
+| Input             | Type                       | Required | Default | Description                                                                                          |
+| ----------------- | -------------------------- | -------- | ------- | ---------------------------------------------------------------------------------------------------- |
+| `fieldDefinition` | `FieldDefinition`          | yes      | —       | Describes how to resolve and display the field value                                                 |
+| `resource`        | `GenericResource`          | no       | —       | The data object from which the field value is resolved                                               |
+| `permissions`     | `Record<string, string[]>` | no       | —       | Per-row permission map keyed by `resource.id`. Used to evaluate `fieldDefinition.requirePermission`. |
 
 ### Outputs / Events
 
-| Event         | Payload                         | Description                                              |
-| ------------- | ------------------------------- | -------------------------------------------------------- |
-| `buttonClick` | `ResourceFieldButtonClickEvent<T>`  | Fires when the cell is rendered as a button and clicked  |
+| Event         | Payload                            | Description                                             |
+| ------------- | ---------------------------------- | ------------------------------------------------------- |
+| `buttonClick` | `ResourceFieldButtonClickEvent<T>` | Fires when the cell is rendered as a button and clicked |
 
 ```ts
 interface ResourceFieldButtonClickEvent<T extends GenericResource> {
-  event:    MouseEvent;
-  field:    FieldDefinition;
+  event: MouseEvent;
+  field: FieldDefinition;
   resource: T | undefined;
 }
 ```
@@ -70,16 +70,16 @@ interface ResourceFieldButtonClickEvent<T extends GenericResource> {
 
 ```ts
 interface FieldDefinition {
-  label?:              string;
-  property?:           string | string[];   // dot-notation path into the resource
-  propertyField?:      PropertyField;       // access a sub-key with optional transforms
-  jsonPathExpression?: string;              // explicit JSONPath expression
-  value?:              string;              // static fallback value
-  uiSettings?:         UiSettings;
+  label?: string;
+  property?: string | string[]; // dot-notation path into the resource
+  propertyField?: PropertyField; // access a sub-key with optional transforms
+  jsonPathExpression?: string; // explicit JSONPath expression
+  value?: string; // static fallback value
+  uiSettings?: UiSettings;
   /** Verb that must appear in the row's granted actions for this field to render.
    *  When absent the field is always rendered.
    *  When set but the verb is not found (row absent from the map, or map undefined) the field is hidden (fail-closed). */
-  requirePermission?:  string;
+  requirePermission?: string;
 }
 ```
 
@@ -112,13 +112,13 @@ Values are resolved in this order:
 
 Transforms are applied left to right.
 
-| Transform    | Effect                    |
-| ------------ | ------------------------- |
-| `uppercase`  | `hello` → `HELLO`         |
-| `lowercase`  | `HELLO` → `hello`         |
-| `capitalize` | `hello` → `Hello`         |
-| `encode`     | Base64-encodes the value  |
-| `decode`     | Base64-decodes the value  |
+| Transform    | Effect                   |
+| ------------ | ------------------------ |
+| `uppercase`  | `hello` → `HELLO`        |
+| `lowercase`  | `HELLO` → `hello`        |
+| `capitalize` | `hello` → `Hello`        |
+| `encode`     | Base64-encodes the value |
+| `decode`     | Base64-decodes the value |
 
 ```ts
 { property: 'metadata', propertyField: { key: 'name', transform: ['capitalize'] } }
@@ -130,16 +130,16 @@ Transforms are applied left to right.
 
 By default the cell renders its value as plain text. Use `uiSettings.displayAs` to change the rendering:
 
-| `displayAs`  | Renders as                                                     |
-| ------------ | -------------------------------------------------------------- |
-| _(unset)_    | Plain text                                                     |
-| `'secret'`   | Masked value (`*` repeated) with a toggle-visibility icon      |
-| `'boolIcon'` | Check / X icon for `"true"` / `"false"` string values         |
-| `'link'`     | Clickable anchor (the value must be a valid URL)               |
-| `'tooltip'`  | Info icon; the full value appears as a tooltip on hover        |
-| `'alert'`    | Critical alert icon when the value is falsy; empty otherwise   |
-| `'img'`      | `<img>` element using the value as `src`                       |
-| `'button'`   | Action button (requires `buttonSettings`)                      |
+| `displayAs`  | Renders as                                                                                                             |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| _(unset)_    | Plain text                                                                                                             |
+| `'secret'`   | Masked value (`*` repeated) with a toggle-visibility icon                                                              |
+| `'boolIcon'` | Check / X icon for `"true"` / `"false"` string values                                                                  |
+| `'link'`     | Clickable anchor (the value must be a valid URL)                                                                       |
+| `'tooltip'`  | Info icon; the full value appears as a tooltip on hover                                                                |
+| `'alert'`    | Critical alert icon when the value is falsy; empty otherwise                                                           |
+| `'img'`      | `<img>` element using the value as `src`                                                                               |
+| `'button'`   | Action button (requires `buttonSettings`)                                                                              |
 | `'tag'`      | One `<ui5-tag>` chip per value (split by `tagSettings.valueSeparator`, default `','`); also accepts an array of values |
 
 ### Secret
@@ -282,14 +282,14 @@ const permissions = {
 
 **Semantics (fail-closed):**
 
-| Condition | Rendered? |
-|---|---|
-| `requirePermission` absent | Yes — always rendered |
-| `requirePermission` set, verb present in granted actions | Yes |
-| `requirePermission` set, verb absent from granted actions | No |
-| `requirePermission` set, row not in the map | No |
-| `requirePermission` set, `permissions` input not provided | No |
-| `requirePermission` set, `resource` has no `id` | No |
+| Condition                                                 | Rendered?             |
+| --------------------------------------------------------- | --------------------- |
+| `requirePermission` absent                                | Yes — always rendered |
+| `requirePermission` set, verb present in granted actions  | Yes                   |
+| `requirePermission` set, verb absent from granted actions | No                    |
+| `requirePermission` set, row not in the map               | No                    |
+| `requirePermission` set, `permissions` input not provided | No                    |
+| `requirePermission` set, `resource` has no `id`           | No                    |
 
 When using `DeclarativeTable` or `DeclarativeTableCard`, pass the map to their `permissions` input — it is threaded down to every `mfp-resource-field` automatically.
 
@@ -329,7 +329,11 @@ Available conditions: `equals`, `notEquals`, `greaterThan`, `greaterThanOrEqual`
 `cssCustomization` applies static styles unconditionally and is merged on top of any matching `cssRules`:
 
 ```ts
-uiSettings: { cssCustomization: { fontStyle: 'italic' } }
+uiSettings: {
+  cssCustomization: {
+    fontStyle: 'italic';
+  }
+}
 ```
 
 ---
@@ -370,9 +374,9 @@ Renders a positive or negative SAP UI5 icon for a boolean value.
 import { BooleanValue } from '@openmfp/webcomponents';
 ```
 
-| Input       | Type      | Required | Description                     |
-| ----------- | --------- | -------- | ------------------------------- |
-| `boolValue` | `boolean` | yes      | `true` → check icon, `false` → X icon |
+| Input       | Type      | Required | Description                                 |
+| ----------- | --------- | -------- | ------------------------------------------- |
+| `boolValue` | `boolean` | yes      | `true` → check icon, `false` → X icon       |
 | `testId`    | `string`  | no       | `data-testid` attribute on the icon element |
 
 ### `LinkValue`
@@ -383,9 +387,9 @@ Renders a URL string as a `<ui5-link>` that stops click propagation.
 import { LinkValue } from '@openmfp/webcomponents';
 ```
 
-| Input      | Type     | Required | Description                             |
-| ---------- | -------- | -------- | --------------------------------------- |
-| `urlValue` | `string` | yes      | The URL rendered as the link `href`     |
+| Input      | Type     | Required | Description                                 |
+| ---------- | -------- | -------- | ------------------------------------------- |
+| `urlValue` | `string` | yes      | The URL rendered as the link `href`         |
 | `testId`   | `string` | no       | `data-testid` attribute on the link element |
 
 ### `SecretValue`
@@ -396,11 +400,11 @@ Renders a value as masked asterisks or as plain text, controlled by `isVisible`.
 import { SecretValue } from '@openmfp/webcomponents';
 ```
 
-| Input       | Type      | Required | Description                                                       |
-| ----------- | --------- | -------- | ----------------------------------------------------------------- |
-| `value`     | `string`  | yes      | The string to mask or reveal                                      |
-| `isVisible` | `boolean` | no       | `false` (default) shows asterisks; `true` reveals the plain text  |
-| `testId`    | `string`  | no       | `data-testid` attribute on the wrapper element                     |
+| Input       | Type      | Required | Description                                                      |
+| ----------- | --------- | -------- | ---------------------------------------------------------------- |
+| `value`     | `string`  | yes      | The string to mask or reveal                                     |
+| `isVisible` | `boolean` | no       | `false` (default) shows asterisks; `true` reveals the plain text |
+| `testId`    | `string`  | no       | `data-testid` attribute on the wrapper element                   |
 
 The masked form renders `*` repeated to the same length as `value` (minimum 8 characters when the value is empty).
 
@@ -412,11 +416,11 @@ Renders an array of strings as `<ui5-tag>` chips in a wrapping flex container.
 import { TagListValue } from '@openmfp/webcomponents';
 ```
 
-| Input        | Type          | Required | Description                                               |
-| ------------ | ------------- | -------- | --------------------------------------------------------- |
-| `tags`       | `string[]`    | yes      | Each string becomes one chip                              |
-| `tagSettings`| `TagSettings` | no       | Controls chip `design`, `colorScheme` (`'1'`–`'10'`, default `'1'`), and `valueSeparator` |
-| `testId`     | `string`      | no       | `data-testid` attribute on the wrapper element (default `'tag-list-value'`) |
+| Input         | Type          | Required | Description                                                                               |
+| ------------- | ------------- | -------- | ----------------------------------------------------------------------------------------- |
+| `tags`        | `string[]`    | yes      | Each string becomes one chip                                                              |
+| `tagSettings` | `TagSettings` | no       | Controls chip `design`, `colorScheme` (`'1'`–`'10'`, default `'1'`), and `valueSeparator` |
+| `testId`      | `string`      | no       | `data-testid` attribute on the wrapper element (default `'tag-list-value'`)               |
 
 ---
 
@@ -424,47 +428,71 @@ import { TagListValue } from '@openmfp/webcomponents';
 
 ```ts
 interface UiSettings {
-  displayAs?:       'secret' | 'boolIcon' | 'link' | 'tooltip' | 'alert' | 'img' | 'button' | 'tag';
-  buttonSettings?:  ButtonSettings;
-  tagSettings?:     TagSettings;
-  tooltipIcon?:     string;
-  withCopyButton?:  boolean;
+  displayAs?:
+    | 'secret'
+    | 'boolIcon'
+    | 'link'
+    | 'tooltip'
+    | 'alert'
+    | 'img'
+    | 'button'
+    | 'tag';
+  buttonSettings?: ButtonSettings;
+  tagSettings?: TagSettings;
+  tooltipIcon?: string;
+  withCopyButton?: boolean;
   cssCustomization?: Partial<CSSStyleDeclaration>;
-  cssRules?:        CssRule[];
-  valueRules?:      ValueRule[];
-  columnWidth?:     string;
-  align?:           'start' | 'center' | 'end';
+  cssRules?: CssRule[];
+  valueRules?: ValueRule[];
+  columnWidth?: string;
+  align?: 'start' | 'center' | 'end';
 }
 
 interface TagSettings {
-  design?:      'Neutral' | 'Positive' | 'Critical' | 'Negative' | 'Information' | 'Set1' | 'Set2';
-  colorScheme?: '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10';  // default '1'
-  separator?:   string;  // default ','
+  design?:
+    | 'Neutral'
+    | 'Positive'
+    | 'Critical'
+    | 'Negative'
+    | 'Information'
+    | 'Set1'
+    | 'Set2';
+  colorScheme?: '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10'; // default '1'
+  separator?: string; // default ','
 }
 
 interface ButtonSettings {
-  text?:    string;
-  icon?:    string;
+  text?: string;
+  icon?: string;
   endIcon?: string;
-  design?:  'Default' | 'Positive' | 'Negative' | 'Transparent' | 'Emphasized' | 'Attention';
+  design?:
+    | 'Default'
+    | 'Positive'
+    | 'Negative'
+    | 'Transparent'
+    | 'Emphasized'
+    | 'Attention';
   tooltip?: string;
-  action:   'openInModal' | 'navigate' | 'edit' | 'delete' | string;
+  action: 'openInModal' | 'navigate' | 'edit' | 'delete' | string;
 }
 
 interface CssRule {
-  if:     { condition: RuleCondition; value: string };
+  if: { condition: RuleCondition; value: string };
   styles: Partial<CSSStyleDeclaration>;
 }
 
 interface ValueRule {
-  if:   { condition: RuleCondition; value: string };
+  if: { condition: RuleCondition; value: string };
   then: string;
 }
 
 type RuleCondition =
-  | 'equals' | 'notEquals'
-  | 'greaterThan' | 'greaterThanOrEqual'
-  | 'lessThan' | 'lessThanOrEqual'
+  | 'equals'
+  | 'notEquals'
+  | 'greaterThan'
+  | 'greaterThanOrEqual'
+  | 'lessThan'
+  | 'lessThanOrEqual'
   | 'contains';
 ```
 
@@ -474,18 +502,18 @@ type RuleCondition =
 
 `ResourceField` derives its test ID from `fieldDefinition.property` at runtime. See [docs/test-ids.md](./test-ids.md) for the full naming convention.
 
-| Element | `data-testid` | Condition |
-|---|---|---|
-| Root span | `resource-field-{property}` | Always |
-| Secret value | `resource-field-{property}-secret` | `displayAs: 'secret'` |
-| Show/hide toggle | `resource-field-{property}-secret-toggle` | `displayAs: 'secret'` |
-| Boolean icon | `resource-field-{property}-boolean` | `displayAs: 'boolIcon'`, value is `"true"` or `"false"` |
-| Link | `resource-field-{property}-link` | `displayAs: 'link'`, value is a valid URL |
-| Tooltip icon | `resource-field-{property}-tooltip` | `displayAs: 'tooltip'` |
-| Alert icon | `resource-field-{property}-icon` | `displayAs: 'alert'`, value is falsy |
-| Action button | `resource-field-{property}-button` | `displayAs: 'button'` |
-| Copy icon | `resource-field-{property}-copy` | `uiSettings.withCopyButton: true` |
-| Tag list | `resource-field-{property}-tags` | `displayAs: 'tag'` |
+| Element          | `data-testid`                             | Condition                                               |
+| ---------------- | ----------------------------------------- | ------------------------------------------------------- |
+| Root span        | `resource-field-{property}`               | Always                                                  |
+| Secret value     | `resource-field-{property}-secret`        | `displayAs: 'secret'`                                   |
+| Show/hide toggle | `resource-field-{property}-secret-toggle` | `displayAs: 'secret'`                                   |
+| Boolean icon     | `resource-field-{property}-boolean`       | `displayAs: 'boolIcon'`, value is `"true"` or `"false"` |
+| Link             | `resource-field-{property}-link`          | `displayAs: 'link'`, value is a valid URL               |
+| Tooltip icon     | `resource-field-{property}-tooltip`       | `displayAs: 'tooltip'`                                  |
+| Alert icon       | `resource-field-{property}-icon`          | `displayAs: 'alert'`, value is falsy                    |
+| Action button    | `resource-field-{property}-button`        | `displayAs: 'button'`                                   |
+| Copy icon        | `resource-field-{property}-copy`          | `uiSettings.withCopyButton: true`                       |
+| Tag list         | `resource-field-{property}-tags`          | `displayAs: 'tag'`                                      |
 
 **Example** — a field `{ property: 'status.ready', uiSettings: { displayAs: 'boolIcon' } }` on a resource where the value is `"true"` produces:
 

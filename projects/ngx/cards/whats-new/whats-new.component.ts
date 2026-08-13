@@ -8,7 +8,7 @@ import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
   imports: [List, ListItemStandard, Title],
   templateUrl: './whats-new.component.html',
   styleUrl: './whats-new.component.scss',
-  encapsulation: ViewEncapsulation.ShadowDom
+  encapsulation: ViewEncapsulation.ShadowDom,
 })
 export class WhatsNew {
   readonly headlines = [

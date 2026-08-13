@@ -44,7 +44,9 @@ describe('TagListValue', () => {
       const { fixture } = setup(['x']);
       fixture.componentRef.setInput('testId', 'my-tags');
       fixture.detectChanges();
-      const span = fixture.nativeElement.querySelector('[data-testid="my-tags"]');
+      const span = fixture.nativeElement.querySelector(
+        '[data-testid="my-tags"]',
+      );
       expect(span).not.toBeNull();
     });
   });

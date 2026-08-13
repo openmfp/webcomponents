@@ -1,18 +1,20 @@
-import { Component, Input } from '@angular/core';
-import type { Meta, StoryObj } from '@storybook/angular';
+import { ResourceFormDialog } from '../dialogs/resource-form-dialog/resource-form-dialog.component';
 import type {
   FormFieldChangeEvent,
   FormFieldDefinition,
   FormFieldErrors,
 } from '../form/models';
-import { ResourceFormDialog } from '../dialogs/resource-form-dialog/resource-form-dialog.component';
 import type { ResourceFormConfig } from '../table-card/models/configs';
+import { Component, Input } from '@angular/core';
+import type { Meta, StoryObj } from '@storybook/angular';
 
 @Component({
   selector: 'mfp-resource-form-dialog-story',
   imports: [ResourceFormDialog],
   template: `
-    <ui5-button design="Emphasized" (click)="open = true">Open Dialog</ui5-button>
+    <ui5-button design="Emphasized" (click)="open = true"
+      >Open Dialog</ui5-button
+    >
     <mfp-resource-form-dialog
       [config]="config"
       [fieldErrors]="fieldErrors"
@@ -24,10 +26,7 @@ import type { ResourceFormConfig } from '../table-card/models/configs';
       (submitted)="onSubmitted($event)"
     />
     @if (lastMessage) {
-      <ui5-message-strip
-        style="margin-top: 1rem;"
-        [design]="lastMessageDesign"
-      >
+      <ui5-message-strip style="margin-top: 1rem;" [design]="lastMessageDesign">
         {{ lastMessage }}
       </ui5-message-strip>
     }

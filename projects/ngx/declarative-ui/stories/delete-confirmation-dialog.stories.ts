@@ -1,7 +1,7 @@
-import { Component, Input } from '@angular/core';
-import type { Meta, StoryObj } from '@storybook/angular';
 import { DeleteConfirmationDialog } from '../dialogs/delete-confirmation-dialog/delete-confirmation-dialog.component';
 import type { DeleteResourceConfirmationConfig } from '../table-card/models/configs';
+import { Component, Input } from '@angular/core';
+import type { Meta, StoryObj } from '@storybook/angular';
 
 @Component({
   selector: 'mfp-delete-confirmation-dialog-story',
@@ -15,10 +15,7 @@ import type { DeleteResourceConfirmationConfig } from '../table-card/models/conf
       (confirmed)="onConfirmed()"
     />
     @if (lastMessage) {
-      <ui5-message-strip
-        style="margin-top: 1rem;"
-        [design]="lastMessageDesign"
-      >
+      <ui5-message-strip style="margin-top: 1rem;" [design]="lastMessageDesign">
         {{ lastMessage }}
       </ui5-message-strip>
     }
@@ -59,7 +56,8 @@ export const Default: Story = {
   args: {
     config: {
       title: 'Delete Resource',
-      message: 'Are you sure you want to delete this resource? This action cannot be undone.',
+      message:
+        'Are you sure you want to delete this resource? This action cannot be undone.',
       confirmLabel: 'Delete',
       cancelLabel: 'Cancel',
     } satisfies DeleteResourceConfirmationConfig,

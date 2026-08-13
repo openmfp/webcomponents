@@ -5,7 +5,9 @@
       <div class="favorites__item">
         <ui5-icon class="favorites__icon" [name]="item.icon" />
         <span class="favorites__label">{{ item.label }}</span>
-        <ui5-button design="Transparent" [icon]="item.icon">{{ item.label }}</ui5-button>
+        <ui5-button design="Transparent" [icon]="item.icon">{{
+          item.label
+        }}</ui5-button>
       </div>
     }
   </div>

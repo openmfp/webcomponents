@@ -28,12 +28,12 @@ import '@ui5/webcomponents-icons/dist/navigation-right-arrow.js';
  */
 @Component({
   selector: 'mfp-form-collection-field',
-  standalone: true,
   // `DeclarativeForm` is imported via `forwardRef` because it also imports
   // this component — a strict module-init cycle. Angular resolves the
   // `forwardRef` when the template is instantiated, by which point both
   // classes are fully defined.
   imports: [Button, Icon, forwardRef(() => DeclarativeForm)],
+  standalone: true,
   templateUrl: './form-collection-field.component.html',
   styleUrl: './form-collection-field.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

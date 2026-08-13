@@ -30,6 +30,7 @@ npm run build              # build everything in order: ngx → wc
 ```
 
 The `build:wc` script:
+
 1. Runs `ng build webcomponents` → `dist/webcomponents/`
 2. Runs `ng build webcomponents-dashboard` → `dist/webcomponents-dashboard/`
 3. Runs `node scripts/bundle-wc.mjs` which:
@@ -72,6 +73,7 @@ npm run check-format       # check formatting without writing
 ```
 
 Pre-commit hooks (via Husky + lint-staged) run automatically:
+
 - **Prettier** on staged files
 - **ESLint** on `*.ts`
 
@@ -105,13 +107,13 @@ New shared Angular components and services belong in `projects/ngx/`. New custom
 
 ## Registered Web Component Tags
 
-| Tag | Component | Bundle |
-|---|---|---|
-| `mfp-wc-declarative-table` | `DeclarativeTable` | `mfp-webcomponents.js` |
-| `mfp-wc-declarative-form` | `DeclarativeForm` | `mfp-webcomponents.js` |
-| `mfp-wc-declarative-table-card` | `DeclarativeTableCard` | `mfp-webcomponents.js` |
-| `mfp-wc-visited-service-card` | `VisitedServiceCard` | `mfp-webcomponents.js` |
-| `mfp-wc-dashboard` | `Dashboard` | `mfp-wc-dashboard.js` (standalone) |
+| Tag                             | Component              | Bundle                             |
+| ------------------------------- | ---------------------- | ---------------------------------- |
+| `mfp-wc-declarative-table`      | `DeclarativeTable`     | `mfp-webcomponents.js`             |
+| `mfp-wc-declarative-form`       | `DeclarativeForm`      | `mfp-webcomponents.js`             |
+| `mfp-wc-declarative-table-card` | `DeclarativeTableCard` | `mfp-webcomponents.js`             |
+| `mfp-wc-visited-service-card`   | `VisitedServiceCard`   | `mfp-webcomponents.js`             |
+| `mfp-wc-dashboard`              | `Dashboard`            | `mfp-wc-dashboard.js` (standalone) |
 
 ## Code Conventions
 

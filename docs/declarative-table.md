@@ -4,9 +4,9 @@ A data table web component that renders rows and columns from a declarative colu
 
 ## Tags
 
-| Usage | Tag |
-|---|---|
-| Angular component | `<mfp-declarative-table>` |
+| Usage                              | Tag                          |
+| ---------------------------------- | ---------------------------- |
+| Angular component                  | `<mfp-declarative-table>`    |
 | Web Component (framework-agnostic) | `<mfp-wc-declarative-table>` |
 
 ---
@@ -19,7 +19,7 @@ Include the bundle and set properties via JavaScript. Because the component uses
 <!DOCTYPE html>
 <html>
   <head>
-    <script type="module" src="declarative-table.js"/>
+    <script type="module" src="declarative-table.js" />
   </head>
   <body>
     <mfp-wc-declarative-table id="table"></mfp-wc-declarative-table>
@@ -28,7 +28,7 @@ Include the bundle and set properties via JavaScript. Because the component uses
       const table = document.getElementById('table');
 
       table.columns = [
-        { label: 'Name',   property: 'metadata.name' },
+        { label: 'Name', property: 'metadata.name' },
         { label: 'Status', property: 'status.phase' },
       ];
 
@@ -88,27 +88,27 @@ export class MyComponent {
 
 ### Inputs
 
-| Input | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `columns` | `TableFieldDefinition[]` | yes | — | Column definitions |
-| `resources` | `GenericResource[]` | yes | — | Data rows |
-| `trackByPath` | `string` | no | `'id'` | JSONPath (dot-notation) into each resource used as the row identity key |
-| `totalItemsCount` | `number` | no | — | Total count of all items across pages |
-| `paginationLimit` | `number` | no | `5` | Rows per page shown in the page-size selector |
-| `hasMore` | `boolean` | no | `false` | Show the load-more trigger at the bottom |
-| `growMode` | `'Button' \| 'Scroll'` | no | `'Button'` | Load-more strategy: `'Button'` shows a button, `'Scroll'` triggers on scroll |
-| `loadMoreButtonText` | `string` | no | `'Load More'` | Label shown on the load-more button (used when `growMode` is `'Button'`) |
-| `height` | `number` | no | — | Fixed height in pixels. When combined with `growMode: 'Scroll'`, enables scroll-based loading with a sticky header |
-| `permissions` | `Record<string, string[]>` | no | — | Per-row permission map keyed by `resource.id`. Passed to every cell's `mfp-resource-field` to evaluate `requirePermission` on each column definition. |
+| Input                | Type                       | Required | Default       | Description                                                                                                                                           |
+| -------------------- | -------------------------- | -------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `columns`            | `TableFieldDefinition[]`   | yes      | —             | Column definitions                                                                                                                                    |
+| `resources`          | `GenericResource[]`        | yes      | —             | Data rows                                                                                                                                             |
+| `trackByPath`        | `string`                   | no       | `'id'`        | JSONPath (dot-notation) into each resource used as the row identity key                                                                               |
+| `totalItemsCount`    | `number`                   | no       | —             | Total count of all items across pages                                                                                                                 |
+| `paginationLimit`    | `number`                   | no       | `5`           | Rows per page shown in the page-size selector                                                                                                         |
+| `hasMore`            | `boolean`                  | no       | `false`       | Show the load-more trigger at the bottom                                                                                                              |
+| `growMode`           | `'Button' \| 'Scroll'`     | no       | `'Button'`    | Load-more strategy: `'Button'` shows a button, `'Scroll'` triggers on scroll                                                                          |
+| `loadMoreButtonText` | `string`                   | no       | `'Load More'` | Label shown on the load-more button (used when `growMode` is `'Button'`)                                                                              |
+| `height`             | `number`                   | no       | —             | Fixed height in pixels. When combined with `growMode: 'Scroll'`, enables scroll-based loading with a sticky header                                    |
+| `permissions`        | `Record<string, string[]>` | no       | —             | Per-row permission map keyed by `resource.id`. Passed to every cell's `mfp-resource-field` to evaluate `requirePermission` on each column definition. |
 
 ### Outputs / Events
 
-| Event | Detail payload | Description |
-|---|---|---|
-| `tableRowClicked` | row object | Fires when a row is clicked |
-| `buttonClick` | `{ event, field, resource }` | Fires when a button cell is clicked |
-| `loadMoreResources` | — | Fires when the user triggers load more |
-| `paginationLimitChanged` | `number` | Fires when the user changes the page size |
+| Event                    | Detail payload               | Description                               |
+| ------------------------ | ---------------------------- | ----------------------------------------- |
+| `tableRowClicked`        | row object                   | Fires when a row is clicked               |
+| `buttonClick`            | `{ event, field, resource }` | Fires when a button cell is clicked       |
+| `loadMoreResources`      | —                            | Fires when the user triggers load more    |
+| `paginationLimitChanged` | `number`                     | Fires when the user changes the page size |
 
 **Listening to events from a web component:**
 
@@ -130,16 +130,16 @@ table.addEventListener('buttonClick', (e) => {
 
 ```ts
 interface TableFieldDefinition {
-  label?:              string;
-  property?:           string;        // dot-notation path into the resource object
-  jsonPathExpression?: string;        // explicit JSONPath expression
-  propertyField?:      PropertyField; // access a sub-key with optional transforms
-  value?:              string;        // static fallback value
-  uiSettings?:         UiSettings;
+  label?: string;
+  property?: string; // dot-notation path into the resource object
+  jsonPathExpression?: string; // explicit JSONPath expression
+  propertyField?: PropertyField; // access a sub-key with optional transforms
+  value?: string; // static fallback value
+  uiSettings?: UiSettings;
   group?: {
-    name:       string;  // columns sharing the same name are merged into one header
-    label?:     string;  // label for the merged header
-    delimiter?: string;  // separator between values (default: space)
+    name: string; // columns sharing the same name are merged into one header
+    label?: string; // label for the merged header
+    delimiter?: string; // separator between values (default: space)
     multiline?: boolean; // render values on separate lines instead
   };
 }
@@ -174,13 +174,13 @@ Values are resolved in this order:
 
 Transforms can be chained and are applied left to right.
 
-| Transform | Effect |
-|---|---|
-| `uppercase` | `hello` → `HELLO` |
-| `lowercase` | `HELLO` → `hello` |
-| `capitalize` | `hello` → `Hello` |
-| `encode` | Base64-encodes the value |
-| `decode` | Base64-decodes the value |
+| Transform    | Effect                   |
+| ------------ | ------------------------ |
+| `uppercase`  | `hello` → `HELLO`        |
+| `lowercase`  | `HELLO` → `hello`        |
+| `capitalize` | `hello` → `Hello`        |
+| `encode`     | Base64-encodes the value |
+| `decode`     | Base64-decodes the value |
 
 ```ts
 { property: 'metadata', propertyField: { key: 'name', transform: ['capitalize'] } }
@@ -192,17 +192,17 @@ Transforms can be chained and are applied left to right.
 
 By default a cell renders its value as plain text. Use `uiSettings.displayAs` to change the rendering:
 
-| `displayAs` | Renders as |
-|---|---|
-| _(unset)_ | Plain text |
-| `'secret'` | Masked value with a toggle-visibility button |
-| `'boolIcon'` | Check / X icon for `"true"` / `"false"` string values |
-| `'link'` | Clickable anchor (the value must be a valid URL) |
-| `'tooltip'` | Text with an info icon; the full value appears on hover |
-| `'alert'` | Alert-styled text |
-| `'img'` | `<img>` element using the value as `src` |
-| `'button'` | Action button (requires `buttonSettings`) |
-| `'tag'` | One `<ui5-tag>` chip per value (split by `tagSettings.valueSeparator`, default `','`); also accepts an array of values |
+| `displayAs`  | Renders as                                                                                                             |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| _(unset)_    | Plain text                                                                                                             |
+| `'secret'`   | Masked value with a toggle-visibility button                                                                           |
+| `'boolIcon'` | Check / X icon for `"true"` / `"false"` string values                                                                  |
+| `'link'`     | Clickable anchor (the value must be a valid URL)                                                                       |
+| `'tooltip'`  | Text with an info icon; the full value appears on hover                                                                |
+| `'alert'`    | Alert-styled text                                                                                                      |
+| `'img'`      | `<img>` element using the value as `src`                                                                               |
+| `'button'`   | Action button (requires `buttonSettings`)                                                                              |
+| `'tag'`      | One `<ui5-tag>` chip per value (split by `tagSettings.valueSeparator`, default `','`); also accepts an array of values |
 
 ### Copy button
 
@@ -226,11 +226,11 @@ Set an explicit width on a column header cell:
 
 Control the horizontal alignment of cell content using `uiSettings.align`. The value maps directly to the CSS `justify-content` property of the cell's flex wrapper.
 
-| Value | Effect |
-|---|---|
-| `'start'` | Left-aligned (default browser behaviour) |
-| `'center'` | Centred |
-| `'end'` | Right-aligned |
+| Value      | Effect                                   |
+| ---------- | ---------------------------------------- |
+| `'start'`  | Left-aligned (default browser behaviour) |
+| `'center'` | Centred                                  |
+| `'end'`    | Right-aligned                            |
 
 ```ts
 {
@@ -309,7 +309,11 @@ columns = [
   {
     uiSettings: {
       displayAs: 'button',
-      buttonSettings: { icon: 'decline', design: 'Transparent', action: 'delete' },
+      buttonSettings: {
+        icon: 'decline',
+        design: 'Transparent',
+        action: 'delete',
+      },
     },
     group: { name: 'actions', label: '', multiline: false },
   },
@@ -341,7 +345,11 @@ Available conditions: `equals`, `notEquals`, `greaterThan`, `greaterThanOrEqual`
 `cssCustomization` applies static styles unconditionally:
 
 ```ts
-uiSettings: { cssCustomization: { fontStyle: 'italic' } }
+uiSettings: {
+  cssCustomization: {
+    fontStyle: 'italic';
+  }
+}
 ```
 
 ---
@@ -408,11 +416,11 @@ table.addEventListener('paginationLimitChanged', (e) => {
 
 Any plain object works as a resource. Three optional fields control table behaviour:
 
-| Field | Type | Description |
-|---|---|---|
-| `id` | `string` | Default `trackByPath` target; used as the row identity key unless overridden |
-| `isAvailable` | `boolean` | When `false`, the row is rendered as non-interactive |
-| `accessibleName` | `string` | Accessible label attached to the row element |
+| Field            | Type      | Description                                                                  |
+| ---------------- | --------- | ---------------------------------------------------------------------------- |
+| `id`             | `string`  | Default `trackByPath` target; used as the row identity key unless overridden |
+| `isAvailable`    | `boolean` | When `false`, the row is rendered as non-interactive                         |
+| `accessibleName` | `string`  | Accessible label attached to the row element                                 |
 
 ---
 
@@ -420,14 +428,14 @@ Any plain object works as a resource. Three optional fields control table behavi
 
 All interactive elements carry `data-testid` attributes for reliable E2E targeting. See [docs/test-ids.md](./test-ids.md) for the full naming convention.
 
-| Element | `data-testid` | Notes |
-|---|---|---|
-| Table element | `generic-table` | |
-| Header cell | `generic-table-header-{column}` | `column` = `group.name` or `property` |
-| Row | `generic-table-row-{i}` | `i` = 0-based index |
-| Cell (simple column) | `generic-table-cell-{i}-{property}` | |
-| Cell (grouped column) | `generic-table-cell-{i}-{group}` | `group` = `group.name` |
-| Group sub-value | `generic-table-cell-{i}-{group}-{property}` | |
-| No-data state | `generic-table-view-nodata` | Shown when `resources` is empty |
-| Load-more trigger | `generic-table-growing` | Shown when `hasMore` is true |
-| Page-size select | `generic-table-pagination-select` | Always present |
+| Element               | `data-testid`                               | Notes                                 |
+| --------------------- | ------------------------------------------- | ------------------------------------- |
+| Table element         | `generic-table`                             |                                       |
+| Header cell           | `generic-table-header-{column}`             | `column` = `group.name` or `property` |
+| Row                   | `generic-table-row-{i}`                     | `i` = 0-based index                   |
+| Cell (simple column)  | `generic-table-cell-{i}-{property}`         |                                       |
+| Cell (grouped column) | `generic-table-cell-{i}-{group}`            | `group` = `group.name`                |
+| Group sub-value       | `generic-table-cell-{i}-{group}-{property}` |                                       |
+| No-data state         | `generic-table-view-nodata`                 | Shown when `resources` is empty       |
+| Load-more trigger     | `generic-table-growing`                     | Shown when `hasMore` is true          |
+| Page-size select      | `generic-table-pagination-select`           | Always present                        |

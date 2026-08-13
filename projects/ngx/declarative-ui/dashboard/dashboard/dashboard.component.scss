@@ -11,8 +11,8 @@
     top: calc(var(--gs-item-margin-top) * 2 - 2px) !important;
     width: calc(100% - 19px);
     left: 8px !important;
-    background: var(--sapContent_Selected_Hover_Background, #E3F0FF);
-    border: 1px solid var(--sapContent_DragAndDropActiveColor, #0064D9);
+    background: var(--sapContent_Selected_Hover_Background, #e3f0ff);
+    border: 1px solid var(--sapContent_DragAndDropActiveColor, #0064d9);
     z-index: 2 !important;
   }
 }
@@ -146,7 +146,9 @@ mfp-wc-dashboard {
   padding: 7px 16px;
   background: var(--sapPageFooter_Background, white);
   border-radius: var(--sapElement_BorderCornerRadius, 12px);
-  box-shadow: 0 0 0 1px rgba(34, 53, 72, 0.48), 0 2px 8px 0 rgba(34, 53, 72, 0.3);
+  box-shadow:
+    0 0 0 1px rgba(34, 53, 72, 0.48),
+    0 2px 8px 0 rgba(34, 53, 72, 0.3);
   box-sizing: border-box;
   overflow: hidden;
 }
