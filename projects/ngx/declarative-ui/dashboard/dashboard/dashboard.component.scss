@@ -144,9 +144,11 @@ mfp-wc-dashboard {
   padding: 7px 16px;
   background: var(--sapPageFooter_Background, white);
   border-radius: var(--sapElement_BorderCornerRadius, 12px);
-  box-shadow:
+  box-shadow: var(
+    --sapContent_Shadow1,
     0 0 0 1px rgba(34, 53, 72, 0.48),
-    0 2px 8px 0 rgba(34, 53, 72, 0.3);
+    0 2px 8px 0 rgba(34, 53, 72, 0.3)
+  );
   box-sizing: border-box;
   overflow: hidden;
 }
