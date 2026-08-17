@@ -197,7 +197,7 @@ const cards: CardConfig[] = [
 
 | Input            | Type                                         | Required | Default       | Description                                                                                                                                                                                                                             |
 | ---------------- | -------------------------------------------- | -------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `config`         | `DashboardConfig`                            | yes      | —             | Header text and optional background image                                                                                                                                                                                               |
+| `config`         | `DashboardConfig`                            | yes      | —             | Header text and optional background image (falls back to the `--mfp-dashboard-background` CSS variable when `backgroundImageUrl` is omitted)                                                                                              |
 | `sections`       | `SectionConfig[]`                            | no       | `[]`          | Named dashboard sections rendered above the loose-card grid                                                                                                                                                                             |
 | `cards`          | `CardConfig[]`                               | no       | `[]`          | All cards shown in sections or in the grid                                                                                                                                                                                              |
 | `availableCards` | `CardConfig[]`                               | no       | `[]`          | Card templates that can be added in edit mode                                                                                                                                                                                           |
@@ -540,6 +540,8 @@ Two-button popup shown when the user clicks the Cancel button on the in-page edi
 
 ```ts
 interface DashboardConfig {
+  /** Optional; when omitted the host falls back to the CSS variable
+   *  `--mfp-dashboard-background` (default `none`). */
   backgroundImageUrl?: string;
   buttonsSettings?: DashboardButtonsSettings;
   editable?: boolean;
@@ -551,6 +553,41 @@ interface DashboardConfig {
 ```
 
 The dashboard title and description are no longer part of `DashboardConfig` — they come from the `i18n` input (`i18n.title` / `i18n.description`). See [Localization](#localization).
+
+#### `backgroundImageUrl` — dashboard background image
+
+The dashboard host element's `background-image` is resolved in this order:
+
+1. **`config.backgroundImageUrl`** — when set, it is applied directly as
+   `url(<backgroundImageUrl>)`. Use this for a single, fixed background.
+2. **`--mfp-dashboard-background`** — when `backgroundImageUrl` is omitted, the
+   host falls back to `background-image: var(--mfp-dashboard-background, none)`.
+   This lets the consumer drive the background from CSS instead of TypeScript —
+   for example to vary it by theme, or to show no background at all.
+
+Because the fallback is a CSS custom property, a consumer can bind the
+background to the active theme without any per-theme JavaScript. Set the
+variable on (or above) the dashboard element and scope it by the host's theme
+marker; leave it unset (or `none`) for themes that should have no background,
+such as the high-contrast themes:
+
+```css
+/* light / dark artwork per theme, no background for high-contrast themes */
+html.sapUiTheme-sap_horizon #my-dashboard {
+  --mfp-dashboard-background: url("/assets/dashboard-bg-light.png");
+}
+html.sapUiTheme-sap_horizon_dark #my-dashboard {
+  --mfp-dashboard-background: url("/assets/dashboard-bg-dark.png");
+}
+html.sapUiTheme-sap_horizon_hcw #my-dashboard,
+html.sapUiTheme-sap_horizon_hcb #my-dashboard {
+  --mfp-dashboard-background: none;
+}
+```
+
+`background-size` is auto-derived from the image's natural height only when
+`config.backgroundImageUrl` is set; with the CSS-variable path it defaults to
+`100% auto`.
 
 #### `zFlow` — reflow layout mode
 

@@ -76,7 +76,7 @@ document.body.classList.add('ui5-content-density-compact');
   encapsulation: ViewEncapsulation.None,
   host: {
     '[style.background-image]':
-      'config().backgroundImageUrl ? "url(" + config().backgroundImageUrl + ")" : null',
+      'config().backgroundImageUrl ? "url(" + config().backgroundImageUrl + ")" : "var(--mfp-dashboard-background, none)"',
     '[style.background-size]':
       'backgroundImageHeight() ? "100% " + backgroundImageHeight() + "px" : "100% auto"',
   },
@@ -265,8 +265,17 @@ export class Dashboard implements OnInit, OnDestroy {
     });
     effect(() => {
       const supplied = this.i18n();
+      const cfg = this.config();
+      const fromConfig: Partial<DashboardTranslations> = {};
+      if (cfg.title != null) fromConfig.title = cfg.title;
+      if (cfg.description != null) fromConfig.description = cfg.description;
+
+      const suppliedNonEmpty =
+        supplied && Object.keys(supplied).length > 0 ? supplied : null;
       const resolved =
-        supplied && Object.keys(supplied).length > 0 ? supplied : EN_DEFAULTS;
+        suppliedNonEmpty || Object.keys(fromConfig).length > 0
+          ? { ...fromConfig, ...suppliedNonEmpty }
+          : EN_DEFAULTS;
       this.i18nService.overrides.set(resolved);
     });
     effect((onCleanup) => {
