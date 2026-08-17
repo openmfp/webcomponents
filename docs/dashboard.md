@@ -197,7 +197,7 @@ const cards: CardConfig[] = [
 
 | Input            | Type                                         | Required | Default       | Description                                                                                                                                                                                                                             |
 | ---------------- | -------------------------------------------- | -------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `config`         | `DashboardConfig`                            | yes      | —             | Header text and optional background image (falls back to the `--mfp-dashboard-background` CSS variable when `backgroundImageUrl` is omitted)                                                                                              |
+| `config`         | `DashboardConfig`                            | yes      | —             | Optional title/description (overridden by `i18n`), background image (falls back to the `--mfp-dashboard-background` CSS variable), and layout/edit flags                                                                                  |
 | `sections`       | `SectionConfig[]`                            | no       | `[]`          | Named dashboard sections rendered above the loose-card grid                                                                                                                                                                             |
 | `cards`          | `CardConfig[]`                               | no       | `[]`          | All cards shown in sections or in the grid                                                                                                                                                                                              |
 | `availableCards` | `CardConfig[]`                               | no       | `[]`          | Card templates that can be added in edit mode                                                                                                                                                                                           |
@@ -244,6 +244,8 @@ const cards: CardConfig[] = [
 The dashboard title, description, chrome (toolbar buttons, dialogs, accessibility labels, the **Unsaved Changes** badge) are rendered from a fixed set of string keys. The library ships **English only** as the built-in default. To render the dashboard in any other language, the client application supplies a **complete** `DashboardTranslations` object through the `i18n` input; to switch language at runtime, bind a new object.
 
 When `i18n` is `null`, `undefined`, or an empty object (`{}`), the dashboard falls back entirely to the built-in English defaults (`EN_DEFAULTS`). When a non-empty object is provided it is treated as authoritative and **must contain all keys** — the type is the full `DashboardTranslations`, not a partial.
+
+For the title and description specifically, `i18n` is not the only source: when `i18n` does not supply them, the dashboard falls back to `config.title` / `config.description` before the English defaults. See [`DashboardConfig`](#dashboardconfig) for the full precedence.
 
 This keeps the library free of a hardcoded language list: the set of supported languages is entirely the client's decision.
 
@@ -540,6 +542,10 @@ Two-button popup shown when the user clicks the Cancel button on the in-page edi
 
 ```ts
 interface DashboardConfig {
+  /** Optional dashboard title; overridden by `i18n.title` when that is provided. */
+  title?: string;
+  /** Optional dashboard description; overridden by `i18n.description` when that is provided. */
+  description?: string;
   /** Optional; when omitted the host falls back to the CSS variable
    *  `--mfp-dashboard-background` (default `none`). */
   backgroundImageUrl?: string;
@@ -552,7 +558,13 @@ interface DashboardConfig {
 }
 ```
 
-The dashboard title and description are no longer part of `DashboardConfig` — they come from the `i18n` input (`i18n.title` / `i18n.description`). See [Localization](#localization).
+The dashboard title and description resolve with the following precedence, highest first:
+
+1. **`i18n.title` / `i18n.description`** — when the `i18n` input supplies them (this is what language switching drives; see [Localization](#localization)).
+2. **`config.title` / `config.description`** — the optional fields above, used when `i18n` does not supply the corresponding string.
+3. **Built-in English defaults** (`EN_DEFAULTS`) — when neither is set.
+
+Use `config.title` / `config.description` for a fixed, non-localized header; use `i18n` when the header must change with the active language (it takes priority over `config`).
 
 #### `backgroundImageUrl` — dashboard background image
 

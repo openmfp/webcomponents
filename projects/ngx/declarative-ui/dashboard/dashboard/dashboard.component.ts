@@ -163,6 +163,10 @@ export class Dashboard implements OnInit, OnDestroy {
     this.config().zFlow ? ENGINE_PROFILES.zFlow : ENGINE_PROFILES.default,
   );
 
+  protected hasToolbarMenuContent = computed(
+    () => !!this.config().editable || this.customActions().length > 0,
+  );
+
   protected gridStackEngine = computed(() => this.engineProfile().engineClass);
 
   protected gridBreakpoints = computed(() => [
