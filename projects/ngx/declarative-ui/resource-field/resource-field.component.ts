@@ -85,7 +85,14 @@ export class ResourceField<
   isBoolLike = computed(() => this.boolValue() !== undefined);
   isUrlValue = computed(() => this.checkValidUrl(this.stringValue()));
   testId = computed(() => `resource-field-${this.fieldDefinition().property}`);
-  buttonDisabled = computed(() => this.resource()?.isAvailable === false);
+  // Only mutating actions are disabled on unavailable resources; navigation
+  // and custom actions must keep working so a not-ready resource can still be
+  // opened and inspected.
+  buttonDisabled = computed(() => {
+    const action = this.uiSettings()?.buttonSettings?.action;
+    const isMutation = action === 'update' || action === 'delete';
+    return isMutation && this.resource()?.isAvailable === false;
+  });
   buttonAccessibleName = computed(
     () =>
       (this.buttonDisabled() ? this.resource()?.accessibleName : undefined) ??

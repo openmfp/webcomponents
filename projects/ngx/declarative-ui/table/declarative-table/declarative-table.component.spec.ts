@@ -233,7 +233,7 @@ describe('DeclarativeTable', () => {
       expect(emitted[0]).toEqual(resource);
     });
 
-    it('does not emit tableRowClicked for an unavailable resource', () => {
+    it('emits tableRowClicked for an unavailable resource so it can still be inspected', () => {
       const resource = {
         id: '1',
         name: 'Alice',
@@ -250,7 +250,8 @@ describe('DeclarativeTable', () => {
       const row = el(fixture, 'generic-table-row-0') as HTMLElement;
       row.click();
 
-      expect(emitted).toHaveLength(0);
+      expect(emitted).toHaveLength(1);
+      expect(emitted[0]).toEqual(resource);
     });
   });
 

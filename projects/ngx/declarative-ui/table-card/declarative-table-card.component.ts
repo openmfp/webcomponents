@@ -182,11 +182,15 @@ export class DeclarativeTableCard<R extends GenericResource> {
   }
 
   onButtonClick(event: ResourceFieldButtonClickEvent<R>): void {
-    if (event.resource?.isAvailable === false) {
+    const action = event.field.uiSettings?.buttonSettings?.action;
+
+    // Block only mutating actions on unavailable resources; navigation and
+    // custom actions must keep working so a not-ready resource can still be
+    // opened and inspected.
+    const isMutation = action === 'update' || action === 'delete';
+    if (isMutation && event.resource?.isAvailable === false) {
       return;
     }
-
-    const action = event.field.uiSettings?.buttonSettings?.action;
     if (action === 'update' && event.resource) {
       this.pendingResource.set(event.resource);
       void this.openEditDialog(event.resource);
