@@ -134,14 +134,14 @@ mfp-wc-dashboard {
 
 .mfp-dashboard__edit-bar {
   position: sticky;
-  bottom: 20px;
-  margin: 20px 16px 0;
+  bottom: var(--sapShell_Space_S, 1rem);
+  margin: var(--sapShell_Space_S, 1rem) var(--sapShell_Space_S, 1rem) 0;
   z-index: 1000;
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 8px;
-  padding: 7px 16px;
+  gap: 0.5rem;
+  padding: 0.5rem var(--sapShell_Space_S, 1rem);
   background: var(--sapPageFooter_Background, white);
   border-radius: var(--sapElement_BorderCornerRadius, 12px);
   box-shadow: var(
