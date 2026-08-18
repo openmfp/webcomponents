@@ -145,14 +145,15 @@ export class Dashboard implements OnInit, OnDestroy {
     const clean =
       this.sanitizer.sanitize(
         SecurityContext.HTML,
-        this.i18nService.getTranslation(DASHBOARD_I18N_KEYS.TITLE),
+        this.config().title ??
+          this.i18nService.getTranslation(DASHBOARD_I18N_KEYS.TITLE),
       ) ?? '';
     return this.sanitizer.bypassSecurityTrustHtml(clean);
   });
   protected safeDescription = computed((): SafeHtml | null => {
-    const desc = this.i18nService.getTranslation(
-      DASHBOARD_I18N_KEYS.DESCRIPTION,
-    );
+    const desc =
+      this.config().description ??
+      this.i18nService.getTranslation(DASHBOARD_I18N_KEYS.DESCRIPTION);
     if (!desc) return null;
 
     const clean = this.sanitizer.sanitize(SecurityContext.HTML, desc) ?? '';

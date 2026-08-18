@@ -75,9 +75,9 @@ export interface DashboardButtonsSettings {
 
 /** Top-level configuration for the `<mfp-dashboard>` component. */
 export interface DashboardConfig {
-  /** Dashboard title. Optional; overridden by `i18n.title` when that is provided. */
+  /** Dashboard title. Optional; overridden by `i18n.title` when that is not provided. */
   title?: string;
-  /** Dashboard description. Optional; overridden by `i18n.description` when that is provided. */
+  /** Dashboard description. Optional; overridden by `i18n.description` when that is not provided. */
   description?: string;
   /** URL of the background image applied to the dashboard host element. */
   backgroundImageUrl?: string;
