@@ -1488,9 +1488,7 @@ describe('Dashboard', () => {
 
   describe('compact toolbar menu button', () => {
     const menuBtn = (fixture: Fixture) =>
-      root(fixture).querySelector(
-        '[data-testid="dashboard-toolbar-menu-btn"]',
-      );
+      root(fixture).querySelector('[data-testid="dashboard-toolbar-menu-btn"]');
 
     it('does not render the menu button when compact with no editable and no custom actions', () => {
       const { fixture, component } = setup();

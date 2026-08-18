@@ -197,7 +197,7 @@ const cards: CardConfig[] = [
 
 | Input            | Type                                         | Required | Default       | Description                                                                                                                                                                                                                             |
 | ---------------- | -------------------------------------------- | -------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `config`         | `DashboardConfig`                            | yes      | —             | Optional title/description (overridden by `i18n`), background image (falls back to the `--mfp-dashboard-background` CSS variable), and layout/edit flags                                                                                  |
+| `config`         | `DashboardConfig`                            | yes      | —             | Optional title/description (overridden by `i18n`), background image (falls back to the `--mfp-dashboard-background` CSS variable), and layout/edit flags                                                                                |
 | `sections`       | `SectionConfig[]`                            | no       | `[]`          | Named dashboard sections rendered above the loose-card grid                                                                                                                                                                             |
 | `cards`          | `CardConfig[]`                               | no       | `[]`          | All cards shown in sections or in the grid                                                                                                                                                                                              |
 | `availableCards` | `CardConfig[]`                               | no       | `[]`          | Card templates that can be added in edit mode                                                                                                                                                                                           |
@@ -586,10 +586,10 @@ such as the high-contrast themes:
 ```css
 /* light / dark artwork per theme, no background for high-contrast themes */
 html.sapUiTheme-sap_horizon #my-dashboard {
-  --mfp-dashboard-background: url("/assets/dashboard-bg-light.png");
+  --mfp-dashboard-background: url('/assets/dashboard-bg-light.png');
 }
 html.sapUiTheme-sap_horizon_dark #my-dashboard {
-  --mfp-dashboard-background: url("/assets/dashboard-bg-dark.png");
+  --mfp-dashboard-background: url('/assets/dashboard-bg-dark.png');
 }
 html.sapUiTheme-sap_horizon_hcw #my-dashboard,
 html.sapUiTheme-sap_horizon_hcb #my-dashboard {

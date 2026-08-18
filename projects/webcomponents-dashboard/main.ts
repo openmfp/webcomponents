@@ -18,8 +18,7 @@ type OpenUI5Theming = {
 function syncThemeWithOpenUI5(): void {
   const sapRequire = (globalThis as { sap?: { ui?: { require?: unknown } } })
     .sap?.ui?.require as
-    | ((deps: string[], cb: (m: OpenUI5Theming) => void) => void)
-    | undefined;
+    ((deps: string[], cb: (m: OpenUI5Theming) => void) => void) | undefined;
   if (!sapRequire) return;
 
   sapRequire(['sap/ui/core/Theming'], (Theming) => {
