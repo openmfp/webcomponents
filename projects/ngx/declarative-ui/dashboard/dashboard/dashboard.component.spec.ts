@@ -1485,4 +1485,45 @@ describe('Dashboard', () => {
       expect(labels).toContain('Cancel');
     });
   });
+
+  describe('compact toolbar menu button', () => {
+    const menuBtn = (fixture: Fixture) =>
+      root(fixture).querySelector('[data-testid="dashboard-toolbar-menu-btn"]');
+
+    it('does not render the menu button when compact with no editable and no custom actions', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', { title: 'T' });
+      fixture.detectChanges();
+
+      component.compactToolbar.set(true);
+      fixture.detectChanges();
+
+      expect(menuBtn(fixture)).toBeNull();
+    });
+
+    it('renders the menu button when compact and the dashboard is editable', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', { title: 'T', editable: true });
+      fixture.detectChanges();
+
+      component.compactToolbar.set(true);
+      fixture.detectChanges();
+
+      expect(menuBtn(fixture)).not.toBeNull();
+    });
+
+    it('renders the menu button when compact and custom actions are provided', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', { title: 'T' });
+      fixture.componentRef.setInput('customActions', [
+        { action: 'a', text: 'A' },
+      ]);
+      fixture.detectChanges();
+
+      component.compactToolbar.set(true);
+      fixture.detectChanges();
+
+      expect(menuBtn(fixture)).not.toBeNull();
+    });
+  });
 });

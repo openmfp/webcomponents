@@ -197,7 +197,7 @@ const cards: CardConfig[] = [
 
 | Input            | Type                                         | Required | Default       | Description                                                                                                                                                                                                                             |
 | ---------------- | -------------------------------------------- | -------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `config`         | `DashboardConfig`                            | yes      | —             | Header text and optional background image                                                                                                                                                                                               |
+| `config`         | `DashboardConfig`                            | yes      | —             | Optional title/description (overridden by `i18n` when not present), background image (falls back to the `--mfp-dashboard-background` CSS variable), and layout/edit flags                                                               |
 | `sections`       | `SectionConfig[]`                            | no       | `[]`          | Named dashboard sections rendered above the loose-card grid                                                                                                                                                                             |
 | `cards`          | `CardConfig[]`                               | no       | `[]`          | All cards shown in sections or in the grid                                                                                                                                                                                              |
 | `availableCards` | `CardConfig[]`                               | no       | `[]`          | Card templates that can be added in edit mode                                                                                                                                                                                           |
@@ -244,6 +244,8 @@ const cards: CardConfig[] = [
 The dashboard title, description, chrome (toolbar buttons, dialogs, accessibility labels, the **Unsaved Changes** badge) are rendered from a fixed set of string keys. The library ships **English only** as the built-in default. To render the dashboard in any other language, the client application supplies a **complete** `DashboardTranslations` object through the `i18n` input; to switch language at runtime, bind a new object.
 
 When `i18n` is `null`, `undefined`, or an empty object (`{}`), the dashboard falls back entirely to the built-in English defaults (`EN_DEFAULTS`). When a non-empty object is provided it is treated as authoritative and **must contain all keys** — the type is the full `DashboardTranslations`, not a partial.
+
+For the title and description specifically, `i18n` is not the only source: when `i18n` does not supply them, the dashboard falls back to `config.title` / `config.description` before the English defaults. See [`DashboardConfig`](#dashboardconfig) for the full precedence.
 
 This keeps the library free of a hardcoded language list: the set of supported languages is entirely the client's decision.
 
@@ -540,6 +542,12 @@ Two-button popup shown when the user clicks the Cancel button on the in-page edi
 
 ```ts
 interface DashboardConfig {
+  /** Optional dashboard title; overridden by `i18n.title` when that is provided. */
+  title?: string;
+  /** Optional dashboard description; overridden by `i18n.description` when that is provided. */
+  description?: string;
+  /** Optional; when omitted the host falls back to the CSS variable
+   *  `--mfp-dashboard-background` (default `none`). */
   backgroundImageUrl?: string;
   buttonsSettings?: DashboardButtonsSettings;
   editable?: boolean;
@@ -550,7 +558,48 @@ interface DashboardConfig {
 }
 ```
 
-The dashboard title and description are no longer part of `DashboardConfig` — they come from the `i18n` input (`i18n.title` / `i18n.description`). See [Localization](#localization).
+The dashboard title and description resolve with the following precedence, highest first:
+
+1. **`i18n.title` / `i18n.description`** — when the `i18n` input supplies them (this is what language switching drives; see [Localization](#localization)).
+2. **`config.title` / `config.description`** — the optional fields above, used when `i18n` does not supply the corresponding string.
+3. **Built-in English defaults** (`EN_DEFAULTS`) — when neither is set.
+
+Use `config.title` / `config.description` for a fixed, non-localized header; use `i18n` when the header must change with the active language (it takes priority over `config`).
+
+#### `backgroundImageUrl` — dashboard background image
+
+The dashboard host element's `background-image` is resolved in this order:
+
+1. **`config.backgroundImageUrl`** — when set, it is applied directly as
+   `url(<backgroundImageUrl>)`. Use this for a single, fixed background.
+2. **`--mfp-dashboard-background`** — when `backgroundImageUrl` is omitted, the
+   host falls back to `background-image: var(--mfp-dashboard-background, none)`.
+   This lets the consumer drive the background from CSS instead of TypeScript —
+   for example to vary it by theme, or to show no background at all.
+
+Because the fallback is a CSS custom property, a consumer can bind the
+background to the active theme without any per-theme JavaScript. Set the
+variable on (or above) the dashboard element and scope it by the host's theme
+marker; leave it unset (or `none`) for themes that should have no background,
+such as the high-contrast themes:
+
+```css
+/* light / dark artwork per theme, no background for high-contrast themes */
+html.sapUiTheme-sap_horizon #my-dashboard {
+  --mfp-dashboard-background: url('/assets/dashboard-bg-light.png');
+}
+html.sapUiTheme-sap_horizon_dark #my-dashboard {
+  --mfp-dashboard-background: url('/assets/dashboard-bg-dark.png');
+}
+html.sapUiTheme-sap_horizon_hcw #my-dashboard,
+html.sapUiTheme-sap_horizon_hcb #my-dashboard {
+  --mfp-dashboard-background: none;
+}
+```
+
+`background-size` is auto-derived from the image's natural height only when
+`config.backgroundImageUrl` is set; with the CSS-variable path it defaults to
+`100% auto`.
 
 #### `zFlow` — reflow layout mode
 
