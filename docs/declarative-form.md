@@ -64,7 +64,7 @@ import {
   FormFieldChangeEvent,
   FormFieldDefinition,
   FormFieldErrors,
-} from '@openmfp/webcomponents';
+} from '@openmfp/ngx';
 
 @Component({
   imports: [DeclarativeForm],
@@ -124,7 +124,6 @@ export class MyComponent {
 | `fields`        | `FormFieldDefinition[]`   | yes      | -       | Field definitions to render                                                   |
 | `initialValues` | `Record<string, unknown>` | no       | `{}`    | Initial values keyed by exact `field.name`                                    |
 | `fieldErrors`   | `FormFieldErrors`         | no       | `{}`    | Host-owned errors keyed by exact `field.name`                                 |
-| `editMode`      | `boolean`                 | no       | `false` | Signals edit mode to consumers; does not change component behavior on its own |
 
 ### Outputs / Events
 
