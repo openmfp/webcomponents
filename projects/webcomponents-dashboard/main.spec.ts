@@ -49,7 +49,11 @@ async function importMain(): Promise<Map<string, CustomElementConstructor>> {
   registrationSalt += 1;
   const realDefine = customElements.define.bind(customElements);
   vi.spyOn(customElements, 'define').mockImplementation(
-    (name: string, ctor: CustomElementConstructor, options?: ElementDefinitionOptions) => {
+    (
+      name: string,
+      ctor: CustomElementConstructor,
+      options?: ElementDefinitionOptions,
+    ) => {
       defined.set(name, ctor);
       realDefine(`${name}-${registrationSalt}`, ctor, options);
     },
