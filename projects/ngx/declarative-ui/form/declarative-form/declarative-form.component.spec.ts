@@ -321,7 +321,9 @@ describe('DeclarativeForm', () => {
       const errorSpy = vi.spyOn(console, 'error');
       const localFixture = TestBed.createComponent(DeclarativeForm);
 
-      expect(() => localFixture.detectChanges()).not.toThrow();
+      expect(() => {
+        localFixture.detectChanges();
+      }).not.toThrow();
 
       const ng0950 = errorSpy.mock.calls
         .flat()

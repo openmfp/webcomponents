@@ -862,7 +862,9 @@ describe('DeclarativeTable', () => {
         DeclarativeTable as unknown as typeof DeclarativeTable<GenericResource>,
       );
 
-      expect(() => fixture.detectChanges()).not.toThrow();
+      expect(() => {
+        fixture.detectChanges();
+      }).not.toThrow();
 
       const ng0950 = errorSpy.mock.calls
         .flat()

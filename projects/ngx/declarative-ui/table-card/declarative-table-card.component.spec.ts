@@ -1430,7 +1430,9 @@ describe('DeclarativeTableCard', () => {
         DeclarativeTableCard as unknown as typeof DeclarativeTableCard<GenericResource>,
       );
 
-      expect(() => fixture.detectChanges()).not.toThrow();
+      expect(() => {
+        fixture.detectChanges();
+      }).not.toThrow();
 
       const ng0950 = errorSpy.mock.calls
         .flat()
@@ -1438,9 +1440,9 @@ describe('DeclarativeTableCard', () => {
       expect(ng0950).toBe(false);
       // No config → the inner table is not rendered.
       expect(
-        (fixture.nativeElement.shadowRoot ?? fixture.nativeElement).querySelector(
-          'mfp-declarative-table',
-        ),
+        (
+          fixture.nativeElement.shadowRoot ?? fixture.nativeElement
+        ).querySelector('mfp-declarative-table'),
       ).toBeNull();
     });
 
@@ -1458,9 +1460,9 @@ describe('DeclarativeTableCard', () => {
       fixture.detectChanges();
 
       expect(
-        (fixture.nativeElement.shadowRoot ?? fixture.nativeElement).querySelector(
-          'mfp-declarative-table',
-        ),
+        (
+          fixture.nativeElement.shadowRoot ?? fixture.nativeElement
+        ).querySelector('mfp-declarative-table'),
       ).not.toBeNull();
     });
   });

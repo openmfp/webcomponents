@@ -1532,7 +1532,9 @@ describe('Dashboard', () => {
       const errorSpy = vi.spyOn(console, 'error');
       const { fixture, component } = setup();
 
-      expect(() => fixture.detectChanges()).not.toThrow();
+      expect(() => {
+        fixture.detectChanges();
+      }).not.toThrow();
 
       const ng0950 = errorSpy.mock.calls
         .flat()
