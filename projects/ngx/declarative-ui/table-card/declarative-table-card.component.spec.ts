@@ -1422,4 +1422,46 @@ describe('DeclarativeTableCard', () => {
       ).not.toBeNull();
     });
   });
+
+  describe('web-component first render (before inputs are assigned)', () => {
+    it('renders without emitting NG0950 when config/resources are not yet set', () => {
+      const errorSpy = vi.spyOn(console, 'error');
+      const fixture: Fixture = TestBed.createComponent(
+        DeclarativeTableCard as unknown as typeof DeclarativeTableCard<GenericResource>,
+      );
+
+      expect(() => fixture.detectChanges()).not.toThrow();
+
+      const ng0950 = errorSpy.mock.calls
+        .flat()
+        .some((arg) => String(arg).includes('NG0950'));
+      expect(ng0950).toBe(false);
+      // No config → the inner table is not rendered.
+      expect(
+        (fixture.nativeElement.shadowRoot ?? fixture.nativeElement).querySelector(
+          'mfp-declarative-table',
+        ),
+      ).toBeNull();
+    });
+
+    it('recovers and renders the table once config and resources are assigned', () => {
+      const fixture: Fixture = TestBed.createComponent(
+        DeclarativeTableCard as unknown as typeof DeclarativeTableCard<GenericResource>,
+      );
+      fixture.detectChanges();
+
+      fixture.componentRef.setInput('config', {
+        header: 'Pods',
+        tableConfig: READ_CONFIG,
+      });
+      fixture.componentRef.setInput('resources', RESOURCES);
+      fixture.detectChanges();
+
+      expect(
+        (fixture.nativeElement.shadowRoot ?? fixture.nativeElement).querySelector(
+          'mfp-declarative-table',
+        ),
+      ).not.toBeNull();
+    });
+  });
 });

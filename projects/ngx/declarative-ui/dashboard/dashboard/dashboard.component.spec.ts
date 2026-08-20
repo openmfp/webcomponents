@@ -1526,4 +1526,29 @@ describe('Dashboard', () => {
       expect(menuBtn(fixture)).not.toBeNull();
     });
   });
+
+  describe('web-component first render (before inputs are assigned)', () => {
+    it('renders without emitting NG0950 when config is not yet set', () => {
+      const errorSpy = vi.spyOn(console, 'error');
+      const { fixture, component } = setup();
+
+      expect(() => fixture.detectChanges()).not.toThrow();
+
+      const ng0950 = errorSpy.mock.calls
+        .flat()
+        .some((arg) => String(arg).includes('NG0950'));
+      expect(ng0950).toBe(false);
+      expect(component.config()).toEqual({});
+    });
+
+    it('recovers and reflects config once it is assigned', () => {
+      const { fixture, component } = setup();
+      fixture.detectChanges();
+
+      fixture.componentRef.setInput('config', { editable: true });
+      fixture.detectChanges();
+
+      expect(component.config().editable).toBe(true);
+    });
+  });
 });
