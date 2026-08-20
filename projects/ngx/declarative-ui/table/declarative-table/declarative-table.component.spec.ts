@@ -920,9 +920,10 @@ describe('DeclarativeTable', () => {
 
     const accessibleName = (testId: string): string | null => {
       const node = el(fixture, testId) as
-        | (HTMLElement & { accessibleName?: string })
-        | null;
-      return node?.getAttribute('accessible-name') ?? node?.accessibleName ?? null;
+        (HTMLElement & { accessibleName?: string }) | null;
+      return (
+        node?.getAttribute('accessible-name') ?? node?.accessibleName ?? null
+      );
     };
 
     expect(accessibleName('generic-table-pagination-select')).toBe(
