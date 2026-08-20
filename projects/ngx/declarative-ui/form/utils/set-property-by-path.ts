@@ -1,3 +1,5 @@
+const FORBIDDEN_SEGMENTS = new Set(['__proto__', 'prototype', 'constructor']);
+
 export function setPropertyByPath<T extends Record<string, unknown>>(
   object: T,
   path: string,
@@ -5,6 +7,10 @@ export function setPropertyByPath<T extends Record<string, unknown>>(
 ): T {
   const segments = path.split('.').filter(Boolean);
   if (segments.length === 0) {
+    return object;
+  }
+
+  if (segments.some((segment) => FORBIDDEN_SEGMENTS.has(segment))) {
     return object;
   }
 
