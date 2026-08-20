@@ -26,7 +26,11 @@ vi.mock('gridstack/dist/angular', async () => {
   class GridstackComponent {}
   @Component({ selector: 'gridstack-item', template: '' })
   class GridstackItemComponent {}
-  return { GridstackComponent, GridstackItemComponent, gsCreateNgComponents: vi.fn() };
+  return {
+    GridstackComponent,
+    GridstackItemComponent,
+    gsCreateNgComponents: vi.fn(),
+  };
 });
 
 type StrategyHost = {
@@ -47,7 +51,11 @@ async function importMain(): Promise<Map<string, CustomElementConstructor>> {
   registrationSalt += 1;
   const realDefine = customElements.define.bind(customElements);
   vi.spyOn(customElements, 'define').mockImplementation(
-    (name: string, ctor: CustomElementConstructor, options?: ElementDefinitionOptions) => {
+    (
+      name: string,
+      ctor: CustomElementConstructor,
+      options?: ElementDefinitionOptions,
+    ) => {
       defined.set(name, ctor);
       // Actually register so the element is constructable in jsdom (instances
       // are needed to exercise the method proxies). Use a unique tag per run to
