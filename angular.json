@@ -103,6 +103,13 @@
             }
           },
           "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "runnerConfig": "vitest.config.ts",
+            "tsConfig": "projects/webcomponents/tsconfig.spec.json"
+          }
         }
       }
     },
@@ -134,6 +141,13 @@
             }
           },
           "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "runnerConfig": "vitest.config.ts",
+            "tsConfig": "projects/webcomponents-dashboard/tsconfig.spec.json"
+          }
         }
       }
     }

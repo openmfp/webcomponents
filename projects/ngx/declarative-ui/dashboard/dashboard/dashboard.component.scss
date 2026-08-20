@@ -24,7 +24,6 @@ mfp-wc-dashboard {
   margin: 0;
   padding: 0;
   min-height: 100%;
-  background: var(--sapShellColor, #354a5e);
   background-size: 100% auto;
   background-position: top center;
   background-repeat: no-repeat;
@@ -130,25 +129,26 @@ mfp-wc-dashboard {
 .mfp-dashboard__subheader {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--sapShell_Space_S, 1rem);
 }
 
 .mfp-dashboard__edit-bar {
-  position: fixed;
-  bottom: 20px;
-  left: 16px;
-  right: 16px;
+  position: sticky;
+  bottom: var(--sapShell_Space_S, 1rem);
+  margin: var(--sapShell_Space_S, 1rem) var(--sapShell_Space_S, 1rem) 0;
   z-index: 1000;
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 8px;
-  padding: 7px 16px;
+  gap: 0.5rem;
+  padding: 0.5rem var(--sapShell_Space_S, 1rem);
   background: var(--sapPageFooter_Background, white);
   border-radius: var(--sapElement_BorderCornerRadius, 12px);
-  box-shadow:
+  box-shadow: var(
+    --sapContent_Shadow1,
     0 0 0 1px rgba(34, 53, 72, 0.48),
-    0 2px 8px 0 rgba(34, 53, 72, 0.3);
+    0 2px 8px 0 rgba(34, 53, 72, 0.3)
+  );
   box-sizing: border-box;
   overflow: hidden;
 }

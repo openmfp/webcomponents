@@ -65,7 +65,7 @@
             (click)="openCardPanel()"
             >{{ editCardsButton().text }}</ui5-button
           >
-        } @else if (compactToolbar()) {
+        } @else if (compactToolbar() && hasToolbarMenuContent()) {
           <ui5-button
             #menuBtn
             data-testid="dashboard-toolbar-menu-btn"

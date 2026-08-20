@@ -5,8 +5,28 @@ import {
   defineDashboardElementMethods,
 } from '@openmfp/webcomponents/declarative-ui';
 import { ignoreCustomElements } from '@ui5/webcomponents-base/dist/IgnoreCustomElements.js';
+import { setTheme } from '@ui5/webcomponents-base/dist/config/Theme.js';
+import '@ui5/webcomponents-theming/dist/Assets.js';
 
 ignoreCustomElements('mfp');
+
+type OpenUI5Theming = {
+  getTheme: () => string;
+  attachApplied: (handler: () => void) => void;
+};
+
+function syncThemeWithOpenUI5(): void {
+  const sapRequire = (globalThis as { sap?: { ui?: { require?: unknown } } })
+    .sap?.ui?.require as
+    ((deps: string[], cb: (m: OpenUI5Theming) => void) => void) | undefined;
+  if (!sapRequire) return;
+
+  sapRequire(['sap/ui/core/Theming'], (Theming) => {
+    const apply = () => void setTheme(Theming.getTheme());
+    apply();
+    Theming.attachApplied(apply);
+  });
+}
 
 (async () => {
   const app = await createApplication();
@@ -22,4 +42,6 @@ ignoreCustomElements('mfp');
   defineDashboardElementMethods(DashboardElement);
 
   customElements.define('mfp-wc-dashboard', DashboardElement);
+
+  syncThemeWithOpenUI5();
 })();

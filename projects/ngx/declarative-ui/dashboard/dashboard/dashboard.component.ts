@@ -76,7 +76,7 @@ document.body.classList.add('ui5-content-density-compact');
   encapsulation: ViewEncapsulation.None,
   host: {
     '[style.background-image]':
-      'config().backgroundImageUrl ? "url(" + config().backgroundImageUrl + ")" : null',
+      'config().backgroundImageUrl ? "url(" + config().backgroundImageUrl + ")" : "var(--mfp-dashboard-background, none)"',
     '[style.background-size]':
       'backgroundImageHeight() ? "100% " + backgroundImageHeight() + "px" : "100% auto"',
   },
@@ -90,7 +90,7 @@ export class Dashboard implements OnInit, OnDestroy {
   private readonly sanitizer = inject(DomSanitizer);
   protected readonly i18nService = inject(DashboardI18nService);
 
-  config = input.required<DashboardConfig>();
+  config = input<DashboardConfig>({});
   sections = model<SectionConfig[]>([]);
   cards = model<CardConfig[]>([]);
   availableCards = input<CardConfig[]>([]);
@@ -145,14 +145,15 @@ export class Dashboard implements OnInit, OnDestroy {
     const clean =
       this.sanitizer.sanitize(
         SecurityContext.HTML,
-        this.i18nService.getTranslation(DASHBOARD_I18N_KEYS.TITLE),
+        this.config().title ??
+          this.i18nService.getTranslation(DASHBOARD_I18N_KEYS.TITLE),
       ) ?? '';
     return this.sanitizer.bypassSecurityTrustHtml(clean);
   });
   protected safeDescription = computed((): SafeHtml | null => {
-    const desc = this.i18nService.getTranslation(
-      DASHBOARD_I18N_KEYS.DESCRIPTION,
-    );
+    const desc =
+      this.config().description ??
+      this.i18nService.getTranslation(DASHBOARD_I18N_KEYS.DESCRIPTION);
     if (!desc) return null;
 
     const clean = this.sanitizer.sanitize(SecurityContext.HTML, desc) ?? '';
@@ -161,6 +162,10 @@ export class Dashboard implements OnInit, OnDestroy {
 
   protected engineProfile = computed((): EngineProfile =>
     this.config().zFlow ? ENGINE_PROFILES.zFlow : ENGINE_PROFILES.default,
+  );
+
+  protected hasToolbarMenuContent = computed(
+    () => !!this.config().editable || this.customActions().length > 0,
   );
 
   protected gridStackEngine = computed(() => this.engineProfile().engineClass);
@@ -265,8 +270,17 @@ export class Dashboard implements OnInit, OnDestroy {
     });
     effect(() => {
       const supplied = this.i18n();
+      const cfg = this.config();
+      const fromConfig: Partial<DashboardTranslations> = {};
+      if (cfg.title != null) fromConfig.title = cfg.title;
+      if (cfg.description != null) fromConfig.description = cfg.description;
+
+      const suppliedNonEmpty =
+        supplied && Object.keys(supplied).length > 0 ? supplied : null;
       const resolved =
-        supplied && Object.keys(supplied).length > 0 ? supplied : EN_DEFAULTS;
+        suppliedNonEmpty || Object.keys(fromConfig).length > 0
+          ? { ...fromConfig, ...suppliedNonEmpty }
+          : EN_DEFAULTS;
       this.i18nService.overrides.set(resolved);
     });
     effect((onCleanup) => {

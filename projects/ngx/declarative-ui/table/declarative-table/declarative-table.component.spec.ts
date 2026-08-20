@@ -855,4 +855,40 @@ describe('DeclarativeTable', () => {
       ).not.toBeNull();
     });
   });
+
+  describe('web-component first render (before inputs are assigned)', () => {
+    it('renders without emitting NG0950 when required inputs are not yet set', () => {
+      const errorSpy = vi.spyOn(console, 'error');
+      const fixture: Fixture = TestBed.createComponent(
+        DeclarativeTable as unknown as typeof DeclarativeTable<GenericResource>,
+      );
+
+      expect(() => {
+        fixture.detectChanges();
+      }).not.toThrow();
+
+      const ng0950 = errorSpy.mock.calls
+        .flat()
+        .some((arg) => String(arg).includes('NG0950'));
+      expect(ng0950).toBe(false);
+      expect(fixture.componentInstance.viewColumns()).toEqual([]);
+    });
+
+    it('recovers and renders once columns and resources are assigned', () => {
+      const fixture: Fixture = TestBed.createComponent(
+        DeclarativeTable as unknown as typeof DeclarativeTable<GenericResource>,
+      );
+      fixture.detectChanges();
+
+      fixture.componentRef.setInput('columns', [
+        { label: 'Name', property: 'metadata.name' },
+      ]);
+      fixture.componentRef.setInput('resources', [
+        { metadata: { name: 'pod-1' } },
+      ]);
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.viewColumns().length).toBe(1);
+    });
+  });
 });

@@ -1,12 +1,13 @@
 {
   "name": "@openmfp/ngx",
   "version": "0.18.11",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/openmfp/webcomponents.git"
   },
   "dependencies": {
-    "gridstack": "^13.0.2",
+    "gridstack": "^13.1.2",
     "tslib": "2.8.1"
   },
   "peerDependencies": {

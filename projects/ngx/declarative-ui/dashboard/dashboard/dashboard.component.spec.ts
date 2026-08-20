@@ -1485,4 +1485,72 @@ describe('Dashboard', () => {
       expect(labels).toContain('Cancel');
     });
   });
+
+  describe('compact toolbar menu button', () => {
+    const menuBtn = (fixture: Fixture) =>
+      root(fixture).querySelector('[data-testid="dashboard-toolbar-menu-btn"]');
+
+    it('does not render the menu button when compact with no editable and no custom actions', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', { title: 'T' });
+      fixture.detectChanges();
+
+      component.compactToolbar.set(true);
+      fixture.detectChanges();
+
+      expect(menuBtn(fixture)).toBeNull();
+    });
+
+    it('renders the menu button when compact and the dashboard is editable', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', { title: 'T', editable: true });
+      fixture.detectChanges();
+
+      component.compactToolbar.set(true);
+      fixture.detectChanges();
+
+      expect(menuBtn(fixture)).not.toBeNull();
+    });
+
+    it('renders the menu button when compact and custom actions are provided', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', { title: 'T' });
+      fixture.componentRef.setInput('customActions', [
+        { action: 'a', text: 'A' },
+      ]);
+      fixture.detectChanges();
+
+      component.compactToolbar.set(true);
+      fixture.detectChanges();
+
+      expect(menuBtn(fixture)).not.toBeNull();
+    });
+  });
+
+  describe('web-component first render (before inputs are assigned)', () => {
+    it('renders without emitting NG0950 when config is not yet set', () => {
+      const errorSpy = vi.spyOn(console, 'error');
+      const { fixture, component } = setup();
+
+      expect(() => {
+        fixture.detectChanges();
+      }).not.toThrow();
+
+      const ng0950 = errorSpy.mock.calls
+        .flat()
+        .some((arg) => String(arg).includes('NG0950'));
+      expect(ng0950).toBe(false);
+      expect(component.config()).toEqual({});
+    });
+
+    it('recovers and reflects config once it is assigned', () => {
+      const { fixture, component } = setup();
+      fixture.detectChanges();
+
+      fixture.componentRef.setInput('config', { editable: true });
+      fixture.detectChanges();
+
+      expect(component.config().editable).toBe(true);
+    });
+  });
 });

@@ -15,8 +15,8 @@ A standalone field renderer that displays a single field value from a resource o
 ## Usage as an Angular component
 
 ```ts
-import { ResourceField } from '@openmfp/webcomponents';
-import { FieldDefinition } from '@openmfp/webcomponents';
+import { ResourceField } from '@openmfp/ngx';
+import { FieldDefinition } from '@openmfp/ngx';
 
 @Component({
   imports: [ResourceField],
@@ -371,7 +371,7 @@ Map the field's raw value to a display string. The first matching rule wins; whe
 Renders a positive or negative SAP UI5 icon for a boolean value.
 
 ```ts
-import { BooleanValue } from '@openmfp/webcomponents';
+import { BooleanValue } from '@openmfp/ngx';
 ```
 
 | Input       | Type      | Required | Description                                 |
@@ -384,7 +384,7 @@ import { BooleanValue } from '@openmfp/webcomponents';
 Renders a URL string as a `<ui5-link>` that stops click propagation.
 
 ```ts
-import { LinkValue } from '@openmfp/webcomponents';
+import { LinkValue } from '@openmfp/ngx';
 ```
 
 | Input      | Type     | Required | Description                                 |
@@ -397,7 +397,7 @@ import { LinkValue } from '@openmfp/webcomponents';
 Renders a value as masked asterisks or as plain text, controlled by `isVisible`.
 
 ```ts
-import { SecretValue } from '@openmfp/webcomponents';
+import { SecretValue } from '@openmfp/ngx';
 ```
 
 | Input       | Type      | Required | Description                                                      |
@@ -413,7 +413,7 @@ The masked form renders `*` repeated to the same length as `value` (minimum 8 ch
 Renders an array of strings as `<ui5-tag>` chips in a wrapping flex container.
 
 ```ts
-import { TagListValue } from '@openmfp/webcomponents';
+import { TagListValue } from '@openmfp/ngx';
 ```
 
 | Input         | Type          | Required | Description                                                                               |
@@ -458,7 +458,7 @@ interface TagSettings {
     | 'Set1'
     | 'Set2';
   colorScheme?: '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10'; // default '1'
-  separator?: string; // default ','
+  valueSeparator?: string; // default ','
 }
 
 interface ButtonSettings {
