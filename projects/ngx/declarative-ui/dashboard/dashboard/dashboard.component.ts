@@ -90,7 +90,7 @@ export class Dashboard implements OnInit, OnDestroy {
   private readonly sanitizer = inject(DomSanitizer);
   protected readonly i18nService = inject(DashboardI18nService);
 
-  config = input.required<DashboardConfig>();
+  config = input<DashboardConfig>({});
   sections = model<SectionConfig[]>([]);
   cards = model<CardConfig[]>([]);
   availableCards = input<CardConfig[]>([]);

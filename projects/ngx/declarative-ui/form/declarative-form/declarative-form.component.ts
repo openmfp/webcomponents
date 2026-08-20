@@ -42,7 +42,7 @@ import { Select } from '@fundamental-ngx/ui5-webcomponents/select';
   encapsulation: ViewEncapsulation.ShadowDom,
 })
 export class DeclarativeForm<T extends GenericResource> {
-  readonly fields = input.required<FormFieldDefinition[]>();
+  readonly fields = input<FormFieldDefinition[]>([]);
   readonly initialValues = input<T>({} as T);
   readonly fieldErrors = input<FormFieldErrors>({});
 

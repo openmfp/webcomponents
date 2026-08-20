@@ -48,10 +48,10 @@ import { debounceTime, distinctUntilChanged, filter, map } from 'rxjs';
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class DeclarativeTableCard<R extends GenericResource> {
-  resources = input.required<R[]>();
+  resources = input<R[]>([]);
   permissions = input<Record<string, string[]>>();
 
-  config = input.required<TableCardConfig<R>>();
+  config = input<TableCardConfig<R> | undefined>(undefined);
   createFormState = input<TableCardFormState>({});
   editFormState = input<TableCardFormState>({});
 
@@ -85,11 +85,11 @@ export class DeclarativeTableCard<R extends GenericResource> {
   protected resolvedCreateFields = signal<FormFieldDefinition[]>([]);
   protected resolvedEditFields = signal<FormFieldDefinition[]>([]);
 
-  protected tableConfig = computed(() => this.config().tableConfig);
-  protected header = computed(() => this.config().header);
-  protected headerTooltip = computed(() => this.config().headerTooltip);
+  protected tableConfig = computed(() => this.config()?.tableConfig);
+  protected header = computed(() => this.config()?.header);
+  protected headerTooltip = computed(() => this.config()?.headerTooltip);
   protected createFormConfig = computed(
-    () => this.config().createResourceFormConfig,
+    () => this.config()?.createResourceFormConfig,
   );
   protected editFormConfig = computed(() => {
     const pendingResource = this.pendingResource();
@@ -97,7 +97,7 @@ export class DeclarativeTableCard<R extends GenericResource> {
       return;
     }
 
-    return this.config().editResourceFormConfig?.(pendingResource);
+    return this.config()?.editResourceFormConfig?.(pendingResource);
   });
   protected deleteConfirmationConfig = computed(() => {
     const pendingResource = this.pendingResource();
@@ -105,15 +105,15 @@ export class DeclarativeTableCard<R extends GenericResource> {
       return;
     }
 
-    return this.config().deleteResourceConfirmationConfig?.(pendingResource);
+    return this.config()?.deleteResourceConfirmationConfig?.(pendingResource);
   });
   protected createButtonConfig = computed(
-    () => this.config().buttonSettings?.createButton,
+    () => this.config()?.buttonSettings?.createButton,
   );
   protected searchButtonConfig = computed(
-    () => this.config().buttonSettings?.searchButton,
+    () => this.config()?.buttonSettings?.searchButton,
   );
-  protected effectiveColumns = computed(() => this.tableConfig().fields);
+  protected effectiveColumns = computed(() => this.tableConfig()?.fields ?? []);
   protected editInitialValue = computed(() => {
     const pendingResource = this.pendingResource();
     const editConfig = this.editFormConfig();
@@ -124,7 +124,7 @@ export class DeclarativeTableCard<R extends GenericResource> {
     return this.buildInitialValues(this.resolvedEditFields(), pendingResource);
   });
 
-  protected searchConfig = computed(() => this.config().searchConfig);
+  protected searchConfig = computed(() => this.config()?.searchConfig);
   protected resourcesSearchable = computed(() => !!this.searchConfig());
   protected searchPlaceholder = computed(
     () => this.searchConfig()?.placeholder ?? 'Search',
@@ -209,7 +209,7 @@ export class DeclarativeTableCard<R extends GenericResource> {
   }
 
   private async openEditDialog(resource: R): Promise<void> {
-    const config = this.config().editResourceFormConfig?.(resource);
+    const config = this.config()?.editResourceFormConfig?.(resource);
     const fields = await this.resolveFormFields(config?.fields);
     // A newer update action may have replaced the pending resource while we
     // awaited the field resolver; ignore this stale result so the dialog never

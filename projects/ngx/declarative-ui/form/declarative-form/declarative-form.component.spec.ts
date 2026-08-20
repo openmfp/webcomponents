@@ -315,4 +315,33 @@ describe('DeclarativeForm', () => {
       ]);
     });
   });
+
+  describe('web-component first render (before inputs are assigned)', () => {
+    it('renders without emitting NG0950 when fields are not yet set', () => {
+      const errorSpy = vi.spyOn(console, 'error');
+      const localFixture = TestBed.createComponent(DeclarativeForm);
+
+      expect(() => {
+        localFixture.detectChanges();
+      }).not.toThrow();
+
+      const ng0950 = errorSpy.mock.calls
+        .flat()
+        .some((arg) => String(arg).includes('NG0950'));
+      expect(ng0950).toBe(false);
+      expect(localFixture.componentInstance.fields()).toEqual([]);
+    });
+
+    it('recovers and renders once fields are assigned', () => {
+      const localFixture = TestBed.createComponent(DeclarativeForm);
+      localFixture.detectChanges();
+
+      localFixture.componentRef.setInput('fields', testFields);
+      localFixture.detectChanges();
+
+      expect(localFixture.componentInstance.fields().length).toBe(
+        testFields.length,
+      );
+    });
+  });
 });
