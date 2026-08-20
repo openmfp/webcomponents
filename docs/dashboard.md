@@ -51,10 +51,11 @@ import {
   Dashboard,
   DashboardConfig,
   SectionConfig,
+  ServiceStatusCard,
   VisitedServiceCard,
 } from '@openmfp/ngx';
 
-Dashboard.registerAngularComponents([VisitedServiceCard]);
+Dashboard.registerAngularComponents([VisitedServiceCard, ServiceStatusCard]);
 
 @Component({
   imports: [Dashboard],
@@ -117,8 +118,8 @@ export class DashboardPage {
   availableCards: CardConfig[] = [
     {
       id: 'service-status-template',
-      component: 'mfp-wc-service-status-card',
-      type: 'wc',
+      component: 'mfp-service-status-card',
+      type: 'angular',
       label: 'Service Status',
       w: 4,
       h: 2,

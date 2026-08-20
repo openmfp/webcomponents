@@ -74,7 +74,7 @@ import {
   FormFieldChangeEvent,
   TableCardConfig,
   TableCardFormState,
-} from '@openmfp/webcomponents';
+} from '@openmfp/ngx';
 
 @Component({
   imports: [DeclarativeTableCard],
@@ -244,8 +244,19 @@ interface TableCardConfig<T extends GenericResource = GenericResource> {
   deleteResourceConfirmationConfig?: (
     resource: T,
   ) => DeleteResourceConfirmationConfig;
+  /** Search input and filter-tab strip. Omit to hide both. */
+  searchConfig?: TableCardSearchConfig;
+}
+
+interface TableCardSearchConfig {
+  /** One-shot seed for the search input, applied on first render. */
+  initialSearch?: string;
+  /** Placeholder for the search input. Defaults to `Search`. */
+  placeholder?: string;
   /** Predefined filters rendered as a horizontal tab strip above the table. */
   filterTabs?: FieldFilterDefinition[];
+  /** One-shot seed for the initially selected filter tab (matched by `property`+`value`). */
+  initialFilter?: FieldFilterDefinition;
 }
 
 interface FieldFilterDefinition {
@@ -263,10 +274,11 @@ interface TableConfig {
   fields: TableFieldDefinition[];
   totalItemsCount?: number;
   paginationLimit?: number;
+  currentPage?: number; // 1-based current page; only used when loadMode is 'pager'
   hasMore?: boolean;
   height?: number; // fixed table height in pixels; enables scrollable body
-  growMode?: 'Button' | 'Scroll'; // default: 'Button'
-  loadMoreButtonText?: string; // button label when growMode is 'Button'; default: 'Load More'
+  loadMode?: 'scroll' | 'button' | 'pager'; // default: 'button'
+  loadMoreButtonText?: string; // button label when loadMode is 'button'; default: 'Load More'
 }
 
 interface ResourceFormConfig {
@@ -323,7 +335,7 @@ opens the edit dialog. A plain array is resolved synchronously and needs no
 
 ## Filter tabs
 
-When `filterTabs` is set on `TableCardConfig`, the card renders a horizontal tab strip above the table — one tab per `FieldFilterDefinition`. Omit `filterTabs` (or pass an empty array) to hide the strip entirely. The strip does **not** auto-prepend an "All / no filter" tab; if you want one, author it explicitly as a regular filter entry (e.g. `{ label: 'All', property: 'category', value: '*' }`).
+When `filterTabs` is set on `config.searchConfig`, the card renders a horizontal tab strip above the table — one tab per `FieldFilterDefinition`. Omit `filterTabs` (or pass an empty array) to hide the strip entirely. The strip does **not** auto-prepend an "All / no filter" tab; if you want one, author it explicitly as a regular filter entry (e.g. `{ label: 'All', property: 'category', value: '*' }`).
 
 ### Visual behavior
 
@@ -349,7 +361,7 @@ import {
   DeclarativeTableCard,
   FieldFilterDefinition,
   TableCardConfig,
-} from '@openmfp/webcomponents';
+} from '@openmfp/ngx';
 
 @Component({
   imports: [DeclarativeTableCard],
@@ -374,16 +386,18 @@ export class MyComponent {
         { label: 'Phase', property: 'status.phase' },
       ],
     },
-    filterTabs: [
-      {
-        label: 'Running',
-        property: 'status.phase',
-        value: 'Running',
-        default: true,
-      },
-      { label: 'Pending', property: 'status.phase', value: 'Pending' },
-      { label: 'Failed', property: 'status.phase', value: 'Failed' },
-    ],
+    searchConfig: {
+      filterTabs: [
+        {
+          label: 'Running',
+          property: 'status.phase',
+          value: 'Running',
+          default: true,
+        },
+        { label: 'Pending', property: 'status.phase', value: 'Pending' },
+        { label: 'Failed', property: 'status.phase', value: 'Failed' },
+      ],
+    },
   };
 
   onFilterTabChanged(tab: FieldFilterDefinition | undefined): void {
