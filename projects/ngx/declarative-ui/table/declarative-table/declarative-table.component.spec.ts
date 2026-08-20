@@ -903,4 +903,34 @@ describe('DeclarativeTable', () => {
 
     expect(await axe(fixture.nativeElement)).toHaveNoViolations();
   });
+
+  it('gives the pager select and navigation buttons accessible names', () => {
+    // The Storybook a11y addon flagged the page-size select as unlabeled
+    // (axe `select-name`). jsdom does not render UI5's shadow-DOM select, so an
+    // axe assertion cannot catch this here — assert the accessible name our
+    // template sets on each pager control directly instead.
+    const { fixture } = setup({
+      columns: [{ property: 'name', label: 'Name' }],
+      resources: [{ id: '1', name: 'Alice' }],
+      loadMode: 'pager',
+      currentPage: 1,
+      totalItemsCount: 20,
+      paginationLimit: 5,
+    });
+
+    const accessibleName = (testId: string): string | null => {
+      const node = el(fixture, testId) as
+        | (HTMLElement & { accessibleName?: string })
+        | null;
+      return node?.getAttribute('accessible-name') ?? node?.accessibleName ?? null;
+    };
+
+    expect(accessibleName('generic-table-pagination-select')).toBe(
+      'Items per page',
+    );
+    expect(accessibleName('generic-table-pager-first')).toBe('First page');
+    expect(accessibleName('generic-table-pager-prev')).toBe('Previous page');
+    expect(accessibleName('generic-table-pager-next')).toBe('Next page');
+    expect(accessibleName('generic-table-pager-last')).toBe('Last page');
+  });
 });
