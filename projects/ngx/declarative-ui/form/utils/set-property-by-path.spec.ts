@@ -84,7 +84,7 @@ describe('setPropertyByPath', () => {
       delete (Object.prototype as Record<string, unknown>)['x'];
     });
 
-    it('does not pollute Object.prototype via __proto__ (issue #235 case 1)', () => {
+    it('does not pollute Object.prototype via __proto__', () => {
       setPropertyByPath({}, '__proto__.polluted', 'YES');
 
       expect(({} as Record<string, unknown>)['polluted']).toBeUndefined();
@@ -93,11 +93,13 @@ describe('setPropertyByPath', () => {
       ).toBeUndefined();
     });
 
-    it('does not pollute Object.prototype via constructor.prototype (issue #235 case 2)', () => {
+    it('does not pollute Object.prototype via constructor.prototype', () => {
       setPropertyByPath({}, 'constructor.prototype.x', 'YES');
 
       expect(({} as Record<string, unknown>)['x']).toBeUndefined();
-      expect((Object.prototype as Record<string, unknown>)['x']).toBeUndefined();
+      expect(
+        (Object.prototype as Record<string, unknown>)['x'],
+      ).toBeUndefined();
     });
 
     it('rejects a path whose only segment is __proto__', () => {
