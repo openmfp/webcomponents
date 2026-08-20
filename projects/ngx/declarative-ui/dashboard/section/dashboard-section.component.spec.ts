@@ -3,6 +3,7 @@ import { DashboardI18nService } from '../i18n';
 import { DashboardSection } from './dashboard-section.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { axe } from 'vitest-axe';
 
 type Fixture = ComponentFixture<DashboardSection>;
 
@@ -180,5 +181,17 @@ describe('DashboardSection', () => {
 
       expect(root(fixture).querySelector('.section__title')).toBeNull();
     });
+  });
+
+  it('has no automatically-detectable accessibility violations', async () => {
+    const { fixture } = setup();
+    fixture.componentRef.setInput('section', {
+      id: 'section-1',
+      title: 'Runtime',
+    });
+    fixture.componentRef.setInput('cards', []);
+    fixture.detectChanges();
+
+    expect(await axe(fixture.nativeElement)).toHaveNoViolations();
   });
 });

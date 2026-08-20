@@ -1,6 +1,7 @@
 import { FieldDefinition, GenericResource } from '../../models';
 import { ResourceCollectionField } from './resource-collection-field.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { axe } from 'vitest-axe';
 
 type Fixture = ComponentFixture<
   ResourceCollectionField<GenericResource, FieldDefinition>
@@ -122,5 +123,15 @@ describe('ResourceCollectionField', () => {
     } as unknown as GenericResource);
 
     expect(all(fixture, '.card').length).toBe(0);
+  });
+
+  it('has no automatically-detectable accessibility violations', async () => {
+    const { fixture } = setup(CONDITIONS_FIELD, {
+      status: {
+        conditions: [{ type: 'Ready', status: 'True', reason: 'OK' }],
+      },
+    } as unknown as GenericResource);
+
+    expect(await axe(fixture.nativeElement)).toHaveNoViolations();
   });
 });

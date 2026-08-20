@@ -36,6 +36,9 @@
     },
     {
       "path": "./projects/ngx/declarative-ui/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/ngx/cards/tsconfig.spec.json"
     }
   ]
 }

@@ -7,6 +7,7 @@ import {
 import { BooleanValue } from './boolean-value.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { axe } from 'vitest-axe';
 
 describe('BooleanValueComponent', () => {
   let component: BooleanValue;
@@ -115,5 +116,11 @@ describe('BooleanValueComponent', () => {
     fixture.detectChanges();
 
     expect(component.testId()).toBe('custom-test-id');
+  });
+
+  it('has no automatically-detectable accessibility violations', async () => {
+    const { fixture } = makeComponent(true);
+
+    expect(await axe(fixture.nativeElement)).toHaveNoViolations();
   });
 });

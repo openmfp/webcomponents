@@ -1,5 +1,6 @@
 import { SecretValue } from './secret-value.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { axe } from 'vitest-axe';
 
 describe('SecretValueComponent', () => {
   let component: SecretValue;
@@ -194,5 +195,11 @@ describe('SecretValueComponent', () => {
     fixture.detectChanges();
 
     expect(component.testId()).toBe('custom-secret-test-id');
+  });
+
+  it('has no automatically-detectable accessibility violations', async () => {
+    const { fixture } = makeComponent('my-secret-password');
+
+    expect(await axe(fixture.nativeElement)).toHaveNoViolations();
   });
 });

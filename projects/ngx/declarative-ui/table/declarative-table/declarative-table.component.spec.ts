@@ -7,6 +7,7 @@ import {
 import { DeclarativeTable } from './declarative-table.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { axe } from 'vitest-axe';
 
 type Fixture = ComponentFixture<DeclarativeTable<GenericResource>>;
 type Comp = DeclarativeTable<GenericResource>;
@@ -889,5 +890,17 @@ describe('DeclarativeTable', () => {
 
       expect(fixture.componentInstance.viewColumns().length).toBe(1);
     });
+  });
+
+  it('has no automatically-detectable accessibility violations', async () => {
+    // axe is promise-based; the suite installs fake timers, so restore real
+    // ones for this async assertion.
+    vi.useRealTimers();
+    const { fixture } = setup({
+      columns: [{ property: 'name', label: 'Name' }],
+      resources: [{ id: '1', name: 'Alice' }],
+    });
+
+    expect(await axe(fixture.nativeElement)).toHaveNoViolations();
   });
 });
