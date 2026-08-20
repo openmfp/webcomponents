@@ -4,12 +4,13 @@
   tabindex="0"
   (click)="cardClick.emit(path())"
   (keydown.enter)="cardClick.emit(path())"
+  (keydown.space)="$event.preventDefault(); cardClick.emit(path())"
 >
   <span class="visited-card__type-badge">{{ serviceType() }}</span>
   <ui5-card class="visited-card">
     <ui5-card-header
       slot="header"
-      [interactive]="true"
+      [interactive]="false"
       [subtitleText]="serviceDescription()"
       [titleText]="serviceName()"
     >

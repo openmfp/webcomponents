@@ -54,6 +54,7 @@
     "@compodoc/compodoc": "2.0.0",
     "@openmfp/config-prettier": "0.9.2",
     "@openmfp/eslint-config-typescript": "0.7.12",
+    "@storybook/addon-a11y": "10.5.6",
     "@storybook/addon-docs": "10.5.6",
     "@storybook/addon-links": "10.5.6",
     "@storybook/angular": "10.5.6",
