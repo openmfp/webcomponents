@@ -102,10 +102,10 @@ Components can be exported as native web components using Angular Elements, maki
 
 This repository publishes two npm packages from a single release:
 
-| Package                 | Built from            | Contents                                             |
-| ----------------------- | --------------------- | ---------------------------------------------------- |
-| `@openmfp/ngx`          | `dist/ngx`            | The Angular library (components, directives, models) |
-| `@openmfp/webcomponents`| `dist/webcomponents`  | The framework-agnostic custom-element bundles        |
+| Package                  | Built from           | Contents                                             |
+| ------------------------ | -------------------- | ---------------------------------------------------- |
+| `@openmfp/ngx`           | `dist/ngx`           | The Angular library (components, directives, models) |
+| `@openmfp/webcomponents` | `dist/webcomponents` | The framework-agnostic custom-element bundles        |
 
 **Versions are locked together.** The release workflow computes one version from
 the conventional-commit history and applies it to both packages before
