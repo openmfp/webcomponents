@@ -119,11 +119,11 @@ export class MyComponent {
 
 ### Inputs
 
-| Input           | Type                      | Required | Default | Description                                                                   |
-| --------------- | ------------------------- | -------- | ------- | ----------------------------------------------------------------------------- |
-| `fields`        | `FormFieldDefinition[]`   | yes      | -       | Field definitions to render                                                   |
-| `initialValues` | `Record<string, unknown>` | no       | `{}`    | Initial values keyed by exact `field.name`                                    |
-| `fieldErrors`   | `FormFieldErrors`         | no       | `{}`    | Host-owned errors keyed by exact `field.name`                                 |
+| Input           | Type                      | Required | Default | Description                                   |
+| --------------- | ------------------------- | -------- | ------- | --------------------------------------------- |
+| `fields`        | `FormFieldDefinition[]`   | yes      | -       | Field definitions to render                   |
+| `initialValues` | `Record<string, unknown>` | no       | `{}`    | Initial values keyed by exact `field.name`    |
+| `fieldErrors`   | `FormFieldErrors`         | no       | `{}`    | Host-owned errors keyed by exact `field.name` |
 
 ### Outputs / Events
 
