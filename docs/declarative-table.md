@@ -50,8 +50,8 @@ Include the bundle and set properties via JavaScript. Because the component uses
 ## Usage as an Angular component
 
 ```ts
-import { DeclarativeTable } from '@openmfp/webcomponents';
-import { TableFieldDefinition } from '@openmfp/webcomponents';
+import { DeclarativeTable } from '@openmfp/ngx';
+import { TableFieldDefinition } from '@openmfp/ngx';
 
 @Component({
   imports: [DeclarativeTable],
@@ -88,27 +88,29 @@ export class MyComponent {
 
 ### Inputs
 
-| Input                | Type                       | Required | Default       | Description                                                                                                                                           |
-| -------------------- | -------------------------- | -------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `columns`            | `TableFieldDefinition[]`   | yes      | —             | Column definitions                                                                                                                                    |
-| `resources`          | `GenericResource[]`        | yes      | —             | Data rows                                                                                                                                             |
-| `trackByPath`        | `string`                   | no       | `'id'`        | JSONPath (dot-notation) into each resource used as the row identity key                                                                               |
-| `totalItemsCount`    | `number`                   | no       | —             | Total count of all items across pages                                                                                                                 |
-| `paginationLimit`    | `number`                   | no       | `5`           | Rows per page shown in the page-size selector                                                                                                         |
-| `hasMore`            | `boolean`                  | no       | `false`       | Show the load-more trigger at the bottom                                                                                                              |
-| `growMode`           | `'Button' \| 'Scroll'`     | no       | `'Button'`    | Load-more strategy: `'Button'` shows a button, `'Scroll'` triggers on scroll                                                                          |
-| `loadMoreButtonText` | `string`                   | no       | `'Load More'` | Label shown on the load-more button (used when `growMode` is `'Button'`)                                                                              |
-| `height`             | `number`                   | no       | —             | Fixed height in pixels. When combined with `growMode: 'Scroll'`, enables scroll-based loading with a sticky header                                    |
-| `permissions`        | `Record<string, string[]>` | no       | —             | Per-row permission map keyed by `resource.id`. Passed to every cell's `mfp-resource-field` to evaluate `requirePermission` on each column definition. |
+| Input                | Type                              | Required | Default       | Description                                                                                                                                           |
+| -------------------- | --------------------------------- | -------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `columns`            | `TableFieldDefinition[]`          | yes      | —             | Column definitions                                                                                                                                    |
+| `resources`          | `GenericResource[]`               | yes      | —             | Data rows                                                                                                                                             |
+| `trackByPath`        | `string`                          | no       | `'id'`        | JSONPath (dot-notation) into each resource used as the row identity key                                                                               |
+| `totalItemsCount`    | `number`                          | no       | —             | Total count of all items across pages                                                                                                                 |
+| `paginationLimit`    | `number`                          | no       | `5`           | Rows per page shown in the page-size selector                                                                                                         |
+| `hasMore`            | `boolean`                         | no       | `false`       | Show the load-more trigger at the bottom                                                                                                              |
+| `loadMode`           | `'scroll' \| 'button' \| 'pager'` | no       | `'button'`    | Load strategy: `'button'` shows a load-more button, `'scroll'` triggers on scroll, `'pager'` renders numbered pagination controls                     |
+| `loadMoreButtonText` | `string`                          | no       | `'Load More'` | Label shown on the load-more button (used when `loadMode` is `'button'`)                                                                              |
+| `height`             | `number`                          | no       | —             | Fixed height in pixels. When combined with `loadMode: 'scroll'`, enables scroll-based loading with a sticky header                                    |
+| `currentPage`        | `number`                          | no       | `1`           | 1-based current page. Only used when `loadMode` is `'pager'`                                                                                          |
+| `permissions`        | `Record<string, string[]>`        | no       | —             | Per-row permission map keyed by `resource.id`. Passed to every cell's `mfp-resource-field` to evaluate `requirePermission` on each column definition. |
 
 ### Outputs / Events
 
-| Event                    | Detail payload               | Description                               |
-| ------------------------ | ---------------------------- | ----------------------------------------- |
-| `tableRowClicked`        | row object                   | Fires when a row is clicked               |
-| `buttonClick`            | `{ event, field, resource }` | Fires when a button cell is clicked       |
-| `loadMoreResources`      | —                            | Fires when the user triggers load more    |
-| `paginationLimitChanged` | `number`                     | Fires when the user changes the page size |
+| Event                    | Detail payload               | Description                                              |
+| ------------------------ | ---------------------------- | -------------------------------------------------------- |
+| `tableRowClicked`        | row object                   | Fires when a row is clicked                              |
+| `buttonClick`            | `{ event, field, resource }` | Fires when a button cell is clicked                      |
+| `loadMoreResources`      | —                            | Fires when the user triggers load more                   |
+| `paginationLimitChanged` | `number`                     | Fires when the user changes the page size                |
+| `pageChange`             | `number`                     | Fires when the user selects a page (`loadMode: 'pager'`) |
 
 **Listening to events from a web component:**
 
@@ -381,10 +383,11 @@ Map a cell's raw value to a display string. The first matching rule wins; when n
 
 ## Pagination
 
-When `hasMore` is `true` a load-more trigger appears at the bottom of the table. The trigger behaviour is controlled by `growMode`:
+When `hasMore` is `true` a load-more trigger appears at the bottom of the table. The trigger behaviour is controlled by `loadMode`:
 
-- `growMode: 'Button'` (default) — a button labelled with `loadMoreButtonText` is shown. Clicking it fires `loadMoreResources`.
-- `growMode: 'Scroll'` — loading is triggered automatically as the user scrolls. Set `height` to constrain the table height and enable scroll detection; the header row becomes sticky automatically.
+- `loadMode: 'button'` (default) — a button labelled with `loadMoreButtonText` is shown. Clicking it fires `loadMoreResources`.
+- `loadMode: 'scroll'` — loading is triggered automatically as the user scrolls. Set `height` to constrain the table height and enable scroll detection; the header row becomes sticky automatically.
+- `loadMode: 'pager'` — numbered pagination controls are shown instead of a load-more trigger. Provide `totalItemsCount` and (optionally) `currentPage`; the table fires `pageChange` with the 1-based page number when the user navigates. `paginationLimit` sets the page size.
 
 A page-size selector is always present.
 
@@ -394,7 +397,7 @@ table.hasMore = true;
 table.loadMoreButtonText = 'Load More';
 
 // Scroll mode with a fixed height
-table.growMode = 'Scroll';
+table.loadMode = 'scroll';
 table.height = 400; // pixels
 table.hasMore = true;
 
@@ -407,6 +410,17 @@ table.addEventListener('loadMoreResources', () => {
 table.addEventListener('paginationLimitChanged', (e) => {
   table.paginationLimit = e.detail;
   reloadWithNewLimit(e.detail);
+});
+
+// Pager mode with numbered pagination
+table.loadMode = 'pager';
+table.totalItemsCount = 120;
+table.paginationLimit = 20;
+table.currentPage = 1;
+
+table.addEventListener('pageChange', (e) => {
+  table.currentPage = e.detail;
+  fetchPage(e.detail);
 });
 ```
 
