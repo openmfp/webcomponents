@@ -65,10 +65,13 @@
       <mfp-declarative-table
         [columns]="effectiveColumns()"
         [currentPage]="config.currentPage ?? 1"
+        [error]="error()"
         [hasMore]="config.hasMore ?? false"
         [height]="config.height"
         [loadMode]="config.loadMode ?? 'button'"
         [loadMoreButtonText]="config.loadMoreButtonText ?? 'Load More'"
+        [loading]="loading()"
+        [loadingDelay]="loadingDelay()"
         [paginationLimit]="config.paginationLimit ?? 5"
         [permissions]="permissions()"
         [resources]="resources()"
@@ -77,6 +80,7 @@
         (loadMoreResources)="loadMoreResources.emit()"
         (pageChange)="pageChange.emit($event)"
         (paginationLimitChanged)="paginationLimitChanged.emit($event)"
+        (retry)="retry.emit()"
         (tableRowClicked)="tableRowClicked.emit($event)"
       />
     }

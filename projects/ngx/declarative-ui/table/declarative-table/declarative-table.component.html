@@ -1,5 +1,7 @@
 <ui5-table
   data-testid="generic-table"
+  [loading]="loading() && !error()"
+  [loadingDelay]="loadingDelay()"
   [style.height]="height() ? height() + 'px' : null"
   [style.overflow-y]="'auto'"
 >
@@ -24,7 +26,26 @@
     }
   </ui5-table-header-row>
 
-  @for (item of resources(); let i = $index; track rowTrackBy($index, item)) {
+  @if (error()) {
+    <ui5-illustrated-message
+      data-testid="generic-table-view-error"
+      name="UnableToLoad"
+      slot="noData"
+    >
+      <ui5-button
+        data-testid="generic-table-retry"
+        design="Emphasized"
+        (click)="retry.emit()"
+        >Retry</ui5-button
+      >
+    </ui5-illustrated-message>
+  }
+
+  @for (
+    item of error() ? [] : resources();
+    let i = $index;
+    track rowTrackBy($index, item)
+  ) {
     <ui5-table-row
       [attr.data-testid]="'generic-table-row-' + i"
       [class.disabled]="item.isAvailable === false"
@@ -98,17 +119,27 @@
       }
     </ui5-table-row>
   } @empty {
-    <ui5-illustrated-message
-      data-testid="generic-table-view-nodata"
-      name="NoData"
-      slot="noData"
-    >
-      <span slot="title">No Resources</span>
-      <span slot="subtitle">There are currently no items to show.</span>
-    </ui5-illustrated-message>
+    @if (!error()) {
+      @if (loading()) {
+        <span
+          aria-hidden="true"
+          data-testid="generic-table-view-loading"
+          slot="noData"
+        ></span>
+      } @else {
+        <ui5-illustrated-message
+          data-testid="generic-table-view-nodata"
+          name="NoData"
+          slot="noData"
+        >
+          <span slot="title">No Resources</span>
+          <span slot="subtitle">There are currently no items to show.</span>
+        </ui5-illustrated-message>
+      }
+    }
   }
 
-  @if (loadMode() !== 'pager' && hasMore()) {
+  @if (!error() && !loading() && loadMode() !== 'pager' && hasMore()) {
     <ui5-table-growing
       data-testid="generic-table-growing"
       id="growing"
@@ -131,6 +162,7 @@
     min-height: 3rem;
     border-top: 1px solid var(--sapList_BorderColor);
   "
+  [hidden]="error() || (loading() && resources().length === 0)"
 >
   <div
     class="pagination-footer__side"
@@ -145,6 +177,7 @@
       data-testid="generic-table-pagination-select"
       style="width: 5rem"
       [accessibleName]="isPagerMode() ? 'Items per page' : 'Items per load'"
+      [disabled]="loading()"
       [value]="paginationLimit().toString()"
       (change)="paginationLimitChanged.emit(+$any($event)?.target?.value)"
     >
@@ -164,7 +197,7 @@
           data-testid="generic-table-pager-first"
           design="Transparent"
           icon="close-command-field"
-          [disabled]="!canPrev()"
+          [disabled]="loading() || !canPrev()"
           (click)="firstPage()"
         />
       }
@@ -173,7 +206,7 @@
         data-testid="generic-table-pager-prev"
         design="Transparent"
         icon="navigation-left-arrow"
-        [disabled]="!canPrev()"
+        [disabled]="loading() || !canPrev()"
         (click)="prevPage()"
       />
       <span
@@ -192,7 +225,7 @@
         data-testid="generic-table-pager-next"
         design="Transparent"
         icon="navigation-right-arrow"
-        [disabled]="!canNext()"
+        [disabled]="loading() || !canNext()"
         (click)="nextPage()"
       />
       @if (knowsTotal()) {
@@ -201,7 +234,7 @@
           data-testid="generic-table-pager-last"
           design="Transparent"
           icon="open-command-field"
-          [disabled]="!canNext()"
+          [disabled]="loading() || !canNext()"
           (click)="lastPage()"
         />
       }

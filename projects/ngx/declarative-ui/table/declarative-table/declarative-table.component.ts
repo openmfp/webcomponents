@@ -21,6 +21,7 @@ import { TableHeaderCell } from '@fundamental-ngx/ui5-webcomponents/table-header
 import { TableHeaderRow } from '@fundamental-ngx/ui5-webcomponents/table-header-row';
 import { TableRow } from '@fundamental-ngx/ui5-webcomponents/table-row';
 import '@ui5/webcomponents-fiori/dist/illustrations/NoData.js';
+import '@ui5/webcomponents-fiori/dist/illustrations/UnableToLoad.js';
 import '@ui5/webcomponents-icons/dist/close-command-field.js';
 import '@ui5/webcomponents-icons/dist/navigation-left-arrow.js';
 import '@ui5/webcomponents-icons/dist/navigation-right-arrow.js';
@@ -50,6 +51,9 @@ export class DeclarativeTable<T extends GenericResource> {
   resources = input<T[]>([]);
   trackByPath = input<string>('id');
   permissions = input<Record<string, string[]>>();
+  loading = input<boolean>(false);
+  loadingDelay = input<number>(1000);
+  error = input<boolean>(false);
 
   totalItemsCount = input<number>();
   paginationLimit = input<number>(5);
@@ -64,6 +68,7 @@ export class DeclarativeTable<T extends GenericResource> {
   readonly loadMoreResources = output<void>();
   readonly paginationLimitChanged = output<number>();
   readonly pageChange = output<number>();
+  readonly retry = output<void>();
 
   columnTrackBy = (column: TableFieldDefinition, index: number) =>
     column.property ?? column.value ?? index;

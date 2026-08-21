@@ -50,6 +50,9 @@ import { debounceTime, distinctUntilChanged, filter, map } from 'rxjs';
 export class DeclarativeTableCard<R extends GenericResource> {
   resources = input<R[]>([]);
   permissions = input<Record<string, string[]>>();
+  loading = input<boolean>(false);
+  loadingDelay = input<number>(1000);
+  error = input<boolean>(false);
 
   config = input<TableCardConfig<R> | undefined>(undefined);
   createFormState = input<TableCardFormState>({});
@@ -60,6 +63,7 @@ export class DeclarativeTableCard<R extends GenericResource> {
   readonly loadMoreResources = output<void>();
   readonly paginationLimitChanged = output<number>();
   readonly pageChange = output<number>();
+  readonly retry = output<void>();
 
   readonly searchChanged = output<string>();
   readonly createFieldChange = output<FormFieldChangeEvent>();
