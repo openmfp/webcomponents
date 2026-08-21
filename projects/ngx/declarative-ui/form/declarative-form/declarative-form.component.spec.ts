@@ -3,6 +3,7 @@ import { FormFieldChangeEvent, FormFieldDefinition } from '../models';
 import { DeclarativeForm } from './declarative-form.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
+import { axe } from 'vitest-axe';
 
 describe('DeclarativeForm', () => {
   let component: DeclarativeForm<GenericResource>;
@@ -37,6 +38,45 @@ describe('DeclarativeForm', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('has no automatically-detectable accessibility violations', async () => {
+    // UI5 web components label their focusable element via an internal
+    // shadow-DOM input wired with ARIA at runtime. axe-core traverses into the
+    // shadow root and evaluates that inner input, but jsdom does not resolve
+    // UI5's cross-shadow `accessibleNameRef`, so the `label` rule reports a
+    // false positive here. It is disabled; label association is covered by the
+    // `for`/`id` binding asserted in the DOM tests above and verified in-browser
+    // by the Storybook a11y addon.
+    const results = await axe(fixture.nativeElement, {
+      rules: { label: { enabled: false } },
+    });
+
+    expect(results).toHaveNoViolations();
+  });
+
+  it('has no accessibility violations when rendering a collection field', async () => {
+    // Renders the nested mfp-form-collection-field via a propertyCollection
+    // field, covering that component's a11y within the form's module context
+    // (it and DeclarativeForm have a circular dependency that makes a
+    // standalone spec fragile).
+    fixture.componentRef.setInput('fields', [
+      {
+        name: 'spec.artifacts',
+        label: 'Artifacts',
+        propertyCollection: [
+          { name: 'name', label: 'Name' },
+          { name: 'url', label: 'URL' },
+        ],
+      },
+    ]);
+    fixture.detectChanges();
+
+    const results = await axe(fixture.nativeElement, {
+      rules: { label: { enabled: false } },
+    });
+
+    expect(results).toHaveNoViolations();
   });
 
   describe('form initialization', () => {

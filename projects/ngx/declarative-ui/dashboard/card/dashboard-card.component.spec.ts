@@ -2,6 +2,7 @@ import { DASHBOARD_CARD_DRAG_ORIGIN_CLASS } from '../constants';
 import { DashboardI18nService } from '../i18n';
 import { DashboardCard } from './dashboard-card.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { axe } from 'vitest-axe';
 
 type Fixture = ComponentFixture<DashboardCard>;
 
@@ -331,5 +332,18 @@ describe('DashboardCard', () => {
       );
       consoleSpy.mockRestore();
     });
+  });
+
+  it('has no automatically-detectable accessibility violations', async () => {
+    const { fixture } = setup();
+    fixture.componentRef.setInput('card', {
+      id: 'card-1',
+      component: 'demo-widget',
+      w: 3,
+      h: 2,
+    });
+    fixture.detectChanges();
+
+    expect(await axe(fixture.nativeElement)).toHaveNoViolations();
   });
 });

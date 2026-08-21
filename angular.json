@@ -44,7 +44,8 @@
           "builder": "@angular/build:unit-test",
           "options": {
             "runnerConfig": "vitest.config.ts",
-            "tsConfig": "./tsconfig.spec.json"
+            "tsConfig": "./tsconfig.spec.json",
+            "setupFiles": ["projects/ngx/test-setup-a11y.ts"]
           }
         },
         "storybook": {

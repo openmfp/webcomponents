@@ -7,6 +7,7 @@ import { ZflowGridStackEngine } from './engines/zflow/z-flow-engine';
 import type { ZFlowGridStackNode } from './engines/zflow/z-flow.helpers';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import type { GridStackMoveOpts, GridStackNode } from 'gridstack';
+import { axe } from 'vitest-axe';
 
 vi.mock('gridstack', () => ({}));
 
@@ -1552,5 +1553,21 @@ describe('Dashboard', () => {
 
       expect(component.config().editable).toBe(true);
     });
+  });
+
+  it('has no automatically-detectable accessibility violations', async () => {
+    const { fixture } = setup();
+    fixture.componentRef.setInput('config', { title: 'Operations' });
+    fixture.detectChanges();
+
+    // `ui5-title` renders an `<h5>` inside its shadow DOM; axe evaluates those
+    // vendored headings and reports `heading-order` for level jumps in UI5's
+    // own markup, which this component does not control. Disable that rule; all
+    // rules that apply to our authored markup remain enabled.
+    const results = await axe(fixture.nativeElement, {
+      rules: { 'heading-order': { enabled: false } },
+    });
+
+    expect(results).toHaveNoViolations();
   });
 });

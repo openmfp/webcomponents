@@ -144,6 +144,7 @@
     <ui5-select
       data-testid="generic-table-pagination-select"
       style="width: 5rem"
+      [accessibleName]="isPagerMode() ? 'Items per page' : 'Items per load'"
       [value]="paginationLimit().toString()"
       (change)="paginationLimitChanged.emit(+$any($event)?.target?.value)"
     >

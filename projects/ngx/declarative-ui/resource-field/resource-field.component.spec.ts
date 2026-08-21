@@ -5,6 +5,7 @@ import {
 } from '../models';
 import { ResourceField } from './resource-field.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { axe } from 'vitest-axe';
 
 type Fixture = ComponentFixture<
   ResourceField<GenericResource, FieldDefinition>
@@ -721,5 +722,11 @@ describe('ResourceField', () => {
         q(fixture, `[data-testid="resource-field-${FIELD_PROPERTY}"]`),
       ).not.toBeNull();
     });
+  });
+
+  it('has no automatically-detectable accessibility violations', async () => {
+    const { fixture } = setup({ property: 'status' }, { status: 'Active' });
+
+    expect(await axe(fixture.nativeElement)).toHaveNoViolations();
   });
 });

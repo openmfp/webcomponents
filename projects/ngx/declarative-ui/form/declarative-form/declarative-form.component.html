@@ -8,6 +8,7 @@
       <ui5-label
         show-colon
         [attr.data-testid]="'generic-form-field-label-' + field.name"
+        [attr.for]="'generic-form-field-input-' + field.name"
         [required]="field.required"
         >{{ field.label }}</ui5-label
       >
@@ -27,6 +28,7 @@
           class="input"
           [attr.data-testid]="'generic-form-field-' + field.name"
           [disabled]="field.disabled"
+          [id]="'generic-form-field-input-' + field.name"
           [required]="field.required"
           [value]="control.value"
           [valueState]="getValueState(field.name)"
@@ -56,6 +58,7 @@
           class="input"
           [attr.data-testid]="'generic-form-field-' + field.name"
           [disabled]="field.disabled"
+          [id]="'generic-form-field-input-' + field.name"
           [required]="field.required"
           [value]="control.value"
           [valueState]="getValueState(field.name)"

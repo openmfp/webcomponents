@@ -6,7 +6,11 @@ const config: StorybookConfig = {
     '../projects/ngx/**/*.stories.@(js|jsx|mjs|ts|tsx)',
     '../projects/ngx/**/*.mdx',
   ],
-  addons: ['@storybook/addon-links', '@storybook/addon-docs'],
+  addons: [
+    '@storybook/addon-links',
+    '@storybook/addon-docs',
+    '@storybook/addon-a11y',
+  ],
   framework: {
     name: '@storybook/angular',
     options: {},

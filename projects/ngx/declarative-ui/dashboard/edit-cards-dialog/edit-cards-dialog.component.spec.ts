@@ -2,6 +2,7 @@ import { DashboardI18nService } from '../i18n';
 import { CardConfig } from '../models';
 import { EditCardsDialog } from './edit-cards-dialog.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { axe } from 'vitest-axe';
 
 type Fixture = ComponentFixture<EditCardsDialog>;
 
@@ -387,5 +388,14 @@ describe('EditCardsDialog', () => {
 
       expect(event.defaultPrevented).toBe(false);
     });
+  });
+
+  it('has no automatically-detectable accessibility violations', async () => {
+    const { fixture } = setup();
+    fixture.componentRef.setInput('availableCards', [CARD_A, CARD_B]);
+    fixture.componentRef.setInput('open', true);
+    fixture.detectChanges();
+
+    expect(await axe(fixture.nativeElement)).toHaveNoViolations();
   });
 });

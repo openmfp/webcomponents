@@ -2,6 +2,7 @@ import { TagSettings } from '../../models';
 import { TagListValue } from './tag-list-value.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { axe } from 'vitest-axe';
 
 describe('TagListValue', () => {
   let fixture: ComponentFixture<TagListValue>;
@@ -104,5 +105,11 @@ describe('TagListValue', () => {
         expect((tag as any).hideStateIcon).toBe(true);
       });
     });
+  });
+
+  it('has no automatically-detectable accessibility violations', async () => {
+    const { fixture } = setup(['alpha', 'beta']);
+
+    expect(await axe(fixture.nativeElement)).toHaveNoViolations();
   });
 });

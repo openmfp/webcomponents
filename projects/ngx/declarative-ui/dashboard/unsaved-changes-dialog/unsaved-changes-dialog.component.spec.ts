@@ -1,6 +1,7 @@
 import { DashboardI18nService } from '../i18n';
 import { UnsavedChangesDialog } from './unsaved-changes-dialog.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { axe } from 'vitest-axe';
 
 type Fixture = ComponentFixture<UnsavedChangesDialog>;
 
@@ -120,5 +121,13 @@ describe('UnsavedChangesDialog', () => {
 
       expect(emitted).toBe(1);
     });
+  });
+
+  it('has no automatically-detectable accessibility violations', async () => {
+    const { fixture } = setup();
+    fixture.componentRef.setInput('open', true);
+    fixture.detectChanges();
+
+    expect(await axe(fixture.nativeElement)).toHaveNoViolations();
   });
 });

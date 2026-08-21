@@ -1,6 +1,7 @@
 import { LinkValue } from './link-value.component';
 import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { axe } from 'vitest-axe';
 
 describe('LinkValueComponent', () => {
   let component: LinkValue;
@@ -110,5 +111,11 @@ describe('LinkValueComponent', () => {
     fixture.detectChanges();
 
     expect(component.testId()).toBe('custom-link-test-id');
+  });
+
+  it('has no automatically-detectable accessibility violations', async () => {
+    const { fixture } = makeComponent('https://example.com');
+
+    expect(await axe(fixture.nativeElement)).toHaveNoViolations();
   });
 });

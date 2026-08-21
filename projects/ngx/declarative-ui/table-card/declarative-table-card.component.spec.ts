@@ -19,6 +19,7 @@ import {
 import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { axe } from 'vitest-axe';
 
 // --------------------------------------------------------------------------
 // Helpers
@@ -1465,5 +1466,13 @@ describe('DeclarativeTableCard', () => {
         ).querySelector('mfp-declarative-table'),
       ).not.toBeNull();
     });
+  });
+
+  it('has no automatically-detectable accessibility violations', async () => {
+    // axe is promise-based; restore real timers for this async assertion.
+    vi.useRealTimers();
+    const { fixture } = setup({ header: 'Pods' });
+
+    expect(await axe(fixture.nativeElement)).toHaveNoViolations();
   });
 });

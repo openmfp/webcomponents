@@ -1,6 +1,7 @@
 import { DashboardI18nService } from '../i18n';
 import { DiscardChangesDialog } from './discard-changes-dialog.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { axe } from 'vitest-axe';
 
 type Fixture = ComponentFixture<DiscardChangesDialog>;
 
@@ -102,5 +103,13 @@ describe('DiscardChangesDialog', () => {
 
       expect(cancelled).toBe(1);
     });
+  });
+
+  it('has no automatically-detectable accessibility violations', async () => {
+    const { fixture } = setup();
+    fixture.componentRef.setInput('open', true);
+    fixture.detectChanges();
+
+    expect(await axe(fixture.nativeElement)).toHaveNoViolations();
   });
 });
