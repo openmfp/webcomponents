@@ -61,7 +61,7 @@
     "@storybook/angular": "10.5.8",
     "@types/node": "24.13.3",
     "@vitest/coverage-v8": "4.1.10",
-    "concurrently": "10.0.4",
+    "concurrently": "10.0.5",
     "eslint": "9.39.5",
     "jsdom": "30.0.1",
     "ng-packagr": "^22.1.1",
