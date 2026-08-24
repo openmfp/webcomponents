@@ -114,6 +114,9 @@ function setup(
     createFormState?: TableCardFormState;
     editFormState?: TableCardFormState;
     permissions?: Record<string, string[]>;
+    loading?: boolean;
+    loadingDelay?: number;
+    error?: boolean;
   } = {},
 ): { fixture: Fixture; component: Comp } {
   const fixture: Fixture = TestBed.createComponent(
@@ -141,6 +144,12 @@ function setup(
   fixture.componentRef.setInput('editFormState', opts.editFormState ?? {});
   if (opts.permissions !== undefined)
     fixture.componentRef.setInput('permissions', opts.permissions);
+  if (opts.loading !== undefined)
+    fixture.componentRef.setInput('loading', opts.loading);
+  if (opts.loadingDelay !== undefined)
+    fixture.componentRef.setInput('loadingDelay', opts.loadingDelay);
+  if (opts.error !== undefined)
+    fixture.componentRef.setInput('error', opts.error);
 
   fixture.detectChanges();
   return { fixture, component };
@@ -201,6 +210,34 @@ describe('DeclarativeTableCard', () => {
       const root: ShadowRoot | HTMLElement =
         fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
       expect(root.querySelector('mfp-declarative-table')).not.toBeNull();
+    });
+  });
+
+  describe('loading and error state threading', () => {
+    it('passes runtime state to mfp-declarative-table', () => {
+      const { fixture } = setup({
+        loading: true,
+        loadingDelay: 250,
+        error: false,
+      });
+      const table = fixture.debugElement.query(By.directive(DeclarativeTable))
+        .componentInstance as DeclarativeTable<GenericResource>;
+
+      expect(table.loading()).toBe(true);
+      expect(table.loadingDelay()).toBe(250);
+      expect(table.error()).toBe(false);
+    });
+
+    it('forwards retry from mfp-declarative-table', () => {
+      const { fixture, component } = setup({ error: true });
+      const table = fixture.debugElement.query(By.directive(DeclarativeTable))
+        .componentInstance as DeclarativeTable<GenericResource>;
+      const emitted: void[] = [];
+      component.retry.subscribe(() => emitted.push(undefined));
+
+      table.retry.emit();
+
+      expect(emitted).toHaveLength(1);
     });
   });
 

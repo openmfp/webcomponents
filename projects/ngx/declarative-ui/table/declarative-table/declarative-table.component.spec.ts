@@ -7,6 +7,7 @@ import {
 import { DeclarativeTable } from './declarative-table.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { Table } from '@fundamental-ngx/ui5-webcomponents/table';
 import { axe } from 'vitest-axe';
 
 type Fixture = ComponentFixture<DeclarativeTable<GenericResource>>;
@@ -24,6 +25,9 @@ function setup(opts: {
   height?: number;
   currentPage?: number;
   permissions?: Record<string, string[]>;
+  loading?: boolean;
+  loadingDelay?: number;
+  error?: boolean;
 }): { fixture: Fixture; component: Comp } {
   const fixture: Fixture = TestBed.createComponent(
     DeclarativeTable as unknown as typeof DeclarativeTable<GenericResource>,
@@ -52,6 +56,12 @@ function setup(opts: {
     fixture.componentRef.setInput('currentPage', opts.currentPage);
   if (opts.permissions !== undefined)
     fixture.componentRef.setInput('permissions', opts.permissions);
+  if (opts.loading !== undefined)
+    fixture.componentRef.setInput('loading', opts.loading);
+  if (opts.loadingDelay !== undefined)
+    fixture.componentRef.setInput('loadingDelay', opts.loadingDelay);
+  if (opts.error !== undefined)
+    fixture.componentRef.setInput('error', opts.error);
   fixture.detectChanges();
   return { fixture, component };
 }
@@ -142,6 +152,85 @@ describe('DeclarativeTable', () => {
         resources: [{ id: '1', name: 'Alice' }],
       });
       expect(el(fixture, 'generic-table-view-nodata')).toBeNull();
+    });
+  });
+
+  describe('loading and error states', () => {
+    it('forwards loading and loadingDelay to the ui5 table', () => {
+      const { fixture } = setup({
+        columns: [{ property: 'name' }],
+        loading: true,
+        loadingDelay: 250,
+      });
+      const table = fixture.debugElement.query(By.directive(Table))
+        .componentInstance as Table;
+
+      expect(table.loading()).toBe(true);
+      expect(table.loadingDelay()).toBe(250);
+      expect(el(fixture, 'generic-table-view-loading')).not.toBeNull();
+      expect(el(fixture, 'generic-table-view-nodata')).toBeNull();
+      expect(
+        (root(fixture).querySelector('.pagination-footer') as HTMLElement)
+          .hidden,
+      ).toBe(true);
+    });
+
+    it('blocks load controls while a request is in progress', () => {
+      const { fixture } = setup({
+        columns: [{ property: 'name' }],
+        resources: [{ id: '1', name: 'Alice' }],
+        hasMore: true,
+        loading: true,
+      });
+
+      expect(el(fixture, 'generic-table-growing')).toBeNull();
+      expect(
+        fixture.debugElement
+          .query(By.css('ui5-select'))
+          .componentInstance.disabled(),
+      ).toBe(true);
+    });
+
+    it('renders the error state instead of rows or no-data content', () => {
+      const { fixture } = setup({
+        columns: [{ property: 'name' }],
+        resources: [{ id: '1', name: 'Alice' }],
+        error: true,
+      });
+
+      expect(el(fixture, 'generic-table-view-error')).not.toBeNull();
+      expect(el(fixture, 'generic-table-row-0')).toBeNull();
+      expect(el(fixture, 'generic-table-view-nodata')).toBeNull();
+      expect(
+        (root(fixture).querySelector('.pagination-footer') as HTMLElement)
+          .hidden,
+      ).toBe(true);
+    });
+
+    it('gives the error state precedence over loading', () => {
+      const { fixture } = setup({
+        columns: [{ property: 'name' }],
+        loading: true,
+        error: true,
+      });
+      const table = fixture.debugElement.query(By.directive(Table))
+        .componentInstance as Table;
+
+      expect(table.loading()).toBe(false);
+      expect(el(fixture, 'generic-table-view-error')).not.toBeNull();
+    });
+
+    it('emits retry when the retry button is clicked', () => {
+      const { fixture, component } = setup({
+        columns: [{ property: 'name' }],
+        error: true,
+      });
+      const emitted: void[] = [];
+      component.retry.subscribe(() => emitted.push(undefined));
+
+      (el(fixture, 'generic-table-retry') as HTMLElement).click();
+
+      expect(emitted).toHaveLength(1);
     });
   });
 

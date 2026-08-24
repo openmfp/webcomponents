@@ -180,6 +180,9 @@ export class MyComponent {
 | `createFormState` | `TableCardFormState`       | no       | `{}`    | Runtime validation and submit state for the create dialog                                                                                                                       |
 | `editFormState`   | `TableCardFormState`       | no       | `{}`    | Runtime validation and submit state for the edit dialog                                                                                                                         |
 | `permissions`     | `Record<string, string[]>` | no       | —       | Per-row permission map keyed by `resource.id`. Threaded through to `mfp-declarative-table` and each `mfp-resource-field` to evaluate `requirePermission` on column definitions. |
+| `loading`         | `boolean`                  | no       | `false` | Passes the current loading state to the inner table.                                                                                                                            |
+| `loadingDelay`    | `number`                   | no       | `1000`  | Delay in milliseconds before the inner table loading indicator is displayed.                                                                                                    |
+| `error`           | `boolean`                  | no       | `false` | Replaces the inner table content with its failure state.                                                                                                                        |
 
 ### Outputs / Events
 
@@ -196,6 +199,7 @@ export class MyComponent {
 | `loadMoreResources`      | -                                                        | Emits when the user triggers load more                       |
 | `paginationLimitChanged` | `number`                                                 | Emits when the user changes page size                        |
 | `actionButtonClick`      | `ResourceFieldButtonClickEvent<T>`                       | Emits for row-action buttons other than built-in edit/delete |
+| `retry`                  | -                                                        | Re-emits Retry from the inner table failure state            |
 
 ### Methods
 

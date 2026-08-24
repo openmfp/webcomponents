@@ -61,11 +61,14 @@ import { TableFieldDefinition } from '@openmfp/ngx';
       [resources]="resources"
       [trackByPath]="trackByPath"
       [hasMore]="hasMore"
+      [loading]="loading"
+      [error]="error"
       [paginationLimit]="pageSize"
       [totalItemsCount]="total"
       (tableRowClicked)="onRowClick($event)"
       (loadMoreResources)="loadMore()"
       (paginationLimitChanged)="onPageSizeChange($event)"
+      (retry)="reload()"
     />
   `,
 })
@@ -101,6 +104,9 @@ export class MyComponent {
 | `height`             | `number`                          | no       | —             | Fixed height in pixels. When combined with `loadMode: 'scroll'`, enables scroll-based loading with a sticky header                                    |
 | `currentPage`        | `number`                          | no       | `1`           | 1-based current page. Only used when `loadMode` is `'pager'`                                                                                          |
 | `permissions`        | `Record<string, string[]>`        | no       | —             | Per-row permission map keyed by `resource.id`. Passed to every cell's `mfp-resource-field` to evaluate `requirePermission` on each column definition. |
+| `loading`            | `boolean`                         | no       | `false`       | Shows the table loading indicator and suppresses the empty state while data is loading.                                                               |
+| `loadingDelay`       | `number`                          | no       | `1000`        | Delay in milliseconds before the loading indicator is displayed.                                                                                      |
+| `error`              | `boolean`                         | no       | `false`       | Replaces rows and the empty state with an unable-to-load message and Retry button.                                                                    |
 
 ### Outputs / Events
 
@@ -111,12 +117,14 @@ export class MyComponent {
 | `loadMoreResources`      | —                            | Fires when the user triggers load more                   |
 | `paginationLimitChanged` | `number`                     | Fires when the user changes the page size                |
 | `pageChange`             | `number`                     | Fires when the user selects a page (`loadMode: 'pager'`) |
+| `retry`                  | —                            | Fires when the user selects Retry in the error state     |
 
 **Listening to events from a web component:**
 
 ```js
 table.addEventListener('tableRowClicked', (e) => console.log(e.detail));
 table.addEventListener('loadMoreResources', () => fetchNextPage());
+table.addEventListener('retry', () => reload());
 table.addEventListener('paginationLimitChanged', (e) => {
   table.paginationLimit = e.detail;
 });
