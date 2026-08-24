@@ -203,6 +203,7 @@
   >
     @if (dragOriginStyle() && dragOriginVisible()) {
       <div
+        #dragOriginPlaceholder
         class="mfp-dashboard__drag-origin-placeholder"
         [style]="dragOriginStyle()"
       ></div>
