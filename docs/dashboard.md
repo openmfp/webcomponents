@@ -39,11 +39,54 @@ The dashboard is shipped as a **dedicated standalone bundle** `mfp-wc-dashboard.
 
 All inputs (`config`, `sections`, `cards`, `availableCards`) and the `saved` event work the same as the Angular component.
 
+> **A SAP Horizon theme must be applied**, or the dashboard's own markup renders with a serif fallback and unthemed colors. See [Theming & CSS variables](#theming--css-variables).
+
+---
+
+## Theming & CSS variables
+
+### Theme setup (required)
+
+The dashboard renders its own markup (title, description, edit bar, card chrome) using SAP Horizon theme variables such as `--sapFontFamily`, `--sapTextColor`, and `--sapContent_*`. These variables only exist once a SAP Horizon theme is **applied to the page**; without it the browser has no `--sapFontFamily` to inherit and text falls back to serif.
+
+**Angular app already running SAP UI5 / Fiori** — the theme parameters are already present at `:root`, so no extra setup is needed. (The `@fundamental-ngx/ui5-webcomponents*` peer dependencies pull in UI5, and the host app applies the theme.)
+
+**Standalone web-component bundle on a non-UI5 page** — apply a theme once, before or right after loading `mfp-wc-dashboard.js`:
+
+```ts
+import { setTheme } from '@ui5/webcomponents-base/dist/config/Theme.js';
+import '@ui5/webcomponents-theming/dist/Assets.js';
+
+await setTheme('sap_horizon');
+```
+
+Available Horizon themes: `sap_horizon`, `sap_horizon_dark`, `sap_horizon_hcb` (high-contrast black), `sap_horizon_hcw` (high-contrast white), and the `sap_horizon_auto` / `sap_horizon_hc_auto` OS-preference variants.
+
+> The bundle auto-syncs to the host theme when it runs **inside an OpenUI5 shell** (it detects `sap.ui.require` and follows the shell's active theme). On a standalone page there is no shell to follow, so the consumer must apply a theme as shown above.
+
+### CSS variable contract
+
+These custom properties form the dashboard's public styling contract. Set them on (or above) the dashboard element.
+
+| Variable                                      | Default                 | Purpose                                                                                                                                                                       |
+| --------------------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--mfp_cardContainerPadding`                  | `10px`                  | Inline padding inside each dashboard card.                                                                                                                                    |
+| `--row-height`                                | `10px`                  | Height of each grid row track in a section's card grid.                                                                                                                       |
+| `--column-gap`                                | `0px`                   | Horizontal gap between cards in a section grid.                                                                                                                               |
+| `--row-gap`                                   | `0px`                   | Vertical gap between cards in a section grid.                                                                                                                                 |
+| `--mfp-dashboard-background`                  | `none`                  | Background image used when `config.backgroundImageUrl` is omitted — see [`backgroundImageUrl` — dashboard background image](#backgroundimageurl--dashboard-background-image). |
+| `--dashboard-cols-sm` / `-md` / `-lg` / `-xl` | `1` / `8` / `12` / `14` | Column-track counts at each responsive breakpoint (driven by container queries).                                                                                              |
+| `--cols`                                      | _unset_                 | Per-section column-count override. Set through `SectionConfig`; overrides the responsive `--dashboard-cols-*` for that section.                                               |
+
+`--mfp_cardContainerPadding`, `--row-height`, `--column-gap`, `--row-gap`, and `--mfp-dashboard-background` are the intended consumer knobs. The `--dashboard-cols-*` variables are normally set at runtime by the active layout engine profile — override them only when building a custom layout. Other custom properties seen in the markup (e.g. `--gs-item-margin-top`, `--Container-Spacing-Small`) are internal implementation details and are **not** part of this contract.
+
 ---
 
 ## Usage as an Angular component
 
 Register Angular card components once before rendering the dashboard. The dashboard reads each Angular component selector and uses that selector string from `CardConfig.component`.
+
+> If your app already runs SAP UI5 / Fiori, the Horizon theme is applied for you and no extra setup is needed. Otherwise, apply a theme as described in [Theming & CSS variables](#theming--css-variables).
 
 ```ts
 import {
