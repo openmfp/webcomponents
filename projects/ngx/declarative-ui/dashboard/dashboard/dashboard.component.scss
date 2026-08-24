@@ -201,6 +201,11 @@ mfp-wc-dashboard {
   }
 }
 
+.grid-stack:has(> .mfp-dashboard__drag-origin-placeholder)
+  > .grid-stack-placeholder {
+  visibility: hidden;
+}
+
 gridstack {
   position: relative;
 }

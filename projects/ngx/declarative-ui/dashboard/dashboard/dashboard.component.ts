@@ -132,6 +132,7 @@ export class Dashboard implements OnInit, OnDestroy {
     width: string;
     height: string;
   } | null>(null);
+  protected dragOriginVisible = signal(false);
 
   protected hasUnsavedChanges = computed(() => {
     if (!this.editMode()) return false;
@@ -500,6 +501,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
   onDragStart(event: { el: Element }): void {
     this.getZFlowEngine()?.syncZFlowOrderFromLayout();
+    this.dragOriginVisible.set(false);
 
     if (!this.engineProfile().renderOriginPosition) {
       return;
@@ -516,10 +518,16 @@ export class Dashboard implements OnInit, OnDestroy {
       width: `${elRect.width}px`,
       height: `${elRect.height}px`,
     });
+    this.dragOriginVisible.set(true);
+  }
+
+  onDrag(): void {
+    this.dragOriginVisible.set(false);
   }
 
   onDragStop(): void {
     this.getZFlowEngine()?.commitZFlowLayout();
+    this.dragOriginVisible.set(false);
     this.dragOriginStyle.set(null);
   }
 
