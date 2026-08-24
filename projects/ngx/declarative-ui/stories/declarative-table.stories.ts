@@ -88,9 +88,12 @@ const PODS: Pod[] = [
     <mfp-declarative-table
       [columns]="columns"
       [currentPage]="currentPage"
+      [error]="error"
       [hasMore]="hasMore"
       [height]="height"
       [loadMode]="loadMode"
+      [loading]="loading"
+      [loadingDelay]="loadingDelay"
       [paginationLimit]="paginationLimit"
       [resources]="visibleResources"
       [totalItemsCount]="totalItemsCount"
@@ -98,6 +101,7 @@ const PODS: Pod[] = [
       (loadMoreResources)="loadMore()"
       (pageChange)="onPageChange($event)"
       (paginationLimitChanged)="onPageSizeChange($event)"
+      (retry)="onRetry()"
     />
   `,
 })
@@ -111,6 +115,9 @@ class DeclarativeTableStory {
   @Input() loadMode: 'scroll' | 'button' | 'pager' = 'scroll';
   @Input() height?: number;
   @Input() currentPage = 1;
+  @Input() loading = false;
+  @Input() loadingDelay = 1000;
+  @Input() error = false;
 
   /**
    * In pager mode the story slices the full `resources` array to the current
@@ -141,6 +148,10 @@ class DeclarativeTableStory {
     // `totalItemsCount` stay correct.
     this.currentPage = 1;
   }
+
+  onRetry(): void {
+    this.error = false;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -162,6 +173,9 @@ const meta: Meta<DeclarativeTableStory> = {
     paginationLimit: { control: 'number' },
     totalItemsCount: { control: 'number' },
     currentPage: { control: 'number' },
+    loading: { control: 'boolean' },
+    loadingDelay: { control: 'number' },
+    error: { control: 'boolean' },
     loadMode: { options: ['scroll', 'button', 'pager'], control: 'select' },
   },
   args: {
@@ -169,6 +183,9 @@ const meta: Meta<DeclarativeTableStory> = {
     trackByProperty: 'metadata.uid',
     hasMore: false,
     paginationLimit: 5,
+    loading: false,
+    loadingDelay: 1000,
+    error: false,
   },
 };
 
@@ -187,6 +204,33 @@ export const Basic: Story = {
       { label: 'Namespace', property: 'metadata.namespace' },
       { label: 'Node', property: 'spec.nodeName' },
     ] satisfies TableFieldDefinition[],
+  },
+};
+
+/** Native UI5 busy overlay shown while the host fetches the first page. */
+export const Loading: Story = {
+  args: {
+    columns: [
+      { label: 'Name', property: 'metadata.name' },
+      { label: 'Namespace', property: 'metadata.namespace' },
+      { label: 'Node', property: 'spec.nodeName' },
+    ] satisfies TableFieldDefinition[],
+    resources: [],
+    loading: true,
+    loadingDelay: 0,
+  },
+};
+
+/** Failure illustration with a retry event owned by the host. */
+export const Error: Story = {
+  args: {
+    columns: [
+      { label: 'Name', property: 'metadata.name' },
+      { label: 'Namespace', property: 'metadata.namespace' },
+      { label: 'Node', property: 'spec.nodeName' },
+    ] satisfies TableFieldDefinition[],
+    resources: [],
+    error: true,
   },
 };
 

@@ -39,17 +39,20 @@ All interactive and identifiable elements across the webcomponents library carry
 
 ### DeclarativeTable (`generic-table-*`)
 
-| Element          | `data-testid`                               | Notes                                 |
-| ---------------- | ------------------------------------------- | ------------------------------------- |
-| Table element    | `generic-table`                             | Static                                |
-| Header cell      | `generic-table-header-{column}`             | `column` = `group.name` or `property` |
-| Table row        | `generic-table-row-{i}`                     | `i` = 0-based row index               |
-| Cell (simple)    | `generic-table-cell-{i}-{property}`         | `property` = column `property` field  |
-| Cell (group)     | `generic-table-cell-{i}-{group}`            | `group` = `group.name`                |
-| Group sub-value  | `generic-table-cell-{i}-{group}-{property}` | Nested field inside a grouped column  |
-| No-data state    | `generic-table-view-nodata`                 | Shown when `resources` is empty       |
-| Load-more        | `generic-table-growing`                     | Shown when `hasMore` is true          |
-| Page-size select | `generic-table-pagination-select`           | Always present                        |
+| Element          | `data-testid`                               | Notes                                  |
+| ---------------- | ------------------------------------------- | -------------------------------------- |
+| Table element    | `generic-table`                             | Static                                 |
+| Header cell      | `generic-table-header-{column}`             | `column` = `group.name` or `property`  |
+| Table row        | `generic-table-row-{i}`                     | `i` = 0-based row index                |
+| Cell (simple)    | `generic-table-cell-{i}-{property}`         | `property` = column `property` field   |
+| Cell (group)     | `generic-table-cell-{i}-{group}`            | `group` = `group.name`                 |
+| Group sub-value  | `generic-table-cell-{i}-{group}-{property}` | Nested field inside a grouped column   |
+| No-data state    | `generic-table-view-nodata`                 | Shown when `resources` is empty        |
+| Loading state    | `generic-table-view-loading`                | Shown instead of no-data while loading |
+| Error state      | `generic-table-view-error`                  | Shown when `error` is true             |
+| Retry button     | `generic-table-retry`                       | Shown inside the error state           |
+| Load-more        | `generic-table-growing`                     | Shown when `hasMore` is true           |
+| Page-size select | `generic-table-pagination-select`           | Always present                         |
 
 ---
 
