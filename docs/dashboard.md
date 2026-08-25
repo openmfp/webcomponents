@@ -68,17 +68,18 @@ Available Horizon themes: `sap_horizon`, `sap_horizon_dark`, `sap_horizon_hcb` (
 
 These custom properties form the dashboard's public styling contract. Set them on (or above) the dashboard element.
 
-| Variable                                      | Default                 | Purpose                                                                                                                                                                       |
-| --------------------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--mfp_cardContainerPadding`                  | `10px`                  | Inline padding inside each dashboard card.                                                                                                                                    |
-| `--row-height`                                | `10px`                  | Height of each grid row track in a section's card grid.                                                                                                                       |
-| `--column-gap`                                | `0px`                   | Horizontal gap between cards in a section grid.                                                                                                                               |
-| `--row-gap`                                   | `0px`                   | Vertical gap between cards in a section grid.                                                                                                                                 |
-| `--mfp-dashboard-background`                  | `none`                  | Background image used when `config.backgroundImageUrl` is omitted — see [`backgroundImageUrl` — dashboard background image](#backgroundimageurl--dashboard-background-image). |
-| `--dashboard-cols-sm` / `-md` / `-lg` / `-xl` | `1` / `8` / `12` / `14` | Column-track counts at each responsive breakpoint (driven by container queries).                                                                                              |
-| `--cols`                                      | _unset_                 | Per-section column-count override. Set through `SectionConfig`; overrides the responsive `--dashboard-cols-*` for that section.                                               |
+| Variable                                      | Default                        | Purpose                                                                                                                                                                       |
+| --------------------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--mfp_cardContainerPadding`                  | `10px`                         | Inline padding inside each dashboard card.                                                                                                                                    |
+| `--row-height`                                | `10px`                         | Height of each grid row track in a section's card grid.                                                                                                                       |
+| `--column-gap`                                | `0px`                          | Horizontal gap between cards in a section grid.                                                                                                                               |
+| `--row-gap`                                   | `0px`                          | Vertical gap between cards in a section grid.                                                                                                                                 |
+| `--mfp-dashboard-background`                  | `none`                         | Background image used when `config.backgroundImageUrl` is omitted — see [`backgroundImageUrl` — dashboard background image](#backgroundimageurl--dashboard-background-image). |
+| `--mfp-dashboard-empty-image`                 | SAP `NoApplications` TNT scene | Artwork shown by the [empty state](#empty-state). Overriding it swaps the illustration from CSS alone.                                                                        |
+| `--dashboard-cols-sm` / `-md` / `-lg` / `-xl` | `1` / `8` / `12` / `14`        | Column-track counts at each responsive breakpoint (driven by container queries).                                                                                              |
+| `--cols`                                      | _unset_                        | Per-section column-count override. Set through `SectionConfig`; overrides the responsive `--dashboard-cols-*` for that section.                                               |
 
-`--mfp_cardContainerPadding`, `--row-height`, `--column-gap`, `--row-gap`, and `--mfp-dashboard-background` are the intended consumer knobs. The `--dashboard-cols-*` variables are normally set at runtime by the active layout engine profile — override them only when building a custom layout. Other custom properties seen in the markup (e.g. `--gs-item-margin-top`, `--Container-Spacing-Small`) are internal implementation details and are **not** part of this contract.
+`--mfp_cardContainerPadding`, `--row-height`, `--column-gap`, `--row-gap`, `--mfp-dashboard-background`, and `--mfp-dashboard-empty-image` are the intended consumer knobs. The `--dashboard-cols-*` variables are normally set at runtime by the active layout engine profile — override them only when building a custom layout. Other custom properties seen in the markup (e.g. `--gs-item-margin-top`, `--Container-Spacing-Small`) are internal implementation details and are **not** part of this contract.
 
 ---
 
@@ -335,27 +336,32 @@ el.i18n = spanishStrings;
 
 ### Translated keys
 
-The 17 keys and their built-in English defaults (the exact strings in `EN_DEFAULTS`). A provided `i18n` object must supply all of them:
+The 20 keys and their built-in English defaults (the exact strings in `EN_DEFAULTS`). A provided `i18n` object must supply all of them:
 
-| Key                  | English default (built-in)                                                                       |
-| -------------------- | ------------------------------------------------------------------------------------------------ |
-| `title`              | Hi!                                                                                              |
-| `description`        | You're on the Dashboard                                                                          |
-| `editHomeButton`     | Edit Home                                                                                        |
-| `editCardsButton`    | Edit Cards                                                                                       |
-| `unsavedChanges`     | Unsaved Changes                                                                                  |
-| `editCards`          | Edit Cards                                                                                       |
-| `actions`            | Actions                                                                                          |
-| `save`               | Save                                                                                             |
-| `cancel`             | Cancel                                                                                           |
-| `discard`            | Discard                                                                                          |
-| `discardChanges`     | Discard Changes                                                                                  |
-| `discardConfirmBody` | Discard the changes? This action cannot be undone.                                               |
-| `unsavedNavBody`     | You are leaving this page. Save or discard the changes to proceed. This action cannot be undone. |
-| `noCardsAvailable`   | No cards available.                                                                              |
-| `removeSection`      | Remove section                                                                                   |
-| `removeCard`         | Remove card                                                                                      |
-| `resizable`          | Resizable                                                                                        |
+| Key                      | English default (built-in)                                                                       |
+| ------------------------ | ------------------------------------------------------------------------------------------------ |
+| `title`                  | Hi!                                                                                              |
+| `description`            | You're on the Dashboard                                                                          |
+| `editHomeButton`         | Edit Home                                                                                        |
+| `editCardsButton`        | Edit Cards                                                                                       |
+| `unsavedChanges`         | Unsaved Changes                                                                                  |
+| `editCards`              | Edit Cards                                                                                       |
+| `actions`                | Actions                                                                                          |
+| `save`                   | Save                                                                                             |
+| `cancel`                 | Cancel                                                                                           |
+| `discard`                | Discard                                                                                          |
+| `discardChanges`         | Discard Changes                                                                                  |
+| `discardConfirmBody`     | Discard the changes? This action cannot be undone.                                               |
+| `unsavedNavBody`         | You are leaving this page. Save or discard the changes to proceed. This action cannot be undone. |
+| `noCardsAvailable`       | No cards available.                                                                              |
+| `emptyStateTitle`        | Your home is empty                                                                               |
+| `emptyStateDescription`  | Add cards to customize your home page.                                                           |
+| `emptyStateIllustration` | No applications                                                                                  |
+| `removeSection`          | Remove section                                                                                   |
+| `removeCard`             | Remove card                                                                                      |
+| `resizable`              | Resizable                                                                                        |
+
+`emptyStateTitle`, `emptyStateDescription` and `emptyStateIllustration` are the [empty state](#empty-state) heading, sub-line and the accessible name of its artwork; they are rendered as plain text, never as HTML.
 
 `title` and `description` accept plain strings or HTML markup. Safe HTML tags (e.g. `<b>`, `<em>`, `<a>`) are rendered; dangerous content such as `<script>` is stripped. The title renders as an `<h3>` heading and the description as an `<h5>` heading (hidden when `description` is empty). `editHomeButton` is the text of the built-in Edit View button and `editCardsButton` is the text of the built-in Edit Cards button (both win over any `buttonsSettings` text).
 
@@ -368,6 +374,40 @@ The dashboard does **not** translate the remaining consumer-supplied strings —
 - Card `label`s shown in the Edit Cards dialog list
 
 Translate these in your application before passing them to the dashboard — typically alongside the same language switch that swaps the `i18n` input.
+
+---
+
+## Empty state
+
+When the **loose-card grid** holds nothing, the dashboard renders an empty state: an illustration, `i18n.emptyStateTitle`, `i18n.emptyStateDescription`, and an **Edit Home** button.
+
+**Section cards do not count.** Sections are app-provided content that the consumer declares (and frequently marks `editable: false`), while the loose grid is the part of the home the user curates through the Edit Cards dialog. "Your home is empty" is a statement about that grid, so a dashboard with a fully populated section but no loose cards still shows the empty state — rendered below the sections, above the grid it describes.
+
+The button is shown only when `config.editable` is `true` and the dashboard is **not** already in edit mode — in edit mode the toolbar's Edit Cards button already covers the same action. Pressing it enters edit mode **and** opens the [EditCardsDialog](#editcardsdialog) in one step, so a user starting from an empty home lands directly on the card picker instead of an empty grid.
+
+The empty state itself stays visible in edit mode, so the page never renders blank while the user picks their first card. It disappears as soon as the first card lands outside a section; a card added to a section leaves it in place.
+
+### Swapping the illustration
+
+The artwork is applied as a `background-image`, resolved from the `--mfp-dashboard-empty-image` custom property:
+
+```css
+.mfp-dashboard__empty-illustration {
+  background-image: var(--mfp-dashboard-empty-image, url('<built-in default>'));
+}
+```
+
+The built-in default is SAP's **NoApplications** TNT scene illustration (from `@ui5/webcomponents-fiori`), inlined as a data URI with the **Horizon light** palette baked in. It is baked rather than referenced because SAP ships those SVGs with `var(--sapContent_Illustrative_*)` fills, and CSS custom properties do not resolve inside an SVG loaded through `url()` — only inside an SVG inlined into the document.
+
+That means the default does not follow the active theme. Consumers running anything other than Horizon light should override the variable, scoped by the host's theme marker — the same pattern as [`--mfp-dashboard-background`](#backgroundimageurl--dashboard-background-image):
+
+```css
+html.sapUiTheme-sap_horizon_dark #my-dashboard {
+  --mfp-dashboard-empty-image: url('/assets/no-applications-dark.svg');
+}
+```
+
+Set it to `none` to render the empty state without any artwork.
 
 ---
 
@@ -852,20 +892,25 @@ All interactive elements carry `data-testid` attributes for reliable E2E targeti
 
 ### Main component
 
-| Element                             | `data-testid`                | Notes                                              |
-| ----------------------------------- | ---------------------------- | -------------------------------------------------- |
-| Root container                      | `dashboard`                  |                                                    |
-| Title                               | `dashboard-title`            | Present when `i18n.title` is non-empty             |
-| Description                         | `dashboard-description`      | Present when `i18n.description` is non-empty       |
-| Edit-cards button                   | `dashboard-edit-cards-btn`   | Visible in edit mode                               |
-| Compact menu toggle                 | `dashboard-toolbar-menu-btn` | Compact toolbar mode only                          |
-| Compact dropdown menu               | `dashboard-toolbar-menu`     |                                                    |
-| Edit-view menu item                 | `dashboard-action-edit-view` | Inside compact menu when `config.editable` is true |
-| Custom action (menu item or button) | `dashboard-action-{action}`  | `action` = `customAction.action`                   |
-| Edit-view button                    | `dashboard-edit-view-btn`    | Full toolbar                                       |
-| Grid                                | `dashboard-grid`             |                                                    |
-| Save button                         | `dashboard-save-btn`         | Visible in edit mode                               |
-| Cancel button                       | `dashboard-cancel-btn`       | Visible in edit mode                               |
+| Element                             | `data-testid`                        | Notes                                                       |
+| ----------------------------------- | ------------------------------------ | ----------------------------------------------------------- |
+| Root container                      | `dashboard`                          |                                                             |
+| Title                               | `dashboard-title`                    | Present when `i18n.title` is non-empty                      |
+| Description                         | `dashboard-description`              | Present when `i18n.description` is non-empty                |
+| Edit-cards button                   | `dashboard-edit-cards-btn`           | Visible in edit mode                                        |
+| Compact menu toggle                 | `dashboard-toolbar-menu-btn`         | Compact toolbar mode only                                   |
+| Compact dropdown menu               | `dashboard-toolbar-menu`             |                                                             |
+| Edit-view menu item                 | `dashboard-action-edit-view`         | Inside compact menu when `config.editable` is true          |
+| Custom action (menu item or button) | `dashboard-action-{action}`          | `action` = `customAction.action`                            |
+| Edit-view button                    | `dashboard-edit-view-btn`            | Full toolbar                                                |
+| Empty state                         | `dashboard-empty-state`              | Present when the loose-card grid is empty                   |
+| Empty-state illustration            | `dashboard-empty-state-illustration` |                                                             |
+| Empty-state title                   | `dashboard-empty-state-title`        |                                                             |
+| Empty-state description             | `dashboard-empty-state-description`  |                                                             |
+| Empty-state Edit Home button        | `dashboard-empty-state-edit-btn`     | Present when `config.editable` is true and not in edit mode |
+| Grid                                | `dashboard-grid`                     |                                                             |
+| Save button                         | `dashboard-save-btn`                 | Visible in edit mode                                        |
+| Cancel button                       | `dashboard-cancel-btn`               | Visible in edit mode                                        |
 
 ### DashboardCard
 

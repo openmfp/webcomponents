@@ -224,6 +224,19 @@ export class Dashboard implements OnInit, OnDestroy {
     }));
   });
 
+  /**
+   * True while the loose-card grid holds nothing. Section cards do not count:
+   * sections are app-provided content the consumer declares (and often marks
+   * `editable: false`), whereas the loose grid is the part of the home the user
+   * curates through Edit Cards — so "your home is empty" is about that grid,
+   * and the empty state renders below any populated sections.
+   *
+   * It also stays visible in edit mode so the grid never renders as a blank
+   * page; only its call-to-action button is dropped there (the toolbar already
+   * offers Edit Cards).
+   */
+  protected isEmpty = computed(() => this.looseCards().length === 0);
+
   protected gridOptions = computed((): GridStackOptions => ({
     cellHeight: CELL_HEIGHT,
     sizeToContent: true,
@@ -339,6 +352,16 @@ export class Dashboard implements OnInit, OnDestroy {
       },
       { injector: this.injector },
     );
+  }
+
+  /**
+   * Empty-state call to action: switch to edit mode and immediately surface the
+   * Edit Cards dialog, so a user starting from an empty home lands directly on
+   * the card picker instead of an empty grid.
+   */
+  enterEditModeAndEditCards(): void {
+    this.enterEditMode();
+    this.openCardPanel();
   }
 
   saveEdit(): void {
