@@ -143,11 +143,7 @@ describe('SteppedResizeGridStackEngine', () => {
       ['c', 0],
       ['d', 3],
     ]);
-    expect(onChange).toHaveBeenCalledWith([
-      nodes[0],
-      nodes[1],
-      source,
-    ]);
+    expect(onChange).toHaveBeenCalledWith([nodes[0], nodes[1], source]);
   });
 
   it('commits the full z-flow layout after frozen drag', () => {

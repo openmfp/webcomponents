@@ -254,8 +254,9 @@ export class Dashboard implements OnInit, OnDestroy {
   private cardsSnapshot: CardConfig[] = [];
 
   private gridStack = viewChild.required<GridstackComponent>('grid');
-  private dragOriginPlaceholder =
-    viewChild<ElementRef<HTMLElement>>('dragOriginPlaceholder');
+  private dragOriginPlaceholder = viewChild<ElementRef<HTMLElement>>(
+    'dragOriginPlaceholder',
+  );
   private addCardBtn = viewChild<Button>('editCardsBtn');
   private resizeObserver?: ResizeObserver;
   private cardsPosition = new Map<string, GridStackPosition>();
