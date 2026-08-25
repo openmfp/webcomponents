@@ -137,7 +137,7 @@ export class Dashboard implements OnInit, OnDestroy {
     width: string;
     height: string;
   } | null>(null);
-  protected dragOriginVisible = signal(false);
+  dragOriginVisible = signal(false);
 
   protected hasUnsavedChanges = computed(() => {
     if (!this.editMode()) return false;
