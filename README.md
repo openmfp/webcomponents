@@ -119,8 +119,6 @@ matching versions of the two packages without cross-referencing a table.
 
 Copyright 2025 SAP SE or an SAP affiliate company and openMFP contributors. Please see our [LICENSE](LICENSE) for copyright and license information. Detailed information including third-party components and their licensing/copyright information is available [via the REUSE tool](https://api.reuse.software/info/github.com/openmfp/portal-ui-lib).
 
-<p align="center"><img alt="Bundesministerium für Wirtschaft und Energie (BMWE)-EU funding logo" src="https://apeirora.eu/assets/img/BMWK-EU.png" width="400"/></p>
-
 ## NeoNephos Foundation
 
 This project is part of the [NeoNephos Foundation](https://neonephos.org), a Linux Foundation Europe initiative.
