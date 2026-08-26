@@ -236,12 +236,14 @@
     [options]="gridOptions()"
     (addedCB)="onGridChange()"
     (changeCB)="onGridChange()"
+    (dragCB)="onDrag()"
     (dragStartCB)="onDragStart($event)"
     (dragStopCB)="onDragStop()"
     (removedCB)="onGridChange()"
   >
-    @if (dragOriginStyle()) {
+    @if (dragOriginStyle() && dragOriginVisible()) {
       <div
+        #dragOriginPlaceholder
         class="mfp-dashboard__drag-origin-placeholder"
         [style]="dragOriginStyle()"
       ></div>

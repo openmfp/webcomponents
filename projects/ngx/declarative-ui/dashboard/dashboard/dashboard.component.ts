@@ -1,7 +1,12 @@
 import { ButtonSettings } from '../../models';
 import { DashboardCard } from '../card/dashboard-card.component';
 import { addComponentToRegistry } from '../card/utils';
-import { CELL_HEIGHT, COMPACT_BREAKPOINT, XL_PAGE } from '../constants';
+import {
+  CELL_HEIGHT,
+  COMPACT_BREAKPOINT,
+  DASHBOARD_CARD_DRAG_ORIGIN_SELECTOR,
+  XL_PAGE,
+} from '../constants';
 import { DiscardChangesDialog } from '../discard-changes-dialog/discard-changes-dialog.component';
 import { EditCardsDialog } from '../edit-cards-dialog/edit-cards-dialog.component';
 import {
@@ -132,6 +137,7 @@ export class Dashboard implements OnInit, OnDestroy {
     width: string;
     height: string;
   } | null>(null);
+  dragOriginVisible = signal(false);
 
   protected hasUnsavedChanges = computed(() => {
     if (!this.editMode()) return false;
@@ -250,6 +256,9 @@ export class Dashboard implements OnInit, OnDestroy {
   private cardsSnapshot: CardConfig[] = [];
 
   private gridStack = viewChild.required<GridstackComponent>('grid');
+  private dragOriginPlaceholder = viewChild<ElementRef<HTMLElement>>(
+    'dragOriginPlaceholder',
+  );
   private addCardBtn = viewChild<Button>('editCardsBtn');
   private resizeObserver?: ResizeObserver;
   private cardsPosition = new Map<string, GridStackPosition>();
@@ -512,26 +521,22 @@ export class Dashboard implements OnInit, OnDestroy {
 
   onDragStart(event: { el: Element }): void {
     this.getZFlowEngine()?.syncZFlowOrderFromLayout();
+    this.dragOriginVisible.set(false);
 
     if (!this.engineProfile().renderOriginPosition) {
       return;
     }
 
-    const el = event.el;
-    const gridEl = this.gridStack().el as HTMLElement;
-    const gridRect = gridEl.getBoundingClientRect();
-    const elRect = el.getBoundingClientRect();
+    this.renderDragOriginPlaceholder(event.el);
+  }
 
-    this.dragOriginStyle.set({
-      top: `${elRect.top - gridRect.top}px`,
-      left: `${elRect.left - gridRect.left}px`,
-      width: `${elRect.width}px`,
-      height: `${elRect.height}px`,
-    });
+  onDrag(): void {
+    this.dragOriginVisible.set(false);
   }
 
   onDragStop(): void {
     this.getZFlowEngine()?.commitZFlowLayout();
+    this.dragOriginVisible.set(false);
     this.dragOriginStyle.set(null);
   }
 
@@ -568,6 +573,47 @@ export class Dashboard implements OnInit, OnDestroy {
   private getZFlowEngine(): ZflowGridStackEngine | null {
     const engine = this.gridStack().grid?.engine;
     return engine instanceof ZflowGridStackEngine ? engine : null;
+  }
+
+  private createDragOriginClone(gridItem: Element): HTMLElement | null {
+    const source = gridItem.querySelector<HTMLElement>(
+      DASHBOARD_CARD_DRAG_ORIGIN_SELECTOR,
+    );
+    if (!source) return null;
+
+    const clone = source.cloneNode(true) as HTMLElement;
+    clone.classList.add('mfp-dashboard__drag-origin-content');
+    clone.setAttribute('aria-hidden', 'true');
+    clone.removeAttribute('id');
+    clone.querySelectorAll('[id]').forEach((element) => {
+      element.removeAttribute('id');
+    });
+    return clone;
+  }
+
+  private renderDragOriginPlaceholder(gridItem: Element): void {
+    const gridEl = this.gridStack().el as HTMLElement;
+    const gridRect = gridEl.getBoundingClientRect();
+    const itemRect = gridItem.getBoundingClientRect();
+    const clone = this.createDragOriginClone(gridItem);
+
+    this.dragOriginStyle.set({
+      top: `${itemRect.top - gridRect.top}px`,
+      left: `${itemRect.left - gridRect.left}px`,
+      width: `${itemRect.width}px`,
+      height: `${itemRect.height}px`,
+    });
+    this.dragOriginVisible.set(true);
+
+    if (!clone) return;
+
+    afterNextRender(
+      () => {
+        if (!this.dragOriginVisible()) return;
+        this.dragOriginPlaceholder()?.nativeElement.replaceChildren(clone);
+      },
+      { injector: this.injector },
+    );
   }
 
   private updateCardsForBreakpoint(

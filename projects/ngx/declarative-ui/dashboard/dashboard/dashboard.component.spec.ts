@@ -606,6 +606,200 @@ describe('Dashboard', () => {
     ]);
   });
 
+  describe('drag origin placeholder visibility', () => {
+    it('dragOriginVisible is false initially', () => {
+      const { component } = setup();
+
+      expect(component.dragOriginVisible()).toBe(false);
+    });
+
+    it('onDragStart sets dragOriginStyle and sets dragOriginVisible to true (when renderOriginPosition is on)', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', {
+        zFlow: { cardHeight: 30 },
+      });
+      fixture.detectChanges();
+
+      const gridEl = document.createElement('div');
+      const gridItemEl = document.createElement('div');
+      mockRect(gridEl, { left: 0, top: 0, width: 400, height: 200 });
+      mockRect(gridItemEl, { left: 10, top: 20, width: 100, height: 50 });
+      (component as unknown as { gridStack: () => unknown }).gridStack =
+        () => ({
+          el: gridEl,
+        });
+
+      component.onDragStart({ el: gridItemEl });
+
+      expect(component.dragOriginVisible()).toBe(true);
+      expect(component.dragOriginStyle()).not.toBeNull();
+      expect(component.dragOriginStyle()).toEqual({
+        top: '20px',
+        left: '10px',
+        width: '100px',
+        height: '50px',
+      });
+    });
+
+    it('onDragStart skips style and keeps dragOriginVisible false when renderOriginPosition is off', () => {
+      const { fixture, component } = setup();
+      fixture.componentRef.setInput('config', { title: 'T' });
+      fixture.detectChanges();
+
+      const gridEl = document.createElement('div');
+      const gridItemEl = document.createElement('div');
+      (component as unknown as { gridStack: () => unknown }).gridStack =
+        () => ({
+          el: gridEl,
+        });
+
+      component.onDragStart({ el: gridItemEl });
+
+      expect(component.dragOriginVisible()).toBe(false);
+      expect(component.dragOriginStyle()).toBeNull();
+    });
+
+    it('onDrag resets dragOriginVisible to false', () => {
+      const { component } = setup();
+      component.dragOriginVisible.set(true);
+
+      component.onDrag();
+
+      expect(component.dragOriginVisible()).toBe(false);
+    });
+
+    it('onDragStop resets dragOriginVisible to false and clears dragOriginStyle', () => {
+      const { component } = setup();
+      component.dragOriginVisible.set(true);
+      component.dragOriginStyle.set({
+        top: '1px',
+        left: '2px',
+        width: '3px',
+        height: '4px',
+      });
+
+      component.onDragStop();
+
+      expect(component.dragOriginVisible()).toBe(false);
+      expect(component.dragOriginStyle()).toBeNull();
+    });
+  });
+
+  describe('createDragOriginClone', () => {
+    it('returns null when the grid item has no drag-origin child', () => {
+      const { component } = setup();
+
+      const clone = (
+        component as unknown as {
+          createDragOriginClone: (el: Element) => HTMLElement | null;
+        }
+      ).createDragOriginClone(document.createElement('div'));
+
+      expect(clone).toBeNull();
+    });
+
+    it('returns a clone with the mfp-dashboard__drag-origin-content class', () => {
+      const { component } = setup();
+      const gridItemEl = document.createElement('div');
+      const source = document.createElement('div');
+      source.classList.add(DASHBOARD_CARD_DRAG_ORIGIN_CLASS);
+      gridItemEl.appendChild(source);
+
+      const clone = (
+        component as unknown as {
+          createDragOriginClone: (el: Element) => HTMLElement | null;
+        }
+      ).createDragOriginClone(gridItemEl);
+
+      expect(clone).not.toBeNull();
+      expect(
+        clone?.classList.contains('mfp-dashboard__drag-origin-content'),
+      ).toBe(true);
+    });
+
+    it('clone has aria-hidden="true" and no id', () => {
+      const { component } = setup();
+      const gridItemEl = document.createElement('div');
+      const source = document.createElement('div');
+      source.classList.add(DASHBOARD_CARD_DRAG_ORIGIN_CLASS);
+      source.id = 'source-id';
+      gridItemEl.appendChild(source);
+
+      const clone = (
+        component as unknown as {
+          createDragOriginClone: (el: Element) => HTMLElement | null;
+        }
+      ).createDragOriginClone(gridItemEl);
+
+      expect(clone?.getAttribute('aria-hidden')).toBe('true');
+      expect(clone?.hasAttribute('id')).toBe(false);
+    });
+
+    it('clone strips ids from all descendants', () => {
+      const { component } = setup();
+      const gridItemEl = document.createElement('div');
+      const source = document.createElement('div');
+      source.classList.add(DASHBOARD_CARD_DRAG_ORIGIN_CLASS);
+      const nested = document.createElement('span');
+      nested.id = 'nested-id';
+      source.appendChild(nested);
+      const grandChild = document.createElement('div');
+      grandChild.id = 'grand-child-id';
+      nested.appendChild(grandChild);
+      gridItemEl.appendChild(source);
+
+      const clone = (
+        component as unknown as {
+          createDragOriginClone: (el: Element) => HTMLElement | null;
+        }
+      ).createDragOriginClone(gridItemEl);
+
+      expect(clone?.querySelectorAll('[id]')).toHaveLength(0);
+    });
+  });
+
+  describe('drag origin placeholder template rendering', () => {
+    it('placeholder div is absent when dragOriginStyle is null', () => {
+      const { fixture } = setup();
+      fixture.detectChanges();
+
+      expect(
+        root(fixture).querySelector('.mfp-dashboard__drag-origin-placeholder'),
+      ).toBeNull();
+    });
+
+    it('placeholder div is absent when dragOriginStyle is set but dragOriginVisible is false', () => {
+      const { fixture, component } = setup();
+      component.dragOriginStyle.set({
+        top: '1px',
+        left: '2px',
+        width: '3px',
+        height: '4px',
+      });
+      fixture.detectChanges();
+
+      expect(
+        root(fixture).querySelector('.mfp-dashboard__drag-origin-placeholder'),
+      ).toBeNull();
+    });
+
+    it('placeholder div is present when both dragOriginStyle and dragOriginVisible are true', () => {
+      const { fixture, component } = setup();
+      component.dragOriginStyle.set({
+        top: '1px',
+        left: '2px',
+        width: '3px',
+        height: '4px',
+      });
+      component.dragOriginVisible.set(true);
+      fixture.detectChanges();
+
+      expect(
+        root(fixture).querySelector('.mfp-dashboard__drag-origin-placeholder'),
+      ).not.toBeNull();
+    });
+  });
+
   it('preserves card constraint fields (maxH/maxW/minH/minW) through saveEdit', () => {
     const { component } = setup();
     const cards: CardConfig[] = [

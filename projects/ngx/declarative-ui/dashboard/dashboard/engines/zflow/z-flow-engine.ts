@@ -239,19 +239,13 @@ export class ZflowGridStackEngine extends GridStackEngine {
       if (n) n.zFlowOrder = idx;
     });
 
-    const projectedSource = projectZFlowLayout(
+    const projectedLayout = projectZFlowLayout(
       sortNodesByZFlowOrder(nodes),
       this.column,
-    ).find((projected) => projected.id === node.id);
+    );
 
-    if (projectedSource) {
-      node.x = projectedSource.x;
-      node.y = projectedSource.y;
-      node.w = projectedSource.w;
-      node.h = projectedSource.h;
-      (node as unknown as { _dirty: boolean })._dirty = true;
-      notifyEngine(this);
-    }
+    applyProjectedLayout(nodes, projectedLayout);
+    notifyEngine(this);
 
     return true;
   }

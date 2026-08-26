@@ -231,17 +231,30 @@ mfp-wc-dashboard {
   pointer-events: none;
   z-index: 1;
 
-  &::before {
-    content: '';
+  &::after,
+  .mfp-dashboard__drag-origin-content {
     height: calc(100% - 30px);
     top: calc(var(--gs-item-margin-top) * 2 - 2px) !important;
     width: calc(100% - 19px);
     left: 8px !important;
     position: absolute;
-    background: var(--sapNeutralColor, #6a6d75);
     border-radius: 16px;
+  }
+
+  .mfp-dashboard__drag-origin-content {
+    overflow: hidden;
+  }
+
+  &::after {
+    content: '';
+    background: var(--sapNeutralColor, #6a6d75);
     opacity: 0.3;
   }
+}
+
+.grid-stack:has(> .mfp-dashboard__drag-origin-placeholder)
+  > .grid-stack-placeholder {
+  visibility: hidden;
 }
 
 gridstack {
