@@ -103,36 +103,9 @@ export class Dashboard implements OnInit, OnDestroy {
   sections = model<SectionConfig[]>([]);
   cards = model<CardConfig[]>([]);
   availableCards = input<CardConfig[]>([]);
-  /** Extra action buttons rendered in the toolbar alongside the built-in ones. */
   customActions = input<ButtonSettings[]>([]);
-  /**
-   * Full set of dashboard-chrome translations (title, description, toolbar
-   * buttons, dialogs, a11y labels). The library ships English only. Provide a
-   * complete `DashboardTranslations` to render the dashboard in another
-   * language, and swap it to switch language. When `null`, `undefined`, or an
-   * empty object, the built-in English defaults (`EN_DEFAULTS`) are used. See
-   * `DashboardTranslations` / `DashboardI18nKey` for the full key contract.
-   */
   i18n = input<DashboardTranslations | null | undefined>(EN_DEFAULTS);
-  /**
-   * Consumer-driven busy flag, normally bound to the request that fetches the
-   * dashboard's cards. While `true` the dashboard body is covered by a busy
-   * indicator and the empty state is suppressed, so a home that is still
-   * loading never claims to be empty.
-   *
-   * The indicator does not paint the moment this flips — see `loadingDelay`.
-   */
   loading = input(false, { transform: booleanAttribute });
-  /**
-   * Grace period in milliseconds between `loading` turning `true` and the busy
-   * indicator becoming visible. A load that finishes inside the window never
-   * paints a spinner at all, which is what keeps fast responses from flashing.
-   *
-   * This is a *delay before showing*, not a minimum display time and not a
-   * timeout: once the indicator is up it stays up until `loading` turns
-   * `false`, however long that takes. Defaults to the UI5 standard of 1000 ms,
-   * matching "if load takes longer than one second -> busy indicator".
-   */
   loadingDelay = input(1000, { transform: numberAttribute });
 
   readonly saved = output<{ sections: SectionConfig[]; cards: CardConfig[] }>();
@@ -163,17 +136,6 @@ export class Dashboard implements OnInit, OnDestroy {
   } | null>(null);
   dragOriginVisible = signal(false);
 
-  /**
-   * Whether the busy indicator is actually on screen. Lags `loading` by
-   * `loadingDelay` and drops back to `false` the instant `loading` clears, so a
-   * load that finishes inside the grace period never changes the page at all.
-   *
-   * `ui5-busy-indicator` ships an equivalent `delay` property, but it keys its
-   * content dimming off `active` rather than off the elapsed timer — delegating
-   * would grey the whole dashboard out immediately and flash on exactly the
-   * fast loads the delay exists to hide. The indicator is therefore driven with
-   * `delay="0"` and this signal decides the timing.
-   */
   protected readonly busyVisible = signal(false);
 
   protected hasUnsavedChanges = computed(() => {
@@ -184,6 +146,7 @@ export class Dashboard implements OnInit, OnDestroy {
       JSON.stringify(this.cards()) !== this.cardsSnapshotJson
     );
   });
+
   protected safeTitle = computed((): SafeHtml => {
     const clean =
       this.sanitizer.sanitize(
