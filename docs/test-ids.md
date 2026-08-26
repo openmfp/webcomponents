@@ -72,21 +72,26 @@ All interactive and identifiable elements across the webcomponents library carry
 
 #### Main component
 
-| Element                   | `data-testid`                | Notes                                                                               |
-| ------------------------- | ---------------------------- | ----------------------------------------------------------------------------------- |
-| Root container            | `dashboard`                  | Static                                                                              |
-| Title                     | `dashboard-title`            | Present when `config.title` is set                                                  |
-| Description               | `dashboard-description`      | Present when `config.description` is set                                            |
-| Edit-cards button         | `dashboard-edit-cards-btn`   | Visible in edit mode                                                                |
-| Compact menu toggle       | `dashboard-toolbar-menu-btn` | Visible in compact toolbar mode                                                     |
-| Compact dropdown menu     | `dashboard-toolbar-menu`     |                                                                                     |
-| Edit-view menu item       | `dashboard-action-edit-view` | Inside compact menu when `config.editable` is true                                  |
-| Custom action (menu item) | `dashboard-action-{action}`  | `action` = `customAction.action`; in compact menu                                   |
-| Custom action (button)    | `dashboard-action-{action}`  | Same value, rendered as `<ui5-button>` in full toolbar                              |
-| Edit-view button          | `dashboard-edit-view-btn`    | Full toolbar; appears before or after custom actions depending on `editButtonFirst` |
-| Grid                      | `dashboard-grid`             | The gridstack container                                                             |
-| Save button               | `dashboard-save-btn`         | Visible in edit mode                                                                |
-| Cancel button             | `dashboard-cancel-btn`       | Visible in edit mode                                                                |
+| Element                   | `data-testid`                        | Notes                                                                               |
+| ------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------- |
+| Root container            | `dashboard`                          | Static                                                                              |
+| Title                     | `dashboard-title`                    | Present when `config.title` is set                                                  |
+| Description               | `dashboard-description`              | Present when `config.description` is set                                            |
+| Edit-cards button         | `dashboard-edit-cards-btn`           | Visible in edit mode                                                                |
+| Compact menu toggle       | `dashboard-toolbar-menu-btn`         | Visible in compact toolbar mode                                                     |
+| Compact dropdown menu     | `dashboard-toolbar-menu`             |                                                                                     |
+| Edit-view menu item       | `dashboard-action-edit-view`         | Inside compact menu when `config.editable` is true                                  |
+| Custom action (menu item) | `dashboard-action-{action}`          | `action` = `customAction.action`; in compact menu                                   |
+| Custom action (button)    | `dashboard-action-{action}`          | Same value, rendered as `<ui5-button>` in full toolbar                              |
+| Edit-view button          | `dashboard-edit-view-btn`            | Full toolbar; appears before or after custom actions depending on `editButtonFirst` |
+| Empty state               | `dashboard-empty-state`              | Rendered when the loose-card grid is empty                                          |
+| Empty-state illustration  | `dashboard-empty-state-illustration` | The `role="img"` artwork element                                                    |
+| Empty-state title         | `dashboard-empty-state-title`        |                                                                                     |
+| Empty-state description   | `dashboard-empty-state-description`  |                                                                                     |
+| Empty-state Edit Home     | `dashboard-empty-state-edit-btn`     | Inside the empty state when `config.editable` is true and not in edit mode          |
+| Grid                      | `dashboard-grid`                     | The gridstack container                                                             |
+| Save button               | `dashboard-save-btn`                 | Visible in edit mode                                                                |
+| Cancel button             | `dashboard-cancel-btn`               | Visible in edit mode                                                                |
 
 #### DashboardCard
 

@@ -13,6 +13,9 @@
   "discardConfirmBody": "Discard the changes? This action cannot be undone.",
   "unsavedNavBody": "You are leaving this page. Save or discard the changes to proceed. This action cannot be undone.",
   "noCardsAvailable": "No cards available.",
+  "emptyStateTitle": "Your home is empty",
+  "emptyStateDescription": "Add cards to customize your home page.",
+  "emptyStateIllustration": "No applications",
   "removeSection": "Remove section",
   "removeCard": "Remove card",
   "resizable": "Resizable"

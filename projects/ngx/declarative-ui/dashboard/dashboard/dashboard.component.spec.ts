@@ -1749,6 +1749,133 @@ describe('Dashboard', () => {
     });
   });
 
+  describe('empty state', () => {
+    function emptyState(fixture: Fixture): Element | null {
+      return root(fixture).querySelector(
+        '[data-testid="dashboard-empty-state"]',
+      );
+    }
+
+    function editButton(fixture: Fixture): Element | null {
+      return root(fixture).querySelector(
+        '[data-testid="dashboard-empty-state-edit-btn"]',
+      );
+    }
+
+    it('renders the illustration, texts and Edit Home button when there are no sections and no cards', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('config', { editable: true });
+      fixture.detectChanges();
+
+      expect(emptyState(fixture)).not.toBeNull();
+      expect(
+        root(fixture).querySelector(
+          '[data-testid="dashboard-empty-state-illustration"]',
+        ),
+      ).not.toBeNull();
+      expect(emptyState(fixture)?.textContent).toContain(
+        EN_DEFAULTS.emptyStateTitle,
+      );
+      expect(emptyState(fixture)?.textContent).toContain(
+        EN_DEFAULTS.emptyStateDescription,
+      );
+      expect(editButton(fixture)?.textContent).toContain(
+        EN_DEFAULTS.editHomeButton,
+      );
+    });
+
+    it('exposes the illustration to assistive technology as a labelled image', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('config', { editable: true });
+      fixture.detectChanges();
+
+      const illustration = root(fixture).querySelector(
+        '[data-testid="dashboard-empty-state-illustration"]',
+      );
+      expect(illustration?.getAttribute('role')).toBe('img');
+      expect(illustration?.getAttribute('aria-label')).toBe(
+        EN_DEFAULTS.emptyStateIllustration,
+      );
+    });
+
+    it('hides the empty state as soon as a loose card exists', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', { editable: true });
+      fixture.detectChanges();
+      expect(emptyState(fixture)).not.toBeNull();
+
+      component.cards.set([{ id: 'card-1', component: 'mfp-a' }]);
+      fixture.detectChanges();
+      expect(emptyState(fixture)).toBeNull();
+    });
+
+    it('keeps the empty state below a populated section, because section cards are not part of the loose grid', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', { editable: true });
+      component.sections.set([
+        { id: 'recent', title: 'Recently accessed services' },
+      ]);
+      component.cards.set([
+        { id: 'ras-1', component: 'mfp-a', sectionId: 'recent' },
+        { id: 'ras-2', component: 'mfp-b', sectionId: 'recent' },
+      ]);
+      fixture.detectChanges();
+
+      expect(
+        root(fixture).querySelector('[data-testid="dashboard-section-recent"]'),
+      ).not.toBeNull();
+      expect(emptyState(fixture)).not.toBeNull();
+
+      // Only a card outside any section fills the grid the empty state covers.
+      component.cards.update((cards) => [
+        ...cards,
+        { id: 'loose-1', component: 'mfp-c' },
+      ]);
+      fixture.detectChanges();
+      expect(emptyState(fixture)).toBeNull();
+    });
+
+    it('enters edit mode and opens the Edit Cards dialog from the Edit Home button', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', { editable: true });
+      fixture.detectChanges();
+
+      editButton(fixture)?.dispatchEvent(new MouseEvent('click'));
+      fixture.detectChanges();
+
+      expect(component.editMode()).toBe(true);
+      expect(component.cardDialogOpen()).toBe(true);
+    });
+
+    it('keeps the empty state but drops its Edit Home button in edit mode', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', { editable: true });
+      fixture.detectChanges();
+
+      component.enterEditMode();
+      fixture.detectChanges();
+
+      expect(emptyState(fixture)).not.toBeNull();
+      expect(editButton(fixture)).toBeNull();
+    });
+
+    it('omits the Edit Home button when the dashboard is not editable', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('config', { editable: false });
+      fixture.detectChanges();
+
+      expect(emptyState(fixture)).not.toBeNull();
+      expect(editButton(fixture)).toBeNull();
+    });
+  });
+
   it('has no automatically-detectable accessibility violations', async () => {
     const { fixture } = setup();
     fixture.componentRef.setInput('config', { title: 'Operations' });

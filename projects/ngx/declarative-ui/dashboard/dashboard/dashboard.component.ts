@@ -230,6 +230,8 @@ export class Dashboard implements OnInit, OnDestroy {
     }));
   });
 
+  protected isEmpty = computed(() => this.looseCards().length === 0);
+
   protected gridOptions = computed((): GridStackOptions => ({
     cellHeight: CELL_HEIGHT,
     sizeToContent: true,
@@ -348,6 +350,16 @@ export class Dashboard implements OnInit, OnDestroy {
       },
       { injector: this.injector },
     );
+  }
+
+  /**
+   * Empty-state call to action: switch to edit mode and immediately surface the
+   * Edit Cards dialog, so a user starting from an empty home lands directly on
+   * the card picker instead of an empty grid.
+   */
+  enterEditModeAndEditCards(): void {
+    this.enterEditMode();
+    this.openCardPanel();
   }
 
   saveEdit(): void {
