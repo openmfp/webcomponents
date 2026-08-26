@@ -132,6 +132,32 @@ mfp-wc-dashboard {
   gap: var(--sapShell_Space_S, 1rem);
 }
 
+// Busy indicator wrapping the whole dashboard body during an initial load.
+// `ui5-busy-indicator` is `display: inline-block` and its shadow root lays the
+// default slot out inside a `display: flex` box. A `<slot>` is `display:
+// contents`, so slotting the topbar, the section grid and the Gridstack element
+// as siblings would turn them into three flex items side by side — hence the
+// single full-width `__busy-content` wrapper, which is the one flex item and
+// restores normal block flow underneath it.
+.mfp-dashboard__busy {
+  display: block;
+  width: 100%;
+}
+
+.mfp-dashboard__busy-content {
+  width: 100%;
+}
+
+// While the spinner is up, reserve a viewport-sized body so it lands mid-page
+// instead of hugging the topbar on a dashboard whose cards have not arrived
+// yet — UI5 centres the busy overlay over the slotted content, and an
+// unpopulated dashboard is barely taller than its header. Keyed off
+// `busyVisible`, not `loading`, so a load that finishes inside `loadingDelay`
+// never reserves (and then releases) the space.
+.mfp-dashboard__busy-content--busy {
+  min-height: 60vh;
+}
+
 // Empty state — shown when the dashboard holds no sections and no cards.
 .mfp-dashboard__empty {
   display: flex;

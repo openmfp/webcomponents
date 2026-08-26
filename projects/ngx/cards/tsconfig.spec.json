@@ -5,5 +5,5 @@
     "types": ["vitest/globals"],
     "esModuleInterop": true
   },
-  "include": ["**/*.d.ts", "**/*.spec.ts"]
+  "include": ["**/*.d.ts", "**/*.spec.ts", "../vitest-axe.d.ts"]
 }

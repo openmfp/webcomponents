@@ -248,6 +248,8 @@ const cards: CardConfig[] = [
 | `availableCards` | `CardConfig[]`                               | no       | `[]`          | Card templates that can be added in edit mode                                                                                                                                                                                           |
 | `customActions`  | `ButtonSettings[]`                           | no       | `[]`          | Extra action buttons rendered in the toolbar alongside the built-in ones. Clicking one emits `actionButtonClick`.                                                                                                                       |
 | `i18n`           | `DashboardTranslations \| null \| undefined` | no       | `EN_DEFAULTS` | Full set of dashboard chrome + title/description strings. When `null`, `undefined`, or `{}`, the built-in English defaults are used; when provided, it must be the complete `DashboardTranslations`. See [Localization](#localization). |
+| `loading`        | `boolean`                                    | no       | `false`       | Busy flag for the dashboard body. While `true` the whole page is covered by a busy indicator and the empty state is suppressed. See [Initial loading](#initial-loading).                                                                |
+| `loadingDelay`   | `number`                                     | no       | `1000`        | Milliseconds to wait after `loading` turns `true` before the spinner paints. A load that finishes inside the window never shows one. See [Initial loading](#initial-loading).                                                           |
 
 ### Outputs
 
@@ -374,6 +376,61 @@ The dashboard does **not** translate the remaining consumer-supplied strings —
 - Card `label`s shown in the Edit Cards dialog list
 
 Translate these in your application before passing them to the dashboard — typically alongside the same language switch that swaps the `i18n` input.
+
+---
+
+## Initial loading
+
+A dashboard whose cards are still being fetched has nothing useful to show: the grid is empty, so without a busy state it renders the "your home is empty" message and then rearranges itself the moment the data lands. The `loading` input covers that window.
+
+```html
+<mfp-dashboard [cards]="cards()" [loading]="cardsPending()" />
+```
+
+While `loading` is `true`:
+
+- the **entire dashboard body** — topbar, sections and the card grid — is wrapped in a `ui5-busy-indicator`, so the page shows one spinner rather than a spinner per card, and the chrome behind it is inert;
+- the [empty state](#empty-state) is **suppressed**, because a home that has not finished loading must not claim to be empty. It reappears the moment `loading` clears, if the loose-card grid is still empty.
+
+`loading` is entirely consumer-driven — the dashboard never sets it. Bind it to whatever represents your fetch (`resource().isLoading()`, an RxJS flag, `el.loading = true` from plain JS) and clear it when the data arrives _or_ when it fails; a rejected request that leaves `loading` stuck at `true` leaves a spinner up forever.
+
+### `loadingDelay` — the one-second grace period
+
+Showing a spinner for a request that returns in 80 ms is worse than showing nothing: the user sees a flash. `loadingDelay` (default `1000`) is the grace period between `loading` turning `true` and the busy state becoming visible. The timer starts when `loading` flips and is **cancelled** if it clears first, so a fast load leaves the page completely untouched — which is exactly the "if load takes longer than one second → busy indicator" behaviour.
+
+Be precise about what this knob is, because two neighbouring ideas are often confused with it:
+
+| Concept                  | What it does                                                     | Provided here                                                                                     |
+| ------------------------ | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| **Delay before showing** | Waits N ms before painting; cancelled if the load finishes first | **Yes** — this is `loadingDelay`                                                                  |
+| Minimum display time     | Once shown, keeps the spinner up for at least N ms               | No. The indicator disappears as soon as `loading` turns `false`                                   |
+| Timeout                  | Gives up and shows an error after N ms                           | No. The indicator stays up as long as `loading` is `true`; error handling belongs to the consumer |
+
+`ui5-busy-indicator` ships a `delay` property with the same intent, and the obvious implementation would be to hand `loadingDelay` straight to it. The dashboard deliberately does not: UI5 keys its content dimming (`:host([active]) ::slotted(*) { opacity: … }`) off `active` rather than off the elapsed timer, so delegating would grey the whole dashboard out the instant `loading` flipped — flashing on precisely the fast loads the delay exists to hide. The indicator is therefore given `delay="0"` and the dashboard owns the timing, which is also why the two delays cannot compound.
+
+The consequence worth knowing: **nothing at all changes on screen during the grace period** — no dimming, no reserved space, no spinner. The only immediate effect of `loading` is the empty-state suppression above, which is deliberate, because showing "your home is empty" for half a second is a wrong statement rather than a slow one.
+
+Set `loadingDelay` to `0` to paint immediately (useful in tests and visual regression runs), or raise it if your backend is reliably fast and you want an even quieter UI.
+
+### Web-component consumers
+
+Both inputs accept the attribute forms a non-Angular consumer would reach for, as well as properties:
+
+```html
+<mfp-wc-dashboard loading loading-delay="500"></mfp-wc-dashboard>
+```
+
+```js
+const el = document.querySelector('mfp-wc-dashboard');
+el.loading = true;
+fetchCards()
+  .then((cards) => (el.cards = cards))
+  .finally(() => (el.loading = false));
+```
+
+### Accessibility
+
+The busy indicator blocks pointer and keyboard interaction with the content it covers and carries UI5's own accessible "Loading" title. That title comes from the UI5 message bundle and follows the UI5 language configuration — it is **not** part of the dashboard's [`DashboardTranslations`](#translated-keys) contract, so there is no `i18n` key to override for it.
 
 ---
 
@@ -895,6 +952,7 @@ All interactive elements carry `data-testid` attributes for reliable E2E targeti
 | Element                             | `data-testid`                        | Notes                                                       |
 | ----------------------------------- | ------------------------------------ | ----------------------------------------------------------- |
 | Root container                      | `dashboard`                          |                                                             |
+| Busy indicator                      | `dashboard-busy`                     | Always present; active while `loading` is true              |
 | Title                               | `dashboard-title`                    | Present when `i18n.title` is non-empty                      |
 | Description                         | `dashboard-description`              | Present when `i18n.description` is non-empty                |
 | Edit-cards button                   | `dashboard-edit-cards-btn`           | Visible in edit mode                                        |

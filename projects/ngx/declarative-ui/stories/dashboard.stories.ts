@@ -196,6 +196,8 @@ const meta: Meta<Dashboard> = {
     cards: { control: 'object' },
     availableCards: { control: 'object' },
     customActions: { control: 'object' },
+    loading: { control: 'boolean' },
+    loadingDelay: { control: 'number' },
     actionButtonClick: { action: 'actionButtonClick' },
     saved: { action: 'saved' },
   },
@@ -206,10 +208,12 @@ const meta: Meta<Dashboard> = {
     cards: CARDS,
     availableCards: AVAILABLE_CARDS,
     customActions: CUSTOM_ACTIONS,
+    loading: false,
+    loadingDelay: 1000,
   },
   render: (args) => ({
     props: args,
-    template: `<mfp-dashboard [config]="config" [i18n]="i18n" [sections]="sections" [cards]="cards" [availableCards]="availableCards" [customActions]="customActions" (actionButtonClick)="actionButtonClick($event)" (saved)="saved($event)" />`,
+    template: `<mfp-dashboard [config]="config" [i18n]="i18n" [sections]="sections" [cards]="cards" [availableCards]="availableCards" [customActions]="customActions" [loading]="loading" [loadingDelay]="loadingDelay" (actionButtonClick)="actionButtonClick($event)" (saved)="saved($event)" />`,
   }),
 };
 
@@ -284,6 +288,51 @@ export const EmptyStateWithSections: Story = {
       description: {
         story:
           'The empty state tracks the loose-card grid, not the total card count. Here the app-provided "Recently accessed services" section is fully populated, yet the part of the home the user curates through Edit Cards holds nothing — so the section renders as usual with the empty state below it. Adding any card from the Edit Cards dialog fills the grid and the empty state disappears.',
+      },
+    },
+  },
+};
+
+export const InitialLoading: Story = {
+  args: {
+    i18n: {
+      ...SAMPLE_I18N,
+      title: 'Hello Annika!',
+      description: 'Welcome to your global account <b>BTP Fabric Design</b>.',
+    },
+    sections: [],
+    cards: [],
+    loading: true,
+    loadingDelay: 0,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The dashboard body — topbar, sections and the card grid alike — sits inside a `ui5-busy-indicator` driven by the `loading` input, so a home whose cards are still in flight shows one page-level spinner instead of a grid of half-drawn cards. The empty state is suppressed for the same reason: a dashboard that has not finished loading must not announce that it is empty. `loadingDelay` is forced to `0` here so the busy state is visible immediately in Storybook; see the **Loading Delay** story for the default one-second grace period.',
+      },
+    },
+  },
+};
+
+export const LoadingDelay: Story = {
+  args: {
+    i18n: {
+      ...SAMPLE_I18N,
+      title: 'Loading Delay',
+      description:
+        'Toggle <b>loading</b> in the controls panel and watch the one-second grace period.',
+    },
+    sections: [],
+    cards: [],
+    loading: true,
+    loadingDelay: 1000,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          '`loadingDelay` (default `1000`) is the grace period between `loading` turning `true` and the busy state painting — not a minimum display time and not a timeout. The timer is cancelled if `loading` clears first, so a load that finishes inside the window leaves the page completely untouched: no spinner, no dimming, no reserved space. Flip `loading` off and on again in the controls panel within a second to see nothing happen; leave it on to see the spinner arrive.',
       },
     },
   },

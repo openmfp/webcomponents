@@ -30,17 +30,20 @@ import {
   Type,
   ViewEncapsulation,
   afterNextRender,
+  booleanAttribute,
   computed,
   effect,
   inject,
   input,
   linkedSignal,
   model,
+  numberAttribute,
   output,
   signal,
   viewChild,
 } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { BusyIndicator } from '@fundamental-ngx/ui5-webcomponents/busy-indicator';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 import { Icon } from '@fundamental-ngx/ui5-webcomponents/icon';
 import { Menu } from '@fundamental-ngx/ui5-webcomponents/menu';
@@ -68,6 +71,7 @@ document.body.classList.add('ui5-content-density-compact');
     UnsavedChangesDialog,
     DashboardSection,
     DashboardCard,
+    BusyIndicator,
     Button,
     Icon,
     Menu,
@@ -110,6 +114,26 @@ export class Dashboard implements OnInit, OnDestroy {
    * `DashboardTranslations` / `DashboardI18nKey` for the full key contract.
    */
   i18n = input<DashboardTranslations | null | undefined>(EN_DEFAULTS);
+  /**
+   * Consumer-driven busy flag, normally bound to the request that fetches the
+   * dashboard's cards. While `true` the dashboard body is covered by a busy
+   * indicator and the empty state is suppressed, so a home that is still
+   * loading never claims to be empty.
+   *
+   * The indicator does not paint the moment this flips — see `loadingDelay`.
+   */
+  loading = input(false, { transform: booleanAttribute });
+  /**
+   * Grace period in milliseconds between `loading` turning `true` and the busy
+   * indicator becoming visible. A load that finishes inside the window never
+   * paints a spinner at all, which is what keeps fast responses from flashing.
+   *
+   * This is a *delay before showing*, not a minimum display time and not a
+   * timeout: once the indicator is up it stays up until `loading` turns
+   * `false`, however long that takes. Defaults to the UI5 standard of 1000 ms,
+   * matching "if load takes longer than one second -> busy indicator".
+   */
+  loadingDelay = input(1000, { transform: numberAttribute });
 
   readonly saved = output<{ sections: SectionConfig[]; cards: CardConfig[] }>();
   readonly actionButtonClick = output<{
@@ -138,6 +162,19 @@ export class Dashboard implements OnInit, OnDestroy {
     height: string;
   } | null>(null);
   dragOriginVisible = signal(false);
+
+  /**
+   * Whether the busy indicator is actually on screen. Lags `loading` by
+   * `loadingDelay` and drops back to `false` the instant `loading` clears, so a
+   * load that finishes inside the grace period never changes the page at all.
+   *
+   * `ui5-busy-indicator` ships an equivalent `delay` property, but it keys its
+   * content dimming off `active` rather than off the elapsed timer — delegating
+   * would grey the whole dashboard out immediately and flash on exactly the
+   * fast loads the delay exists to hide. The indicator is therefore driven with
+   * `delay="0"` and this signal decides the timing.
+   */
+  protected readonly busyVisible = signal(false);
 
   protected hasUnsavedChanges = computed(() => {
     if (!this.editMode()) return false;
@@ -293,6 +330,25 @@ export class Dashboard implements OnInit, OnDestroy {
           ? { ...fromConfig, ...suppliedNonEmpty }
           : EN_DEFAULTS;
       this.i18nService.overrides.set(resolved);
+    });
+    effect((onCleanup) => {
+      if (!this.loading()) {
+        this.busyVisible.set(false);
+        return;
+      }
+      const delay = Math.max(0, this.loadingDelay());
+      if (delay === 0) {
+        this.busyVisible.set(true);
+        return;
+      }
+      const timer = setTimeout(() => {
+        this.busyVisible.set(true);
+      }, delay);
+      // Covers both the load finishing first and the component being destroyed
+      // mid-flight, so a resolved request never leaves a spinner behind.
+      onCleanup(() => {
+        clearTimeout(timer);
+      });
     });
     effect((onCleanup) => {
       const url = this.config().backgroundImageUrl;
