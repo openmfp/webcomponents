@@ -249,6 +249,46 @@ export const WithSubheader: Story = {
   }),
 };
 
+export const EmptyState: Story = {
+  args: {
+    i18n: {
+      ...SAMPLE_I18N,
+      title: 'Hi Tina!',
+      description: 'Welcome to your global account <b>ACME GA</b>.',
+    },
+    sections: [],
+    cards: [],
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'With no sections and no cards the dashboard renders the empty state. The artwork is the SAP "NoApplications" TNT scene illustration, applied as a background image so it can be swapped from CSS alone via `--mfp-dashboard-empty-image` — the same contract as `--mfp-dashboard-background`. Its Edit Home button enters edit mode and opens the Edit Cards dialog in one step. The button is dropped once edit mode is active, where the toolbar already offers Edit Cards.',
+      },
+    },
+  },
+};
+
+export const EmptyStateWithSections: Story = {
+  args: {
+    i18n: {
+      ...SAMPLE_I18N,
+      title: 'Hi Tina!',
+      description: 'Welcome to your global account <b>ACME GA</b>.',
+    },
+    sections: SECTIONS,
+    cards: RAS_CARDS,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The empty state tracks the loose-card grid, not the total card count. Here the app-provided "Recently accessed services" section is fully populated, yet the part of the home the user curates through Edit Cards holds nothing — so the section renders as usual with the empty state below it. Adding any card from the Edit Cards dialog fills the grid and the empty state disappears.',
+      },
+    },
+  },
+};
+
 export const CompactToolbar: Story = {
   parameters: {
     viewport: { defaultViewport: 'mobile1' },
