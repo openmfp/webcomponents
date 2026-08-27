@@ -30,17 +30,20 @@ import {
   Type,
   ViewEncapsulation,
   afterNextRender,
+  booleanAttribute,
   computed,
   effect,
   inject,
   input,
   linkedSignal,
   model,
+  numberAttribute,
   output,
   signal,
   viewChild,
 } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { BusyIndicator } from '@fundamental-ngx/ui5-webcomponents/busy-indicator';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 import { Icon } from '@fundamental-ngx/ui5-webcomponents/icon';
 import { Menu } from '@fundamental-ngx/ui5-webcomponents/menu';
@@ -68,6 +71,7 @@ document.body.classList.add('ui5-content-density-compact');
     UnsavedChangesDialog,
     DashboardSection,
     DashboardCard,
+    BusyIndicator,
     Button,
     Icon,
     Menu,
@@ -99,17 +103,10 @@ export class Dashboard implements OnInit, OnDestroy {
   sections = model<SectionConfig[]>([]);
   cards = model<CardConfig[]>([]);
   availableCards = input<CardConfig[]>([]);
-  /** Extra action buttons rendered in the toolbar alongside the built-in ones. */
   customActions = input<ButtonSettings[]>([]);
-  /**
-   * Full set of dashboard-chrome translations (title, description, toolbar
-   * buttons, dialogs, a11y labels). The library ships English only. Provide a
-   * complete `DashboardTranslations` to render the dashboard in another
-   * language, and swap it to switch language. When `null`, `undefined`, or an
-   * empty object, the built-in English defaults (`EN_DEFAULTS`) are used. See
-   * `DashboardTranslations` / `DashboardI18nKey` for the full key contract.
-   */
   i18n = input<DashboardTranslations | null | undefined>(EN_DEFAULTS);
+  loading = input(false, { transform: booleanAttribute });
+  loadingDelay = input(1000, { transform: numberAttribute });
 
   readonly saved = output<{ sections: SectionConfig[]; cards: CardConfig[] }>();
   readonly actionButtonClick = output<{
@@ -139,6 +136,8 @@ export class Dashboard implements OnInit, OnDestroy {
   } | null>(null);
   dragOriginVisible = signal(false);
 
+  protected readonly busyVisible = signal(false);
+
   protected hasUnsavedChanges = computed(() => {
     if (!this.editMode()) return false;
     if (this.gridDirty()) return true;
@@ -147,6 +146,7 @@ export class Dashboard implements OnInit, OnDestroy {
       JSON.stringify(this.cards()) !== this.cardsSnapshotJson
     );
   });
+
   protected safeTitle = computed((): SafeHtml => {
     const clean =
       this.sanitizer.sanitize(
@@ -294,6 +294,25 @@ export class Dashboard implements OnInit, OnDestroy {
           ? { ...fromConfig, ...suppliedNonEmpty }
           : EN_DEFAULTS;
       this.i18nService.overrides.set(resolved);
+    });
+    effect((onCleanup) => {
+      if (!this.loading()) {
+        this.busyVisible.set(false);
+        return;
+      }
+      const delay = Math.max(0, this.loadingDelay());
+      if (delay === 0) {
+        this.busyVisible.set(true);
+        return;
+      }
+      const timer = setTimeout(() => {
+        this.busyVisible.set(true);
+      }, delay);
+      // Covers both the load finishing first and the component being destroyed
+      // mid-flight, so a resolved request never leaves a spinner behind.
+      onCleanup(() => {
+        clearTimeout(timer);
+      });
     });
     effect((onCleanup) => {
       const url = this.config().backgroundImageUrl;

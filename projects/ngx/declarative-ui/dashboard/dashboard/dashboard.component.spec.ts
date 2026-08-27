@@ -6,6 +6,8 @@ import { Dashboard } from './dashboard.component';
 import { ZflowGridStackEngine } from './engines/zflow/z-flow-engine';
 import type { ZFlowGridStackNode } from './engines/zflow/z-flow.helpers';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { BusyIndicator } from '@fundamental-ngx/ui5-webcomponents/busy-indicator';
 import type { GridStackMoveOpts, GridStackNode } from 'gridstack';
 import { axe } from 'vitest-axe';
 
@@ -1746,6 +1748,243 @@ describe('Dashboard', () => {
       fixture.detectChanges();
 
       expect(component.config().editable).toBe(true);
+    });
+  });
+
+  describe('initial loading', () => {
+    // The dashboard's job is to bind `active` correctly; the rendering belongs
+    // to `ui5-busy-indicator`. Read the wrapper component's input signal rather
+    // than the upgraded custom element's properties, so these assertions pin
+    // our binding and not UI5's forwarding effects.
+    function busy(fixture: Fixture): BusyIndicator {
+      return fixture.debugElement.query(By.directive(BusyIndicator))
+        .componentInstance as BusyIndicator;
+    }
+
+    function busyElement(fixture: Fixture): HTMLElement | null {
+      return root(fixture).querySelector<HTMLElement>(
+        '[data-testid="dashboard-busy"]',
+      );
+    }
+
+    function bodyIsReserved(fixture: Fixture): boolean {
+      return !!root(fixture)
+        .querySelector('.mfp-dashboard__busy-content')
+        ?.classList.contains('mfp-dashboard__busy-content--busy');
+    }
+
+    function emptyState(fixture: Fixture): Element | null {
+      return root(fixture).querySelector(
+        '[data-testid="dashboard-empty-state"]',
+      );
+    }
+
+    it('wraps the whole dashboard body in an inactive busy indicator by default', () => {
+      const { fixture } = setup();
+      fixture.detectChanges();
+
+      expect(busy(fixture).active()).toBe(false);
+
+      // Topbar, sections and the grid all sit inside the indicator, so the
+      // overlay covers the whole page rather than just the card area.
+      const el = busyElement(fixture);
+      expect(el).not.toBeNull();
+      expect(
+        el?.querySelector('[data-testid="dashboard-title"]'),
+      ).not.toBeNull();
+      expect(
+        el?.querySelector('[data-testid="dashboard-grid"]'),
+      ).not.toBeNull();
+    });
+
+    it('slots the body as a single element, because UI5 lays the default slot out as a flex row', () => {
+      const { fixture } = setup();
+      fixture.detectChanges();
+
+      // More than one slotted child would become more than one flex item and
+      // lay the dashboard out side by side instead of stacked.
+      expect(busyElement(fixture)?.children.length).toBe(1);
+      expect(busyElement(fixture)?.firstElementChild?.className).toContain(
+        'mfp-dashboard__busy-content',
+      );
+    });
+
+    it('suppresses the empty state immediately, so a pending home never claims to be empty', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('config', { editable: true });
+      fixture.componentRef.setInput('loading', true);
+      fixture.detectChanges();
+
+      // Immediately — not after `loadingDelay`. The wrong message must never
+      // be on screen, however briefly.
+      expect(emptyState(fixture)).toBeNull();
+
+      fixture.componentRef.setInput('loading', false);
+      fixture.detectChanges();
+      expect(emptyState(fixture)).not.toBeNull();
+    });
+
+    it('keeps the empty state hidden when a finished load produced cards', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', { editable: true });
+      fixture.componentRef.setInput('loading', true);
+      fixture.detectChanges();
+
+      component.cards.set([{ id: 'card-1', component: 'mfp-a' }]);
+      fixture.componentRef.setInput('loading', false);
+      fixture.detectChanges();
+
+      expect(emptyState(fixture)).toBeNull();
+      expect(busy(fixture).active()).toBe(false);
+    });
+
+    it('coerces the attribute forms web-component consumers can set', () => {
+      const { fixture, component } = setup();
+
+      // `<mfp-wc-dashboard loading loading-delay="500">` arrives as strings.
+      fixture.componentRef.setInput('loading', '');
+      fixture.componentRef.setInput('loadingDelay', '500');
+      fixture.detectChanges();
+
+      expect(component.loading()).toBe(true);
+      expect(component.loadingDelay()).toBe(500);
+    });
+
+    describe('grace period', () => {
+      beforeEach(() => {
+        vi.useFakeTimers();
+      });
+
+      afterEach(() => {
+        vi.useRealTimers();
+      });
+
+      it('holds the spinner back for the first second of a load', () => {
+        const { fixture } = setup();
+
+        fixture.componentRef.setInput('loading', true);
+        fixture.detectChanges();
+
+        vi.advanceTimersByTime(999);
+        fixture.detectChanges();
+        expect(busy(fixture).active()).toBe(false);
+        // Nothing about the page has changed yet — not even reserved height.
+        expect(bodyIsReserved(fixture)).toBe(false);
+
+        vi.advanceTimersByTime(1);
+        fixture.detectChanges();
+        expect(busy(fixture).active()).toBe(true);
+        expect(bodyIsReserved(fixture)).toBe(true);
+      });
+
+      it('never shows a spinner for a load that finishes inside the grace period', () => {
+        const { fixture } = setup();
+
+        fixture.componentRef.setInput('loading', true);
+        fixture.detectChanges();
+
+        vi.advanceTimersByTime(200);
+        fixture.componentRef.setInput('loading', false);
+        fixture.detectChanges();
+
+        // The pending timer is cancelled, not merely ignored: running the clock
+        // past the original deadline must not resurrect the spinner.
+        vi.advanceTimersByTime(5000);
+        fixture.detectChanges();
+        expect(busy(fixture).active()).toBe(false);
+      });
+
+      it('keeps the spinner up for as long as the load runs — the delay is not a display time or a timeout', () => {
+        const { fixture } = setup();
+
+        fixture.componentRef.setInput('loading', true);
+        fixture.detectChanges();
+
+        vi.advanceTimersByTime(30_000);
+        fixture.detectChanges();
+        expect(busy(fixture).active()).toBe(true);
+
+        // ...and it clears the moment the load does, with no minimum display
+        // time holding it on screen.
+        fixture.componentRef.setInput('loading', false);
+        fixture.detectChanges();
+        expect(busy(fixture).active()).toBe(false);
+        expect(bodyIsReserved(fixture)).toBe(false);
+      });
+
+      it('honours a custom loadingDelay', () => {
+        const { fixture } = setup();
+
+        fixture.componentRef.setInput('loadingDelay', 250);
+        fixture.componentRef.setInput('loading', true);
+        fixture.detectChanges();
+
+        vi.advanceTimersByTime(249);
+        fixture.detectChanges();
+        expect(busy(fixture).active()).toBe(false);
+
+        vi.advanceTimersByTime(1);
+        fixture.detectChanges();
+        expect(busy(fixture).active()).toBe(true);
+      });
+
+      it('shows the spinner synchronously when the delay is zero or negative', () => {
+        const { fixture } = setup();
+
+        fixture.componentRef.setInput('loadingDelay', 0);
+        fixture.componentRef.setInput('loading', true);
+        fixture.detectChanges();
+        expect(busy(fixture).active()).toBe(true);
+
+        fixture.componentRef.setInput('loadingDelay', -1);
+        fixture.componentRef.setInput('loading', false);
+        fixture.detectChanges();
+        fixture.componentRef.setInput('loading', true);
+        fixture.detectChanges();
+        expect(busy(fixture).active()).toBe(true);
+      });
+
+      it('cancels the pending grace period when the dashboard is destroyed mid-load', () => {
+        const { fixture } = setup();
+
+        fixture.componentRef.setInput('loading', true);
+        fixture.detectChanges();
+        const pending = vi.getTimerCount();
+
+        fixture.destroy();
+
+        // The effect's cleanup is tied to the component, so the queued deadline
+        // is dropped rather than firing into a torn-down view.
+        expect(vi.getTimerCount()).toBeLessThan(pending);
+      });
+
+      it('delegates no timing to UI5, so the two delays cannot compound', () => {
+        const { fixture } = setup();
+
+        fixture.componentRef.setInput('loading', true);
+        fixture.detectChanges();
+
+        // `ui5-busy-indicator` has a 1000 ms `delay` of its own. The dashboard
+        // owns the grace period, so the indicator must be told not to add a
+        // second one on top.
+        expect(busy(fixture).delay()).toBe(0);
+      });
+    });
+
+    it('has no automatically-detectable accessibility violations while loading', async () => {
+      const { fixture } = setup();
+      fixture.componentRef.setInput('config', { title: 'Operations' });
+      fixture.componentRef.setInput('loadingDelay', 0);
+      fixture.componentRef.setInput('loading', true);
+      fixture.detectChanges();
+
+      const results = await axe(fixture.nativeElement, {
+        rules: { 'heading-order': { enabled: false } },
+      });
+
+      expect(results).toHaveNoViolations();
     });
   });
 

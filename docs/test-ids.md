@@ -75,6 +75,7 @@ All interactive and identifiable elements across the webcomponents library carry
 | Element                   | `data-testid`                        | Notes                                                                               |
 | ------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------- |
 | Root container            | `dashboard`                          | Static                                                                              |
+| Busy indicator            | `dashboard-busy`                     | Always present; wraps the whole body, active while `loading` is true                |
 | Title                     | `dashboard-title`                    | Present when `config.title` is set                                                  |
 | Description               | `dashboard-description`              | Present when `config.description` is set                                            |
 | Edit-cards button         | `dashboard-edit-cards-btn`           | Visible in edit mode                                                                |
