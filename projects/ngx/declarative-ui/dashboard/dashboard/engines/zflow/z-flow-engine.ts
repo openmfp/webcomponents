@@ -3,10 +3,14 @@ import {
   resolveDirectionalResizeWidthStep,
   resolveResizeWidthStep,
 } from './resize.helpers';
-import type { CardMoveCommand } from '../keyboard/keyboard.helpers';
+import type {
+  CardKeyboardCommand,
+  CardMoveCommand,
+} from '../keyboard/keyboard.types';
 import {
   type ZFlowGridStackNode,
   applyProjectedLayout,
+  finalizeEngineChange,
   getZFlowRowHeight,
   normalizeNodeOrder,
   notifyEngine,
@@ -33,7 +37,7 @@ interface LayoutSnapshot {
 export class ZflowGridStackEngine extends GridStackEngine {
   applyKeyboardCommand(
     id: string,
-    command: CardMoveCommand | ResizeDirection,
+    command: CardKeyboardCommand,
   ): boolean {
     if (command === 'grow' || command === 'shrink') {
       return this.stepNodeWidth(id, command);
@@ -70,7 +74,7 @@ export class ZflowGridStackEngine extends GridStackEngine {
     const changed = this.markLayoutChangesDirty(snapshot);
     if (!changed) return false;
 
-    notifyEngine(this);
+    this.notifyAndFinalizeKeyboardChange();
     return true;
   }
 
@@ -171,8 +175,13 @@ export class ZflowGridStackEngine extends GridStackEngine {
     const changed = this.markLayoutChangesDirty(snapshot);
     if (!changed) return false;
 
-    notifyEngine(this);
+    this.notifyAndFinalizeKeyboardChange();
     return true;
+  }
+
+  private notifyAndFinalizeKeyboardChange(): void {
+    notifyEngine(this);
+    finalizeEngineChange(this);
   }
 
   commitZFlowLayout(): boolean {

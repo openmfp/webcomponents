@@ -1,14 +1,6 @@
-export type CardMoveCommand =
-  | 'left'
-  | 'right'
-  | 'up'
-  | 'down'
-  | 'row-start'
-  | 'row-end';
+import type { CardKeyboardCommand } from './keyboard.types';
 
-export type CardKeyboardCommand = CardMoveCommand | 'grow' | 'shrink';
-
-type KeyboardModifier = 'shift' | 'ctrl' | 'meta';
+type KeyboardModifier = 'shift' | 'ctrl' | 'meta' | 'alt';
 
 function isOnlyModifier(
   event: KeyboardEvent,

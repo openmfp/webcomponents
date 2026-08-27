@@ -1,6 +1,6 @@
 import type { GridStackNode } from 'gridstack';
 import type { GridStackEngine } from 'gridstack/dist/gridstack-engine';
-import type { CardMoveCommand } from '../keyboard/keyboard.helpers';
+import type { CardMoveCommand } from '../keyboard/keyboard.types';
 
 export type ZFlowGridStackNode = GridStackNode & {
   zFlowOrder?: number;
@@ -8,6 +8,11 @@ export type ZFlowGridStackNode = GridStackNode & {
 
 type NotifyableGridStackEngine = GridStackEngine & {
   _notify?: () => unknown;
+};
+
+type FinalizableGridStackEngine = GridStackEngine & {
+  cleanNodes: () => GridStackEngine;
+  saveInitial: () => GridStackEngine;
 };
 
 export function hasZFlowOrder(nodes: ZFlowGridStackNode[]): boolean {
@@ -372,4 +377,10 @@ export function applyProjectedLayout(
 
 export function notifyEngine(engine: GridStackEngine): void {
   (engine as NotifyableGridStackEngine)._notify?.();
+}
+
+export function finalizeEngineChange(engine: GridStackEngine): void {
+  const finalizableEngine = engine as FinalizableGridStackEngine;
+  finalizableEngine.cleanNodes();
+  finalizableEngine.saveInitial();
 }

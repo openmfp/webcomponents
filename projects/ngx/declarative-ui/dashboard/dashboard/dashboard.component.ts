@@ -1,15 +1,26 @@
 import { ButtonSettings } from '../../models';
 import { DashboardCard } from '../card/dashboard-card.component';
 import { addComponentToRegistry } from '../card/utils';
-import { CELL_HEIGHT, COMPACT_BREAKPOINT, DASHBOARD_CARD_DRAG_ORIGIN_SELECTOR, XL_PAGE } from '../constants';
+import {
+  CELL_HEIGHT,
+  COMPACT_BREAKPOINT,
+  DASHBOARD_CARD_DRAG_ORIGIN_SELECTOR,
+  XL_PAGE,
+} from '../constants';
 import { DiscardChangesDialog } from '../discard-changes-dialog/discard-changes-dialog.component';
 import { EditCardsDialog } from '../edit-cards-dialog/edit-cards-dialog.component';
-import { DASHBOARD_I18N_KEYS, DashboardI18nService, DashboardTranslations, EN_DEFAULTS } from '../i18n';
+import {
+  DASHBOARD_I18N_KEYS,
+  DashboardI18nService,
+  DashboardTranslations,
+  EN_DEFAULTS,
+} from '../i18n';
 import { CardConfig, DashboardConfig, SectionConfig } from '../models';
 import { DashboardSection } from '../section/dashboard-section.component';
 import { UnsavedChangesDialog } from '../unsaved-changes-dialog/unsaved-changes-dialog.component';
 import { ENGINE_PROFILES, EngineProfile } from './engines/contants/engines';
 import { parseCardKeyCommand } from './engines/keyboard/keyboard.helpers';
+import { CARD_ARIA_KEYSHORTCUTS } from './engines/keyboard/keyboard.types';
 import { ZflowGridStackEngine } from './engines/zflow/z-flow-engine';
 import {
   Component,
@@ -168,6 +179,7 @@ export class Dashboard implements OnInit, OnDestroy {
   protected keyboardNavigationActive = computed(
     () => this.editMode() && !!this.config().zFlow,
   );
+  protected readonly cardAriaKeyshortcuts = CARD_ARIA_KEYSHORTCUTS;
 
   protected hasToolbarMenuContent = computed(
     () => !!this.config().editable || this.customActions().length > 0,
@@ -506,8 +518,13 @@ export class Dashboard implements OnInit, OnDestroy {
     const grid = this.gridStack().grid;
     if (!grid) return;
 
+    grid.load(this.createGridLayoutFromCards(grid.engine.nodes), false);
+  }
+
+  private createGridLayoutFromCards(nodes: GridStackNode[]): GridStackNode[] {
     const cardsById = new Map(this.cards().map((card) => [card.id, card]));
-    const layout = grid.engine.nodes.map((node) => {
+
+    return nodes.map((node) => {
       const position = node.id ? cardsById.get(node.id) : undefined;
       return {
         id: node.id,
@@ -517,7 +534,6 @@ export class Dashboard implements OnInit, OnDestroy {
         h: position?.h ?? node.h,
       };
     });
-    grid.load(layout, false);
   }
 
   onCardKeydown(event: KeyboardEvent, cardId: string): void {
