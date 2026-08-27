@@ -1,26 +1,16 @@
 import { ButtonSettings } from '../../models';
 import { DashboardCard } from '../card/dashboard-card.component';
 import { addComponentToRegistry } from '../card/utils';
-import {
-  CELL_HEIGHT,
-  COMPACT_BREAKPOINT,
-  DASHBOARD_CARD_DRAG_ORIGIN_SELECTOR,
-  XL_PAGE,
-} from '../constants';
+import { CELL_HEIGHT, COMPACT_BREAKPOINT, DASHBOARD_CARD_DRAG_ORIGIN_SELECTOR, XL_PAGE } from '../constants';
 import { DiscardChangesDialog } from '../discard-changes-dialog/discard-changes-dialog.component';
 import { EditCardsDialog } from '../edit-cards-dialog/edit-cards-dialog.component';
-import {
-  DASHBOARD_I18N_KEYS,
-  DashboardI18nService,
-  DashboardTranslations,
-  EN_DEFAULTS,
-} from '../i18n';
+import { DASHBOARD_I18N_KEYS, DashboardI18nService, DashboardTranslations, EN_DEFAULTS } from '../i18n';
 import { CardConfig, DashboardConfig, SectionConfig } from '../models';
 import { DashboardSection } from '../section/dashboard-section.component';
 import { UnsavedChangesDialog } from '../unsaved-changes-dialog/unsaved-changes-dialog.component';
 import { ENGINE_PROFILES, EngineProfile } from './engines/contants/engines';
+import { parseCardKeyCommand } from './engines/keyboard/keyboard.helpers';
 import { ZflowGridStackEngine } from './engines/zflow/z-flow-engine';
-import type { CardMoveCommand } from './engines/zflow/z-flow.helpers';
 import {
   Component,
   ElementRef,
@@ -56,7 +46,6 @@ import '@ui5/webcomponents-icons/dist/menu2.js';
 import '@ui5/webcomponents-icons/dist/user-edit.js';
 import {
   GridItemHTMLElement,
-  GridStack,
   GridStackNode,
   GridStackOptions,
   GridStackPosition,
@@ -176,6 +165,9 @@ export class Dashboard implements OnInit, OnDestroy {
   protected engineProfile = computed((): EngineProfile =>
     this.config().zFlow ? ENGINE_PROFILES.zFlow : ENGINE_PROFILES.default,
   );
+  protected keyboardNavigationActive = computed(
+    () => this.editMode() && !!this.config().zFlow,
+  );
 
   protected hasToolbarMenuContent = computed(
     () => !!this.config().editable || this.customActions().length > 0,
@@ -262,7 +254,6 @@ export class Dashboard implements OnInit, OnDestroy {
   private cardsSnapshotJson = '';
   private sectionsSnapshot: SectionConfig[] = [];
   private cardsSnapshot: CardConfig[] = [];
-  private zFlowOrderSnapshot = new Map<string, number>();
 
   private gridStack = viewChild.required<GridstackComponent>('grid');
   private dragOriginPlaceholder = viewChild<ElementRef<HTMLElement>>(
@@ -366,7 +357,6 @@ export class Dashboard implements OnInit, OnDestroy {
   enterEditMode(): void {
     this.updateCardsPositions();
     this.getZFlowEngine()?.syncZFlowOrderFromLayout();
-    this.zFlowOrderSnapshot = this.captureZFlowOrder();
     this.sectionsSnapshot = [...this.sections()];
     this.cardsSnapshot = [...this.cards()];
     this.sectionsSnapshotJson = JSON.stringify(this.sections());
@@ -408,7 +398,6 @@ export class Dashboard implements OnInit, OnDestroy {
     this.editMode.set(false);
 
     this.cards.set(savedCards);
-    this.zFlowOrderSnapshot.clear();
     this.saved.emit({
       sections: this.sections(),
       cards: savedCards,
@@ -492,7 +481,6 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   private discardEdit(): void {
-    this.restoreZFlowOrderSnapshot();
     this.sections.set(this.sectionsSnapshot);
     this.cards.set(
       this.cardsSnapshot.map((c) => {
@@ -503,15 +491,46 @@ export class Dashboard implements OnInit, OnDestroy {
     this.cardDialogOpen.set(false);
     this.gridDirty.set(false);
     this.editMode.set(false);
-    afterNextRender(() => this.getZFlowEngine()?.commitZFlowLayout(), {
-      injector: this.injector,
+    afterNextRender(
+      () => {
+        this.restoreGridLayoutFromCards();
+        const engine = this.getZFlowEngine();
+        engine?.syncZFlowOrderFromLayout();
+        engine?.commitZFlowLayout();
+      },
+      { injector: this.injector },
+    );
+  }
+
+  private restoreGridLayoutFromCards(): void {
+    const grid = this.gridStack().grid;
+    if (!grid) return;
+
+    const cardsById = new Map(this.cards().map((card) => [card.id, card]));
+    const layout = grid.engine.nodes.map((node) => {
+      const position = node.id ? cardsById.get(node.id) : undefined;
+      return {
+        id: node.id,
+        x: position?.x ?? node.x,
+        y: position?.y ?? node.y,
+        w: position?.w ?? node.w,
+        h: position?.h ?? node.h,
+      };
     });
+    grid.load(layout, false);
   }
 
   onCardKeydown(event: KeyboardEvent, cardId: string): void {
-    if (!this.editMode() || event.target !== event.currentTarget) return;
+    const zFlowEngine = this.getZFlowEngine();
+    if (
+      !this.keyboardNavigationActive() ||
+      !zFlowEngine ||
+      event.target !== event.currentTarget
+    ) {
+      return;
+    }
 
-    const command = this.parseCardKeyCommand(event);
+    const command = parseCardKeyCommand(event);
     if (!command) return;
 
     event.preventDefault();
@@ -524,124 +543,13 @@ export class Dashboard implements OnInit, OnDestroy {
       return;
     }
 
-    const zFlowEngine = this.getZFlowEngine();
-    if (zFlowEngine) {
-      if (command === 'grow' || command === 'shrink') {
-        zFlowEngine.stepNodeWidth(cardId, command);
-      } else {
-        zFlowEngine.moveNodeByKeyboard(cardId, command);
-      }
-    } else {
-      this.applyDefaultKeyboardCommand(node, command);
+    const changed = zFlowEngine.applyKeyboardCommand(cardId, command);
+
+    if (changed) {
+      this.onGridChange();
     }
 
     this.restoreCardFocus(gridItemHost);
-  }
-
-  private parseCardKeyCommand(
-    event: KeyboardEvent,
-  ): CardMoveCommand | 'grow' | 'shrink' | null {
-    const only = (modifier: boolean): boolean =>
-      modifier && !event.altKey && !event.ctrlKey && !event.metaKey;
-    const controlOnly =
-      event.ctrlKey && !event.altKey && !event.shiftKey && !event.metaKey;
-    const metaOnly =
-      event.metaKey && !event.altKey && !event.ctrlKey && !event.shiftKey;
-
-    if (only(event.shiftKey)) {
-      if (event.key === 'ArrowRight') return 'grow';
-      if (event.key === 'ArrowLeft') return 'shrink';
-    }
-    if (metaOnly) {
-      if (event.key === 'ArrowLeft') return 'row-start';
-      if (event.key === 'ArrowRight') return 'row-end';
-    }
-    if (controlOnly) {
-      if (event.key === 'ArrowLeft') return 'left';
-      if (event.key === 'ArrowRight') return 'right';
-      if (event.key === 'ArrowUp') return 'up';
-      if (event.key === 'ArrowDown') return 'down';
-      if (event.key === 'Home') return 'row-start';
-      if (event.key === 'End') return 'row-end';
-    }
-
-    return null;
-  }
-
-  private applyDefaultKeyboardCommand(
-    node: GridStackNode,
-    command: CardMoveCommand | 'grow' | 'shrink',
-  ): void {
-    const grid = this.gridStack().grid;
-    if (!grid) return;
-
-    const column = grid.getColumn();
-    const x = node.x ?? 0;
-    const y = node.y ?? 0;
-    const width = node.w ?? 1;
-    let update: GridStackPosition | null = null;
-
-    if (command === 'grow' || command === 'shrink') {
-      const minWidth = Math.max(1, node.minW ?? 1);
-      const hardMax = Math.min(node.maxW ?? column, column - x);
-      if (minWidth > hardMax) return;
-      const target = command === 'grow' ? width + 1 : width - 1;
-      update = { w: Math.max(minWidth, Math.min(hardMax, target)) };
-    } else if (command === 'left') {
-      update = { x: Math.max(0, x - 1) };
-    } else if (command === 'right') {
-      update = { x: Math.min(Math.max(0, column - width), x + 1) };
-    } else if (command === 'up') {
-      if (this.swapDefaultVerticalNode(grid, node, 'up')) return;
-      update = { y: Math.max(0, y - 1) };
-    } else if (command === 'down') {
-      if (this.swapDefaultVerticalNode(grid, node, 'down')) return;
-      update = { y: y + 1 };
-    } else if (command === 'row-start') {
-      update = { x: 0 };
-    } else {
-      update = { x: Math.max(0, column - width) };
-    }
-
-    const currentValue =
-      command === 'grow' || command === 'shrink'
-        ? width
-        : command === 'up' || command === 'down'
-          ? y
-          : x;
-    const targetValue =
-      command === 'grow' || command === 'shrink'
-        ? update.w
-        : command === 'up' || command === 'down'
-          ? update.y
-          : update.x;
-    if (targetValue !== undefined && targetValue !== currentValue) {
-      grid.engine.moveNode(node, update);
-    }
-  }
-
-  private swapDefaultVerticalNode(
-    grid: GridStack,
-    node: GridStackNode,
-    direction: 'up' | 'down',
-  ): boolean {
-    const y = node.y ?? 0;
-    const candidates = grid.engine.nodes.filter((candidate) => {
-      const candidateY = candidate.y ?? 0;
-      return direction === 'up' ? candidateY < y : candidateY > y;
-    });
-    const target = candidates.sort((a, b) =>
-      direction === 'up' ? (b.y ?? 0) - (a.y ?? 0) : (a.y ?? 0) - (b.y ?? 0),
-    )[0];
-    if (!target) return false;
-
-    const targetPosition = { x: target.x ?? 0, y: target.y ?? 0 };
-    const currentPosition = { x: node.x ?? 0, y };
-    grid.batchUpdate();
-    grid.engine.moveNode(node, targetPosition);
-    grid.engine.moveNode(target, currentPosition);
-    grid.batchUpdate(false);
-    return true;
   }
 
   private restoreCardFocus(host: HTMLElement): void {
@@ -651,31 +559,6 @@ export class Dashboard implements OnInit, OnDestroy {
     });
   }
 
-  private captureZFlowOrder(): Map<string, number> {
-    const snapshot = new Map<string, number>();
-    for (const node of this.gridStack().grid?.engine?.nodes ?? []) {
-      const order = (node as GridStackNode & { zFlowOrder?: number })
-        .zFlowOrder;
-      if (node.id && order !== undefined) snapshot.set(node.id, order);
-    }
-    return snapshot;
-  }
-
-  private restoreZFlowOrderSnapshot(): void {
-    const engine = this.getZFlowEngine();
-    if (!engine || !this.zFlowOrderSnapshot.size) return;
-
-    const nodes = engine.nodes as GridStackNode[];
-    let nextOrder = Math.max(...this.zFlowOrderSnapshot.values(), -1) + 1;
-    for (const node of nodes) {
-      const snapshotOrder = node.id
-        ? this.zFlowOrderSnapshot.get(node.id)
-        : undefined;
-      (node as GridStackNode & { zFlowOrder?: number }).zFlowOrder =
-        snapshotOrder ?? nextOrder++;
-    }
-  }
-
   removeSection(id: string): void {
     this.sections.update((list) => list.filter((s) => s.id !== id));
     this.cards.update((list) => list.filter((c) => c.sectionId !== id));
@@ -683,7 +566,6 @@ export class Dashboard implements OnInit, OnDestroy {
 
   removeCard(id: string): void {
     const wasLooseCard = this.looseCards().some((c) => c.id === id);
-    this.cardsPosition.delete(id);
     this.cards.update((list) => list.filter((c) => c.id !== id));
 
     if (wasLooseCard) {

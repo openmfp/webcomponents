@@ -1,12 +1,10 @@
 import type { GridStackNode } from 'gridstack';
 import type { GridStackEngine } from 'gridstack/dist/gridstack-engine';
+import type { CardMoveCommand } from '../keyboard/keyboard.helpers';
 
 export type ZFlowGridStackNode = GridStackNode & {
   zFlowOrder?: number;
 };
-
-export type CardMoveCommand =
-  'left' | 'right' | 'up' | 'down' | 'row-start' | 'row-end';
 
 type NotifyableGridStackEngine = GridStackEngine & {
   _notify?: () => unknown;
