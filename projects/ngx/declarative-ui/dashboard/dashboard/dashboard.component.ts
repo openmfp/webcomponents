@@ -231,6 +231,7 @@ export class Dashboard implements OnInit, OnDestroy {
   });
 
   protected isEmpty = computed(() => this.looseCards().length === 0);
+  protected isDashboardEditable = computed(() => this.config().editable);
 
   protected gridOptions = computed((): GridStackOptions => ({
     cellHeight: CELL_HEIGHT,

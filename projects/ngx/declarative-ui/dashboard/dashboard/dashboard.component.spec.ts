@@ -2104,13 +2104,24 @@ describe('Dashboard', () => {
       expect(editButton(fixture)).toBeNull();
     });
 
-    it('omits the Edit Home button when the dashboard is not editable', () => {
+    it('hides the empty state entirely when the dashboard is not editable, because a read-only home offers nothing to add', () => {
       const { fixture } = setup();
 
       fixture.componentRef.setInput('config', { editable: false });
       fixture.detectChanges();
 
-      expect(emptyState(fixture)).not.toBeNull();
+      expect(emptyState(fixture)).toBeNull();
+      expect(editButton(fixture)).toBeNull();
+    });
+
+    it('keeps the empty state hidden on a populated, non-editable dashboard', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', { editable: false });
+      component.cards.set([{ id: 'card-1', component: 'mfp-a' }]);
+      fixture.detectChanges();
+
+      expect(emptyState(fixture)).toBeNull();
       expect(editButton(fixture)).toBeNull();
     });
   });

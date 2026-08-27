@@ -202,47 +202,45 @@
         }
       </div>
 
-      @if (isEmpty() && !loading()) {
-        <div class="mfp-dashboard__empty" data-testid="dashboard-empty-state">
-          <div
-            class="mfp-dashboard__empty-illustration"
-            data-testid="dashboard-empty-state-illustration"
-            role="img"
-            [attr.aria-label]="
-              i18nService.getTranslation(i18nKeys.EMPTY_STATE_ILLUSTRATION)
-            "
-          ></div>
-          <ui5-title
-            class="mfp-dashboard__empty-title"
-            data-testid="dashboard-empty-state-title"
-            level="H4"
-            size="H3"
-            wrapping-type="Normal"
-            >{{
-              i18nService.getTranslation(i18nKeys.EMPTY_STATE_TITLE)
-            }}</ui5-title
-          >
-          <p
-            class="mfp-dashboard__empty-description"
-            data-testid="dashboard-empty-state-description"
-          >
-            {{ i18nService.getTranslation(i18nKeys.EMPTY_STATE_DESCRIPTION) }}
-          </p>
-          @if (config().editable && !editMode()) {
-            <ui5-button
-              data-testid="dashboard-empty-state-edit-btn"
-              design="Emphasized"
-              [accessibleName]="
-                i18nService.getTranslation(i18nKeys.EDIT_HOME_BUTTON)
-              "
-              (click)="enterEditModeAndEditCards()"
-              >{{
-                i18nService.getTranslation(i18nKeys.EDIT_HOME_BUTTON)
-              }}</ui5-button
-            >
-          }
-        </div>
+  @if (isEmpty() && isDashboardEditable() && !loading()) {
+    <div class="mfp-dashboard__empty" data-testid="dashboard-empty-state">
+      <div
+        class="mfp-dashboard__empty-illustration"
+        data-testid="dashboard-empty-state-illustration"
+        role="img"
+        [attr.aria-label]="
+          i18nService.getTranslation(i18nKeys.EMPTY_STATE_ILLUSTRATION)
+        "
+      ></div>
+      <ui5-title
+        class="mfp-dashboard__empty-title"
+        data-testid="dashboard-empty-state-title"
+        level="H4"
+        size="H3"
+        wrapping-type="Normal"
+        >{{ i18nService.getTranslation(i18nKeys.EMPTY_STATE_TITLE) }}</ui5-title
+      >
+      <p
+        class="mfp-dashboard__empty-description"
+        data-testid="dashboard-empty-state-description"
+      >
+        {{ i18nService.getTranslation(i18nKeys.EMPTY_STATE_DESCRIPTION) }}
+      </p>
+      @if (isDashboardEditable() && !editMode()) {
+        <ui5-button
+          data-testid="dashboard-empty-state-edit-btn"
+          design="Emphasized"
+          [accessibleName]="
+            i18nService.getTranslation(i18nKeys.EDIT_HOME_BUTTON)
+          "
+          (click)="enterEditModeAndEditCards()"
+          >{{
+            i18nService.getTranslation(i18nKeys.EDIT_HOME_BUTTON)
+          }}</ui5-button
+        >
       }
+    </div>
+  }
 
       <gridstack
         #grid
