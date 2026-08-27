@@ -247,6 +247,7 @@
       <gridstack
         #grid
         data-testid="dashboard-grid"
+        [attr.role]="editMode() ? 'list' : null"
         [class.zflow-dragging]="!!dragOriginStyle()"
         [options]="gridOptions()"
         (addedCB)="onGridChange()"
@@ -266,8 +267,19 @@
         @for (card of looseCards(); track card.id) {
           <gridstack-item [options]="card">
             <mfp-dashboard-card
+              [attr.aria-keyshortcuts]="
+                editMode()
+                  ? 'Shift+ArrowRight Shift+ArrowLeft Control+ArrowLeft Control+ArrowRight Control+ArrowUp Control+ArrowDown Control+Home Control+End Meta+ArrowLeft Meta+ArrowRight'
+                  : null
+              "
+              [attr.aria-label]="
+                editMode() ? card.label || card.component || card.id : null
+              "
+              [attr.role]="editMode() ? 'listitem' : null"
+              [attr.tabindex]="editMode() ? '0' : null"
               [card]="card"
               [editMode]="editMode()"
+              (keydown)="onCardKeydown($event, card.id)"
               (removeCard)="removeCard($any(card.id))"
             />
           </gridstack-item>

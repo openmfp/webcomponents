@@ -5,6 +5,9 @@ export type ZFlowGridStackNode = GridStackNode & {
   zFlowOrder?: number;
 };
 
+export type CardMoveCommand =
+  'left' | 'right' | 'up' | 'down' | 'row-start' | 'row-end';
+
 type NotifyableGridStackEngine = GridStackEngine & {
   _notify?: () => unknown;
 };
@@ -253,6 +256,79 @@ export function resolveInsertionSlotFromProjectedRect(
   if (bestOverlapRatio > PROJECTED_SLOT_OVERLAP_THRESHOLD) return bestSlot;
 
   return Math.max(0, Math.min(previousSlot, idsWithoutSource.length));
+}
+
+export function resolveZFlowKeyboardInsertionSlot(
+  nodes: ZFlowGridStackNode[],
+  sourceId: string,
+  command: CardMoveCommand,
+  columnCount: number,
+): number | null {
+  syncNodeOrderFromLayout(nodes);
+  const ordered = sortNodesByZFlowOrder(nodes).filter((node) => node.id);
+  const source = projectZFlowLayout(ordered, columnCount).find(
+    (node) => node.id === sourceId,
+  );
+  if (!source) return null;
+
+  const orderedIds = ordered.map((node) => node.id as string);
+  const idsWithoutSource = orderedIds.filter((id) => id !== sourceId);
+  const candidates: {
+    slot: number;
+    projected: ProjectedNode;
+  }[] = [];
+
+  for (let slot = 0; slot <= idsWithoutSource.length; slot++) {
+    const candidateIds = reorderByInsertionSlot(orderedIds, sourceId, slot);
+    const candidateNodes = candidateIds
+      .map((id) => ordered.find((node) => node.id === id))
+      .filter((node): node is ZFlowGridStackNode & { id: string } => !!node);
+    const projected = projectZFlowLayout(candidateNodes, columnCount).find(
+      (node) => node.id === sourceId,
+    );
+    if (!projected) continue;
+    if (projected.row === source.row && projected.x === source.x) continue;
+
+    const isDirectionalMatch =
+      (command === 'left' &&
+        projected.row === source.row &&
+        projected.x < source.x) ||
+      (command === 'right' &&
+        projected.row === source.row &&
+        projected.x > source.x) ||
+      (command === 'up' && projected.row === source.row - 1) ||
+      (command === 'down' && projected.row === source.row + 1) ||
+      (command === 'row-start' &&
+        projected.row === source.row &&
+        projected.x < source.x) ||
+      (command === 'row-end' &&
+        projected.row === source.row &&
+        projected.x > source.x);
+
+    if (isDirectionalMatch) candidates.push({ slot, projected });
+  }
+
+  if (!candidates.length) return null;
+
+  candidates.sort((a, b) => {
+    const distance = (candidate: typeof a): number => {
+      if (command === 'up' || command === 'down') {
+        return Math.abs(candidate.projected.x - source.x);
+      }
+      if (command === 'row-start') return candidate.projected.x;
+      if (command === 'row-end') return -candidate.projected.x;
+      return Math.abs(candidate.projected.x - source.x);
+    };
+
+    return (
+      distance(a) - distance(b) ||
+      Math.abs(a.slot - orderedIds.indexOf(sourceId)) -
+        Math.abs(b.slot - orderedIds.indexOf(sourceId)) ||
+      a.slot - b.slot
+    );
+  });
+
+  return candidates[0].slot;
 }
 
 function isSameProjectedPosition(a: ProjectedNode, b: ProjectedNode): boolean {
