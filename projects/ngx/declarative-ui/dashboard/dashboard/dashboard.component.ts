@@ -56,6 +56,7 @@ import '@ui5/webcomponents-icons/dist/menu2.js';
 import '@ui5/webcomponents-icons/dist/user-edit.js';
 import {
   GridItemHTMLElement,
+  GridStack,
   GridStackNode,
   GridStackOptions,
   GridStackPosition,
@@ -531,7 +532,7 @@ export class Dashboard implements OnInit, OnDestroy {
         zFlowEngine.moveNodeByKeyboard(cardId, command);
       }
     } else {
-      this.applyDefaultKeyboardCommand(gridItemHost, node, command);
+      this.applyDefaultKeyboardCommand(node, command);
     }
 
     this.restoreCardFocus(gridItemHost);
@@ -568,7 +569,6 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   private applyDefaultKeyboardCommand(
-    host: GridItemHTMLElement | null,
     node: GridStackNode,
     command: CardMoveCommand | 'grow' | 'shrink',
   ): void {
@@ -592,8 +592,10 @@ export class Dashboard implements OnInit, OnDestroy {
     } else if (command === 'right') {
       update = { x: Math.min(Math.max(0, column - width), x + 1) };
     } else if (command === 'up') {
+      if (this.swapDefaultVerticalNode(grid, node, 'up')) return;
       update = { y: Math.max(0, y - 1) };
     } else if (command === 'down') {
+      if (this.swapDefaultVerticalNode(grid, node, 'down')) return;
       update = { y: y + 1 };
     } else if (command === 'row-start') {
       update = { x: 0 };
@@ -614,8 +616,32 @@ export class Dashboard implements OnInit, OnDestroy {
           ? update.y
           : update.x;
     if (targetValue !== undefined && targetValue !== currentValue) {
-      if (host) grid.update(host, update);
+      grid.engine.moveNode(node, update);
     }
+  }
+
+  private swapDefaultVerticalNode(
+    grid: GridStack,
+    node: GridStackNode,
+    direction: 'up' | 'down',
+  ): boolean {
+    const y = node.y ?? 0;
+    const candidates = grid.engine.nodes.filter((candidate) => {
+      const candidateY = candidate.y ?? 0;
+      return direction === 'up' ? candidateY < y : candidateY > y;
+    });
+    const target = candidates.sort((a, b) =>
+      direction === 'up' ? (b.y ?? 0) - (a.y ?? 0) : (a.y ?? 0) - (b.y ?? 0),
+    )[0];
+    if (!target) return false;
+
+    const targetPosition = { x: target.x ?? 0, y: target.y ?? 0 };
+    const currentPosition = { x: node.x ?? 0, y };
+    grid.batchUpdate();
+    grid.engine.moveNode(node, targetPosition);
+    grid.engine.moveNode(target, currentPosition);
+    grid.batchUpdate(false);
+    return true;
   }
 
   private restoreCardFocus(host: HTMLElement): void {
