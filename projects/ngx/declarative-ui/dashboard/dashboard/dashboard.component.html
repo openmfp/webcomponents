@@ -189,7 +189,7 @@
     }
   </div>
 
-  @if (isEmpty()) {
+  @if (isEmpty() && isDashboardEditable()) {
     <div class="mfp-dashboard__empty" data-testid="dashboard-empty-state">
       <div
         class="mfp-dashboard__empty-illustration"
