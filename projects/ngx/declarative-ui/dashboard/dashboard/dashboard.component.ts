@@ -516,13 +516,10 @@ export class Dashboard implements OnInit, OnDestroy {
     event.preventDefault();
     event.stopPropagation();
 
-    const cardHost = event.currentTarget as HTMLElement;
-    const gridItemHost = cardHost.closest(
-      'gridstack-item',
-    ) as GridItemHTMLElement | null;
-    const node = gridItemHost?.gridstackNode;
+    const gridItemHost = event.currentTarget as GridItemHTMLElement;
+    const node = gridItemHost.gridstackNode;
     if (!node || node.id !== cardId) {
-      this.restoreCardFocus(cardHost);
+      this.restoreCardFocus(gridItemHost);
       return;
     }
 
@@ -537,7 +534,7 @@ export class Dashboard implements OnInit, OnDestroy {
       this.applyDefaultKeyboardCommand(gridItemHost, node, command);
     }
 
-    this.restoreCardFocus(cardHost);
+    this.restoreCardFocus(gridItemHost);
   }
 
   private parseCardKeyCommand(
@@ -549,8 +546,6 @@ export class Dashboard implements OnInit, OnDestroy {
       event.ctrlKey && !event.altKey && !event.shiftKey && !event.metaKey;
     const metaOnly =
       event.metaKey && !event.altKey && !event.ctrlKey && !event.shiftKey;
-
-    console.log(event);
 
     if (only(event.shiftKey)) {
       if (event.key === 'ArrowRight') return 'grow';

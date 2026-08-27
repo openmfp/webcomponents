@@ -44,7 +44,15 @@ mfp-wc-dashboard {
 .mfp-dashboard.edit {
   padding-bottom: 60px;
 
-  > .mfp-dashboard__busy gridstack mfp-dashboard-card:focus-visible {
+  > .mfp-dashboard__busy gridstack > .grid-stack-item:focus-visible {
+    outline: none;
+  }
+
+  > .mfp-dashboard__busy
+    gridstack
+    > .grid-stack-item:focus-within
+    > .grid-stack-item-content
+    > mfp-dashboard-card {
     --sapTile_BorderColor: var(--sapHighlightColor, #0070f2);
     --sapGroup_ContentBorderColor: var(--sapHighlightColor, #0070f2);
     outline: 1px solid var(--sapHighlightColor, #0070f2);
