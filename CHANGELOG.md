@@ -14,10 +14,12 @@ and [releases](https://github.com/openmfp/webcomponents/releases) for details.
 ## [0.20.0] - 2026-08-28
 
 ### Features
-- Add keyboard controls for drag and resize (#282)- *(dashboard)* Show a busy indicator while the cards load (#277)- Address dashboard design changes (#273)- Empty state (#271)- Baseline accessibility (#266)- Theming support (#255)- Add Angular 22 support and reduce dev vulnerabilities (#252)
+
+- Add keyboard controls for drag and resize (#282)- _(dashboard)_ Show a busy indicator while the cards load (#277)- Address dashboard design changes (#273)- Empty state (#271)- Baseline accessibility (#266)- Theming support (#255)- Add Angular 22 support and reduce dev vulnerabilities (#252)
 
 ### Bug Fixes
-- *(deps)* Update dependency gridstack to v13.2.0 (#278)- *(table)* Add loading, failure and retry states (#267)- @openmfp/ngx packaging (#265)- Cover web component boundary (#264)- Prevent prototype pollution in setPropertyByPath (#262)- *(deps)* Update dependency gridstack to v13.1.2 (#261)
+
+- _(deps)_ Update dependency gridstack to v13.2.0 (#278)- _(table)_ Add loading, failure and retry states (#267)- @openmfp/ngx packaging (#265)- Cover web component boundary (#264)- Prevent prototype pollution in setPropertyByPath (#262)- _(deps)_ Update dependency gridstack to v13.1.2 (#261)
 
 ## [0.19.0] - 2026-08-12
 

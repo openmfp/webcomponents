@@ -55,14 +55,13 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref_name }}
           prefix: ''
-          majorList: ''
           minorList: feat
           patchList: fix, perf
           noVersionBumpBehavior: silent
           noNewCommitBehavior: silent
           skipInvalidTags: true
 
-      - name: Resolve version (override + pre-1.0 guard)
+      - name: Resolve version (override)
         id: version
         run: |
           set -euo pipefail
@@ -75,24 +74,12 @@ jobs:
           fi
 
           NEXT="${{ steps.semver.outputs.nextStrict }}"
-          CURRENT="${{ steps.semver.outputs.current }}"
-          BUMP="${{ steps.semver.outputs.bump }}"
 
           # No releasable commits -> nothing to do.
-          if [ -z "$NEXT" ] || [ "$BUMP" = "none" ]; then
+          if [ -z "$NEXT" ]; then
             echo "No releasable changes since the last tag. Nothing to release."
             echo "version=" >> "$GITHUB_OUTPUT"
             exit 0
-          fi
-
-          # Pre-1.0 guard: a breaking change yields 1.0.0 from semver-action, but while on 0.x
-          # the API is not stable (SemVer sec.4), so a breaking change bumps the minor instead.
-          CUR_MAJOR="${CURRENT%%.*}"
-          if [ "$BUMP" = "major" ] && [ "$CUR_MAJOR" = "0" ]; then
-            REST="${CURRENT#*.}"
-            CUR_MINOR="${REST%%.*}"
-            NEXT="0.$((CUR_MINOR + 1)).0"
-            echo "Pre-1.0 guard: downgrading major bump to minor -> $NEXT"
           fi
 
           echo "version=$NEXT" >> "$GITHUB_OUTPUT"
