@@ -43,6 +43,14 @@ mfp-wc-dashboard {
 
 .mfp-dashboard.edit {
   padding-bottom: 60px;
+
+  > .mfp-dashboard__busy gridstack > .grid-stack-item,
+  > .mfp-dashboard__busy gridstack > .grid-stack-item:focus,
+  > .mfp-dashboard__busy gridstack > .grid-stack-item:focus-visible {
+    outline: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
 }
 
 .mfp-sections-container {

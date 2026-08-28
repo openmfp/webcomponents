@@ -9,6 +9,7 @@ import {
   resolveDropRowFromRect,
   resolveInsertionSlotFromProjectedRect,
   resolveInsertionSlotFromRow,
+  resolveZFlowKeyboardInsertionSlot,
   seedNodeOrder,
   sortNodesByZFlowOrder,
   syncNodeOrderFromLayout,
@@ -276,6 +277,39 @@ describe('sortNodesByZFlowOrder', () => {
     sortNodesByZFlowOrder(nodes);
 
     expect(nodes.map((n) => n.id)).toEqual(['b', 'a']);
+  });
+});
+
+describe('resolveZFlowKeyboardInsertionSlot', () => {
+  const nodes = (): ZFlowGridStackNode[] => [
+    { id: 'a', x: 0, y: 0, w: 1, h: 10 },
+    { id: 'b', x: 1, y: 0, w: 1, h: 10 },
+    { id: 'c', x: 2, y: 0, w: 1, h: 10 },
+    { id: 'd', x: 0, y: 10, w: 1, h: 10 },
+    { id: 'e', x: 1, y: 10, w: 1, h: 10 },
+    { id: 'f', x: 2, y: 10, w: 1, h: 10 },
+  ];
+
+  it.each([
+    ['left', 'b', 0],
+    ['right', 'b', 2],
+    ['up', 'e', 1],
+    ['down', 'b', 4],
+    ['row-start', 'c', 0],
+    ['row-end', 'a', 2],
+  ] as const)('finds the insertion slot for %s', (command, id, expected) => {
+    expect(resolveZFlowKeyboardInsertionSlot(nodes(), id, command, 3)).toBe(
+      expected,
+    );
+  });
+
+  it('returns null when the card does not exist or cannot move in that direction', () => {
+    expect(
+      resolveZFlowKeyboardInsertionSlot(nodes(), 'missing', 'left', 3),
+    ).toBeNull();
+    expect(
+      resolveZFlowKeyboardInsertionSlot(nodes(), 'a', 'left', 3),
+    ).toBeNull();
   });
 });
 

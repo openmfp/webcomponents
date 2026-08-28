@@ -1,7 +1,16 @@
-import { resolveResizeWidthStep } from './resize.helpers';
+import type {
+  CardKeyboardCommand,
+  CardMoveCommand,
+} from '../keyboard/keyboard.types';
+import {
+  type ResizeDirection,
+  resolveDirectionalResizeWidthStep,
+  resolveResizeWidthStep,
+} from './resize.helpers';
 import {
   type ZFlowGridStackNode,
   applyProjectedLayout,
+  finalizeEngineChange,
   getZFlowRowHeight,
   normalizeNodeOrder,
   notifyEngine,
@@ -9,6 +18,7 @@ import {
   reorderByInsertionSlot,
   resolveDropRowFromRect,
   resolveInsertionSlotFromProjectedRect,
+  resolveZFlowKeyboardInsertionSlot,
   seedNodeOrder,
   sortNodesByZFlowOrder,
   syncNodeOrderFromLayout,
@@ -25,6 +35,71 @@ interface LayoutSnapshot {
 }
 
 export class ZflowGridStackEngine extends GridStackEngine {
+  applyKeyboardCommand(id: string, command: CardKeyboardCommand): boolean {
+    if (command === 'grow' || command === 'shrink') {
+      return this.stepNodeWidth(id, command);
+    }
+
+    return this.moveNodeByKeyboard(id, command);
+  }
+
+  moveNodeByKeyboard(id: string, command: CardMoveCommand): boolean {
+    const nodes = this.nodes as ZFlowGridStackNode[];
+    const slot = resolveZFlowKeyboardInsertionSlot(
+      nodes,
+      id,
+      command,
+      this.column,
+    );
+    if (slot === null) return false;
+
+    const ordered = sortNodesByZFlowOrder(nodes);
+    const orderedIds = ordered
+      .filter((node) => node.id)
+      .map((node) => node.id as string);
+    const nextOrder = reorderByInsertionSlot(orderedIds, id, slot);
+    nextOrder.forEach((nodeId, index) => {
+      const node = nodes.find((candidate) => candidate.id === nodeId);
+      if (node) node.zFlowOrder = index;
+    });
+
+    const snapshot = this.takeLayoutSnapshot(nodes);
+    applyProjectedLayout(
+      nodes,
+      projectZFlowLayout(sortNodesByZFlowOrder(nodes), this.column),
+    );
+    const changed = this.markLayoutChangesDirty(snapshot);
+    if (!changed) return false;
+
+    this.notifyAndFinalizeKeyboardChange();
+    return true;
+  }
+
+  stepNodeWidth(id: string, direction: ResizeDirection): boolean {
+    const nodes = this.nodes as ZFlowGridStackNode[];
+    const node = nodes.find((candidate) => candidate.id === id);
+    if (!node) return false;
+
+    syncNodeOrderFromLayout(nodes);
+    const x = node.x ?? 0;
+    const maxWidth = node.maxW ?? this.column;
+    const hardMax = Math.min(maxWidth, this.column - x);
+    const minWidth = Math.max(1, node.minW ?? 1);
+    if (minWidth > hardMax) return false;
+
+    const target = resolveDirectionalResizeWidthStep(
+      node.w ?? 1,
+      direction,
+      maxWidth,
+      this.column,
+      minWidth,
+      hardMax,
+    );
+    if (target === null) return false;
+
+    return this.applyKeyboardWidth(node, target);
+  }
+
   override moveNodeCheck(
     node: GridStackNode,
     opts: GridStackMoveOpts,
@@ -78,6 +153,32 @@ export class ZflowGridStackEngine extends GridStackEngine {
 
     notifyEngine(this);
     return true;
+  }
+
+  private applyKeyboardWidth(node: ZFlowGridStackNode, width: number): boolean {
+    const nodes = this.nodes as ZFlowGridStackNode[];
+    const snapshot = this.takeLayoutSnapshot(nodes);
+    node.w = resolveResizeWidthStep(
+      width,
+      node.maxW ?? this.column,
+      this.column,
+      node.minW ?? 1,
+      this.column - (node.x ?? 0),
+    );
+    applyProjectedLayout(
+      nodes,
+      projectZFlowLayout(sortNodesByZFlowOrder(nodes), this.column),
+    );
+    const changed = this.markLayoutChangesDirty(snapshot);
+    if (!changed) return false;
+
+    this.notifyAndFinalizeKeyboardChange();
+    return true;
+  }
+
+  private notifyAndFinalizeKeyboardChange(): void {
+    notifyEngine(this);
+    finalizeEngineChange(this);
   }
 
   commitZFlowLayout(): boolean {

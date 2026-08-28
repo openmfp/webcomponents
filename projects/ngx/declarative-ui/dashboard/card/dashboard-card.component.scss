@@ -3,6 +3,9 @@
   min-width: 0;
   min-height: 0;
   overflow: visible;
+  outline: none;
+  border: 0;
+  box-shadow: none;
 }
 
 .card__remove {
@@ -38,12 +41,33 @@
     cursor: grab;
   }
 
+  .component-host {
+    border-radius: var(--sapElement_BorderCornerRadius, 12px);
+  }
+
   &--editing:hover {
     --sapTile_BorderColor: var(--sapHighlightColor, #0070f2);
     --sapGroup_ContentBorderColor: var(--sapHighlightColor, #0070f2);
+    .component-host {
+      border: var(--mfp_cardBorder, none);
+    }
+  }
+
+  // The grid item owns keyboard focus in edit mode. Apply the same variables
+  // as hover to the card surface so the visible border stays inside the card.
+  :host-context(.grid-stack-item:focus) &--editing {
+    --sapTile_BorderColor: var(--sapHighlightColor, #0070f2);
+    --sapGroup_ContentBorderColor: var(--sapHighlightColor, #0070f2);
+    .component-host {
+      border: var(--mfp_cardBorder, none);
+    }
   }
 
   &--editing:hover .card__resize-indicator {
+    opacity: 1;
+  }
+
+  :host-context(.grid-stack-item:focus) &--editing .card__resize-indicator {
     opacity: 1;
   }
 }

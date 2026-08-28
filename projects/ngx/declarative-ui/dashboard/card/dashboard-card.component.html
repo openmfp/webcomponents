@@ -27,6 +27,7 @@
       />
     }
     <div
+      [attr.inert]="editMode() ? '' : null"
       [class]="componentHostClasses"
       [style.pointer-events]="editMode() ? 'none' : 'auto'"
     >
@@ -36,6 +37,7 @@
 } @else {
   <div class="card" [attr.data-testid]="'dashboard-card-' + card().id">
     <div
+      [attr.inert]="editMode() ? '' : null"
       [class]="cardBodyClasses"
       [style.pointer-events]="editMode() ? 'none' : 'auto'"
     >

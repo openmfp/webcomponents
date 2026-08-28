@@ -1,5 +1,6 @@
 import {
   getAllowedResizeWidths,
+  resolveDirectionalResizeWidthStep,
   resolveResizeWidthStep,
 } from './resize.helpers';
 
@@ -170,5 +171,26 @@ describe('resolveResizeWidthStep', () => {
       expect(resolveResizeWidthStep(99, 4, 4, 1, 1)).toBe(1);
       expect(resolveResizeWidthStep(0, 4, 4, 1, 1)).toBe(1);
     });
+  });
+});
+
+describe('resolveDirectionalResizeWidthStep', () => {
+  it('returns the next wider allowed step', () => {
+    expect(resolveDirectionalResizeWidthStep(1, 'grow', 4, 4)).toBe(2);
+    expect(resolveDirectionalResizeWidthStep(2, 'grow', 4, 4)).toBe(4);
+  });
+
+  it('returns the next narrower allowed step', () => {
+    expect(resolveDirectionalResizeWidthStep(4, 'shrink', 4, 4)).toBe(2);
+    expect(resolveDirectionalResizeWidthStep(2, 'shrink', 4, 4)).toBe(1);
+  });
+
+  it('returns null at either resize boundary', () => {
+    expect(resolveDirectionalResizeWidthStep(4, 'grow', 4, 4)).toBeNull();
+    expect(resolveDirectionalResizeWidthStep(1, 'shrink', 4, 4)).toBeNull();
+  });
+
+  it('respects the effective maximum available at the node position', () => {
+    expect(resolveDirectionalResizeWidthStep(2, 'grow', 4, 4, 1, 2)).toBeNull();
   });
 });

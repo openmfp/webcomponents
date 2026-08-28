@@ -34,3 +34,27 @@ export function resolveResizeWidthStep(
       : best;
   }, allowed[0]);
 }
+
+export type ResizeDirection = 'grow' | 'shrink';
+
+export function resolveDirectionalResizeWidthStep(
+  currentWidth: number,
+  direction: ResizeDirection,
+  maxWidth: number,
+  columnCount: number,
+  minWidth = 1,
+  hardMax = columnCount,
+): number | null {
+  const allowed = getAllowedResizeWidths(
+    maxWidth,
+    columnCount,
+    minWidth,
+    hardMax,
+  );
+
+  if (direction === 'grow') {
+    return allowed.find((width) => width > currentWidth) ?? null;
+  }
+
+  return [...allowed].reverse().find((width) => width < currentWidth) ?? null;
+}

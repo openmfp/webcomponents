@@ -19,6 +19,8 @@ import { CardConfig, DashboardConfig, SectionConfig } from '../models';
 import { DashboardSection } from '../section/dashboard-section.component';
 import { UnsavedChangesDialog } from '../unsaved-changes-dialog/unsaved-changes-dialog.component';
 import { ENGINE_PROFILES, EngineProfile } from './engines/contants/engines';
+import { parseCardKeyCommand } from './engines/keyboard/keyboard.helpers';
+import { CARD_ARIA_KEYSHORTCUTS } from './engines/keyboard/keyboard.types';
 import { ZflowGridStackEngine } from './engines/zflow/z-flow-engine';
 import {
   Component,
@@ -53,7 +55,12 @@ import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 import '@ui5/webcomponents-icons/dist/action-settings.js';
 import '@ui5/webcomponents-icons/dist/menu2.js';
 import '@ui5/webcomponents-icons/dist/user-edit.js';
-import { GridStackNode, GridStackOptions, GridStackPosition } from 'gridstack';
+import {
+  GridItemHTMLElement,
+  GridStackNode,
+  GridStackOptions,
+  GridStackPosition,
+} from 'gridstack';
 import {
   GridstackComponent,
   GridstackItemComponent,
@@ -169,6 +176,10 @@ export class Dashboard implements OnInit, OnDestroy {
   protected engineProfile = computed((): EngineProfile =>
     this.config().zFlow ? ENGINE_PROFILES.zFlow : ENGINE_PROFILES.default,
   );
+  protected keyboardNavigationActive = computed(
+    () => this.editMode() && !!this.config().zFlow,
+  );
+  protected readonly cardAriaKeyshortcuts = CARD_ARIA_KEYSHORTCUTS;
 
   protected hasToolbarMenuContent = computed(
     () => !!this.config().editable || this.customActions().length > 0,
@@ -357,7 +368,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
   enterEditMode(): void {
     this.updateCardsPositions();
-
+    this.getZFlowEngine()?.syncZFlowOrderFromLayout();
     this.sectionsSnapshot = [...this.sections()];
     this.cardsSnapshot = [...this.cards()];
     this.sectionsSnapshotJson = JSON.stringify(this.sections());
@@ -492,6 +503,76 @@ export class Dashboard implements OnInit, OnDestroy {
     this.cardDialogOpen.set(false);
     this.gridDirty.set(false);
     this.editMode.set(false);
+    afterNextRender(
+      () => {
+        this.restoreGridLayoutFromCards();
+        const engine = this.getZFlowEngine();
+        engine?.syncZFlowOrderFromLayout();
+        engine?.commitZFlowLayout();
+      },
+      { injector: this.injector },
+    );
+  }
+
+  private restoreGridLayoutFromCards(): void {
+    const grid = this.gridStack().grid;
+    if (!grid) return;
+
+    grid.load(this.createGridLayoutFromCards(grid.engine.nodes), false);
+  }
+
+  private createGridLayoutFromCards(nodes: GridStackNode[]): GridStackNode[] {
+    const cardsById = new Map(this.cards().map((card) => [card.id, card]));
+
+    return nodes.map((node) => {
+      const position = node.id ? cardsById.get(node.id) : undefined;
+      return {
+        id: node.id,
+        x: position?.x ?? node.x,
+        y: position?.y ?? node.y,
+        w: position?.w ?? node.w,
+        h: position?.h ?? node.h,
+      };
+    });
+  }
+
+  onCardKeydown(event: KeyboardEvent, cardId: string): void {
+    const zFlowEngine = this.getZFlowEngine();
+    if (
+      !this.keyboardNavigationActive() ||
+      !zFlowEngine ||
+      event.target !== event.currentTarget
+    ) {
+      return;
+    }
+
+    const command = parseCardKeyCommand(event);
+    if (!command) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const gridItemHost = event.currentTarget as GridItemHTMLElement;
+    const node = gridItemHost.gridstackNode;
+    if (!node || node.id !== cardId) {
+      this.restoreCardFocus(gridItemHost);
+      return;
+    }
+
+    const changed = zFlowEngine.applyKeyboardCommand(cardId, command);
+
+    if (changed) {
+      this.onGridChange();
+    }
+
+    this.restoreCardFocus(gridItemHost);
+  }
+
+  private restoreCardFocus(host: HTMLElement): void {
+    queueMicrotask(() => {
+      if (host.isConnected && this.editMode())
+        host.focus({ preventScroll: true });
+    });
   }
 
   removeSection(id: string): void {
@@ -501,7 +582,6 @@ export class Dashboard implements OnInit, OnDestroy {
 
   removeCard(id: string): void {
     const wasLooseCard = this.looseCards().some((c) => c.id === id);
-    this.cardsPosition.delete(id);
     this.cards.update((list) => list.filter((c) => c.id !== id));
 
     if (wasLooseCard) {
