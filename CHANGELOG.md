@@ -9,6 +9,8 @@ and [releases](https://github.com/openmfp/webcomponents/releases) for details.
 
 <!-- git-cliff:insert -->
 
+## [1.1.0] - 2026-08-28
+
 ## [0.20.0] - 2026-08-28
 
 ### Features
