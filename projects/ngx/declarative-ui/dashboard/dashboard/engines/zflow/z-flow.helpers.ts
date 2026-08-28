@@ -1,6 +1,6 @@
+import type { CardMoveCommand } from '../keyboard/keyboard.types';
 import type { GridStackNode } from 'gridstack';
 import type { GridStackEngine } from 'gridstack/dist/gridstack-engine';
-import type { CardMoveCommand } from '../keyboard/keyboard.types';
 
 export type ZFlowGridStackNode = GridStackNode & {
   zFlowOrder?: number;

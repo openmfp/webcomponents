@@ -24,6 +24,58 @@ function withInternalIds(nodes: ZFlowGridStackNode[]): ZFlowGridStackNode[] {
 }
 
 describe('SteppedResizeGridStackEngine', () => {
+  describe('keyboard commands', () => {
+    it('dispatches movement through the z-flow layout and finalizes GridStack state', () => {
+      const nodes = withInternalIds([
+        { id: 'a', x: 0, y: 0, w: 1, h: 10 },
+        { id: 'b', x: 1, y: 0, w: 1, h: 10 },
+        { id: 'c', x: 2, y: 0, w: 1, h: 10 },
+      ]);
+      const { engine, onChange } = createEngine(nodes);
+
+      expect(engine.applyKeyboardCommand('b', 'left')).toBe(true);
+
+      expect(nodes.map(({ id, x }) => ({ id, x }))).toEqual([
+        { id: 'a', x: 1 },
+        { id: 'b', x: 0 },
+        { id: 'c', x: 2 },
+      ]);
+      expect(onChange).toHaveBeenCalledWith(
+        expect.arrayContaining([nodes[0], nodes[1]]),
+      );
+      expect(engine.getDirtyNodes()).toEqual([]);
+      expect(
+        nodes.every(
+          (node) => !(node as unknown as { _dirty?: boolean })._dirty,
+        ),
+      ).toBe(true);
+      expect(
+        nodes.every((node) => !!(node as unknown as { _orig?: unknown })._orig),
+      ).toBe(true);
+    });
+
+    it('dispatches grow and shrink through the keyboard command entry point', () => {
+      const nodes = withInternalIds([
+        { id: 'a', x: 0, y: 0, w: 1, h: 10, maxW: 4 },
+        { id: 'b', x: 1, y: 0, w: 1, h: 10 },
+      ]);
+      const { engine } = createEngine(nodes);
+
+      expect(engine.applyKeyboardCommand('a', 'grow')).toBe(true);
+      expect(nodes[0].w).toBe(2);
+      expect(engine.applyKeyboardCommand('a', 'shrink')).toBe(true);
+      expect(nodes[0].w).toBe(1);
+    });
+
+    it('returns false without changing state for an unknown card', () => {
+      const nodes = withInternalIds([{ id: 'a', x: 0, y: 0, w: 1, h: 10 }]);
+      const { engine, onChange } = createEngine(nodes);
+
+      expect(engine.applyKeyboardCommand('missing', 'right')).toBe(false);
+      expect(onChange).not.toHaveBeenCalled();
+    });
+  });
+
   it('preserves z-flow when a card is removed during a GridStack batch update', () => {
     const nodes = withInternalIds([
       { id: 'favorites', x: 0, y: 0, w: 1, h: 10 },

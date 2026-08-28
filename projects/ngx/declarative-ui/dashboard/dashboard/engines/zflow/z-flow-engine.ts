@@ -1,12 +1,12 @@
+import type {
+  CardKeyboardCommand,
+  CardMoveCommand,
+} from '../keyboard/keyboard.types';
 import {
   type ResizeDirection,
   resolveDirectionalResizeWidthStep,
   resolveResizeWidthStep,
 } from './resize.helpers';
-import type {
-  CardKeyboardCommand,
-  CardMoveCommand,
-} from '../keyboard/keyboard.types';
 import {
   type ZFlowGridStackNode,
   applyProjectedLayout,
@@ -35,10 +35,7 @@ interface LayoutSnapshot {
 }
 
 export class ZflowGridStackEngine extends GridStackEngine {
-  applyKeyboardCommand(
-    id: string,
-    command: CardKeyboardCommand,
-  ): boolean {
+  applyKeyboardCommand(id: string, command: CardKeyboardCommand): boolean {
     if (command === 'grow' || command === 'shrink') {
       return this.stepNodeWidth(id, command);
     }

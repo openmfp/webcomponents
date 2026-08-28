@@ -3,12 +3,17 @@ import { DASHBOARD_CARD_DRAG_ORIGIN_CLASS, XL_PAGE } from '../constants';
 import { EN_DEFAULTS } from '../i18n';
 import { CardConfig, SectionConfig } from '../models';
 import { Dashboard } from './dashboard.component';
+import { CARD_ARIA_KEYSHORTCUTS } from './engines/keyboard/keyboard.types';
 import { ZflowGridStackEngine } from './engines/zflow/z-flow-engine';
 import type { ZFlowGridStackNode } from './engines/zflow/z-flow.helpers';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { BusyIndicator } from '@fundamental-ngx/ui5-webcomponents/busy-indicator';
-import type { GridStackMoveOpts, GridStackNode } from 'gridstack';
+import type {
+  GridItemHTMLElement,
+  GridStackMoveOpts,
+  GridStackNode,
+} from 'gridstack';
 import { axe } from 'vitest-axe';
 
 vi.mock('gridstack', () => ({}));
@@ -418,6 +423,47 @@ describe('Dashboard', () => {
       expect(component.discardDialogOpen()).toBe(false);
       expect(component.editMode()).toBe(true);
       expect(component.sections()).toEqual([{ id: 'beta', title: 'Beta' }]);
+    });
+
+    it('restores the GridStack layout from the card snapshot after discard', async () => {
+      const { fixture, component } = setup();
+      const nodes: GridStackNode[] = [
+        { id: 'card-1', x: 0, y: 0, w: 2, h: 10 },
+        { id: 'card-2', x: 2, y: 0, w: 2, h: 10 },
+      ];
+      const load = vi.fn();
+      const grid = {
+        engine: { nodes },
+        load,
+      };
+      (component as unknown as { gridStack: () => unknown }).gridStack =
+        () => ({
+          grid,
+          gridstackItems: {
+            toArray: () => nodes.map((node) => ({ options: node })),
+          },
+        });
+      component.cards.set([
+        { id: 'card-1', component: 'mfp-a', x: 0, y: 0, w: 2, h: 10 },
+        { id: 'card-2', component: 'mfp-b', x: 2, y: 0, w: 2, h: 10 },
+      ]);
+
+      component.enterEditMode();
+      component.cards.set([
+        { id: 'card-1', component: 'mfp-a', x: 2, y: 10, w: 2, h: 10 },
+        { id: 'card-2', component: 'mfp-b', x: 0, y: 0, w: 2, h: 10 },
+      ]);
+      component.cancelEdit();
+      component.confirmDiscard();
+      await fixture.whenStable();
+
+      expect(load).toHaveBeenCalledWith(
+        [
+          { id: 'card-1', x: 0, y: 0, w: 2, h: 10 },
+          { id: 'card-2', x: 2, y: 0, w: 2, h: 10 },
+        ],
+        false,
+      );
     });
   });
 
@@ -1343,6 +1389,99 @@ describe('Dashboard', () => {
       window.dispatchEvent(event);
 
       expect(preventSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('keyboard navigation gating', () => {
+    it('keeps keyboard navigation disabled for the default engine', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', { editable: true });
+      component.cards.set([{ id: 'card-1', component: 'mfp-a' }]);
+      component.editMode.set(true);
+      fixture.detectChanges();
+
+      const item = root(fixture).querySelector('gridstack-item');
+
+      expect(component['keyboardNavigationActive']()).toBe(false);
+      expect(item?.getAttribute('tabindex')).toBeNull();
+      expect(item?.getAttribute('role')).toBeNull();
+      expect(item?.getAttribute('aria-keyshortcuts')).toBeNull();
+    });
+
+    it('exposes keyboard shortcuts on loose cards in zFlow edit mode', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', {
+        editable: true,
+        zFlow: { cardHeight: 30 },
+      });
+      component.cards.set([
+        { id: 'card-1', component: 'mfp-a', label: 'Operations' },
+      ]);
+      component.editMode.set(true);
+      fixture.detectChanges();
+
+      const item = root(fixture).querySelector('gridstack-item');
+
+      expect(component['keyboardNavigationActive']()).toBe(true);
+      expect(item?.getAttribute('tabindex')).toBe('0');
+      expect(item?.getAttribute('role')).toBe('listitem');
+      expect(item?.getAttribute('aria-label')).toBe('Operations');
+      expect(item?.getAttribute('aria-keyshortcuts')).toBe(
+        CARD_ARIA_KEYSHORTCUTS,
+      );
+      expect(
+        root(fixture).querySelector('gridstack')?.getAttribute('role'),
+      ).toBe('list');
+    });
+
+    it('applies a parsed keyboard command and restores focus to the grid item', async () => {
+      const { fixture, component } = setup();
+      const node: ZFlowGridStackNode = {
+        id: 'card-1',
+        x: 0,
+        y: 0,
+        w: 1,
+        h: 10,
+      };
+      const engine = new ZflowGridStackEngine({
+        column: 4,
+        nodes: [node],
+      });
+      const focus = vi.fn();
+      const host = {
+        gridstackNode: node,
+        isConnected: true,
+        focus,
+      } as unknown as GridItemHTMLElement;
+      const event = new KeyboardEvent('keydown', {
+        key: 'ArrowRight',
+        ctrlKey: true,
+      });
+      Object.defineProperties(event, {
+        currentTarget: { value: host },
+        target: { value: host },
+      });
+      const preventDefault = vi.spyOn(event, 'preventDefault');
+      const stopPropagation = vi.spyOn(event, 'stopPropagation');
+
+      fixture.componentRef.setInput('config', { zFlow: { cardHeight: 30 } });
+      component.editMode.set(true);
+      (
+        component as unknown as {
+          getZFlowEngine: () => ZflowGridStackEngine;
+        }
+      ).getZFlowEngine = () => engine;
+
+      component.onCardKeydown(event, 'card-1');
+      await new Promise<void>((resolve) => {
+        queueMicrotask(resolve);
+      });
+
+      expect(preventDefault).toHaveBeenCalledOnce();
+      expect(stopPropagation).toHaveBeenCalledOnce();
+      expect(focus).toHaveBeenCalledWith({ preventScroll: true });
     });
   });
 

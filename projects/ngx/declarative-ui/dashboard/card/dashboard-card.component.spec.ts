@@ -116,6 +116,25 @@ describe('DashboardCard', () => {
     expect(emitted).toBe(1);
   });
 
+  it('keeps only the card shell and remove action interactive in edit mode', () => {
+    const { fixture } = setup();
+
+    fixture.componentRef.setInput('card', {
+      id: 'card-1',
+      component: 'demo-widget',
+    });
+    fixture.componentRef.setInput('editMode', true);
+    fixture.detectChanges();
+
+    const componentHost =
+      root(fixture).querySelector<HTMLElement>('.component-host');
+    const removeButton = root(fixture).querySelector('.card__remove');
+
+    expect(componentHost?.getAttribute('inert')).toBe('');
+    expect(componentHost?.style.pointerEvents).toBe('none');
+    expect(removeButton).not.toBeNull();
+  });
+
   it('renders the fallback card shell when no dynamic component tag is provided', () => {
     const { fixture } = setup();
 

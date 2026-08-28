@@ -71,6 +71,7 @@ These custom properties form the dashboard's public styling contract. Set them o
 | Variable                                      | Default                        | Purpose                                                                                                                                                                       |
 | --------------------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--mfp_cardContainerPadding`                  | `10px`                         | Inline padding inside each dashboard card.                                                                                                                                    |
+| `--mfp_cardBorder`                            | `none`                         | Border applied to the inner card surface while an editable card is hovered or focused.                                                                                        |
 | `--row-height`                                | `10px`                         | Height of each grid row track in a section's card grid.                                                                                                                       |
 | `--column-gap`                                | `0px`                          | Horizontal gap between cards in a section grid.                                                                                                                               |
 | `--row-gap`                                   | `0px`                          | Vertical gap between cards in a section grid.                                                                                                                                 |
@@ -79,7 +80,15 @@ These custom properties form the dashboard's public styling contract. Set them o
 | `--dashboard-cols-sm` / `-md` / `-lg` / `-xl` | `1` / `8` / `12` / `14`        | Column-track counts at each responsive breakpoint (driven by container queries).                                                                                              |
 | `--cols`                                      | _unset_                        | Per-section column-count override. Set through `SectionConfig`; overrides the responsive `--dashboard-cols-*` for that section.                                               |
 
-`--mfp_cardContainerPadding`, `--row-height`, `--column-gap`, `--row-gap`, `--mfp-dashboard-background`, and `--mfp-dashboard-empty-image` are the intended consumer knobs. The `--dashboard-cols-*` variables are normally set at runtime by the active layout engine profile — override them only when building a custom layout. Other custom properties seen in the markup (e.g. `--gs-item-margin-top`, `--Container-Spacing-Small`) are internal implementation details and are **not** part of this contract.
+`--mfp_cardContainerPadding`, `--mfp_cardBorder`, `--row-height`, `--column-gap`, `--row-gap`, `--mfp-dashboard-background`, and `--mfp-dashboard-empty-image` are the intended consumer knobs. The `--dashboard-cols-*` variables are normally set at runtime by the active layout engine profile — override them only when building a custom layout. Other custom properties seen in the markup (e.g. `--gs-item-margin-top`, `--Container-Spacing-Small`) are internal implementation details and are **not** part of this contract.
+
+`--mfp_cardBorder` is applied to the dashboard card's wrapper (`.component-host`), so an explicitly configured edit-mode focus border stays inside the visible card. The GridStack item itself does not intentionally draw a focus border. A registered card may also draw its own border: for example, cards using `border: 1px solid var(--sapTile_BorderColor, transparent)` receive the dashboard's hover/focus `--sapTile_BorderColor` through CSS inheritance. In that case a visible border is expected even when `--mfp_cardBorder` is unset; leave the variable unset to avoid adding a second wrapper border. To provide a wrapper border explicitly:
+
+```css
+mfp-dashboard {
+  --mfp_cardBorder: 1px solid var(--sapHighlightColor, #0070f2);
+}
+```
 
 ---
 
@@ -745,6 +754,20 @@ html.sapUiTheme-sap_horizon_hcb #my-dashboard {
 #### `zFlow` — reflow layout mode
 
 Providing `zFlow` switches the loose-card grid from the default free-placement engine to the **z-flow engine**. It changes two things fundamentally: how cards are ordered, and how they can be resized.
+
+**Keyboard navigation.** Keyboard navigation is available only when `zFlow` is configured and the dashboard is in edit mode. The default GridStack engine does **not** support dashboard keyboard navigation. Only loose cards participate; section cards are not keyboard-navigable.
+
+In edit mode, focus stays on the GridStack card item rather than moving into the card content. The card content is inert while editing, while the card's remove button remains available. The focused card uses the same inner-surface border styling as hover; depending on the registered card, that border comes from the card's own SAP tile styles or from [`--mfp_cardBorder`](#css-variable-contract).
+
+| Shortcut                                   | Action                                                                           |
+| ------------------------------------------ | -------------------------------------------------------------------------------- |
+| `Shift + ArrowRight` / `Shift + ArrowLeft` | Grow / shrink the card by one z-flow width step.                                 |
+| `Ctrl + ArrowLeft` / `Ctrl + ArrowRight`   | Move the card left / right within the z-flow order.                              |
+| `Ctrl + ArrowUp` / `Ctrl + ArrowDown`      | Move the card to the adjacent row while preserving the closest column.           |
+| `Ctrl + Home` / `Ctrl + End`               | Move the card to the start / end of its current row.                             |
+| `Meta + ArrowLeft` / `Meta + ArrowRight`   | Move the card to the start / end of its current row (for macOS-style modifiers). |
+
+The shortcuts are exposed through `aria-keyshortcuts` on each keyboard-navigable loose card. Other modifier combinations, including `Alt`, are ignored.
 
 **What z-flow is.** In z-flow the loose cards are a single **linear list**, not a set of free (x, y) coordinates. The grid only _renders_ that list left-to-right, then wraps to the next row and continues left-to-right — the reading path traces a `Z`, hence the name (it has nothing to do with CSS `z-index`). The card's position is its index in the list:
 

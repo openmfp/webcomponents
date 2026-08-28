@@ -1,10 +1,5 @@
 export type CardMoveCommand =
-  | 'left'
-  | 'right'
-  | 'up'
-  | 'down'
-  | 'row-start'
-  | 'row-end';
+  'left' | 'right' | 'up' | 'down' | 'row-start' | 'row-end';
 
 export type CardKeyboardCommand = CardMoveCommand | 'grow' | 'shrink';
 
