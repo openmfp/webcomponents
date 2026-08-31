@@ -154,6 +154,84 @@ describe('DeclarativeForm', () => {
 
       expect(fieldElement?.tagName.toLowerCase()).toBe('ui5-input');
     });
+
+    it('should render a password input when inputType is Password', () => {
+      fixture.componentRef.setInput('fields', [
+        {
+          name: 'spec.oidc.clientSecret',
+          label: 'Client secret',
+          inputType: 'Password',
+        },
+      ]);
+      fixture.detectChanges();
+
+      const shadowRoot = fixture.nativeElement.shadowRoot as ShadowRoot;
+      const fieldElement = shadowRoot.querySelector(
+        '[data-testid="generic-form-field-spec.oidc.clientSecret"]',
+      );
+
+      expect(fieldElement?.tagName.toLowerCase()).toBe('ui5-input');
+      expect((fieldElement as HTMLInputElement).type).toBe('Password');
+    });
+
+    it('should render hint text below a field', () => {
+      fixture.componentRef.setInput('fields', [
+        {
+          name: 'spec.oidc.discoveryUrl',
+          label: 'Discovery URL',
+          hint: 'e.g. https://issuer.example.com/.well-known/openid-configuration',
+        },
+      ]);
+      fixture.detectChanges();
+
+      const shadowRoot = fixture.nativeElement.shadowRoot as ShadowRoot;
+      const hint = shadowRoot.querySelector(
+        '[data-testid="generic-form-field-hint-spec.oidc.discoveryUrl"]',
+      );
+
+      expect(hint?.textContent?.trim()).toBe(
+        'e.g. https://issuer.example.com/.well-known/openid-configuration',
+      );
+    });
+
+    it('should render a switch when inputType is Switch', () => {
+      fixture.componentRef.setInput('fields', [
+        {
+          name: 'spec.enabled',
+          label: 'Enabled',
+          inputType: 'Switch',
+        },
+      ]);
+      fixture.detectChanges();
+
+      const shadowRoot = fixture.nativeElement.shadowRoot as ShadowRoot;
+      const fieldElement = shadowRoot.querySelector(
+        '[data-testid="generic-form-field-spec.enabled"]',
+      );
+
+      expect(fieldElement?.tagName.toLowerCase()).toBe('ui5-switch');
+    });
+
+    it('should bind placeholder on text inputs', () => {
+      fixture.componentRef.setInput('fields', [
+        {
+          name: 'spec.oidc.clientSecret',
+          label: 'Client secret',
+          inputType: 'Password',
+          placeholder: 'Leave empty to keep unchanged',
+        },
+      ]);
+      fixture.detectChanges();
+
+      const shadowRoot = fixture.nativeElement.shadowRoot as ShadowRoot;
+      const fieldElement = shadowRoot.querySelector(
+        '[data-testid="generic-form-field-spec.oidc.clientSecret"]',
+      );
+
+      expect((fieldElement as HTMLInputElement).placeholder).toBe(
+        'Leave empty to keep unchanged',
+      );
+    });
   });
 
   describe('fieldChange output', () => {
@@ -353,6 +431,25 @@ describe('DeclarativeForm', () => {
           },
         },
       ]);
+    });
+
+    it('should emit nested object for switch fields', () => {
+      fixture.componentRef.setInput('fields', [
+        {
+          name: 'spec.enabled',
+          label: 'Enabled',
+          inputType: 'Switch',
+        },
+      ]);
+      fixture.componentRef.setInput('initialValues', { 'spec.enabled': true });
+      fixture.detectChanges();
+
+      const emitted: Record<string, unknown>[] = [];
+      component.formSubmit.subscribe((value) => emitted.push(value));
+
+      component.submit();
+
+      expect(emitted).toEqual([{ spec: { enabled: true } }]);
     });
   });
 

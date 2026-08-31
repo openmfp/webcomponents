@@ -3,12 +3,17 @@
     @let control = form.controls[field.name];
     <div
       class="inputs"
+      [class.inputs--switch]="field.inputType === 'Switch'"
       [attr.data-testid]="'generic-form-field-container-' + field.name"
     >
       <ui5-label
         show-colon
         [attr.data-testid]="'generic-form-field-label-' + field.name"
-        [attr.for]="'generic-form-field-input-' + field.name"
+        [attr.for]="
+          field.inputType === 'Switch'
+            ? null
+            : 'generic-form-field-input-' + field.name
+        "
         [required]="field.required"
         >{{ field.label }}</ui5-label
       >
@@ -53,13 +58,40 @@
             >
           }
         </ui5-select>
+        @if (field.hint) {
+          <div
+            class="field-hint"
+            [attr.data-testid]="'generic-form-field-hint-' + field.name"
+          >
+            {{ field.hint }}
+          </div>
+        }
+      } @else if (field.inputType === 'Switch') {
+        <ui5-switch
+          class="switch"
+          [attr.data-testid]="'generic-form-field-' + field.name"
+          [accessibleName]="field.label"
+          [checked]="switchChecked(control.value)"
+          [disabled]="field.disabled"
+          (ui5Change)="setSwitchValue($event, field)"
+        />
+        @if (field.hint) {
+          <div
+            class="field-hint"
+            [attr.data-testid]="'generic-form-field-hint-' + field.name"
+          >
+            {{ field.hint }}
+          </div>
+        }
       } @else {
         <ui5-input
           class="input"
           [attr.data-testid]="'generic-form-field-' + field.name"
           [disabled]="field.disabled"
           [id]="'generic-form-field-input-' + field.name"
+          [placeholder]="field.placeholder ?? ''"
           [required]="field.required"
+          [type]="field.inputType ?? 'Text'"
           [value]="control.value"
           [valueState]="getValueState(field.name)"
           (blur)="onFieldBlur(field)"
@@ -70,6 +102,14 @@
             <div slot="valueStateMessage">{{ error }}</div>
           }
         </ui5-input>
+        @if (field.hint) {
+          <div
+            class="field-hint"
+            [attr.data-testid]="'generic-form-field-hint-' + field.name"
+          >
+            {{ field.hint }}
+          </div>
+        }
       }
     </div>
   }

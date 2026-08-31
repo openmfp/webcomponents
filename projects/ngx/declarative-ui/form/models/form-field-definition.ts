@@ -10,6 +10,17 @@ export interface FormFieldDefinition {
   values?: string[];
   /** When `true`, the field is disabled (not interactive). */
   disabled?: boolean;
+  /** UI5 input type rendered by `mfp-declarative-form`. */
+  inputType?: 'Text' | 'Password' | 'Switch';
+  /** UI5 input placeholder (functional, not example values). */
+  placeholder?: string;
+  /** Persistent help text below the control; never submitted with the form. */
+  hint?: string;
+  /**
+   * When `true`, the host should omit this field from read queries and skip
+   * empty values on edit submit (e.g. write-only secrets).
+   */
+  writeOnly?: boolean;
   /** Controls when `fieldChange` is emitted for this field. When omitted, `fieldChange` is never emitted. */
   validation?: 'onBlur' | 'onChange';
   /**

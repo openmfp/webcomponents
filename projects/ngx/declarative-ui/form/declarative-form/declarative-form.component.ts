@@ -26,6 +26,7 @@ import { Input } from '@fundamental-ngx/ui5-webcomponents/input';
 import { Label } from '@fundamental-ngx/ui5-webcomponents/label';
 import { Option } from '@fundamental-ngx/ui5-webcomponents/option';
 import { Select } from '@fundamental-ngx/ui5-webcomponents/select';
+import { Switch } from '@fundamental-ngx/ui5-webcomponents/switch';
 
 @Component({
   selector: 'mfp-declarative-form',
@@ -35,6 +36,7 @@ import { Select } from '@fundamental-ngx/ui5-webcomponents/select';
     Label,
     Select,
     Option,
+    Switch,
     FormCollectionField,
   ],
   templateUrl: './declarative-form.component.html',
@@ -101,6 +103,28 @@ export class DeclarativeForm<T extends GenericResource> {
         value: control.value,
       });
     }
+  }
+
+  setSwitchValue($event: Event, field: FormFieldDefinition): void {
+    const target = $event.target as HTMLInputElement & { checked?: boolean };
+    const control = this.form.controls[field.name];
+    const checked = coerceBoolean(target.checked);
+    control.setValue(checked);
+    control.markAsTouched();
+    control.markAsDirty();
+
+    this.formValueChange.emit(this.form.value as Record<string, unknown>);
+
+    if (field.validation === 'onChange' || field.validation === 'onBlur') {
+      this.fieldChange.emit({
+        fieldProperty: field.name,
+        value: checked,
+      });
+    }
+  }
+
+  switchChecked(value: unknown): boolean {
+    return coerceBoolean(value);
   }
 
   onCollectionValueChange(
@@ -177,6 +201,8 @@ export class DeclarativeForm<T extends GenericResource> {
 
       if (wantsCollection) {
         this.form.addControl(field.name, this.fb.array([]));
+      } else if (field.inputType === 'Switch') {
+        this.form.addControl(field.name, new FormControl(false));
       } else {
         this.form.addControl(field.name, new FormControl(''));
       }
@@ -215,7 +241,14 @@ export class DeclarativeForm<T extends GenericResource> {
     }
     this.collectionSeeds.set(seeds);
 
-    this.form.patchValue(initialValues, { emitEvent: false });
+    const normalizedValues = { ...(initialValues as Record<string, unknown>) };
+    for (const field of this.fields()) {
+      if (field.inputType === 'Switch') {
+        normalizedValues[field.name] = coerceBoolean(normalizedValues[field.name]);
+      }
+    }
+
+    this.form.patchValue(normalizedValues, { emitEvent: false });
     this.form.markAsPristine({ emitEvent: false });
     this.form.updateValueAndValidity({ emitEvent: false });
   }
@@ -242,4 +275,14 @@ export class DeclarativeForm<T extends GenericResource> {
       entry: new FormControl(entry),
     });
   }
+}
+
+function coerceBoolean(value: unknown): boolean {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === 'true') return true;
+    if (normalized === 'false' || normalized === '') return false;
+  }
+  return Boolean(value);
 }
