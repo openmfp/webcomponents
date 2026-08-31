@@ -25,10 +25,15 @@
   flex-basis: 100%;
 }
 
-.collection-error {
+.collection-error,
+.field-error {
   color: var(--sapNegativeColor, #b00);
   font-size: 0.75rem;
   margin-top: 0.25rem;
+}
+
+.inputs--switch .field-error {
+  flex-basis: 100%;
 }
 
 .field-hint {

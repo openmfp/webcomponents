@@ -115,7 +115,7 @@ export class DeclarativeForm<T extends GenericResource> {
 
     this.formValueChange.emit(this.form.value as Record<string, unknown>);
 
-    if (field.validation === 'onChange' || field.validation === 'onBlur') {
+    if (field.validation === 'onChange') {
       this.fieldChange.emit({
         fieldProperty: field.name,
         value: checked,
@@ -123,9 +123,7 @@ export class DeclarativeForm<T extends GenericResource> {
     }
   }
 
-  switchChecked(value: unknown): boolean {
-    return coerceBoolean(value);
-  }
+  protected readonly coerceChecked = coerceBoolean;
 
   onCollectionValueChange(
     field: FormFieldDefinition,

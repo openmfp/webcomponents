@@ -232,6 +232,53 @@ describe('DeclarativeForm', () => {
         'Leave empty to keep unchanged',
       );
     });
+
+    it('should render hint text below a select field', () => {
+      fixture.componentRef.setInput('fields', [
+        {
+          name: 'spec.scope',
+          label: 'Scope',
+          values: ['ClusterScoped', 'Namespaced'],
+          hint: 'Choose the resource scope',
+        },
+      ]);
+      fixture.detectChanges();
+
+      const shadowRoot = fixture.nativeElement.shadowRoot as ShadowRoot;
+      const hint = shadowRoot.querySelector(
+        '[data-testid="generic-form-field-hint-spec.scope"]',
+      );
+
+      expect(hint?.textContent?.trim()).toBe('Choose the resource scope');
+    });
+
+    it('should coerce string boolean initialValues for switch fields', () => {
+      fixture.componentRef.setInput('fields', [
+        {
+          name: 'spec.enabled',
+          label: 'Enabled',
+          inputType: 'Switch',
+        },
+      ]);
+      fixture.componentRef.setInput('initialValues', { 'spec.enabled': 'true' });
+      fixture.detectChanges();
+
+      expect(component.form.controls['spec.enabled'].value).toBe(true);
+    });
+
+    it('should default switch fields to false when initialValues are missing', () => {
+      fixture.componentRef.setInput('fields', [
+        {
+          name: 'spec.enabled',
+          label: 'Enabled',
+          inputType: 'Switch',
+        },
+      ]);
+      fixture.componentRef.setInput('initialValues', {});
+      fixture.detectChanges();
+
+      expect(component.form.controls['spec.enabled'].value).toBe(false);
+    });
   });
 
   describe('fieldChange output', () => {
@@ -310,6 +357,96 @@ describe('DeclarativeForm', () => {
       component.onFieldBlur(noValidationField);
 
       expect(emitted).toEqual([]);
+    });
+
+    it('should emit on value change for validation: onChange switch field', () => {
+      const switchField: FormFieldDefinition = {
+        name: 'spec.enabled',
+        label: 'Enabled',
+        inputType: 'Switch',
+        validation: 'onChange',
+      };
+      fixture.componentRef.setInput('fields', [switchField]);
+      fixture.detectChanges();
+
+      const emitted: FormFieldChangeEvent[] = [];
+      component.fieldChange.subscribe((event) => emitted.push(event));
+
+      component.setSwitchValue(
+        { target: { checked: true } } as unknown as Event,
+        switchField,
+      );
+
+      expect(emitted).toEqual([
+        { fieldProperty: 'spec.enabled', value: true },
+      ]);
+      expect(component.form.controls['spec.enabled'].value).toBe(true);
+    });
+
+    it('should not emit on toggle for validation: onBlur switch field', () => {
+      const switchField: FormFieldDefinition = {
+        name: 'spec.enabled',
+        label: 'Enabled',
+        inputType: 'Switch',
+        validation: 'onBlur',
+      };
+      fixture.componentRef.setInput('fields', [switchField]);
+      fixture.detectChanges();
+
+      const emitted: FormFieldChangeEvent[] = [];
+      component.fieldChange.subscribe((event) => emitted.push(event));
+
+      component.setSwitchValue(
+        { target: { checked: true } } as unknown as Event,
+        switchField,
+      );
+
+      expect(emitted).toEqual([]);
+    });
+
+    it('should emit on blur for validation: onBlur switch field', () => {
+      const switchField: FormFieldDefinition = {
+        name: 'spec.enabled',
+        label: 'Enabled',
+        inputType: 'Switch',
+        validation: 'onBlur',
+      };
+      fixture.componentRef.setInput('fields', [switchField]);
+      fixture.detectChanges();
+
+      component.setSwitchValue(
+        { target: { checked: true } } as unknown as Event,
+        switchField,
+      );
+
+      const emitted: FormFieldChangeEvent[] = [];
+      component.fieldChange.subscribe((event) => emitted.push(event));
+
+      component.onFieldBlur(switchField);
+
+      expect(emitted).toEqual([
+        { fieldProperty: 'spec.enabled', value: true },
+      ]);
+    });
+
+    it('should emit formValueChange when a switch is toggled', () => {
+      const switchField: FormFieldDefinition = {
+        name: 'spec.enabled',
+        label: 'Enabled',
+        inputType: 'Switch',
+      };
+      fixture.componentRef.setInput('fields', [switchField]);
+      fixture.detectChanges();
+
+      const emitted: Record<string, unknown>[] = [];
+      component.formValueChange.subscribe((value) => emitted.push(value));
+
+      component.setSwitchValue(
+        { target: { checked: true } } as unknown as Event,
+        switchField,
+      );
+
+      expect(emitted).toEqual([{ 'spec.enabled': true }]);
     });
 
     it('should emit fieldChange for validated fields when initialValues change', () => {
@@ -408,6 +545,38 @@ describe('DeclarativeForm', () => {
       control.markAsTouched();
 
       expect(component.getValueState('metadata.name')).toBe('Negative');
+    });
+
+    it('should show switch field errors below the control', () => {
+      fixture.componentRef.setInput('fields', [
+        {
+          name: 'spec.enabled',
+          label: 'Enabled',
+          inputType: 'Switch',
+          validation: 'onChange',
+        },
+      ]);
+      fixture.componentRef.setInput('fieldErrors', {
+        'spec.enabled': 'Must be enabled',
+      });
+      fixture.detectChanges();
+
+      const switchField: FormFieldDefinition = {
+        name: 'spec.enabled',
+        label: 'Enabled',
+        inputType: 'Switch',
+        validation: 'onChange',
+      };
+      component.setSwitchValue(
+        { target: { checked: false } } as unknown as Event,
+        switchField,
+      );
+      fixture.detectChanges();
+
+      const shadowRoot = fixture.nativeElement.shadowRoot as ShadowRoot;
+      const error = shadowRoot.querySelector('.field-error');
+
+      expect(error?.textContent?.trim()).toBe('Must be enabled');
     });
   });
 

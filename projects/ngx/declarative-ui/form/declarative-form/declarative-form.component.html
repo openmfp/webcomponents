@@ -58,30 +58,18 @@
             >
           }
         </ui5-select>
-        @if (field.hint) {
-          <div
-            class="field-hint"
-            [attr.data-testid]="'generic-form-field-hint-' + field.name"
-          >
-            {{ field.hint }}
-          </div>
-        }
       } @else if (field.inputType === 'Switch') {
         <ui5-switch
           class="switch"
           [attr.data-testid]="'generic-form-field-' + field.name"
           [accessibleName]="field.label"
-          [checked]="switchChecked(control.value)"
+          [checked]="coerceChecked(control.value)"
           [disabled]="field.disabled"
+          (blur)="onFieldBlur(field)"
           (ui5Change)="setSwitchValue($event, field)"
         />
-        @if (field.hint) {
-          <div
-            class="field-hint"
-            [attr.data-testid]="'generic-form-field-hint-' + field.name"
-          >
-            {{ field.hint }}
-          </div>
+        @if (getError(field.name); as error) {
+          <div class="field-error" role="alert">{{ error }}</div>
         }
       } @else {
         <ui5-input
@@ -102,14 +90,14 @@
             <div slot="valueStateMessage">{{ error }}</div>
           }
         </ui5-input>
-        @if (field.hint) {
-          <div
-            class="field-hint"
-            [attr.data-testid]="'generic-form-field-hint-' + field.name"
-          >
-            {{ field.hint }}
-          </div>
-        }
+      }
+      @if (field.hint && !field.propertyCollection?.length) {
+        <div
+          class="field-hint"
+          [attr.data-testid]="'generic-form-field-hint-' + field.name"
+        >
+          {{ field.hint }}
+        </div>
       }
     </div>
   }

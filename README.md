@@ -60,12 +60,17 @@ npm run test:cov
 Storybook is used to develop, document, and visually test components in isolation. Stories live alongside components under `projects/ngx/**/stories/*.stories.ts`.
 
 ```bash
+# Storybook expects a public/ directory (create it once on a fresh clone)
+mkdir -p public
+
 # Start Storybook in development mode (default port: 6006)
 npm run storybook
 
-# Build a static Storybook site (output: storybook-static/)
+# Build a static Storybook site (output: dist/storybook/)
 npm run build:storybook
 ```
+
+> `public/` is not committed — it holds build artifacts (`mfp-webcomponents.js`, etc.) copied there by `npm run build`. An empty directory is enough to start Storybook; run `npm run build` when you need web-component bundle stories.
 
 Once running, open Storybook at [http://localhost:6006/](http://localhost:6006/).
 

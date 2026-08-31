@@ -43,6 +43,11 @@ class DeclarativeFormStory {
       nextErrors[fieldProperty] = arr.length
         ? null
         : `${field.label ?? fieldProperty} requires at least one entry`;
+    } else if (field.inputType === 'Switch') {
+      nextErrors[fieldProperty] =
+        field.required && value !== true
+          ? `${field.label ?? fieldProperty} is required`
+          : null;
     } else {
       nextErrors[fieldProperty] = !value
         ? `${field.label ?? fieldProperty} is required`
@@ -149,7 +154,7 @@ export const EditMode: Story = {
   },
 };
 
-/** All field types combined: text input and select. */
+/** All field types combined: text input, password, switch, hint, and select. */
 export const AllFieldTypes: Story = {
   args: {
     fields: [
@@ -158,6 +163,73 @@ export const AllFieldTypes: Story = {
         name: 'spec_scope',
         label: 'Scope',
         values: ['ClusterScoped', 'Namespaced'],
+      },
+      {
+        name: 'spec_oidc_clientSecret',
+        label: 'Client secret',
+        inputType: 'Password',
+        placeholder: 'Leave empty to keep unchanged',
+        writeOnly: true,
+      },
+      {
+        name: 'spec_oidc_discoveryUrl',
+        label: 'Discovery URL',
+        hint: 'e.g. https://issuer.example.com/.well-known/openid-configuration',
+      },
+      {
+        name: 'spec_enabled',
+        label: 'Enabled',
+        inputType: 'Switch',
+        validation: 'onChange',
+      },
+    ] satisfies FormFieldDefinition[],
+    initialValues: {
+      spec_enabled: true,
+    },
+  },
+};
+
+/** Password field with edit-mode placeholder for write-only secrets. */
+export const WithPassword: Story = {
+  args: {
+    editMode: true,
+    fields: [
+      {
+        name: 'spec_oidc_clientSecret',
+        label: 'Client secret',
+        inputType: 'Password',
+        placeholder: 'Leave empty to keep unchanged',
+        writeOnly: true,
+      },
+    ] satisfies FormFieldDefinition[],
+  },
+};
+
+/** Boolean toggle rendered as a UI5 switch. */
+export const WithSwitch: Story = {
+  args: {
+    fields: [
+      {
+        name: 'spec_enabled',
+        label: 'Enabled',
+        inputType: 'Switch',
+        validation: 'onChange',
+      },
+    ] satisfies FormFieldDefinition[],
+    initialValues: {
+      spec_enabled: false,
+    },
+  },
+};
+
+/** Persistent hint text below a field. */
+export const WithHint: Story = {
+  args: {
+    fields: [
+      {
+        name: 'spec_oidc_discoveryUrl',
+        label: 'Discovery URL',
+        hint: 'e.g. https://issuer.example.com/.well-known/openid-configuration',
       },
     ] satisfies FormFieldDefinition[],
   },
