@@ -169,7 +169,9 @@ describe('Dashboard', () => {
       { id: 'card-3', component: 'mfp-c' },
     ];
     const gridOptions = (
-      component as unknown as { gridOptions: () => { disableDrag: boolean } }
+      component as unknown as {
+        gridOptions: () => { disableDrag: boolean; sizeToContent?: boolean };
+      }
     ).gridOptions;
 
     fixture.componentRef.setInput('config', { title: 'T' });
@@ -181,6 +183,7 @@ describe('Dashboard', () => {
     expect(component['sectionCards']()('alpha')).toEqual([cards[0]]);
     expect(component['looseCards']()).toEqual([cards[1], cards[2]]);
     expect(gridOptions().disableDrag).toBe(true);
+    expect(gridOptions().sizeToContent).toBeUndefined();
 
     component.editMode.set(true);
 
@@ -513,6 +516,7 @@ describe('Dashboard', () => {
           id: 'template-card',
           component: 'mfp-b',
           label: 'Table',
+          h: 20,
           componentInputs: { size: 'L' },
         },
       ],
@@ -525,10 +529,28 @@ describe('Dashboard', () => {
         id: 'template-card',
         component: 'mfp-b',
         label: 'Table',
+        h: 20,
         componentInputs: { size: 'L' },
       },
     ]);
     expect(component.cardDialogOpen()).toBe(false);
+  });
+
+  it('preserves the configured height when a card is removed and added again', () => {
+    const { component } = setup();
+    const card: CardConfig = {
+      id: 'card-1',
+      component: 'mfp-a',
+      w: 6,
+      h: 28,
+    };
+
+    component.cards.set([card]);
+
+    component.onCardsEdited({ added: [], removed: [card.id] });
+    component.onCardsEdited({ added: [{ ...card }], removed: [] });
+
+    expect(component.cards()).toEqual([card]);
   });
 
   it('preserves and commits z-flow around edit-card dialog changes', () => {

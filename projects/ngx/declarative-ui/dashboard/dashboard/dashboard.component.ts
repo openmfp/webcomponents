@@ -246,7 +246,6 @@ export class Dashboard implements OnInit, OnDestroy {
 
   protected gridOptions = computed((): GridStackOptions => ({
     cellHeight: CELL_HEIGHT,
-    sizeToContent: true,
     disableResize: !this.editMode(),
     disableDrag: !this.editMode(),
     marginBottom: 0,
