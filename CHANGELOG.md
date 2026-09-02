@@ -12,6 +12,7 @@ and [releases](https://github.com/openmfp/webcomponents/releases) for details.
 ## [1.2.0] - 2026-09-01
 
 ### Features
+
 - Remove sizeToContent (#285)
 
 ## [1.1.0] - 2026-08-28
