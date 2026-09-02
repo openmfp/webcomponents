@@ -144,6 +144,11 @@ interface FormFieldDefinition {
   required?: boolean; // Visual required marker only
   values?: string[]; // Static select options
   disabled?: boolean; // Disables the field
+  inputType?: 'Text' | 'Password' | 'Switch'; // Control type; defaults to Text
+  showPasswordToggle?: boolean; // Password fields only; defaults to true
+  placeholder?: string; // UI5 input placeholder (functional, not example values)
+  hint?: string; // Persistent help text below the control; never submitted
+  writeOnly?: boolean; // Host metadata only — the form does not act on this; hosts use it to omit fields from read queries and skip empty values on edit submit
   validation?: 'onBlur' | 'onChange'; // When to emit fieldChange for this field
   propertyCollection?: FormFieldDefinition[]; // Sub-fields for an array-of-objects field; see "Collection fields" below
 }
@@ -185,6 +190,48 @@ For a `propertyCollection` field the payload carries the whole array:
     ],
   },
 }
+```
+
+---
+
+## Input types (`inputType`)
+
+Set `inputType` to change how a plain (non-select, non-collection) field renders:
+
+| `inputType` | Renders        | Default value | Notes                                                                               |
+| ----------- | -------------- | ------------- | ----------------------------------------------------------------------------------- |
+| `Text`      | `<ui5-input>`  | `''`          | Default when omitted                                                                |
+| `Password`  | `<ui5-input>`  | `''`          | `type="Password"`; show/hide icon by default (`showPasswordToggle`, default `true`) |
+| `Switch`    | `<ui5-switch>` | `false`       | Boolean control; string `"true"` / `"false"` in `initialValues` is coerced          |
+
+`placeholder` applies to text-like inputs (`Text`, `Password`). The same text is also set as the input's `title` attribute so the full message is readable via tooltip when the field is too narrow to show the placeholder. `hint` renders persistent help text below any non-collection control (input, select, or switch) and is never included in the submit payload.
+
+`writeOnly` is **not** enforced by the form component. Pass it through from your field schema so the host can skip the field in read queries and omit empty values on edit submit (typical for secrets).
+
+### Example
+
+```ts
+const fields: FormFieldDefinition[] = [
+  {
+    name: 'spec.oidc.clientSecret',
+    label: 'Client secret',
+    inputType: 'Password',
+    placeholder: 'Leave empty to keep unchanged',
+    writeOnly: true,
+    showPasswordToggle: true,
+  },
+  {
+    name: 'spec.oidc.discoveryUrl',
+    label: 'Discovery URL',
+    hint: 'e.g. https://issuer.example.com/.well-known/openid-configuration',
+  },
+  {
+    name: 'spec.enabled',
+    label: 'Enabled',
+    inputType: 'Switch',
+    validation: 'onChange',
+  },
+];
 ```
 
 ---
@@ -246,12 +293,12 @@ const initialValues = {
 - The component never executes validators.
 - `required` only renders the required marker on the label/input.
 - The `validation` property on each field controls when `fieldChange` fires:
-  - `'onChange'` — fires on every value change.
-  - `'onBlur'` — fires when the field loses focus.
+  - `'onChange'` — fires on every value change (toggle for switches, keystroke for text).
+  - `'onBlur'` — fires when the field loses focus (including switches).
   - Not set — no `fieldChange` event is emitted for that field.
 - On initialization (and when `initialValues` changes), the component emits `fieldChange` for every field that has a `validation` strategy. This lets the host run validation immediately and disable the submit button before the user interacts.
 - The host validates the received `FormFieldChangeEvent` and updates `fieldErrors`.
-- A field shows `Negative` value state and the error message only when it is dirty or touched and `fieldErrors[field.name]` is a non-empty string.
+- A field shows `Negative` value state and the error message only when it is dirty or touched and `fieldErrors[field.name]` is a non-empty string. Text inputs and selects show errors inline via UI5 `valueState`; switches and collection fields render the message in a `.field-error` / `.collection-error` element below the control.
 - Empty, missing, or `null` errors render as no error.
 
 ---
@@ -260,19 +307,21 @@ const initialValues = {
 
 All interactive elements carry `data-testid` attributes for reliable E2E targeting. See [docs/test-ids.md](./test-ids.md) for the full naming convention.
 
-| Element                | `data-testid`                              | Notes                                                        |
-| ---------------------- | ------------------------------------------ | ------------------------------------------------------------ |
-| Form element           | `generic-form`                             |                                                              |
-| Field container        | `generic-form-field-container-{name}`      | `name` = `field.name` (dot notation)                         |
-| Field label            | `generic-form-field-label-{name}`          |                                                              |
-| Input or select        | `generic-form-field-{name}`                | `<ui5-input>` or `<ui5-select>`                              |
-| Select option          | `generic-form-field-{name}-option-{value}` | `value` = option string or `empty` for the blank placeholder |
-| Collection container   | `collection-field`                         | Rendered inside a `propertyCollection` field                 |
-| Collection item        | `collection-item-{index}`                  | Zero-based array index                                       |
-| Collection item toggle | `collection-item-{index}-toggle`           | Expand / collapse header                                     |
-| Collection item remove | `collection-item-{index}-remove`           | Trash icon                                                   |
-| Collection item form   | `collection-item-{index}-form`             | Nested `<mfp-declarative-form>` for the expanded card        |
-| Collection Add button  | `collection-add`                           | Appends a new empty entry                                    |
+| Element                | `data-testid`                               | Notes                                                        |
+| ---------------------- | ------------------------------------------- | ------------------------------------------------------------ |
+| Form element           | `generic-form`                              |                                                              |
+| Field container        | `generic-form-field-container-{name}`       | `name` = `field.name` (dot notation)                         |
+| Field label            | `generic-form-field-label-{name}`           |                                                              |
+| Input, select, switch  | `generic-form-field-{name}`                 | `<ui5-input>`, `<ui5-select>`, or `<ui5-switch>`             |
+| Password show/hide     | `generic-form-field-{name}-password-toggle` | `<ui5-input-icon>` inside password fields                    |
+| Field hint             | `generic-form-field-hint-{name}`            | Help text below the control; omitted for collection fields   |
+| Select option          | `generic-form-field-{name}-option-{value}`  | `value` = option string or `empty` for the blank placeholder |
+| Collection container   | `collection-field`                          | Rendered inside a `propertyCollection` field                 |
+| Collection item        | `collection-item-{index}`                   | Zero-based array index                                       |
+| Collection item toggle | `collection-item-{index}-toggle`            | Expand / collapse header                                     |
+| Collection item remove | `collection-item-{index}-remove`            | Trash icon                                                   |
+| Collection item form   | `collection-item-{index}-form`              | Nested `<mfp-declarative-form>` for the expanded card        |
+| Collection Add button  | `collection-add`                            | Appends a new empty entry                                    |
 
 **Example** — a field `{ name: 'metadata.name', label: 'Name' }` renders:
 

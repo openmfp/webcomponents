@@ -154,6 +154,203 @@ describe('DeclarativeForm', () => {
 
       expect(fieldElement?.tagName.toLowerCase()).toBe('ui5-input');
     });
+
+    it('should render a password input when inputType is Password', () => {
+      fixture.componentRef.setInput('fields', [
+        {
+          name: 'spec.oidc.clientSecret',
+          label: 'Client secret',
+          inputType: 'Password',
+        },
+      ]);
+      fixture.detectChanges();
+
+      const shadowRoot = fixture.nativeElement.shadowRoot as ShadowRoot;
+      const fieldElement = shadowRoot.querySelector(
+        '[data-testid="generic-form-field-spec.oidc.clientSecret"]',
+      );
+
+      expect(fieldElement?.tagName.toLowerCase()).toBe('ui5-input');
+      expect((fieldElement as HTMLInputElement).type).toBe('Password');
+    });
+
+    it('should render a show/hide toggle for password fields by default', () => {
+      fixture.componentRef.setInput('fields', [
+        {
+          name: 'spec.oidc.clientSecret',
+          label: 'Client secret',
+          inputType: 'Password',
+        },
+      ]);
+      fixture.detectChanges();
+
+      const shadowRoot = fixture.nativeElement.shadowRoot as ShadowRoot;
+      const toggle = shadowRoot.querySelector(
+        '[data-testid="generic-form-field-spec.oidc.clientSecret-password-toggle"]',
+      );
+
+      expect(toggle?.tagName.toLowerCase()).toBe('ui5-input-icon');
+      expect(toggle?.getAttribute('name')).toBe('show');
+    });
+
+    it('should hide the password toggle when showPasswordToggle is false', () => {
+      fixture.componentRef.setInput('fields', [
+        {
+          name: 'spec.oidc.clientSecret',
+          label: 'Client secret',
+          inputType: 'Password',
+          showPasswordToggle: false,
+        },
+      ]);
+      fixture.detectChanges();
+
+      const shadowRoot = fixture.nativeElement.shadowRoot as ShadowRoot;
+      const toggle = shadowRoot.querySelector(
+        '[data-testid="generic-form-field-spec.oidc.clientSecret-password-toggle"]',
+      );
+
+      expect(toggle).toBeNull();
+    });
+
+    it('should reveal password values when the toggle is clicked', () => {
+      const passwordField: FormFieldDefinition = {
+        name: 'spec.oidc.clientSecret',
+        label: 'Client secret',
+        inputType: 'Password',
+      };
+      fixture.componentRef.setInput('fields', [passwordField]);
+      fixture.detectChanges();
+
+      const shadowRoot = fixture.nativeElement.shadowRoot as ShadowRoot;
+      const input = shadowRoot.querySelector(
+        '[data-testid="generic-form-field-spec.oidc.clientSecret"]',
+      ) as HTMLInputElement;
+
+      expect(input.type).toBe('Password');
+
+      component.togglePasswordVisibility(passwordField, new Event('click'));
+      fixture.detectChanges();
+
+      expect(input.type).toBe('Text');
+      expect(
+        shadowRoot
+          .querySelector(
+            '[data-testid="generic-form-field-spec.oidc.clientSecret-password-toggle"]',
+          )
+          ?.getAttribute('name'),
+      ).toBe('hide');
+    });
+
+    it('should render hint text below a field', () => {
+      fixture.componentRef.setInput('fields', [
+        {
+          name: 'spec.oidc.discoveryUrl',
+          label: 'Discovery URL',
+          hint: 'e.g. https://issuer.example.com/.well-known/openid-configuration',
+        },
+      ]);
+      fixture.detectChanges();
+
+      const shadowRoot = fixture.nativeElement.shadowRoot as ShadowRoot;
+      const hint = shadowRoot.querySelector(
+        '[data-testid="generic-form-field-hint-spec.oidc.discoveryUrl"]',
+      );
+
+      expect(hint?.textContent?.trim()).toBe(
+        'e.g. https://issuer.example.com/.well-known/openid-configuration',
+      );
+    });
+
+    it('should render a switch when inputType is Switch', () => {
+      fixture.componentRef.setInput('fields', [
+        {
+          name: 'spec.enabled',
+          label: 'Enabled',
+          inputType: 'Switch',
+        },
+      ]);
+      fixture.detectChanges();
+
+      const shadowRoot = fixture.nativeElement.shadowRoot as ShadowRoot;
+      const fieldElement = shadowRoot.querySelector(
+        '[data-testid="generic-form-field-spec.enabled"]',
+      );
+
+      expect(fieldElement?.tagName.toLowerCase()).toBe('ui5-switch');
+    });
+
+    it('should bind placeholder on text inputs', () => {
+      fixture.componentRef.setInput('fields', [
+        {
+          name: 'spec.oidc.clientSecret',
+          label: 'Client secret',
+          inputType: 'Password',
+          placeholder: 'Leave empty to keep unchanged',
+        },
+      ]);
+      fixture.detectChanges();
+
+      const shadowRoot = fixture.nativeElement.shadowRoot as ShadowRoot;
+      const fieldElement = shadowRoot.querySelector(
+        '[data-testid="generic-form-field-spec.oidc.clientSecret"]',
+      );
+
+      expect((fieldElement as HTMLInputElement).placeholder).toBe(
+        'Leave empty to keep unchanged',
+      );
+      expect(fieldElement?.getAttribute('title')).toBe(
+        'Leave empty to keep unchanged',
+      );
+    });
+
+    it('should render hint text below a select field', () => {
+      fixture.componentRef.setInput('fields', [
+        {
+          name: 'spec.scope',
+          label: 'Scope',
+          values: ['ClusterScoped', 'Namespaced'],
+          hint: 'Choose the resource scope',
+        },
+      ]);
+      fixture.detectChanges();
+
+      const shadowRoot = fixture.nativeElement.shadowRoot as ShadowRoot;
+      const hint = shadowRoot.querySelector(
+        '[data-testid="generic-form-field-hint-spec.scope"]',
+      );
+
+      expect(hint?.textContent?.trim()).toBe('Choose the resource scope');
+    });
+
+    it('should coerce string boolean initialValues for switch fields', () => {
+      fixture.componentRef.setInput('fields', [
+        {
+          name: 'spec.enabled',
+          label: 'Enabled',
+          inputType: 'Switch',
+        },
+      ]);
+      fixture.componentRef.setInput('initialValues', {
+        'spec.enabled': 'true',
+      });
+      fixture.detectChanges();
+
+      expect(component.form.controls['spec.enabled'].value).toBe(true);
+    });
+
+    it('should default switch fields to false when initialValues are missing', () => {
+      fixture.componentRef.setInput('fields', [
+        {
+          name: 'spec.enabled',
+          label: 'Enabled',
+          inputType: 'Switch',
+        },
+      ]);
+      fixture.componentRef.setInput('initialValues', {});
+      fixture.detectChanges();
+
+      expect(component.form.controls['spec.enabled'].value).toBe(false);
+    });
   });
 
   describe('fieldChange output', () => {
@@ -232,6 +429,92 @@ describe('DeclarativeForm', () => {
       component.onFieldBlur(noValidationField);
 
       expect(emitted).toEqual([]);
+    });
+
+    it('should emit on value change for validation: onChange switch field', () => {
+      const switchField: FormFieldDefinition = {
+        name: 'spec.enabled',
+        label: 'Enabled',
+        inputType: 'Switch',
+        validation: 'onChange',
+      };
+      fixture.componentRef.setInput('fields', [switchField]);
+      fixture.detectChanges();
+
+      const emitted: FormFieldChangeEvent[] = [];
+      component.fieldChange.subscribe((event) => emitted.push(event));
+
+      component.setSwitchValue(
+        { target: { checked: true } } as unknown as Event,
+        switchField,
+      );
+
+      expect(emitted).toEqual([{ fieldProperty: 'spec.enabled', value: true }]);
+      expect(component.form.controls['spec.enabled'].value).toBe(true);
+    });
+
+    it('should not emit on toggle for validation: onBlur switch field', () => {
+      const switchField: FormFieldDefinition = {
+        name: 'spec.enabled',
+        label: 'Enabled',
+        inputType: 'Switch',
+        validation: 'onBlur',
+      };
+      fixture.componentRef.setInput('fields', [switchField]);
+      fixture.detectChanges();
+
+      const emitted: FormFieldChangeEvent[] = [];
+      component.fieldChange.subscribe((event) => emitted.push(event));
+
+      component.setSwitchValue(
+        { target: { checked: true } } as unknown as Event,
+        switchField,
+      );
+
+      expect(emitted).toEqual([]);
+    });
+
+    it('should emit on blur for validation: onBlur switch field', () => {
+      const switchField: FormFieldDefinition = {
+        name: 'spec.enabled',
+        label: 'Enabled',
+        inputType: 'Switch',
+        validation: 'onBlur',
+      };
+      fixture.componentRef.setInput('fields', [switchField]);
+      fixture.detectChanges();
+
+      component.setSwitchValue(
+        { target: { checked: true } } as unknown as Event,
+        switchField,
+      );
+
+      const emitted: FormFieldChangeEvent[] = [];
+      component.fieldChange.subscribe((event) => emitted.push(event));
+
+      component.onFieldBlur(switchField);
+
+      expect(emitted).toEqual([{ fieldProperty: 'spec.enabled', value: true }]);
+    });
+
+    it('should emit formValueChange when a switch is toggled', () => {
+      const switchField: FormFieldDefinition = {
+        name: 'spec.enabled',
+        label: 'Enabled',
+        inputType: 'Switch',
+      };
+      fixture.componentRef.setInput('fields', [switchField]);
+      fixture.detectChanges();
+
+      const emitted: Record<string, unknown>[] = [];
+      component.formValueChange.subscribe((value) => emitted.push(value));
+
+      component.setSwitchValue(
+        { target: { checked: true } } as unknown as Event,
+        switchField,
+      );
+
+      expect(emitted).toEqual([{ 'spec.enabled': true }]);
     });
 
     it('should emit fieldChange for validated fields when initialValues change', () => {
@@ -331,6 +614,38 @@ describe('DeclarativeForm', () => {
 
       expect(component.getValueState('metadata.name')).toBe('Negative');
     });
+
+    it('should show switch field errors below the control', () => {
+      fixture.componentRef.setInput('fields', [
+        {
+          name: 'spec.enabled',
+          label: 'Enabled',
+          inputType: 'Switch',
+          validation: 'onChange',
+        },
+      ]);
+      fixture.componentRef.setInput('fieldErrors', {
+        'spec.enabled': 'Must be enabled',
+      });
+      fixture.detectChanges();
+
+      const switchField: FormFieldDefinition = {
+        name: 'spec.enabled',
+        label: 'Enabled',
+        inputType: 'Switch',
+        validation: 'onChange',
+      };
+      component.setSwitchValue(
+        { target: { checked: false } } as unknown as Event,
+        switchField,
+      );
+      fixture.detectChanges();
+
+      const shadowRoot = fixture.nativeElement.shadowRoot as ShadowRoot;
+      const error = shadowRoot.querySelector('.field-error');
+
+      expect(error?.textContent?.trim()).toBe('Must be enabled');
+    });
   });
 
   describe('submit output', () => {
@@ -353,6 +668,25 @@ describe('DeclarativeForm', () => {
           },
         },
       ]);
+    });
+
+    it('should emit nested object for switch fields', () => {
+      fixture.componentRef.setInput('fields', [
+        {
+          name: 'spec.enabled',
+          label: 'Enabled',
+          inputType: 'Switch',
+        },
+      ]);
+      fixture.componentRef.setInput('initialValues', { 'spec.enabled': true });
+      fixture.detectChanges();
+
+      const emitted: Record<string, unknown>[] = [];
+      component.formSubmit.subscribe((value) => emitted.push(value));
+
+      component.submit();
+
+      expect(emitted).toEqual([{ spec: { enabled: true } }]);
     });
   });
 

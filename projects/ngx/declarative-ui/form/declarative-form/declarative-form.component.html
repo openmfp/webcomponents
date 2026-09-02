@@ -4,11 +4,16 @@
     <div
       class="inputs"
       [attr.data-testid]="'generic-form-field-container-' + field.name"
+      [class.inputs--switch]="field.inputType === 'Switch'"
     >
       <ui5-label
         show-colon
         [attr.data-testid]="'generic-form-field-label-' + field.name"
-        [attr.for]="'generic-form-field-input-' + field.name"
+        [attr.for]="
+          field.inputType === 'Switch'
+            ? null
+            : 'generic-form-field-input-' + field.name
+        "
         [required]="field.required"
         >{{ field.label }}</ui5-label
       >
@@ -53,23 +58,58 @@
             >
           }
         </ui5-select>
+      } @else if (field.inputType === 'Switch') {
+        <ui5-switch
+          class="switch"
+          [accessibleName]="field.label"
+          [attr.data-testid]="'generic-form-field-' + field.name"
+          [checked]="coerceChecked(control.value)"
+          [disabled]="field.disabled"
+          (blur)="onFieldBlur(field)"
+          (ui5Change)="setSwitchValue($event, field)"
+        />
+        @if (getError(field.name); as error) {
+          <div class="field-error" role="alert">{{ error }}</div>
+        }
       } @else {
         <ui5-input
           class="input"
           [attr.data-testid]="'generic-form-field-' + field.name"
+          [attr.title]="field.placeholder || null"
           [disabled]="field.disabled"
           [id]="'generic-form-field-input-' + field.name"
+          [placeholder]="field.placeholder ?? ''"
           [required]="field.required"
+          [type]="passwordInputType(field)"
           [value]="control.value"
           [valueState]="getValueState(field.name)"
           (blur)="onFieldBlur(field)"
           (change)="setFormControlValue($event, field)"
           (input)="setFormControlValue($event, field)"
         >
+          @if (shouldShowPasswordToggle(field)) {
+            <ui5-input-icon
+              slot="icon"
+              [accessibleName]="passwordToggleLabel(field)"
+              [attr.data-testid]="
+                'generic-form-field-' + field.name + '-password-toggle'
+              "
+              [name]="passwordToggleIcon(field)"
+              (ui5Click)="togglePasswordVisibility(field, $event)"
+            />
+          }
           @if (getError(field.name); as error) {
             <div slot="valueStateMessage">{{ error }}</div>
           }
         </ui5-input>
+      }
+      @if (field.hint && !field.propertyCollection?.length) {
+        <div
+          class="field-hint"
+          [attr.data-testid]="'generic-form-field-hint-' + field.name"
+        >
+          {{ field.hint }}
+        </div>
       }
     </div>
   }

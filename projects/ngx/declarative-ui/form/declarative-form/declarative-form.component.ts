@@ -4,6 +4,7 @@ import {
   FormFieldDefinition,
   FormFieldErrors,
 } from '../models';
+import { coerceBoolean } from '../utils/coerce-boolean';
 import { setPropertyByPath } from '../utils/set-property-by-path';
 import { FormCollectionField } from './form-collection-field/form-collection-field.component';
 import {
@@ -23,18 +24,22 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { Input } from '@fundamental-ngx/ui5-webcomponents/input';
+import { InputIcon } from '@fundamental-ngx/ui5-webcomponents/input-icon';
 import { Label } from '@fundamental-ngx/ui5-webcomponents/label';
 import { Option } from '@fundamental-ngx/ui5-webcomponents/option';
 import { Select } from '@fundamental-ngx/ui5-webcomponents/select';
+import { Switch } from '@fundamental-ngx/ui5-webcomponents/switch';
 
 @Component({
   selector: 'mfp-declarative-form',
   imports: [
     ReactiveFormsModule,
     Input,
+    InputIcon,
     Label,
     Select,
     Option,
+    Switch,
     FormCollectionField,
   ],
   templateUrl: './declarative-form.component.html',
@@ -55,6 +60,8 @@ export class DeclarativeForm<T extends GenericResource> {
   protected readonly collectionSeeds = signal<
     Record<string, Record<string, unknown>[]>
   >({});
+
+  private readonly passwordVisible = signal<Record<string, boolean>>({});
 
   private readonly fb = inject(FormBuilder);
 
@@ -101,6 +108,58 @@ export class DeclarativeForm<T extends GenericResource> {
         value: control.value,
       });
     }
+  }
+
+  setSwitchValue($event: Event, field: FormFieldDefinition): void {
+    const target = $event.target as HTMLInputElement & { checked?: boolean };
+    const control = this.form.controls[field.name];
+    const checked = coerceBoolean(target.checked);
+    control.setValue(checked);
+    control.markAsTouched();
+    control.markAsDirty();
+
+    this.formValueChange.emit(this.form.value as Record<string, unknown>);
+
+    if (field.validation === 'onChange') {
+      this.fieldChange.emit({
+        fieldProperty: field.name,
+        value: checked,
+      });
+    }
+  }
+
+  protected readonly coerceChecked = coerceBoolean;
+
+  isPasswordVisible(field: FormFieldDefinition): boolean {
+    return this.passwordVisible()[field.name] ?? false;
+  }
+
+  passwordInputType(field: FormFieldDefinition): 'Text' | 'Password' {
+    if (field.inputType !== 'Password') {
+      return 'Text';
+    }
+
+    return this.isPasswordVisible(field) ? 'Text' : 'Password';
+  }
+
+  passwordToggleIcon(field: FormFieldDefinition): 'hide' | 'show' {
+    return this.isPasswordVisible(field) ? 'hide' : 'show';
+  }
+
+  passwordToggleLabel(field: FormFieldDefinition): string {
+    return this.isPasswordVisible(field) ? 'Hide value' : 'Show value';
+  }
+
+  shouldShowPasswordToggle(field: FormFieldDefinition): boolean {
+    return field.inputType === 'Password' && (field.showPasswordToggle ?? true);
+  }
+
+  togglePasswordVisibility(field: FormFieldDefinition, event: Event): void {
+    event.stopPropagation();
+    this.passwordVisible.update((state) => ({
+      ...state,
+      [field.name]: !this.isPasswordVisible(field),
+    }));
   }
 
   onCollectionValueChange(
@@ -153,6 +212,7 @@ export class DeclarativeForm<T extends GenericResource> {
 
   clear(): void {
     this.form.reset();
+    this.passwordVisible.set({});
   }
 
   collectionEntries(field: FormFieldDefinition): Record<string, unknown>[] {
@@ -177,6 +237,8 @@ export class DeclarativeForm<T extends GenericResource> {
 
       if (wantsCollection) {
         this.form.addControl(field.name, this.fb.array([]));
+      } else if (field.inputType === 'Switch') {
+        this.form.addControl(field.name, new FormControl(false));
       } else {
         this.form.addControl(field.name, new FormControl(''));
       }
@@ -215,7 +277,16 @@ export class DeclarativeForm<T extends GenericResource> {
     }
     this.collectionSeeds.set(seeds);
 
-    this.form.patchValue(initialValues, { emitEvent: false });
+    const normalizedValues = { ...(initialValues as Record<string, unknown>) };
+    for (const field of this.fields()) {
+      if (field.inputType === 'Switch') {
+        normalizedValues[field.name] = coerceBoolean(
+          normalizedValues[field.name],
+        );
+      }
+    }
+
+    this.form.patchValue(normalizedValues, { emitEvent: false });
     this.form.markAsPristine({ emitEvent: false });
     this.form.updateValueAndValidity({ emitEvent: false });
   }

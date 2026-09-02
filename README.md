@@ -57,13 +57,13 @@ npm run test:cov
 
 ### Storybook
 
-Storybook is used to develop, document, and visually test components in isolation. Stories live alongside components under `projects/ngx/**/stories/*.stories.ts`.
+Storybook is used to develop, document, and visually test components in isolation. Stories live alongside components under `projects/ngx/**/stories/*.stories.ts`. Create a `public/` directory before starting Storybook (it is not committed and holds build artifacts from `npm run build`).
 
 ```bash
 # Start Storybook in development mode (default port: 6006)
 npm run storybook
 
-# Build a static Storybook site (output: storybook-static/)
+# Build a static Storybook site (output: dist/storybook/)
 npm run build:storybook
 ```
 
