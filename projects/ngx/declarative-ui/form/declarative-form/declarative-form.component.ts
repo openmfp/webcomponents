@@ -4,8 +4,8 @@ import {
   FormFieldDefinition,
   FormFieldErrors,
 } from '../models';
-import { setPropertyByPath } from '../utils/set-property-by-path';
 import { coerceBoolean } from '../utils/coerce-boolean';
+import { setPropertyByPath } from '../utils/set-property-by-path';
 import { FormCollectionField } from './form-collection-field/form-collection-field.component';
 import {
   Component,
@@ -243,7 +243,9 @@ export class DeclarativeForm<T extends GenericResource> {
     const normalizedValues = { ...(initialValues as Record<string, unknown>) };
     for (const field of this.fields()) {
       if (field.inputType === 'Switch') {
-        normalizedValues[field.name] = coerceBoolean(normalizedValues[field.name]);
+        normalizedValues[field.name] = coerceBoolean(
+          normalizedValues[field.name],
+        );
       }
     }
 

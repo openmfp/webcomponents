@@ -263,7 +263,9 @@ describe('DeclarativeForm', () => {
           inputType: 'Switch',
         },
       ]);
-      fixture.componentRef.setInput('initialValues', { 'spec.enabled': 'true' });
+      fixture.componentRef.setInput('initialValues', {
+        'spec.enabled': 'true',
+      });
       fixture.detectChanges();
 
       expect(component.form.controls['spec.enabled'].value).toBe(true);
@@ -380,9 +382,7 @@ describe('DeclarativeForm', () => {
         switchField,
       );
 
-      expect(emitted).toEqual([
-        { fieldProperty: 'spec.enabled', value: true },
-      ]);
+      expect(emitted).toEqual([{ fieldProperty: 'spec.enabled', value: true }]);
       expect(component.form.controls['spec.enabled'].value).toBe(true);
     });
 
@@ -427,9 +427,7 @@ describe('DeclarativeForm', () => {
 
       component.onFieldBlur(switchField);
 
-      expect(emitted).toEqual([
-        { fieldProperty: 'spec.enabled', value: true },
-      ]);
+      expect(emitted).toEqual([{ fieldProperty: 'spec.enabled', value: true }]);
     });
 
     it('should emit formValueChange when a switch is toggled', () => {

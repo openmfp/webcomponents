@@ -58,14 +58,14 @@ All interactive and identifiable elements across the webcomponents library carry
 
 ### DeclarativeForm (`generic-form-*`)
 
-| Element         | `data-testid`                              | Notes                                                        |
-| --------------- | ------------------------------------------ | ------------------------------------------------------------ |
-| Form element    | `generic-form`                             | Static                                                       |
-| Field container | `generic-form-field-container-{name}`      | `name` = `field.name` (dot notation, e.g. `metadata.name`)   |
-| Field label            | `generic-form-field-label-{name}`          |                                                              |
-| Input, select, switch  | `generic-form-field-{name}`                | `<ui5-input>`, `<ui5-select>`, or `<ui5-switch>`             |
-| Field hint             | `generic-form-field-hint-{name}`           | Help text below the control; omitted for collection fields   |
-| Select option          | `generic-form-field-{name}-option-{value}` | `value` = option string or `empty` for the blank placeholder |
+| Element               | `data-testid`                              | Notes                                                        |
+| --------------------- | ------------------------------------------ | ------------------------------------------------------------ |
+| Form element          | `generic-form`                             | Static                                                       |
+| Field container       | `generic-form-field-container-{name}`      | `name` = `field.name` (dot notation, e.g. `metadata.name`)   |
+| Field label           | `generic-form-field-label-{name}`          |                                                              |
+| Input, select, switch | `generic-form-field-{name}`                | `<ui5-input>`, `<ui5-select>`, or `<ui5-switch>`             |
+| Field hint            | `generic-form-field-hint-{name}`           | Help text below the control; omitted for collection fields   |
+| Select option         | `generic-form-field-{name}-option-{value}` | `value` = option string or `empty` for the blank placeholder |
 
 ---
 

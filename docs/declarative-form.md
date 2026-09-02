@@ -197,11 +197,11 @@ For a `propertyCollection` field the payload carries the whole array:
 
 Set `inputType` to change how a plain (non-select, non-collection) field renders:
 
-| `inputType`  | Renders        | Default value | Notes                                                                 |
-| ------------ | -------------- | ------------- | --------------------------------------------------------------------- |
-| `Text`       | `<ui5-input>`  | `''`          | Default when omitted                                                  |
-| `Password`   | `<ui5-input>`  | `''`          | `type="Password"`; pair with `placeholder` for edit-mode secrets      |
-| `Switch`     | `<ui5-switch>` | `false`       | Boolean control; string `"true"` / `"false"` in `initialValues` is coerced |
+| `inputType` | Renders        | Default value | Notes                                                                      |
+| ----------- | -------------- | ------------- | -------------------------------------------------------------------------- |
+| `Text`      | `<ui5-input>`  | `''`          | Default when omitted                                                       |
+| `Password`  | `<ui5-input>`  | `''`          | `type="Password"`; pair with `placeholder` for edit-mode secrets           |
+| `Switch`    | `<ui5-switch>` | `false`       | Boolean control; string `"true"` / `"false"` in `initialValues` is coerced |
 
 `placeholder` applies to text-like inputs (`Text`, `Password`). The same text is also set as the input's `title` attribute so the full message is readable via tooltip when the field is too narrow to show the placeholder. `hint` renders persistent help text below any non-collection control (input, select, or switch) and is never included in the submit payload.
 
