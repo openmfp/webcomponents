@@ -78,9 +78,9 @@ export class DeclarativeTable<T extends GenericResource> {
   viewColumns = computed(() => processGroupFields(this.columns()));
 
   onRowClick(item: T): void {
-    if (item.isAvailable !== false) {
-      this.tableRowClicked.emit(item);
-    }
+    // Unavailable rows stay visually dimmed but remain clickable: a resource
+    // that is not ready is exactly the one a user needs to open and inspect.
+    this.tableRowClicked.emit(item);
   }
 
   isPagerMode = computed(() => this.loadMode() === 'pager');

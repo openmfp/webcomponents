@@ -371,6 +371,27 @@ describe('ResourceField', () => {
 
       expect(emitted).toHaveLength(0);
     });
+
+    it('keeps navigation buttons enabled and emitting when the resource is unavailable', () => {
+      const field: FieldDefinition = {
+        property: 'action',
+        uiSettings: {
+          displayAs: 'button',
+          buttonSettings: { action: 'navigate' },
+        },
+      };
+      const { fixture, component } = setup(field, { isAvailable: false });
+      const emitted: ResourceFieldButtonClickEvent<GenericResource>[] = [];
+      component.buttonClick.subscribe((event) => emitted.push(event));
+
+      expect(component.buttonDisabled()).toBe(false);
+
+      q(fixture, 'ui5-button')?.dispatchEvent(
+        new MouseEvent('click', { bubbles: true }),
+      );
+
+      expect(emitted).toHaveLength(1);
+    });
   });
 
   describe('displayAs: tag', () => {

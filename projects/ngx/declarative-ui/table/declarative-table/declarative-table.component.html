@@ -49,7 +49,7 @@
     <ui5-table-row
       [attr.data-testid]="'generic-table-row-' + i"
       [class.disabled]="item.isAvailable === false"
-      [interactive]="item.isAvailable !== false"
+      [interactive]="true"
       (click)="onRowClick(item)"
     >
       @for (column of viewColumns(); track columnTrackBy(column, $index)) {
