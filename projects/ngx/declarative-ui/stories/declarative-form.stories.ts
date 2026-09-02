@@ -166,10 +166,17 @@ export const AllFieldTypes: Story = {
       },
       {
         name: 'spec_oidc_clientSecret',
-        label: 'Client secret',
+        label: 'Client secret (with toggle)',
         inputType: 'Password',
         placeholder: 'Leave empty to keep unchanged',
         writeOnly: true,
+        showPasswordToggle: true,
+      },
+      {
+        name: 'spec_oidc_apiKey',
+        label: 'API key (masked only)',
+        inputType: 'Password',
+        showPasswordToggle: false,
       },
       {
         name: 'spec_oidc_discoveryUrl',
@@ -189,17 +196,24 @@ export const AllFieldTypes: Story = {
   },
 };
 
-/** Password field with edit-mode placeholder for write-only secrets. */
+/** Password fields with and without the show/hide toggle. */
 export const WithPassword: Story = {
   args: {
     editMode: true,
     fields: [
       {
         name: 'spec_oidc_clientSecret',
-        label: 'Client secret',
+        label: 'Client secret (with toggle)',
         inputType: 'Password',
         placeholder: 'Leave empty to keep unchanged',
         writeOnly: true,
+        showPasswordToggle: true,
+      },
+      {
+        name: 'spec_oidc_apiKey',
+        label: 'API key (masked only)',
+        inputType: 'Password',
+        showPasswordToggle: false,
       },
     ] satisfies FormFieldDefinition[],
   },

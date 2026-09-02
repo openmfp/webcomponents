@@ -145,6 +145,7 @@ interface FormFieldDefinition {
   values?: string[]; // Static select options
   disabled?: boolean; // Disables the field
   inputType?: 'Text' | 'Password' | 'Switch'; // Control type; defaults to Text
+  showPasswordToggle?: boolean; // Password fields only; defaults to true
   placeholder?: string; // UI5 input placeholder (functional, not example values)
   hint?: string; // Persistent help text below the control; never submitted
   writeOnly?: boolean; // Host metadata only — the form does not act on this; hosts use it to omit fields from read queries and skip empty values on edit submit
@@ -197,11 +198,11 @@ For a `propertyCollection` field the payload carries the whole array:
 
 Set `inputType` to change how a plain (non-select, non-collection) field renders:
 
-| `inputType` | Renders        | Default value | Notes                                                                      |
-| ----------- | -------------- | ------------- | -------------------------------------------------------------------------- |
-| `Text`      | `<ui5-input>`  | `''`          | Default when omitted                                                       |
-| `Password`  | `<ui5-input>`  | `''`          | `type="Password"`; pair with `placeholder` for edit-mode secrets           |
-| `Switch`    | `<ui5-switch>` | `false`       | Boolean control; string `"true"` / `"false"` in `initialValues` is coerced |
+| `inputType` | Renders        | Default value | Notes                                                                               |
+| ----------- | -------------- | ------------- | ----------------------------------------------------------------------------------- |
+| `Text`      | `<ui5-input>`  | `''`          | Default when omitted                                                                |
+| `Password`  | `<ui5-input>`  | `''`          | `type="Password"`; show/hide icon by default (`showPasswordToggle`, default `true`) |
+| `Switch`    | `<ui5-switch>` | `false`       | Boolean control; string `"true"` / `"false"` in `initialValues` is coerced          |
 
 `placeholder` applies to text-like inputs (`Text`, `Password`). The same text is also set as the input's `title` attribute so the full message is readable via tooltip when the field is too narrow to show the placeholder. `hint` renders persistent help text below any non-collection control (input, select, or switch) and is never included in the submit payload.
 
@@ -217,6 +218,7 @@ const fields: FormFieldDefinition[] = [
     inputType: 'Password',
     placeholder: 'Leave empty to keep unchanged',
     writeOnly: true,
+    showPasswordToggle: true,
   },
   {
     name: 'spec.oidc.discoveryUrl',
@@ -305,20 +307,21 @@ const initialValues = {
 
 All interactive elements carry `data-testid` attributes for reliable E2E targeting. See [docs/test-ids.md](./test-ids.md) for the full naming convention.
 
-| Element                | `data-testid`                              | Notes                                                        |
-| ---------------------- | ------------------------------------------ | ------------------------------------------------------------ |
-| Form element           | `generic-form`                             |                                                              |
-| Field container        | `generic-form-field-container-{name}`      | `name` = `field.name` (dot notation)                         |
-| Field label            | `generic-form-field-label-{name}`          |                                                              |
-| Input, select, switch  | `generic-form-field-{name}`                | `<ui5-input>`, `<ui5-select>`, or `<ui5-switch>`             |
-| Field hint             | `generic-form-field-hint-{name}`           | Help text below the control; omitted for collection fields   |
-| Select option          | `generic-form-field-{name}-option-{value}` | `value` = option string or `empty` for the blank placeholder |
-| Collection container   | `collection-field`                         | Rendered inside a `propertyCollection` field                 |
-| Collection item        | `collection-item-{index}`                  | Zero-based array index                                       |
-| Collection item toggle | `collection-item-{index}-toggle`           | Expand / collapse header                                     |
-| Collection item remove | `collection-item-{index}-remove`           | Trash icon                                                   |
-| Collection item form   | `collection-item-{index}-form`             | Nested `<mfp-declarative-form>` for the expanded card        |
-| Collection Add button  | `collection-add`                           | Appends a new empty entry                                    |
+| Element                | `data-testid`                               | Notes                                                        |
+| ---------------------- | ------------------------------------------- | ------------------------------------------------------------ |
+| Form element           | `generic-form`                              |                                                              |
+| Field container        | `generic-form-field-container-{name}`       | `name` = `field.name` (dot notation)                         |
+| Field label            | `generic-form-field-label-{name}`           |                                                              |
+| Input, select, switch  | `generic-form-field-{name}`                 | `<ui5-input>`, `<ui5-select>`, or `<ui5-switch>`             |
+| Password show/hide     | `generic-form-field-{name}-password-toggle` | `<ui5-input-icon>` inside password fields                    |
+| Field hint             | `generic-form-field-hint-{name}`            | Help text below the control; omitted for collection fields   |
+| Select option          | `generic-form-field-{name}-option-{value}`  | `value` = option string or `empty` for the blank placeholder |
+| Collection container   | `collection-field`                          | Rendered inside a `propertyCollection` field                 |
+| Collection item        | `collection-item-{index}`                   | Zero-based array index                                       |
+| Collection item toggle | `collection-item-{index}-toggle`            | Expand / collapse header                                     |
+| Collection item remove | `collection-item-{index}-remove`            | Trash icon                                                   |
+| Collection item form   | `collection-item-{index}-form`              | Nested `<mfp-declarative-form>` for the expanded card        |
+| Collection Add button  | `collection-add`                            | Appends a new empty entry                                    |
 
 **Example** — a field `{ name: 'metadata.name', label: 'Name' }` renders:
 

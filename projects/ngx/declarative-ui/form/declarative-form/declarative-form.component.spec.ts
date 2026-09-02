@@ -174,6 +174,73 @@ describe('DeclarativeForm', () => {
       expect((fieldElement as HTMLInputElement).type).toBe('Password');
     });
 
+    it('should render a show/hide toggle for password fields by default', () => {
+      fixture.componentRef.setInput('fields', [
+        {
+          name: 'spec.oidc.clientSecret',
+          label: 'Client secret',
+          inputType: 'Password',
+        },
+      ]);
+      fixture.detectChanges();
+
+      const shadowRoot = fixture.nativeElement.shadowRoot as ShadowRoot;
+      const toggle = shadowRoot.querySelector(
+        '[data-testid="generic-form-field-spec.oidc.clientSecret-password-toggle"]',
+      );
+
+      expect(toggle?.tagName.toLowerCase()).toBe('ui5-input-icon');
+      expect(toggle?.getAttribute('name')).toBe('show');
+    });
+
+    it('should hide the password toggle when showPasswordToggle is false', () => {
+      fixture.componentRef.setInput('fields', [
+        {
+          name: 'spec.oidc.clientSecret',
+          label: 'Client secret',
+          inputType: 'Password',
+          showPasswordToggle: false,
+        },
+      ]);
+      fixture.detectChanges();
+
+      const shadowRoot = fixture.nativeElement.shadowRoot as ShadowRoot;
+      const toggle = shadowRoot.querySelector(
+        '[data-testid="generic-form-field-spec.oidc.clientSecret-password-toggle"]',
+      );
+
+      expect(toggle).toBeNull();
+    });
+
+    it('should reveal password values when the toggle is clicked', () => {
+      const passwordField: FormFieldDefinition = {
+        name: 'spec.oidc.clientSecret',
+        label: 'Client secret',
+        inputType: 'Password',
+      };
+      fixture.componentRef.setInput('fields', [passwordField]);
+      fixture.detectChanges();
+
+      const shadowRoot = fixture.nativeElement.shadowRoot as ShadowRoot;
+      const input = shadowRoot.querySelector(
+        '[data-testid="generic-form-field-spec.oidc.clientSecret"]',
+      ) as HTMLInputElement;
+
+      expect(input.type).toBe('Password');
+
+      component.togglePasswordVisibility(passwordField, new Event('click'));
+      fixture.detectChanges();
+
+      expect(input.type).toBe('Text');
+      expect(
+        shadowRoot
+          .querySelector(
+            '[data-testid="generic-form-field-spec.oidc.clientSecret-password-toggle"]',
+          )
+          ?.getAttribute('name'),
+      ).toBe('hide');
+    });
+
     it('should render hint text below a field', () => {
       fixture.componentRef.setInput('fields', [
         {

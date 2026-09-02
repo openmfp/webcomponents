@@ -12,6 +12,11 @@ export interface FormFieldDefinition {
   disabled?: boolean;
   /** UI5 input type rendered by `mfp-declarative-form`. */
   inputType?: 'Text' | 'Password' | 'Switch';
+  /**
+   * When `inputType` is `Password`, renders a show/hide icon inside the input.
+   * Defaults to `true`; set to `false` to keep the field masked without a toggle.
+   */
+  showPasswordToggle?: boolean;
   /** UI5 input placeholder (functional, not example values). */
   placeholder?: string;
   /** Persistent help text below the control; never submitted with the form. */
