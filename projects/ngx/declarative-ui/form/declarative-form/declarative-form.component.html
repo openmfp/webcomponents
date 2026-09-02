@@ -75,6 +75,7 @@
         <ui5-input
           class="input"
           [attr.data-testid]="'generic-form-field-' + field.name"
+          [attr.title]="field.placeholder || null"
           [disabled]="field.disabled"
           [id]="'generic-form-field-input-' + field.name"
           [placeholder]="field.placeholder ?? ''"

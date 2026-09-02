@@ -231,6 +231,9 @@ describe('DeclarativeForm', () => {
       expect((fieldElement as HTMLInputElement).placeholder).toBe(
         'Leave empty to keep unchanged',
       );
+      expect(fieldElement?.getAttribute('title')).toBe(
+        'Leave empty to keep unchanged',
+      );
     });
 
     it('should render hint text below a select field', () => {

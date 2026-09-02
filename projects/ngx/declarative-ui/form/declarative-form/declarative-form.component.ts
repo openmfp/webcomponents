@@ -5,6 +5,7 @@ import {
   FormFieldErrors,
 } from '../models';
 import { setPropertyByPath } from '../utils/set-property-by-path';
+import { coerceBoolean } from '../utils/coerce-boolean';
 import { FormCollectionField } from './form-collection-field/form-collection-field.component';
 import {
   Component,
@@ -273,14 +274,4 @@ export class DeclarativeForm<T extends GenericResource> {
       entry: new FormControl(entry),
     });
   }
-}
-
-function coerceBoolean(value: unknown): boolean {
-  if (typeof value === 'boolean') return value;
-  if (typeof value === 'string') {
-    const normalized = value.trim().toLowerCase();
-    if (normalized === 'true') return true;
-    if (normalized === 'false' || normalized === '') return false;
-  }
-  return Boolean(value);
 }
