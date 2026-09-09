@@ -162,19 +162,35 @@ Renders a positive (check) or negative (X) SAP UI5 icon when the string value is
 
 Renders the field value as a clickable `<ui5-link>`. The visible link text is the field value. The `href` is determined as follows:
 
-- When `linkSettings.link` is provided, it is used as an href template. `{{path}}` placeholders (dot-notation) are replaced with values from the resource. Absolute and relative hrefs both work.
+- When `linkSettings.link` is provided, it is used as an href template. `{{path}}` placeholders (dot-notation) are replaced with values from the resource.
+  - After substitution, if the resulting href is an **absolute URL with a protocol** (e.g. `https://`, `mailto:`) it is used as-is.
+  - Otherwise the resulting href is **resolved against the current page URL** (`window.location.href`) using the standard URL algorithm. The current URL is treated as a directory (a trailing slash is appended before resolution):
+    - A leading `/` resolves from the **origin root** (e.g. `/andrian/accounts` on `http://sub.localhost:4300/home/accounts` → `http://sub.localhost:4300/andrian/accounts`).
+    - No leading slash is **appended to the current path** (e.g. `andrian/accounts` on `http://sub.localhost:4300/home/accounts` → `http://sub.localhost:4300/home/accounts/andrian/accounts`).
+  - An empty string after substitution is returned as-is (no resolution).
 - When `linkSettings` is omitted, the field value itself is used as the `href`.
 
 ```ts
 // Field value is the href
 { property: 'spec.url', uiSettings: { displayAs: 'link' } }
 
-// Template href — relative URL built from the resource
+// Template href — leading slash resolves from the origin root.
+// On http://sub.localhost:4300/home/accounts, with metadata.name = 'andrian',
+// the resolved href becomes http://sub.localhost:4300/andrian/accounts.
 {
   property: 'metadata.name',
   uiSettings: {
     displayAs: 'link',
     linkSettings: { link: '/{{metadata.name}}/accounts' },
+  },
+}
+
+// Absolute URL — returned unchanged regardless of the current page URL
+{
+  property: 'metadata.name',
+  uiSettings: {
+    displayAs: 'link',
+    linkSettings: { link: 'https://console.example.com/{{metadata.name}}' },
   },
 }
 
@@ -478,7 +494,14 @@ interface LinkSettings {
   /**
    * href template. Supports `{{path}}` placeholders resolved via dot-notation
    * against the resource (e.g. `/{{metadata.name}}/accounts`).
-   * Absolute or relative. When omitted, the field value is used as the href.
+   *
+   * After substitution:
+   * - An absolute URL (e.g. `https://…`, `mailto:…`) is used as-is.
+   * - A relative path is resolved against `window.location.href` (treated as
+   *   a directory): a leading `/` resolves from the origin root; no leading
+   *   slash is appended to the current path.
+   *
+   * When omitted, the field value is used as the href.
    */
   link?: string;
 }

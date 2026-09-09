@@ -214,6 +214,8 @@ By default a cell renders its value as plain text. Use `uiSettings.displayAs` to
 | `'button'`   | Action button (requires `buttonSettings`)                                                                              |
 | `'tag'`      | One `<ui5-tag>` chip per value (split by `tagSettings.valueSeparator`, default `','`); also accepts an array of values |
 
+> **Link href resolution.** When `linkSettings.link` is set, `{{path}}` placeholders are substituted and then the result is resolved against the current page URL (`window.location.href`, treated as a directory): absolute URLs (e.g. `https://…`, `mailto:…`) are returned unchanged; a leading `/` resolves from the origin root; no leading slash is appended to the current path. See [docs/resource-field.md](./resource-field.md#link) for full details and examples.
+
 ### Copy button
 
 Add a copy-to-clipboard icon to any cell:

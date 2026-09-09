@@ -206,7 +206,7 @@ describe('ResourceField', () => {
   });
 
   describe('linkSettings / linkHref computed', () => {
-    it('linkHref() resolves template placeholders against the resource', () => {
+    it('linkHref() resolves template placeholders and returns an absolute URL', () => {
       const { component } = setup(
         {
           property: 'name',
@@ -220,7 +220,11 @@ describe('ResourceField', () => {
           unknown
         >,
       );
-      expect(component.linkHref()).toBe('/my-resource/accounts');
+      // resolveLinkTemplate resolves relative paths against window.location.href.
+      // Assert on the path segment to remain robust across jsdom port configurations.
+      expect(component.linkHref()).toMatch(
+        /^https?:\/\/localhost(:\d+)?\/my-resource\/accounts$/,
+      );
     });
 
     it('linkHref() falls back to stringValue() when linkSettings has no link template', () => {
