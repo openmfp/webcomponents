@@ -33,12 +33,24 @@ export interface UiSettings {
   displayAs?:
     | 'secret'
     | 'boolIcon'
+    | 'switch'
     | 'link'
     | 'tooltip'
     | 'alert'
     | 'img'
     | 'button'
     | 'tag';
+  /**
+   * Persistent help text for create/edit forms. Hosts map this to
+   * `FormFieldDefinition.hint`; it is not shown in table cells.
+   */
+  hint?: string;
+  /**
+   * When `true`, the field value must not be read back (e.g. secrets).
+   * Hosts map this to `FormFieldDefinition.writeOnly` and omit it from
+   * read queries.
+   */
+  writeOnly?: boolean;
   /** Button appearance and action — only used when `displayAs` is `'button'`. */
   buttonSettings?: ButtonSettings;
   /** Tag chip configuration — only used when `displayAs` is `'tag'`. */

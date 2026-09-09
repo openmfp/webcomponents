@@ -141,6 +141,9 @@ By default the cell renders its value as plain text. Use `uiSettings.displayAs` 
 | `'img'`      | `<img>` element using the value as `src`                                                                               |
 | `'button'`   | Action button (requires `buttonSettings`)                                                                              |
 | `'tag'`      | One `<ui5-tag>` chip per value (split by `tagSettings.valueSeparator`, default `','`); also accepts an array of values |
+| `'switch'`   | Not rendered in table cells — hosts map this to `FormFieldDefinition.inputType: 'Switch'` in create/edit forms         |
+
+`hint` and `writeOnly` on `uiSettings` follow the same pattern: they are consumed when a host maps `FieldDefinition` entries to form fields (`FormFieldDefinition.hint` / `writeOnly`), not by `mfp-resource-field` in tables.
 
 ### Secret
 
@@ -431,12 +434,17 @@ interface UiSettings {
   displayAs?:
     | 'secret'
     | 'boolIcon'
+    | 'switch'
     | 'link'
     | 'tooltip'
     | 'alert'
     | 'img'
     | 'button'
     | 'tag';
+  /** Form help text; mapped to `FormFieldDefinition.hint` by the host. */
+  hint?: string;
+  /** Write-only secret; mapped to `FormFieldDefinition.writeOnly` by the host. */
+  writeOnly?: boolean;
   buttonSettings?: ButtonSettings;
   tagSettings?: TagSettings;
   tooltipIcon?: string;
