@@ -374,7 +374,9 @@ describe('decodeBase64', () => {
 
 describe('resolveLinkTemplate', () => {
   it('replaces a single placeholder with the resolved resource value', () => {
-    const resource = { metadata: { name: 'foo' } } as unknown as GenericResource;
+    const resource = {
+      metadata: { name: 'foo' },
+    } as unknown as GenericResource;
     const result = resolveLinkTemplate('/{{metadata.name}}/accounts', resource);
     expect(result).toBe('/foo/accounts');
   });
@@ -391,30 +393,44 @@ describe('resolveLinkTemplate', () => {
   });
 
   it('substitutes an empty string for an unresolvable path', () => {
-    const resource = { metadata: { name: 'foo' } } as unknown as GenericResource;
-    const result = resolveLinkTemplate('/{{metadata.missing}}/accounts', resource);
+    const resource = {
+      metadata: { name: 'foo' },
+    } as unknown as GenericResource;
+    const result = resolveLinkTemplate(
+      '/{{metadata.missing}}/accounts',
+      resource,
+    );
     expect(result).toBe('//accounts');
   });
 
   it('returns a string with all placeholders empty when resource is undefined', () => {
-    const result = resolveLinkTemplate('/{{metadata.name}}/accounts', undefined);
+    const result = resolveLinkTemplate(
+      '/{{metadata.name}}/accounts',
+      undefined,
+    );
     expect(result).toBe('//accounts');
   });
 
   it('handles whitespace inside the placeholder delimiters', () => {
-    const resource = { metadata: { name: 'bar' } } as unknown as GenericResource;
+    const resource = {
+      metadata: { name: 'bar' },
+    } as unknown as GenericResource;
     const result = resolveLinkTemplate('/{{ metadata.name }}/detail', resource);
     expect(result).toBe('/bar/detail');
   });
 
   it('returns the template unchanged when it contains no placeholders', () => {
-    const resource = { metadata: { name: 'foo' } } as unknown as GenericResource;
+    const resource = {
+      metadata: { name: 'foo' },
+    } as unknown as GenericResource;
     const result = resolveLinkTemplate('/static/path', resource);
     expect(result).toBe('/static/path');
   });
 
   it('handles an empty template string', () => {
-    const resource = { metadata: { name: 'foo' } } as unknown as GenericResource;
+    const resource = {
+      metadata: { name: 'foo' },
+    } as unknown as GenericResource;
     const result = resolveLinkTemplate('', resource);
     expect(result).toBe('');
   });

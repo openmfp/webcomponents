@@ -4,11 +4,11 @@ import {
   ResourceFieldButtonClickEvent,
 } from '../models';
 import { getFieldValue } from '../table/utils/field-definition.utils';
+import { resolveLinkTemplate } from '../table/utils/resource-field-by-path';
 import {
   evaluateCssRules,
   evaluateValueRules,
 } from '../table/utils/rules.engine';
-import { resolveLinkTemplate } from '../table/utils/resource-field-by-path';
 import { BooleanValue } from './boolean-value/boolean-value.component';
 import { LinkValue } from './link-value/link-value.component';
 import { ResourceCollectionField } from './resource-collection-field/resource-collection-field.component';

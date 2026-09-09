@@ -127,7 +127,6 @@ describe('ResourceField', () => {
       const { component } = setup({ property: 'label' }, { label: '   ' });
       expect(component.stringValue()).toBeUndefined();
     });
-
   });
 
   describe('displayAs: secret', () => {
