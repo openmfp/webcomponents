@@ -135,7 +135,7 @@ By default the cell renders its value as plain text. Use `uiSettings.displayAs` 
 | _(unset)_    | Plain text                                                                                                             |
 | `'secret'`   | Masked value (`*` repeated) with a toggle-visibility icon                                                              |
 | `'boolIcon'` | Check / X icon for `"true"` / `"false"` string values                                                                  |
-| `'link'`     | Clickable anchor (the value must be a valid URL)                                                                       |
+| `'link'`     | Clickable anchor; `href` from `linkSettings.link` template or field value; visible text is always the field value      |
 | `'tooltip'`  | Info icon; the full value appears as a tooltip on hover                                                                |
 | `'alert'`    | Critical alert icon when the value is falsy; empty otherwise                                                           |
 | `'img'`      | `<img>` element using the value as `src`                                                                               |
@@ -160,11 +160,35 @@ Renders a positive (check) or negative (X) SAP UI5 icon when the string value is
 
 ### Link
 
-Renders the value as a clickable `<ui5-link>` when the value is a valid URL. Falls through to plain text when the value is not a URL.
+Renders the field value as a clickable `<ui5-link>`. The visible link text is the field value. The `href` is determined as follows:
+
+- When `linkSettings.link` is provided, it is used as an href template. `{{path}}` placeholders (dot-notation) are replaced with values from the resource. Absolute and relative hrefs both work.
+- When `linkSettings` is omitted, the field value itself is used as the `href`.
 
 ```ts
+// Field value is the href
 { property: 'spec.url', uiSettings: { displayAs: 'link' } }
+
+// Template href — relative URL built from the resource
+{
+  property: 'metadata.name',
+  uiSettings: {
+    displayAs: 'link',
+    linkSettings: { link: '/{{metadata.name}}/accounts' },
+  },
+}
+
+// Template href with multiple placeholders
+{
+  property: 'metadata.name',
+  uiSettings: {
+    displayAs: 'link',
+    linkSettings: { link: '/namespaces/{{metadata.namespace}}/pods/{{metadata.name}}' },
+  },
+}
 ```
+
+Unresolved placeholders (path not found on resource) are replaced with an empty string.
 
 ### Tooltip
 
@@ -387,10 +411,11 @@ Renders a URL string as a `<ui5-link>` that stops click propagation.
 import { LinkValue } from '@openmfp/ngx';
 ```
 
-| Input      | Type     | Required | Description                                 |
-| ---------- | -------- | -------- | ------------------------------------------- |
-| `urlValue` | `string` | yes      | The URL rendered as the link `href`         |
-| `testId`   | `string` | no       | `data-testid` attribute on the link element |
+| Input          | Type     | Required | Description                                                                 |
+| -------------- | -------- | -------- | --------------------------------------------------------------------------- |
+| `urlValue`     | `string` | yes      | The URL rendered as the link `href`                                         |
+| `displayValue` | `string` | no       | Override text shown as the link label. Falls back to `urlValue` when absent |
+| `testId`       | `string` | no       | `data-testid` attribute on the link element                                 |
 
 ### `SecretValue`
 
@@ -439,6 +464,7 @@ interface UiSettings {
     | 'tag';
   buttonSettings?: ButtonSettings;
   tagSettings?: TagSettings;
+  linkSettings?: LinkSettings;
   tooltipIcon?: string;
   withCopyButton?: boolean;
   cssCustomization?: Partial<CSSStyleDeclaration>;
@@ -446,6 +472,15 @@ interface UiSettings {
   valueRules?: ValueRule[];
   columnWidth?: string;
   align?: 'start' | 'center' | 'end';
+}
+
+interface LinkSettings {
+  /**
+   * href template. Supports `{{path}}` placeholders resolved via dot-notation
+   * against the resource (e.g. `/{{metadata.name}}/accounts`).
+   * Absolute or relative. When omitted, the field value is used as the href.
+   */
+  link?: string;
 }
 
 interface TagSettings {
@@ -508,7 +543,7 @@ type RuleCondition =
 | Secret value     | `resource-field-{property}-secret`        | `displayAs: 'secret'`                                   |
 | Show/hide toggle | `resource-field-{property}-secret-toggle` | `displayAs: 'secret'`                                   |
 | Boolean icon     | `resource-field-{property}-boolean`       | `displayAs: 'boolIcon'`, value is `"true"` or `"false"` |
-| Link             | `resource-field-{property}-link`          | `displayAs: 'link'`, value is a valid URL               |
+| Link             | `resource-field-{property}-link`          | `displayAs: 'link'`                                     |
 | Tooltip icon     | `resource-field-{property}-tooltip`       | `displayAs: 'tooltip'`                                  |
 | Alert icon       | `resource-field-{property}-icon`          | `displayAs: 'alert'`, value is falsy                    |
 | Action button    | `resource-field-{property}-button`        | `displayAs: 'button'`                                   |

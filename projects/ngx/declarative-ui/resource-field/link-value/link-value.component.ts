@@ -17,6 +17,7 @@ import { Link } from '@fundamental-ngx/ui5-webcomponents/link';
 export class LinkValue {
   urlValue = input.required<string>();
   testId = input<string>('link-value-link');
+  displayValue = input<string>();
 
   public stopPropagation(event: Event) {
     event.stopPropagation();

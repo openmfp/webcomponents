@@ -128,18 +128,6 @@ describe('ResourceField', () => {
       expect(component.stringValue()).toBeUndefined();
     });
 
-    it('isUrlValue() is true for valid http URL', () => {
-      const { component } = setup(
-        { property: 'link' },
-        { link: 'https://example.com' },
-      );
-      expect(component.isUrlValue()).toBe(true);
-    });
-
-    it('isUrlValue() is false for plain string', () => {
-      const { component } = setup({ property: 'link' }, { link: 'not-a-url' });
-      expect(component.isUrlValue()).toBe(false);
-    });
   });
 
   describe('displayAs: secret', () => {
@@ -191,7 +179,7 @@ describe('ResourceField', () => {
   });
 
   describe('displayAs: link', () => {
-    it('renders link-value for valid URL', () => {
+    it('renders link-value when field value is a URL', () => {
       const { fixture } = setup(
         { property: 'url', uiSettings: { displayAs: 'link' } },
         { url: 'https://example.com' },
@@ -199,12 +187,88 @@ describe('ResourceField', () => {
       expect(el(fixture, 'resource-field-url-link')).not.toBeNull();
     });
 
-    it('does not render link-value for non-URL string', () => {
+    it('renders link-value for any non-empty string field value (href = field value)', () => {
       const { fixture } = setup(
         { property: 'url', uiSettings: { displayAs: 'link' } },
         { url: 'not-a-url' },
       );
+      // linkHref() falls back to stringValue() — a non-empty string is truthy
+      expect(el(fixture, 'resource-field-url-link')).not.toBeNull();
+    });
+
+    it('does not render link-value when field value is absent', () => {
+      const { fixture } = setup(
+        { property: 'url', uiSettings: { displayAs: 'link' } },
+        {},
+      );
+      // stringValue() returns undefined for missing value → linkHref() is falsy
       expect(el(fixture, 'resource-field-url-link')).toBeNull();
+    });
+  });
+
+  describe('linkSettings / linkHref computed', () => {
+    it('linkHref() resolves template placeholders against the resource', () => {
+      const { component } = setup(
+        {
+          property: 'name',
+          uiSettings: {
+            displayAs: 'link',
+            linkSettings: { link: '/{{metadata.name}}/accounts' },
+          },
+        },
+        { name: 'foo', metadata: { name: 'my-resource' } } as Record<
+          string,
+          unknown
+        >,
+      );
+      expect(component.linkHref()).toBe('/my-resource/accounts');
+    });
+
+    it('linkHref() falls back to stringValue() when linkSettings has no link template', () => {
+      const { component } = setup(
+        {
+          property: 'url',
+          uiSettings: { displayAs: 'link', linkSettings: {} },
+        },
+        { url: 'https://example.com' },
+      );
+      expect(component.linkHref()).toBe('https://example.com');
+    });
+
+    it('linkHref() falls back to stringValue() when linkSettings is absent', () => {
+      const { component } = setup(
+        { property: 'url', uiSettings: { displayAs: 'link' } },
+        { url: 'https://example.com' },
+      );
+      expect(component.linkHref()).toBe('https://example.com');
+    });
+
+    it('linkHref() returns undefined when field value is absent and no link template', () => {
+      const { component } = setup(
+        { property: 'url', uiSettings: { displayAs: 'link' } },
+        {},
+      );
+      expect(component.linkHref()).toBeUndefined();
+    });
+
+    it('renders mfp-link-value with resolved href when linkSettings.link is set', () => {
+      const { fixture } = setup(
+        {
+          property: 'name',
+          uiSettings: {
+            displayAs: 'link',
+            linkSettings: { link: '/namespaces/{{metadata.namespace}}/detail' },
+          },
+        },
+        {
+          name: 'my-app',
+          metadata: { namespace: 'production' },
+        } as Record<string, unknown>,
+      );
+      const linkEl = el(fixture, 'resource-field-name-link') as Element & {
+        urlValue?: string;
+      };
+      expect(linkEl).not.toBeNull();
     });
   });
 

@@ -207,7 +207,7 @@ By default a cell renders its value as plain text. Use `uiSettings.displayAs` to
 | _(unset)_    | Plain text                                                                                                             |
 | `'secret'`   | Masked value with a toggle-visibility button                                                                           |
 | `'boolIcon'` | Check / X icon for `"true"` / `"false"` string values                                                                  |
-| `'link'`     | Clickable anchor (the value must be a valid URL)                                                                       |
+| `'link'`     | Clickable anchor; `href` from `linkSettings.link` template or field value; visible text is always the field value      |
 | `'tooltip'`  | Text with an info icon; the full value appears on hover                                                                |
 | `'alert'`    | Alert-styled text                                                                                                      |
 | `'img'`      | `<img>` element using the value as `src`                                                                               |

@@ -12,6 +12,16 @@ export interface PropertyField {
   transform?: TransformType[];
 }
 
+/** Configuration for a `displayAs: 'link'` cell. */
+export interface LinkSettings {
+  /**
+   * href template. Supports `{{path}}` placeholders resolved against the
+   * resource (e.g. `/{{metadata.name}}/accounts`). Absolute or relative.
+   * When omitted, the field value is used as the href.
+   */
+  link?: string;
+}
+
 /** Appearance settings for tag chip rendering. */
 export interface TagSettings {
   design?:
@@ -43,6 +53,8 @@ export interface UiSettings {
   buttonSettings?: ButtonSettings;
   /** Tag chip configuration — only used when `displayAs` is `'tag'`. */
   tagSettings?: TagSettings;
+  /** Link configuration — only used when `displayAs` is `'link'`. */
+  linkSettings?: LinkSettings;
   /** SAP UI5 icon name shown as the tooltip trigger icon. */
   tooltipIcon?: string;
   /** When `true`, a copy-to-clipboard button is rendered next to the value. */

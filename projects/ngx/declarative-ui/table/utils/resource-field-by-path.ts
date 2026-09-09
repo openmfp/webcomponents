@@ -107,3 +107,18 @@ export const decodeBase64 = (base64: string): string => {
     throw new Error('Failed to decode Base64 string');
   }
 };
+
+/**
+ * Replaces every `{{path}}` placeholder in `template` with the value resolved
+ * from `resource` via the given path (dot-notation). Unresolved placeholders
+ * become an empty string.
+ */
+export const resolveLinkTemplate = <T>(
+  template: string,
+  resource: T | undefined,
+): string =>
+  template.replace(/\{\{\s*([^}]+?)\s*\}\}/g, (_match, path: string) => {
+    if (!resource) return '';
+    const value = getResourceValueByJsonPath(resource, { property: path });
+    return value == null ? '' : String(value);
+  });

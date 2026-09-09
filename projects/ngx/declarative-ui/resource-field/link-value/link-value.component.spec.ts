@@ -36,7 +36,45 @@ describe('LinkValueComponent', () => {
     const linkElement = compiled.querySelector('ui5-link');
 
     expect(linkElement).toBeTruthy();
-    expect(linkElement.textContent.trim()).toBe('Link');
+  });
+
+  it('falls back to urlValue as link text when displayValue is not provided', () => {
+    const { fixture } = makeComponent('https://example.com');
+    const compiled = fixture.nativeElement;
+    const linkElement = compiled.querySelector('ui5-link');
+
+    expect(linkElement.textContent.trim()).toBe('https://example.com');
+  });
+
+  it('shows displayValue as link text when displayValue is provided', () => {
+    fixture = TestBed.createComponent(LinkValue);
+    component = fixture.componentInstance;
+
+    fixture.componentRef.setInput('urlValue', 'https://example.com');
+    fixture.componentRef.setInput('displayValue', 'My Link');
+
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement;
+    const linkElement = compiled.querySelector('ui5-link');
+
+    expect(linkElement.textContent.trim()).toBe('My Link');
+  });
+
+  it('prefers displayValue over urlValue as link text', () => {
+    fixture = TestBed.createComponent(LinkValue);
+    component = fixture.componentInstance;
+
+    fixture.componentRef.setInput('urlValue', 'https://example.com');
+    fixture.componentRef.setInput('displayValue', 'Custom Label');
+
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement;
+    const linkElement = compiled.querySelector('ui5-link');
+
+    expect(linkElement.textContent.trim()).toBe('Custom Label');
+    expect(linkElement.textContent.trim()).not.toBe('https://example.com');
   });
 
   it('should render ui5-link with different URL', () => {

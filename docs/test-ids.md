@@ -156,7 +156,7 @@ Sub-elements follow a consistent suffix pattern:
 | Secret value     | `resource-field-{property}-secret`        | `displayAs: 'secret'`                                     |
 | Show/hide toggle | `resource-field-{property}-secret-toggle` | `displayAs: 'secret'`                                     |
 | Boolean icon     | `resource-field-{property}-boolean`       | `displayAs: 'boolIcon'` and value is `"true"` / `"false"` |
-| Link             | `resource-field-{property}-link`          | `displayAs: 'link'` and value is a valid URL              |
+| Link             | `resource-field-{property}-link`          | `displayAs: 'link'`                                               |
 | Tooltip icon     | `resource-field-{property}-tooltip`       | `displayAs: 'tooltip'`                                    |
 | Alert icon       | `resource-field-{property}-icon`          | `displayAs: 'alert'` and value is falsy                   |
 | Action button    | `resource-field-{property}-button`        | `displayAs: 'button'`                                     |
