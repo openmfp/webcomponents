@@ -31,6 +31,7 @@ import '@ui5/webcomponents-icons/dist/open-command-field.js';
   selector: 'mfp-declarative-table',
   imports: [
     IllustratedMessage,
+    Button,
     Table,
     TableCell,
     TableHeaderCell,
@@ -40,7 +41,6 @@ import '@ui5/webcomponents-icons/dist/open-command-field.js';
     Select,
     Option,
     TableGrowing,
-    Button,
   ],
   templateUrl: './declarative-table.component.html',
   styleUrl: './declarative-table.component.scss',
@@ -62,6 +62,8 @@ export class DeclarativeTable<T extends GenericResource> {
   loadMoreButtonText = input<string>('Load More');
   height = input<number>();
   currentPage = input<number>(1);
+  itemsPerPageLabel = input<string>('Items per page:');
+  totalItemsLabel = input<string>('Results');
 
   readonly buttonClick = output<ResourceFieldButtonClickEvent<T>>();
   readonly tableRowClicked = output<T>();
@@ -99,6 +101,38 @@ export class DeclarativeTable<T extends GenericResource> {
       : this.hasMore(),
   );
 
+  pageButtons = computed<(number | 'ellipsis')[]>(() => {
+    const total = this.totalPages();
+    const current = this.currentPage();
+    if (total <= 9) return Array.from({ length: total }, (_, i) => i + 1);
+
+    // Always exactly 9 slots: [1] [leftSlot] [w1] [w2] [w3] [w4] [w5] [rightSlot] [N]
+    // The middle window of 5 pages is centred on `current`, clamped so it
+    // never overlaps page 1 or page N (window lives in [2 … N-1]).
+    const windowStart = Math.min(Math.max(current - 2, 2), total - 5);
+    const [w1, w2, w3, w4, w5] = [
+      windowStart,
+      windowStart + 1,
+      windowStart + 2,
+      windowStart + 3,
+      windowStart + 4,
+    ];
+
+    if (w1 === 2) {
+      // Near the start — window is adjacent to page 1: 1 2 3 4 5 6 7 … N
+      const rightSlot: number | 'ellipsis' =
+        w5 === total - 1 ? total - 1 : 'ellipsis';
+      return [1, w1, w2, w3, w4, w5, w5 + 1, rightSlot, total];
+    }
+    if (w5 === total - 1) {
+      // Near the end — window is adjacent to page N: 1 … N-6 N-5 N-4 N-3 N-2 N-1 N
+      const leftSlot: number | 'ellipsis' = w1 - 1 === 2 ? 2 : 'ellipsis';
+      return [1, leftSlot, w1 - 1, w1, w2, w3, w4, w5, total];
+    }
+    // Middle — gaps on both sides: 1 … w1 w2 w3 w4 w5 … N
+    return [1, 'ellipsis', w1, w2, w3, w4, w5, 'ellipsis', total];
+  });
+
   goToPage(page: number): void {
     const maxPage = this.knowsTotal() ? this.totalPages() : Infinity;
     const target = Math.min(Math.max(1, page), maxPage);
@@ -107,16 +141,16 @@ export class DeclarativeTable<T extends GenericResource> {
     }
   }
 
-  firstPage = () => {
-    this.goToPage(1);
-  };
-  prevPage = () => {
+  prevPage() {
     this.goToPage(this.currentPage() - 1);
-  };
-  nextPage = () => {
+  }
+  nextPage() {
     this.goToPage(this.currentPage() + 1);
-  };
-  lastPage = () => {
+  }
+  firstPage() {
+    this.goToPage(1);
+  }
+  lastPage() {
     this.goToPage(this.totalPages());
-  };
+  }
 }

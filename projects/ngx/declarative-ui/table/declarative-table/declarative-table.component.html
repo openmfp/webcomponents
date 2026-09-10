@@ -171,7 +171,7 @@
     <span
       style="color: var(--sapTextColor); font-size: var(--sapFontSmallSize)"
     >
-      {{ isPagerMode() ? 'Items per page:' : 'Items per load:' }}
+      {{ isPagerMode() ? itemsPerPageLabel() : 'Items per load:' }}
     </span>
     <ui5-select
       data-testid="generic-table-pagination-select"
@@ -191,16 +191,15 @@
 
   @if (isPagerMode()) {
     <div class="pager" data-testid="generic-table-pager">
-      @if (knowsTotal()) {
-        <ui5-button
-          accessibleName="First page"
-          data-testid="generic-table-pager-first"
-          design="Transparent"
-          icon="close-command-field"
-          [disabled]="loading() || !canPrev()"
-          (click)="firstPage()"
-        />
-      }
+      <ui5-button
+        accessibleName="First page"
+        class="pager__first-last"
+        data-testid="generic-table-pager-first"
+        design="Transparent"
+        icon="close-command-field"
+        [disabled]="loading() || !canPrev()"
+        (click)="firstPage()"
+      />
       <ui5-button
         accessibleName="Previous page"
         data-testid="generic-table-pager-prev"
@@ -209,17 +208,24 @@
         [disabled]="loading() || !canPrev()"
         (click)="prevPage()"
       />
-      <span
-        class="pager__indicator"
-        data-testid="generic-table-pager-indicator"
-        >{{
-          knowsTotal()
-            ? hasResults()
-              ? currentPage() + ' / ' + totalPages()
-              : '–'
-            : currentPage()
-        }}</span
-      >
+
+      @for (btn of pageButtons(); track $index) {
+        @if (btn === 'ellipsis') {
+          <span class="pager__ellipsis pager__pages-full">…</span>
+        } @else {
+          <button
+            class="pager__page"
+            [attr.data-testid]="'generic-table-pager-page-' + btn"
+            [class.pager__page--active]="btn === currentPage()"
+            [class.pager__pages-full]="btn !== currentPage()"
+            [disabled]="loading() || btn === currentPage()"
+            (click)="goToPage(btn)"
+          >
+            {{ btn }}
+          </button>
+        }
+      }
+
       <ui5-button
         accessibleName="Next page"
         data-testid="generic-table-pager-next"
@@ -228,16 +234,15 @@
         [disabled]="loading() || !canNext()"
         (click)="nextPage()"
       />
-      @if (knowsTotal()) {
-        <ui5-button
-          accessibleName="Last page"
-          data-testid="generic-table-pager-last"
-          design="Transparent"
-          icon="open-command-field"
-          [disabled]="loading() || !canNext()"
-          (click)="lastPage()"
-        />
-      }
+      <ui5-button
+        accessibleName="Last page"
+        class="pager__first-last"
+        data-testid="generic-table-pager-last"
+        design="Transparent"
+        icon="open-command-field"
+        [disabled]="loading() || !canNext()"
+        (click)="lastPage()"
+      />
     </div>
     <div class="pagination-footer__side pagination-footer__side--end">
       @if (knowsTotal()) {
@@ -245,8 +250,7 @@
           data-testid="generic-table-item-count"
           style="color: var(--sapTextColor); font-size: var(--sapFontSmallSize)"
         >
-          <b style="font-size: var(--sapFontSize)">{{ totalItemsCount() }}</b>
-          Items
+          {{ totalItemsCount() }} {{ totalItemsLabel() }}
         </span>
       }
     </div>

@@ -12,11 +12,13 @@ and [releases](https://github.com/openmfp/webcomponents/releases) for details.
 ## [1.4.2] - 2026-09-10
 
 ### Features
+
 - Upgrade displayAs link (#290)
 
 ## [1.4.1] - 2026-09-10
 
 ### Features
+
 - Upgrade displayAs link (#290)
 
 ## [1.3.0] - 2026-09-02
