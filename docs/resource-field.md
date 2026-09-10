@@ -130,17 +130,17 @@ Transforms are applied left to right.
 
 By default the cell renders its value as plain text. Use `uiSettings.displayAs` to change the rendering:
 
-| `displayAs`  | Renders as                                                                                                             |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| _(unset)_    | Plain text                                                                                                             |
-| `'secret'`   | Masked value (`*` repeated) with a toggle-visibility icon                                                              |
-| `'boolIcon'` | Check / X icon for `"true"` / `"false"` string values                                                                  |
+| `displayAs`  | Renders as                                                                                                                      |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| _(unset)_    | Plain text                                                                                                                      |
+| `'secret'`   | Masked value (`*` repeated) with a toggle-visibility icon                                                                       |
+| `'boolIcon'` | Check / X icon for `"true"` / `"false"` string values                                                                           |
 | `'link'`     | Clickable anchor; `href` from `linkSettings.link` template or field value; visible text from `linkSettings.text` or field value |
-| `'tooltip'`  | Info icon; the full value appears as a tooltip on hover                                                                |
-| `'alert'`    | Critical alert icon when the value is falsy; empty otherwise                                                           |
-| `'img'`      | `<img>` element using the value as `src`                                                                               |
-| `'button'`   | Action button (requires `buttonSettings`)                                                                              |
-| `'tag'`      | One `<ui5-tag>` chip per value (split by `tagSettings.valueSeparator`, default `','`); also accepts an array of values |
+| `'tooltip'`  | Info icon; the full value appears as a tooltip on hover                                                                         |
+| `'alert'`    | Critical alert icon when the value is falsy; empty otherwise                                                                    |
+| `'img'`      | `<img>` element using the value as `src`                                                                                        |
+| `'button'`   | Action button (requires `buttonSettings`)                                                                                       |
+| `'tag'`      | One `<ui5-tag>` chip per value (split by `tagSettings.valueSeparator`, default `','`); also accepts an array of values          |
 
 ### Secret
 
