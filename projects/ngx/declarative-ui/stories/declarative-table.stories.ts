@@ -91,12 +91,14 @@ const PODS: Pod[] = [
       [error]="error"
       [hasMore]="hasMore"
       [height]="height"
+      [itemsPerPageLabel]="itemsPerPageLabel"
       [loadMode]="loadMode"
       [loading]="loading"
       [loadingDelay]="loadingDelay"
       [paginationLimit]="paginationLimit"
       [resources]="visibleResources"
       [totalItemsCount]="totalItemsCount"
+      [totalItemsLabel]="totalItemsLabel"
       [trackByPath]="trackByProperty"
       (loadMoreResources)="loadMore()"
       (pageChange)="onPageChange($event)"
@@ -118,6 +120,8 @@ class DeclarativeTableStory {
   @Input() loading = false;
   @Input() loadingDelay = 1000;
   @Input() error = false;
+  @Input() itemsPerPageLabel = 'Items per page:';
+  @Input() totalItemsLabel = 'Results';
 
   /**
    * In pager mode the story slices the full `resources` array to the current
@@ -177,6 +181,8 @@ const meta: Meta<DeclarativeTableStory> = {
     loadingDelay: { control: 'number' },
     error: { control: 'boolean' },
     loadMode: { options: ['scroll', 'button', 'pager'], control: 'select' },
+    itemsPerPageLabel: { control: 'text' },
+    totalItemsLabel: { control: 'text' },
   },
   args: {
     resources: PODS,
@@ -480,7 +486,7 @@ export const Pagination_Pager: Story = {
       { label: 'Namespace', property: 'metadata.namespace' },
       { label: 'Phase', property: 'status.phase' },
     ] satisfies TableFieldDefinition[],
-    resources: Array.from({ length: 20 }, (_, i) => ({
+    resources: Array.from({ length: 100 }, (_, i) => ({
       ...PODS[i % PODS.length],
       id: `pager-${i + 1}`,
       metadata: {
@@ -491,8 +497,8 @@ export const Pagination_Pager: Story = {
     })),
     trackByProperty: 'metadata.uid',
     loadMode: 'pager',
-    paginationLimit: 5,
-    totalItemsCount: 20,
+    paginationLimit: 10,
+    totalItemsCount: 100,
     currentPage: 1,
   },
 };

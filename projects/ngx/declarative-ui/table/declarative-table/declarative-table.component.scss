@@ -35,6 +35,7 @@ ui5-table-header-row {
 }
 
 .pagination-footer {
+  container-type: inline-size;
   gap: 0.5rem;
 
   &__side {
@@ -57,22 +58,66 @@ ui5-table-header-row {
   gap: 0.25rem;
   justify-content: center;
 
-  ui5-button {
-    color: var(--sapContent_IconColor, #1d2d3e);
-    --sapButton_IconColor: var(--sapContent_IconColor, #1d2d3e);
-    --sapButton_Hover_IconColor: var(--sapContent_IconColor, #1d2d3e);
+  &__nav,
+  &__page {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--sapLinkColor, #0070f2);
+    font-size: var(--sapFontSize);
+    min-width: 2rem;
+    height: 2rem;
+    padding: 0 0.25rem;
+    border-radius: 4px;
+    vertical-align: middle;
 
-    &[disabled] {
+    &:disabled {
       color: var(--sapContent_DisabledTextColor, #b3b3b3);
-      --sapButton_IconColor: var(--sapContent_DisabledTextColor, #b3b3b3);
+      cursor: default;
+    }
+
+    &:not(:disabled):hover {
+      background: var(--sapList_Hover_Background);
     }
   }
 
-  &__indicator {
-    min-width: 3rem;
-    text-align: center;
-    color: var(--sapTextColor);
-    font-size: var(--sapFontSize);
+  &__nav {
+    font-size: 1.2rem;
     font-weight: bold;
+  }
+
+  &__page--active {
+    border: 1px solid var(--sapField_BorderColor, #89919a);
+    font-weight: bold;
+    color: var(--sapTextColor);
+    cursor: default;
+  }
+
+  &__ellipsis {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--sapTextColor);
+    min-width: 1.5rem;
+    height: 2rem;
+  }
+
+  // Wide: hide first/last
+  &__first-last {
+    display: none;
+  }
+}
+
+// Narrow: hide page numbers (except active), show first/last
+@container (max-width: 35rem) {
+  .pager__pages-full {
+    display: none;
+  }
+
+  .pager__first-last {
+    display: inline-flex;
   }
 }

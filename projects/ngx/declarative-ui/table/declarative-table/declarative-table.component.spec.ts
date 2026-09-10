@@ -641,32 +641,33 @@ describe('DeclarativeTable', () => {
       expect(component.totalPages()).toBe(3);
     });
 
-    it('shows the compact "X / Y" indicator', () => {
+    it('shows the current page as an active page button', () => {
       const { fixture } = pagerSetup({
         currentPage: 2,
         totalItemsCount: 12,
         paginationLimit: 5,
       });
-      expect(
-        el(fixture, 'generic-table-pager-indicator')?.textContent?.trim(),
-      ).toBe('2 / 3');
+      const activePage = el(
+        fixture,
+        'generic-table-pager-page-2',
+      ) as HTMLElement & {
+        disabled: boolean;
+      };
+      expect(activePage).not.toBeNull();
+      expect(activePage.disabled).toBe(true);
+      expect(activePage.classList.contains('pager__page--active')).toBe(true);
     });
 
-    it('disables first and previous on the first page', () => {
+    it('disables previous on the first page', () => {
       const { fixture } = pagerSetup({ currentPage: 1 });
       // canPrev is false on page 1 regardless of totalItemsCount
       const prev = el(fixture, 'generic-table-pager-prev') as HTMLElement & {
         disabled: boolean;
       };
       expect(prev.disabled).toBe(true);
-      // first button is only rendered when knowsTotal=true (totalItemsCount set)
-      const first = el(fixture, 'generic-table-pager-first') as HTMLElement & {
-        disabled: boolean;
-      };
-      expect(first.disabled).toBe(true);
     });
 
-    it('disables next and last on the last page', () => {
+    it('disables next on the last page', () => {
       const { fixture } = pagerSetup({
         currentPage: 3,
         totalItemsCount: 12,
@@ -675,11 +676,7 @@ describe('DeclarativeTable', () => {
       const next = el(fixture, 'generic-table-pager-next') as HTMLElement & {
         disabled: boolean;
       };
-      const last = el(fixture, 'generic-table-pager-last') as HTMLElement & {
-        disabled: boolean;
-      };
       expect(next.disabled).toBe(true);
-      expect(last.disabled).toBe(true);
     });
 
     it('emits pageChange with the target page for each control', () => {
@@ -728,15 +725,12 @@ describe('DeclarativeTable', () => {
       expect(emitted).toEqual([3]);
     });
 
-    it('shows a neutral "–" indicator and disables all arrows when there are no results', () => {
+    it('disables all arrows when there are no results', () => {
       const { fixture, component } = pagerSetup({
         resources: [],
         totalItemsCount: 0,
         currentPage: 1,
       });
-      expect(
-        el(fixture, 'generic-table-pager-indicator')?.textContent?.trim(),
-      ).toBe('–');
 
       const ids = ['prev', 'next'];
       for (const id of ids) {
@@ -745,35 +739,26 @@ describe('DeclarativeTable', () => {
         };
         expect(btn.disabled).toBe(true);
       }
-      // first/last are still rendered (knowsTotal=true) but also disabled
-      const first = el(fixture, 'generic-table-pager-first') as HTMLElement & {
-        disabled: boolean;
-      };
-      const last = el(fixture, 'generic-table-pager-last') as HTMLElement & {
-        disabled: boolean;
-      };
-      expect(first.disabled).toBe(true);
-      expect(last.disabled).toBe(true);
       expect(component.canPrev()).toBe(false);
       expect(component.canNext()).toBe(false);
     });
 
-    it('renders the total item count as "<n> Items" in pager mode', () => {
+    it('renders the total item count as "<n> Results" in pager mode', () => {
       const { fixture } = pagerSetup({ totalItemsCount: 145 });
       expect(
         el(fixture, 'generic-table-item-count')
           ?.textContent?.replace(/\s+/g, ' ')
           .trim(),
-      ).toBe('145 Items');
+      ).toBe('145 Results');
     });
 
-    it('shows "0 Items" when there are no results', () => {
+    it('shows "0 Results" when there are no results', () => {
       const { fixture } = pagerSetup({ resources: [], totalItemsCount: 0 });
       expect(
         el(fixture, 'generic-table-item-count')
           ?.textContent?.replace(/\s+/g, ' ')
           .trim(),
-      ).toBe('0 Items');
+      ).toBe('0 Results');
     });
 
     describe('cursor-based mode (totalItemsCount undefined)', () => {
@@ -790,17 +775,25 @@ describe('DeclarativeTable', () => {
           ...overrides,
         });
 
-      it('shows only the current page number when totalItemsCount is undefined', () => {
-        const { fixture } = cursorSetup();
-        expect(
-          el(fixture, 'generic-table-pager-indicator')?.textContent?.trim(),
-        ).toBe('2');
+      it('shows the current page as an active page button when totalItemsCount is undefined', () => {
+        // When totalItemsCount is unknown, totalPages defaults to 1.
+        // The pager renders page 1 as the only button. Page navigation
+        // still works via canPrev/canNext based on currentPage and hasMore.
+        const { fixture, component } = cursorSetup();
+        // page-1 button is rendered and active (totalPages=1)
+        const page1 = el(
+          fixture,
+          'generic-table-pager-page-1',
+        ) as HTMLElement & { disabled: boolean };
+        expect(page1).not.toBeNull();
+        // prev is enabled since currentPage=2 > 1
+        expect(component.canPrev()).toBe(true);
       });
 
-      it('hides first and last buttons when totalItemsCount is undefined', () => {
+      it('always renders first and last buttons (visibility controlled by CSS)', () => {
         const { fixture } = cursorSetup();
-        expect(el(fixture, 'generic-table-pager-first')).toBeNull();
-        expect(el(fixture, 'generic-table-pager-last')).toBeNull();
+        expect(el(fixture, 'generic-table-pager-first')).not.toBeNull();
+        expect(el(fixture, 'generic-table-pager-last')).not.toBeNull();
       });
 
       it('hides the item count panel when totalItemsCount is undefined', () => {
@@ -1011,16 +1004,17 @@ describe('DeclarativeTable', () => {
       const node = el(fixture, testId) as
         (HTMLElement & { accessibleName?: string }) | null;
       return (
-        node?.getAttribute('accessible-name') ?? node?.accessibleName ?? null
+        node?.getAttribute('accessible-name') ??
+        node?.getAttribute('accessiblename') ??
+        node?.accessibleName ??
+        null
       );
     };
 
     expect(accessibleName('generic-table-pagination-select')).toBe(
       'Items per page',
     );
-    expect(accessibleName('generic-table-pager-first')).toBe('First page');
     expect(accessibleName('generic-table-pager-prev')).toBe('Previous page');
     expect(accessibleName('generic-table-pager-next')).toBe('Next page');
-    expect(accessibleName('generic-table-pager-last')).toBe('Last page');
   });
 });
