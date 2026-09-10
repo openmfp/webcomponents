@@ -326,6 +326,14 @@ export const CellDisplayModes: Story = {
         property: 'spec.image',
         uiSettings: { displayAs: 'tooltip', tooltipIcon: 'information' },
       },
+      {
+        label: 'Account',
+        property: 'metadata.name',
+        uiSettings: {
+          displayAs: 'link',
+          linkSettings: { link: '/{{metadata.name}}/accounts' },
+        },
+      },
     ] satisfies TableFieldDefinition[],
   },
 };

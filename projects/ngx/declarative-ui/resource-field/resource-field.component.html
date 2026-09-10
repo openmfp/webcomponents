@@ -28,10 +28,11 @@
           [boolValue]="boolValue()!"
           [testId]="testId() + '-boolean'"
         />
-      } @else if (displayType === 'link' && isUrlValue()) {
+      } @else if (displayType === 'link' && linkHref()) {
         <mfp-link-value
+          [displayValue]="linkText()"
           [testId]="testId() + '-link'"
-          [urlValue]="stringValue()!"
+          [urlValue]="linkHref()!"
         />
       } @else if (displayType === 'tooltip') {
         <ui5-icon

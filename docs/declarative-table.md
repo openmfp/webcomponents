@@ -202,17 +202,19 @@ Transforms can be chained and are applied left to right.
 
 By default a cell renders its value as plain text. Use `uiSettings.displayAs` to change the rendering:
 
-| `displayAs`  | Renders as                                                                                                             |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| _(unset)_    | Plain text                                                                                                             |
-| `'secret'`   | Masked value with a toggle-visibility button                                                                           |
-| `'boolIcon'` | Check / X icon for `"true"` / `"false"` string values                                                                  |
-| `'link'`     | Clickable anchor (the value must be a valid URL)                                                                       |
-| `'tooltip'`  | Text with an info icon; the full value appears on hover                                                                |
-| `'alert'`    | Alert-styled text                                                                                                      |
-| `'img'`      | `<img>` element using the value as `src`                                                                               |
-| `'button'`   | Action button (requires `buttonSettings`)                                                                              |
-| `'tag'`      | One `<ui5-tag>` chip per value (split by `tagSettings.valueSeparator`, default `','`); also accepts an array of values |
+| `displayAs`  | Renders as                                                                                                                      |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| _(unset)_    | Plain text                                                                                                                      |
+| `'secret'`   | Masked value with a toggle-visibility button                                                                                    |
+| `'boolIcon'` | Check / X icon for `"true"` / `"false"` string values                                                                           |
+| `'link'`     | Clickable anchor; `href` from `linkSettings.link` template or field value; visible text from `linkSettings.text` or field value |
+| `'tooltip'`  | Text with an info icon; the full value appears on hover                                                                         |
+| `'alert'`    | Alert-styled text                                                                                                               |
+| `'img'`      | `<img>` element using the value as `src`                                                                                        |
+| `'button'`   | Action button (requires `buttonSettings`)                                                                                       |
+| `'tag'`      | One `<ui5-tag>` chip per value (split by `tagSettings.valueSeparator`, default `','`); also accepts an array of values          |
+
+> **Link href resolution.** When `linkSettings.link` is set, `{{path}}` placeholders are substituted and then the result is resolved against the current page URL (`window.location.href`, treated as a directory): absolute URLs (e.g. `https://…`, `mailto:…`) are returned unchanged; a leading `/` resolves from the origin root; no leading slash is appended to the current path. See [docs/resource-field.md](./resource-field.md#link) for full details and examples.
 
 ### Copy button
 

@@ -4,5 +4,5 @@
   [href]="urlValue()"
   [tooltip]="urlValue()"
   (click)="stopPropagation($event)"
-  >Link</ui5-link
+  >{{ displayValue() || urlValue() }}</ui5-link
 >

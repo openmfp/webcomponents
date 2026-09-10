@@ -3,6 +3,7 @@ import {
   decodeBase64,
   encodeBase64,
   getResourceValueByJsonPath,
+  resolveLinkTemplate,
 } from './resource-field-by-path';
 
 const mockResource = {
@@ -368,5 +369,150 @@ describe('decodeBase64', () => {
     const encoded = encodeBase64(original);
     const decoded = decodeBase64(encoded);
     expect(decoded).toBe(original);
+  });
+});
+
+describe('resolveLinkTemplate', () => {
+  // Use a fixed baseHref in all tests so results are deterministic regardless
+  // of the jsdom window.location.href value.
+  const base = 'http://sub.localhost:4300/home/accounts';
+
+  it('resolves a leading-slash path from the origin root', () => {
+    const resource = {
+      metadata: { name: 'andrian' },
+    } as unknown as GenericResource;
+    const result = resolveLinkTemplate(
+      '/{{metadata.name}}/accounts',
+      resource,
+      base,
+    );
+    expect(result).toBe('http://sub.localhost:4300/andrian/accounts');
+  });
+
+  it('resolves a no-leading-slash path by appending to the current path', () => {
+    const resource = {
+      metadata: { name: 'andrian' },
+    } as unknown as GenericResource;
+    // The base is treated as a directory (a trailing slash is appended), so
+    // "andrian/accounts" relative to "http://sub.localhost:4300/home/accounts"
+    // → "http://sub.localhost:4300/home/accounts/andrian/accounts"
+    const result = resolveLinkTemplate(
+      '{{metadata.name}}/accounts',
+      resource,
+      base,
+    );
+    expect(result).toBe(
+      'http://sub.localhost:4300/home/accounts/andrian/accounts',
+    );
+  });
+
+  it('returns an https absolute URL unchanged (not re-resolved)', () => {
+    const resource = {
+      metadata: { name: 'my-resource' },
+    } as unknown as GenericResource;
+    const result = resolveLinkTemplate(
+      'https://foo.com/{{metadata.name}}/detail',
+      resource,
+      base,
+    );
+    expect(result).toBe('https://foo.com/my-resource/detail');
+  });
+
+  it('returns a mailto: URL unchanged', () => {
+    const resource = {
+      spec: { email: 'user@example.com' },
+    } as unknown as GenericResource;
+    const result = resolveLinkTemplate('mailto:{{spec.email}}', resource, base);
+    expect(result).toBe('mailto:user@example.com');
+  });
+
+  it('replaces multiple placeholders in a single template', () => {
+    const resource = {
+      metadata: { namespace: 'prod', name: 'my-app' },
+    } as unknown as GenericResource;
+    const result = resolveLinkTemplate(
+      '/{{metadata.namespace}}/{{metadata.name}}/detail',
+      resource,
+      base,
+    );
+    expect(result).toBe('http://sub.localhost:4300/prod/my-app/detail');
+  });
+
+  it('handles whitespace inside the placeholder delimiters', () => {
+    const resource = {
+      metadata: { name: 'bar' },
+    } as unknown as GenericResource;
+    const result = resolveLinkTemplate(
+      '/{{ metadata.name }}/detail',
+      resource,
+      base,
+    );
+    expect(result).toBe('http://sub.localhost:4300/bar/detail');
+  });
+
+  it('substitutes an empty string for an unresolvable path and resolves the remaining template', () => {
+    const resource = {
+      metadata: { name: 'foo' },
+    } as unknown as GenericResource;
+    // unresolved placeholder → empty string → "//accounts" after substitution.
+    // "//accounts" is a protocol-relative URL: the URL algorithm parses it as
+    // http://accounts/ (host = "accounts", no path). This is correct per spec.
+    const result = resolveLinkTemplate(
+      '/{{metadata.missing}}/accounts',
+      resource,
+      base,
+    );
+    expect(result).toBe('http://accounts/');
+  });
+
+  it('returns a string with all placeholders empty when resource is undefined', () => {
+    // Same reasoning as above: "//accounts" → protocol-relative → http://accounts/
+    const result = resolveLinkTemplate(
+      '/{{metadata.name}}/accounts',
+      undefined,
+      base,
+    );
+    expect(result).toBe('http://accounts/');
+  });
+
+  it('returns the static path resolved against the base when it contains no placeholders', () => {
+    const resource = {
+      metadata: { name: 'foo' },
+    } as unknown as GenericResource;
+    const result = resolveLinkTemplate('/static/path', resource, base);
+    expect(result).toBe('http://sub.localhost:4300/static/path');
+  });
+
+  it('handles an empty template string', () => {
+    const resource = {
+      metadata: { name: 'foo' },
+    } as unknown as GenericResource;
+    const result = resolveLinkTemplate('', resource, base);
+    // Empty string → early return before URL resolution
+    expect(result).toBe('');
+  });
+
+  it('substitutes an empty string when the resolved value is null and resolves remaining path', () => {
+    const resource = {
+      metadata: { name: null },
+    } as unknown as GenericResource;
+    // "//detail" is protocol-relative → http://detail/
+    const result = resolveLinkTemplate(
+      '/{{metadata.name}}/detail',
+      resource,
+      base,
+    );
+    expect(result).toBe('http://detail/');
+  });
+
+  it('uses window.location.href as default base when no baseHref is provided', () => {
+    const resource = {
+      metadata: { name: 'foo' },
+    } as unknown as GenericResource;
+    // Confirm that omitting baseHref produces an absolute URL (resolves against
+    // window.location.href). We just assert it starts with the expected path
+    // segment to stay robust across different jsdom port configurations.
+    const result = resolveLinkTemplate('/{{metadata.name}}/accounts', resource);
+    expect(result).toMatch(/^https?:\/\/localhost(:\d+)?\/foo\/accounts$/);
   });
 });

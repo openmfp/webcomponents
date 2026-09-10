@@ -12,6 +12,7 @@ and [releases](https://github.com/openmfp/webcomponents/releases) for details.
 ## [1.3.0] - 2026-09-02
 
 ### Features
+
 - Add password, hint, placeholder, and switch field types (#284)
 
 ## [1.2.0] - 2026-09-01

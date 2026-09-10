@@ -107,3 +107,53 @@ export const decodeBase64 = (base64: string): string => {
     throw new Error('Failed to decode Base64 string');
   }
 };
+
+/**
+ * Replaces every `{{path}}` placeholder in `template` with the value resolved
+ * from `resource` via the given path (dot-notation). Unresolved placeholders
+ * become an empty string.
+ *
+ * After substitution, the resulting href is resolved against `baseHref`
+ * (typically the current `window.location.href`):
+ * - An absolute URL (with a protocol, e.g. `https://…`) is returned unchanged.
+ * - A relative path is resolved via the standard URL algorithm:
+ *   a leading `/` resolves from the origin root, otherwise it resolves
+ *   relative to the current path.
+ */
+export const resolveLinkTemplate = <T>(
+  template: string,
+  resource: T | undefined,
+  baseHref: string = window.location.href,
+): string => {
+  const substituted = template.replace(
+    /\{\{\s*([^}]+?)\s*\}\}/g,
+    (_match, path: string) => {
+      if (!resource) return '';
+      const value = getResourceValueByJsonPath(resource, { property: path });
+      return value == null ? '' : String(value);
+    },
+  );
+
+  if (!substituted || isAbsoluteUrl(substituted)) {
+    return substituted;
+  }
+
+  try {
+    return new URL(substituted, baseHref + '/').href;
+  } catch {
+    return substituted;
+  }
+};
+
+/**
+ * True when `value` parses as an absolute URL on its own (has a protocol,
+ * e.g. `https://…`, `mailto:…`). Relative paths return `false`.
+ */
+const isAbsoluteUrl = (value: string): boolean => {
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
+};

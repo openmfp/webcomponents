@@ -4,6 +4,7 @@ import {
   ResourceFieldButtonClickEvent,
 } from '../models';
 import { getFieldValue } from '../table/utils/field-definition.utils';
+import { resolveLinkTemplate } from '../table/utils/resource-field-by-path';
 import {
   evaluateCssRules,
   evaluateValueRules,
@@ -83,7 +84,14 @@ export class ResourceField<
   );
 
   isBoolLike = computed(() => this.boolValue() !== undefined);
-  isUrlValue = computed(() => this.checkValidUrl(this.stringValue()));
+  linkSettings = computed(() => this.uiSettings()?.linkSettings);
+  linkHref = computed(() => {
+    const template = this.linkSettings()?.link;
+    return template
+      ? resolveLinkTemplate(template, this.resource())
+      : this.stringValue();
+  });
+  linkText = computed(() => this.linkSettings()?.text ?? this.stringValue());
   testId = computed(() => `resource-field-${this.fieldDefinition().property}`);
   buttonDisabled = computed(() => this.resource()?.isAvailable === false);
   buttonAccessibleName = computed(
@@ -155,19 +163,6 @@ export class ResourceField<
         .filter((v) => v.length > 0);
     }
     return [];
-  }
-
-  private checkValidUrl(value: string | undefined): boolean {
-    if (!value) {
-      return false;
-    }
-
-    try {
-      new URL(value);
-      return true;
-    } catch {
-      return false;
-    }
   }
 
   public copyValue(event: Event) {

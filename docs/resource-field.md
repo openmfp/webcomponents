@@ -130,17 +130,17 @@ Transforms are applied left to right.
 
 By default the cell renders its value as plain text. Use `uiSettings.displayAs` to change the rendering:
 
-| `displayAs`  | Renders as                                                                                                             |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| _(unset)_    | Plain text                                                                                                             |
-| `'secret'`   | Masked value (`*` repeated) with a toggle-visibility icon                                                              |
-| `'boolIcon'` | Check / X icon for `"true"` / `"false"` string values                                                                  |
-| `'link'`     | Clickable anchor (the value must be a valid URL)                                                                       |
-| `'tooltip'`  | Info icon; the full value appears as a tooltip on hover                                                                |
-| `'alert'`    | Critical alert icon when the value is falsy; empty otherwise                                                           |
-| `'img'`      | `<img>` element using the value as `src`                                                                               |
-| `'button'`   | Action button (requires `buttonSettings`)                                                                              |
-| `'tag'`      | One `<ui5-tag>` chip per value (split by `tagSettings.valueSeparator`, default `','`); also accepts an array of values |
+| `displayAs`  | Renders as                                                                                                                      |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| _(unset)_    | Plain text                                                                                                                      |
+| `'secret'`   | Masked value (`*` repeated) with a toggle-visibility icon                                                                       |
+| `'boolIcon'` | Check / X icon for `"true"` / `"false"` string values                                                                           |
+| `'link'`     | Clickable anchor; `href` from `linkSettings.link` template or field value; visible text from `linkSettings.text` or field value |
+| `'tooltip'`  | Info icon; the full value appears as a tooltip on hover                                                                         |
+| `'alert'`    | Critical alert icon when the value is falsy; empty otherwise                                                                    |
+| `'img'`      | `<img>` element using the value as `src`                                                                                        |
+| `'button'`   | Action button (requires `buttonSettings`)                                                                                       |
+| `'tag'`      | One `<ui5-tag>` chip per value (split by `tagSettings.valueSeparator`, default `','`); also accepts an array of values          |
 
 ### Secret
 
@@ -160,11 +160,69 @@ Renders a positive (check) or negative (X) SAP UI5 icon when the string value is
 
 ### Link
 
-Renders the value as a clickable `<ui5-link>` when the value is a valid URL. Falls through to plain text when the value is not a URL.
+Renders the field value as a clickable `<ui5-link>`. The visible link text defaults to the field value; override it with `linkSettings.text`. The `href` is determined as follows:
+
+- When `linkSettings.link` is provided, it is used as an href template. `{{path}}` placeholders (dot-notation) are replaced with values from the resource.
+  - After substitution, if the resulting href is an **absolute URL with a protocol** (e.g. `https://`, `mailto:`) it is used as-is.
+  - Otherwise the resulting href is **resolved against the current page URL** (`window.location.href`) using the standard URL algorithm. The current URL is treated as a directory (a trailing slash is appended before resolution):
+    - A leading `/` resolves from the **origin root** (e.g. `/andrian/accounts` on `http://sub.localhost:4300/home/accounts` → `http://sub.localhost:4300/andrian/accounts`).
+    - No leading slash is **appended to the current path** (e.g. `andrian/accounts` on `http://sub.localhost:4300/home/accounts` → `http://sub.localhost:4300/home/accounts/andrian/accounts`).
+  - An empty string after substitution is returned as-is (no resolution).
+- When `linkSettings` is omitted, the field value itself is used as the `href`.
 
 ```ts
+// Field value is the href
 { property: 'spec.url', uiSettings: { displayAs: 'link' } }
+
+// Static label — link shows "Open" but href uses the field value
+{
+  property: 'spec.url',
+  uiSettings: {
+    displayAs: 'link',
+    linkSettings: { text: 'Open' },
+  },
+}
+
+// Template href — leading slash resolves from the origin root.
+// On http://sub.localhost:4300/home/accounts, with metadata.name = 'andrian',
+// the resolved href becomes http://sub.localhost:4300/andrian/accounts.
+{
+  property: 'metadata.name',
+  uiSettings: {
+    displayAs: 'link',
+    linkSettings: { link: '/{{metadata.name}}/accounts' },
+  },
+}
+
+// Template href with static label
+{
+  property: 'metadata.name',
+  uiSettings: {
+    displayAs: 'link',
+    linkSettings: { link: '/{{metadata.name}}/accounts', text: 'Accounts' },
+  },
+}
+
+// Absolute URL — returned unchanged regardless of the current page URL
+{
+  property: 'metadata.name',
+  uiSettings: {
+    displayAs: 'link',
+    linkSettings: { link: 'https://console.example.com/{{metadata.name}}' },
+  },
+}
+
+// Template href with multiple placeholders
+{
+  property: 'metadata.name',
+  uiSettings: {
+    displayAs: 'link',
+    linkSettings: { link: '/namespaces/{{metadata.namespace}}/pods/{{metadata.name}}' },
+  },
+}
 ```
+
+Unresolved placeholders (path not found on resource) are replaced with an empty string.
 
 ### Tooltip
 
@@ -387,10 +445,11 @@ Renders a URL string as a `<ui5-link>` that stops click propagation.
 import { LinkValue } from '@openmfp/ngx';
 ```
 
-| Input      | Type     | Required | Description                                 |
-| ---------- | -------- | -------- | ------------------------------------------- |
-| `urlValue` | `string` | yes      | The URL rendered as the link `href`         |
-| `testId`   | `string` | no       | `data-testid` attribute on the link element |
+| Input          | Type     | Required | Description                                                                 |
+| -------------- | -------- | -------- | --------------------------------------------------------------------------- |
+| `urlValue`     | `string` | yes      | The URL rendered as the link `href`                                         |
+| `displayValue` | `string` | no       | Override text shown as the link label. Falls back to `urlValue` when absent |
+| `testId`       | `string` | no       | `data-testid` attribute on the link element                                 |
 
 ### `SecretValue`
 
@@ -439,6 +498,7 @@ interface UiSettings {
     | 'tag';
   buttonSettings?: ButtonSettings;
   tagSettings?: TagSettings;
+  linkSettings?: LinkSettings;
   tooltipIcon?: string;
   withCopyButton?: boolean;
   cssCustomization?: Partial<CSSStyleDeclaration>;
@@ -446,6 +506,27 @@ interface UiSettings {
   valueRules?: ValueRule[];
   columnWidth?: string;
   align?: 'start' | 'center' | 'end';
+}
+
+interface LinkSettings {
+  /**
+   * href template. Supports `{{path}}` placeholders resolved via dot-notation
+   * against the resource (e.g. `/{{metadata.name}}/accounts`).
+   *
+   * After substitution:
+   * - An absolute URL (e.g. `https://…`, `mailto:…`) is used as-is.
+   * - A relative path is resolved against `window.location.href` (treated as
+   *   a directory): a leading `/` resolves from the origin root; no leading
+   *   slash is appended to the current path.
+   *
+   * When omitted, the field value is used as the href.
+   */
+  link?: string;
+  /**
+   * Static visible label for the link. When set, overrides the field value as
+   * the link text. When omitted, the field value is used as the link label.
+   */
+  text?: string;
 }
 
 interface TagSettings {
@@ -508,7 +589,7 @@ type RuleCondition =
 | Secret value     | `resource-field-{property}-secret`        | `displayAs: 'secret'`                                   |
 | Show/hide toggle | `resource-field-{property}-secret-toggle` | `displayAs: 'secret'`                                   |
 | Boolean icon     | `resource-field-{property}-boolean`       | `displayAs: 'boolIcon'`, value is `"true"` or `"false"` |
-| Link             | `resource-field-{property}-link`          | `displayAs: 'link'`, value is a valid URL               |
+| Link             | `resource-field-{property}-link`          | `displayAs: 'link'`                                     |
 | Tooltip icon     | `resource-field-{property}-tooltip`       | `displayAs: 'tooltip'`                                  |
 | Alert icon       | `resource-field-{property}-icon`          | `displayAs: 'alert'`, value is falsy                    |
 | Action button    | `resource-field-{property}-button`        | `displayAs: 'button'`                                   |
