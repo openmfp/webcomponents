@@ -91,6 +91,7 @@ export class ResourceField<
       ? resolveLinkTemplate(template, this.resource())
       : this.stringValue();
   });
+  linkText = computed(() => this.linkSettings()?.text ?? this.stringValue());
   testId = computed(() => `resource-field-${this.fieldDefinition().property}`);
   buttonDisabled = computed(() => this.resource()?.isAvailable === false);
   buttonAccessibleName = computed(

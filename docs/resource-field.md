@@ -135,7 +135,7 @@ By default the cell renders its value as plain text. Use `uiSettings.displayAs` 
 | _(unset)_    | Plain text                                                                                                             |
 | `'secret'`   | Masked value (`*` repeated) with a toggle-visibility icon                                                              |
 | `'boolIcon'` | Check / X icon for `"true"` / `"false"` string values                                                                  |
-| `'link'`     | Clickable anchor; `href` from `linkSettings.link` template or field value; visible text is always the field value      |
+| `'link'`     | Clickable anchor; `href` from `linkSettings.link` template or field value; visible text from `linkSettings.text` or field value |
 | `'tooltip'`  | Info icon; the full value appears as a tooltip on hover                                                                |
 | `'alert'`    | Critical alert icon when the value is falsy; empty otherwise                                                           |
 | `'img'`      | `<img>` element using the value as `src`                                                                               |
@@ -160,7 +160,7 @@ Renders a positive (check) or negative (X) SAP UI5 icon when the string value is
 
 ### Link
 
-Renders the field value as a clickable `<ui5-link>`. The visible link text is the field value. The `href` is determined as follows:
+Renders the field value as a clickable `<ui5-link>`. The visible link text defaults to the field value; override it with `linkSettings.text`. The `href` is determined as follows:
 
 - When `linkSettings.link` is provided, it is used as an href template. `{{path}}` placeholders (dot-notation) are replaced with values from the resource.
   - After substitution, if the resulting href is an **absolute URL with a protocol** (e.g. `https://`, `mailto:`) it is used as-is.
@@ -174,6 +174,15 @@ Renders the field value as a clickable `<ui5-link>`. The visible link text is th
 // Field value is the href
 { property: 'spec.url', uiSettings: { displayAs: 'link' } }
 
+// Static label — link shows "Open" but href uses the field value
+{
+  property: 'spec.url',
+  uiSettings: {
+    displayAs: 'link',
+    linkSettings: { text: 'Open' },
+  },
+}
+
 // Template href — leading slash resolves from the origin root.
 // On http://sub.localhost:4300/home/accounts, with metadata.name = 'andrian',
 // the resolved href becomes http://sub.localhost:4300/andrian/accounts.
@@ -182,6 +191,15 @@ Renders the field value as a clickable `<ui5-link>`. The visible link text is th
   uiSettings: {
     displayAs: 'link',
     linkSettings: { link: '/{{metadata.name}}/accounts' },
+  },
+}
+
+// Template href with static label
+{
+  property: 'metadata.name',
+  uiSettings: {
+    displayAs: 'link',
+    linkSettings: { link: '/{{metadata.name}}/accounts', text: 'Accounts' },
   },
 }
 
@@ -504,6 +522,11 @@ interface LinkSettings {
    * When omitted, the field value is used as the href.
    */
   link?: string;
+  /**
+   * Static visible label for the link. When set, overrides the field value as
+   * the link text. When omitted, the field value is used as the link label.
+   */
+  text?: string;
 }
 
 interface TagSettings {

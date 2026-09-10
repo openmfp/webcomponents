@@ -273,6 +273,59 @@ describe('ResourceField', () => {
       };
       expect(linkEl).not.toBeNull();
     });
+
+    it('linkText() returns the static text when linkSettings.text is provided', () => {
+      const { component } = setup(
+        {
+          property: 'url',
+          uiSettings: {
+            displayAs: 'link',
+            linkSettings: { text: 'Open Dashboard' },
+          },
+        },
+        { url: 'https://example.com' },
+      );
+      expect(component.linkText()).toBe('Open Dashboard');
+    });
+
+    it('linkText() falls back to the field value when linkSettings.text is absent', () => {
+      const { component } = setup(
+        {
+          property: 'url',
+          uiSettings: { displayAs: 'link', linkSettings: {} },
+        },
+        { url: 'https://example.com' },
+      );
+      expect(component.linkText()).toBe('https://example.com');
+    });
+
+    it('linkText() falls back to the field value when linkSettings is absent', () => {
+      const { component } = setup(
+        { property: 'url', uiSettings: { displayAs: 'link' } },
+        { url: 'https://example.com' },
+      );
+      expect(component.linkText()).toBe('https://example.com');
+    });
+
+    it('linkText() returns static text even when linkSettings.link is also set', () => {
+      const { component } = setup(
+        {
+          property: 'url',
+          uiSettings: {
+            displayAs: 'link',
+            linkSettings: {
+              link: '/{{metadata.name}}/detail',
+              text: 'View Details',
+            },
+          },
+        },
+        {
+          url: 'https://example.com',
+          metadata: { name: 'my-resource' },
+        } as Record<string, unknown>,
+      );
+      expect(component.linkText()).toBe('View Details');
+    });
   });
 
   describe('displayAs: tooltip', () => {

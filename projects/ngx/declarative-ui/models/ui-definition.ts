@@ -20,6 +20,11 @@ export interface LinkSettings {
    * When omitted, the field value is used as the href.
    */
   link?: string;
+  /**
+   * Static visible text for the link. When set, overrides the field value as
+   * the link label. When omitted, the field value is used as the link text.
+   */
+  text?: string;
 }
 
 /** Appearance settings for tag chip rendering. */

@@ -30,7 +30,7 @@
         />
       } @else if (displayType === 'link' && linkHref()) {
         <mfp-link-value
-          [displayValue]="stringValue()"
+          [displayValue]="linkText()"
           [testId]="testId() + '-link'"
           [urlValue]="linkHref()!"
         />
