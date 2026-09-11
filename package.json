@@ -60,7 +60,7 @@
     "@storybook/addon-links": "10.6.0",
     "@storybook/angular": "10.6.0",
     "@types/node": "24.13.3",
-    "@vitest/coverage-v8": "4.1.11",
+    "@vitest/coverage-v8": "5.0.0",
     "concurrently": "10.0.5",
     "eslint": "10.9.1",
     "jsdom": "30.0.1",
@@ -71,7 +71,7 @@
     "storybook": "10.6.0",
     "typescript": "~6.0.0",
     "typescript-eslint": "^8.33.0",
-    "vitest": "4.1.11",
+    "vitest": "5.0.0",
     "vitest-axe": "0.1.0",
     "wait-on": "9.1.0"
   },
