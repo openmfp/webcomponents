@@ -93,7 +93,7 @@ export const encodeBase64 = (str: string): string => {
     return btoa(binaryString);
   } catch (error) {
     console.error('Base64 encoding failed:', error);
-    throw new Error('Failed to encode string to Base64');
+    throw new Error('Failed to encode string to Base64', { cause: error });
   }
 };
 
@@ -104,7 +104,7 @@ export const decodeBase64 = (base64: string): string => {
     return new TextDecoder().decode(bytes);
   } catch (error) {
     console.error('Base64 decoding failed:', error);
-    throw new Error('Failed to decode Base64 string');
+    throw new Error('Failed to decode Base64 string', { cause: error });
   }
 };
 
