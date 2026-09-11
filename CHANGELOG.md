@@ -9,6 +9,11 @@ and [releases](https://github.com/openmfp/webcomponents/releases) for details.
 
 <!-- git-cliff:insert -->
 
+## [1.5.0] - 2026-09-11
+
+### Features
+- Change pager pagination to match fiori guidline (#293)
+
 ## [1.4.2] - 2026-09-10
 
 ### Features
