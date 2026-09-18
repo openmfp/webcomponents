@@ -91,22 +91,22 @@ export class MyComponent {
 
 ### Inputs
 
-| Input                | Type                              | Required | Default       | Description                                                                                                                                           |
-| -------------------- | --------------------------------- | -------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `columns`            | `TableFieldDefinition[]`          | yes      | —             | Column definitions                                                                                                                                    |
-| `resources`          | `GenericResource[]`               | yes      | —             | Data rows                                                                                                                                             |
-| `trackByPath`        | `string`                          | no       | `'id'`        | JSONPath (dot-notation) into each resource used as the row identity key                                                                               |
-| `totalItemsCount`    | `number`                          | no       | —             | Total count of all items across pages                                                                                                                 |
-| `paginationLimit`    | `number`                          | no       | `5`           | Rows per page shown in the page-size selector                                                                                                         |
-| `hasMore`            | `boolean`                         | no       | `false`       | Show the load-more trigger at the bottom                                                                                                              |
-| `loadMode`           | `'scroll' \| 'button' \| 'pager'` | no       | `'button'`    | Load strategy: `'button'` shows a load-more button, `'scroll'` triggers on scroll, `'pager'` renders numbered pagination controls                     |
-| `loadMoreButtonText` | `string`                          | no       | `'Load More'` | Label shown on the load-more button (used when `loadMode` is `'button'`)                                                                              |
-| `height`             | `number`                          | no       | —             | Fixed height in pixels. When combined with `loadMode: 'scroll'`, enables scroll-based loading with a sticky header                                    |
-| `currentPage`        | `number`                          | no       | `1`           | 1-based current page. Only used when `loadMode` is `'pager'`                                                                                          |
-| `permissions`        | `Record<string, string[]>`        | no       | —             | Per-row permission map keyed by `resource.id`. Passed to every cell's `mfp-resource-field` to evaluate `requirePermission` on each column definition. |
-| `loading`            | `boolean`                         | no       | `false`       | Shows the table loading indicator and suppresses the empty state while data is loading.                                                               |
-| `loadingDelay`       | `number`                          | no       | `1000`        | Delay in milliseconds before the loading indicator is displayed.                                                                                      |
-| `error`              | `boolean`                         | no       | `false`       | Replaces rows and the empty state with an unable-to-load message and Retry button.                                                                    |
+| Input                | Type                              | Required | Default       | Description                                                                                                                                                                                                   |
+| -------------------- | --------------------------------- | -------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `columns`            | `TableFieldDefinition[]`          | yes      | —             | Column definitions                                                                                                                                                                                            |
+| `resources`          | `GenericResource[]`               | yes      | —             | Data rows                                                                                                                                                                                                     |
+| `trackByPath`        | `string`                          | no       | `'id'`        | JSONPath (dot-notation) into each resource used as the row identity key                                                                                                                                       |
+| `totalItemsCount`    | `number`                          | no       | —             | Total count of all items across pages                                                                                                                                                                         |
+| `paginationLimit`    | `number`                          | no       | `5`           | Rows per page shown in the page-size selector                                                                                                                                                                 |
+| `hasMore`            | `boolean`                         | no       | `false`       | Show the load-more trigger at the bottom                                                                                                                                                                      |
+| `loadMode`           | `'scroll' \| 'button' \| 'pager'` | no       | `'button'`    | Load strategy: `'button'` shows a load-more button, `'scroll'` triggers on scroll, `'pager'` renders numbered pagination controls                                                                             |
+| `loadMoreButtonText` | `string`                          | no       | `'Load More'` | Label shown on the load-more button (used when `loadMode` is `'button'`)                                                                                                                                      |
+| `height`             | `number`                          | no       | —             | Fixed height in pixels. Combined with `loadMode: 'scroll'`, enables scroll-based loading. Not needed just to get a scrolling table — see [Scrolling and the sticky header](#scrolling-and-the-sticky-header). |
+| `currentPage`        | `number`                          | no       | `1`           | 1-based current page. Only used when `loadMode` is `'pager'`                                                                                                                                                  |
+| `permissions`        | `Record<string, string[]>`        | no       | —             | Per-row permission map keyed by `resource.id`. Passed to every cell's `mfp-resource-field` to evaluate `requirePermission` on each column definition.                                                         |
+| `loading`            | `boolean`                         | no       | `false`       | Shows the table loading indicator and suppresses the empty state while data is loading.                                                                                                                       |
+| `loadingDelay`       | `number`                          | no       | `1000`        | Delay in milliseconds before the loading indicator is displayed.                                                                                                                                              |
+| `error`              | `boolean`                         | no       | `false`       | Replaces rows and the empty state with an unable-to-load message and Retry button.                                                                                                                            |
 
 ### Outputs / Events
 
@@ -396,10 +396,22 @@ Map a cell's raw value to a display string. The first matching rule wins; when n
 When `hasMore` is `true` a load-more trigger appears at the bottom of the table. The trigger behaviour is controlled by `loadMode`:
 
 - `loadMode: 'button'` (default) — a button labelled with `loadMoreButtonText` is shown. Clicking it fires `loadMoreResources`.
-- `loadMode: 'scroll'` — loading is triggered automatically as the user scrolls. Set `height` to constrain the table height and enable scroll detection; the header row becomes sticky automatically.
+- `loadMode: 'scroll'` — loading is triggered automatically as the user scrolls. Set `height` to constrain the table height and enable scroll detection.
 - `loadMode: 'pager'` — numbered pagination controls are shown instead of a load-more trigger. Provide `totalItemsCount` and (optionally) `currentPage`; the table fires `pageChange` with the 1-based page number when the user navigates. `paginationLimit` sets the page size.
 
 A page-size selector is always present.
+
+### Scrolling and the sticky header
+
+The component lays itself out as a column: the `ui5-table` takes the available space and the page-size/count footer is pinned below it. Only the table's **data rows** scroll — the column header row is always sticky, and the footer never scrolls away.
+
+That holds however the height is constrained:
+
+- **`height` set** — the table is that many pixels tall and scrolls inside it.
+- **Height inherited from the container** — when an ancestor gives the component a definite height (a `DeclarativeTableCard` inside a dashboard card slot, for instance), the table fills it and scrolls, with no `height` input needed.
+- **Neither** — the component is content-sized and nothing scrolls.
+
+The header row is sticky in all three cases; where the table does not scroll, that has no visible effect. Earlier versions made it sticky only for `loadMode: 'scroll'` **and** a set `height`, which left the column headers scrolling out of view in a height-constrained container.
 
 ```js
 // Button mode (default)

@@ -537,44 +537,45 @@ describe('DeclarativeTable', () => {
     });
   });
 
+  describe('sticky header row', () => {
+    function stickyOf(fixture: Fixture): boolean {
+      return (
+        root(fixture).querySelector('ui5-table-header-row') as HTMLElement & {
+          sticky: boolean;
+        }
+      ).sticky;
+    }
+
+    it('keeps the header row sticky with a fixed height and scroll loading', () => {
+      const { fixture } = setup({
+        columns: [{ property: 'name' }],
+        loadMode: 'scroll',
+        height: 300,
+      });
+      expect(stickyOf(fixture)).toBe(true);
+    });
+
+    it('keeps the header row sticky with button loading', () => {
+      const { fixture } = setup({
+        columns: [{ property: 'name' }],
+        height: 300,
+      });
+      expect(stickyOf(fixture)).toBe(true);
+    });
+
+    it('keeps the header row sticky when no height is set, so a height-constrained container still pins it', () => {
+      const { fixture } = setup({
+        columns: [{ property: 'name' }],
+        loadMode: 'scroll',
+      });
+      expect(stickyOf(fixture)).toBe(true);
+    });
+  });
+
   describe('loadMode input', () => {
     it('defaults to button', () => {
       const { component } = setup({ columns: [{ property: 'name' }] });
       expect(component.loadMode()).toBe('button');
-    });
-
-    it('marks header row sticky when loadMode is scroll and height is set', () => {
-      const { fixture } = setup({
-        columns: [{ property: 'name' }],
-        loadMode: 'scroll',
-        height: 300,
-      });
-      const headerRowEl = root(fixture).querySelector(
-        'ui5-table-header-row',
-      ) as HTMLElement & { sticky: boolean };
-      expect(headerRowEl.sticky).toBe(true);
-    });
-
-    it('header row is not sticky when loadMode is button', () => {
-      const { fixture } = setup({
-        columns: [{ property: 'name' }],
-        height: 300,
-      });
-      const headerRowEl = root(fixture).querySelector(
-        'ui5-table-header-row',
-      ) as HTMLElement & { sticky: boolean };
-      expect(headerRowEl.sticky).toBe(false);
-    });
-
-    it('header row is not sticky when height is not set even if loadMode is scroll', () => {
-      const { fixture } = setup({
-        columns: [{ property: 'name' }],
-        loadMode: 'scroll',
-      });
-      const headerRowEl = root(fixture).querySelector(
-        'ui5-table-header-row',
-      ) as HTMLElement & { sticky: boolean };
-      expect(headerRowEl.sticky).toBe(false);
     });
 
     it('maps scroll to the Scroll ui5-table-growing mode when hasMore is true', () => {

@@ -5,10 +5,7 @@
   [style.height]="height() ? height() + 'px' : null"
   [style.overflow-y]="'auto'"
 >
-  <ui5-table-header-row
-    slot="headerRow"
-    [sticky]="loadMode() === 'scroll' && !!height()"
-  >
+  <ui5-table-header-row slot="headerRow" [sticky]="true">
     @for (column of viewColumns(); track columnTrackBy(column, $index)) {
       @if (column.group) {
         <ui5-table-header-cell
@@ -154,14 +151,6 @@
 <!-- Pagination Control -->
 <div
   class="pagination-footer"
-  style="
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0rem 1rem;
-    min-height: 3rem;
-    border-top: 1px solid var(--sapList_BorderColor);
-  "
   [hidden]="error() || (loading() && resources().length === 0)"
 >
   <div

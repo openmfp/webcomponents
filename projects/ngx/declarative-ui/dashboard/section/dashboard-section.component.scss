@@ -9,13 +9,16 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  border: 1px solid transparent;
+  border: var(--sapElement_BorderWidth, 1px) solid transparent;
   border-top: none;
-  border-radius: 0 0 0.5rem 0.5rem;
-  padding-top: 1.25rem;
+  border-radius: 0 0 var(--sapTile_BorderCornerRadius, 0.5rem)
+    var(--sapTile_BorderCornerRadius, 0.5rem);
+  padding-block: 1.25rem;
 
   &--edit {
-    border-color: var(--sapGroup_ContentBorderColor, #d9d9d9);
+    --mfp_cardEditFrameShadow: var(--sapContent_Shadow0);
+    border-color: var(--sapTile_BorderColor);
+    box-shadow: var(--mfp_cardEditFrameShadow, none);
   }
 
   &__remove {
@@ -58,7 +61,8 @@
   &--edit &__header {
     &::before,
     &::after {
-      background: var(--sapGroup_ContentBorderColor, #d9d9d9);
+      background: var(--sapTile_BorderColor);
+      height: var(--sapElement_BorderWidth, 1px);
     }
   }
 

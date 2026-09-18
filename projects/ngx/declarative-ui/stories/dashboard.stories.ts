@@ -4,7 +4,11 @@ import { ServiceStatusCard } from '../../cards/service-status/service-status-car
 import { VisitedServiceCard } from '../../cards/visited-service-card/visited-service-card.component';
 import { Dashboard } from '../dashboard/dashboard/dashboard.component';
 import { type DashboardTranslations, EN_DEFAULTS } from '../dashboard/i18n';
-import type { CardConfig, DashboardConfig } from '../dashboard/models';
+import type {
+  CardConfig,
+  DashboardConfig,
+  SectionConfig,
+} from '../dashboard/models';
 import { ButtonSettings } from '../models/ui-definition';
 import { CARDS, RAS_CARDS, SECTIONS } from './dashboard.cards';
 import { TABLE_CARD_CONFIG, TABLE_RESOURCES } from './pods-table.config';
@@ -177,6 +181,81 @@ const ZFLOW_MOCK_CARDS: CardConfig[] = Array.from({ length: 8 }, (_, i) => ({
   w: 1,
   h: 40,
 }));
+
+const SECTION_CARDS_HEIGHT_SECTIONS: SectionConfig[] = [
+  {
+    id: 'uniform',
+    title: 'Uniform section — cardsHeight: 30 (300 px)',
+    w: 12,
+    cardsHeight: 30,
+  },
+  {
+    id: 'per-card',
+    title: 'Same cards, no cardsHeight — each card keeps its own h',
+    w: 12,
+  },
+];
+
+const SECTION_CARDS_HEIGHT_TEMPLATES = [
+  {
+    key: 'visited-service',
+    w: 3,
+    h: 10,
+    type: 'angular' as const,
+    component: 'mfp-visited-service-card',
+    componentInputs: {
+      serviceType: 'SAP HANA Cloud',
+      serviceName: 'olc-hana-db',
+      serviceIcon: 'database',
+      serviceDescription: 'Angular card, own h: 10',
+      path: '/hana/olc-hana-db',
+    },
+  },
+  {
+    key: 'service-status',
+    w: 3,
+    h: 55,
+    type: 'angular' as const,
+    component: 'mfp-service-status-card',
+    componentInputs: {},
+  },
+  {
+    key: 'favorites',
+    w: 3,
+    type: 'angular' as const,
+    component: 'mfp-favorites',
+    componentInputs: {},
+  },
+  {
+    key: 'mock',
+    w: 3,
+    h: 80,
+    type: 'angular' as const,
+    component: 'mfp-mock-card',
+    componentInputs: { title: 'Mock card, own h: 80' },
+  },
+  {
+    key: 'table',
+    w: 12,
+    h: 45,
+    component: 'mfp-wc-declarative-table-card',
+    componentInputs: {
+      config: TABLE_CARD_CONFIG,
+      header: 'Pods',
+      headerTooltip: 'Custom-element card, own h: 45',
+      resources: TABLE_RESOURCES,
+    },
+  },
+];
+
+const SECTION_CARDS_HEIGHT_CARDS: CardConfig[] =
+  SECTION_CARDS_HEIGHT_SECTIONS.flatMap((section) =>
+    SECTION_CARDS_HEIGHT_TEMPLATES.map(({ key, ...template }) => ({
+      ...template,
+      id: `${section.id}-${key}`,
+      sectionId: section.id,
+    })),
+  );
 
 // ---------------------------------------------------------------------------
 // Meta
@@ -440,6 +519,29 @@ export const ZFlowLayout: Story = {
       description: {
         story:
           'The z-flow engine reflows loose cards left-to-right, top-to-bottom. Card widths here are proportional to the Default story (default 12-col base → z-flow 4-col base), so a half-width card stays half-width.',
+      },
+    },
+  },
+};
+
+export const SectionCardsHeight: Story = {
+  args: {
+    config: SAMPLE_CONFIG,
+    i18n: {
+      ...SAMPLE_I18N,
+      title: 'Section Cards Height',
+      description:
+        'Both sections hold the <b>same five cards</b> with the same per-card <code>h</code>. The first section sets <code>cardsHeight: 30</code>, so every card is 300 px tall regardless of what it declares; the second leaves it unset, so each card keeps its own height.',
+    },
+    sections: SECTION_CARDS_HEIGHT_SECTIONS,
+    cards: SECTION_CARDS_HEIGHT_CARDS,
+    availableCards: [],
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "`SectionConfig.cardsHeight` forces one row span on every card in the section. It wins over each card's own `h` and supplies a height to cards that declare none, so a section of mixed card types (Angular, custom element, no `h` at all) lines up on a single baseline. Only the height is touched — `w` still comes from each card, and the value is presentational: the cards keep their configured `h` in the `saved` payload. Set the same section's `cardsHeight` in the controls panel to retune the whole row at once.",
       },
     },
   },

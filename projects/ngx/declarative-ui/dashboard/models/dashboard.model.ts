@@ -59,6 +59,11 @@ export interface SectionConfig {
   id: string;
   /** Column span (1–12). Defaults to 12 when omitted. */
   w?: number;
+  /**
+   * Row span forced on every card in this section (1 row = 10 px by default),
+   * overriding each card's own `h`. Omit to let each card keep its own height.
+   */
+  cardsHeight?: number;
   /** Section heading displayed in the UI. */
   title?: string;
   /** When `false`, the section and its cards are excluded from edit mode. Defaults to `true` when omitted. */

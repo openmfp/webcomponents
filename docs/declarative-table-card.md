@@ -529,3 +529,44 @@ tableConfig: {
 ```
 
 > **Note:** if only built-in edit / delete buttons are used (no custom field first), the column width defaults to `auto`. Add a field first to gain explicit width control.
+
+## Sizing
+
+The card is a column flex container whose body (`.card__body`) is the only growing child, so it adapts to whatever height its container gives it:
+
+- **In a container with no definite height** the card is content-sized, exactly as before — the body grows with the rows and nothing scrolls.
+- **In a container with a definite height** — a dashboard card slot, i.e. `CardConfig.h`, `DashboardConfig.zFlow.cardHeight`, or `SectionConfig.cardsHeight` — the card fills that height and only the table's data rows scroll.
+
+Everything that frames the data stays put while the rows scroll:
+
+| Region                                        | Behaviour      |
+| --------------------------------------------- | -------------- |
+| Card header (`header`, search, create button) | always visible |
+| Filter tabs                                   | always visible |
+| Table column header row                       | sticky         |
+| Table data rows                               | **scrolls**    |
+| Page-size / item-count footer                 | always visible |
+
+Because the scroll container is the table's row area rather than the whole card body, the scrollbar stops above the footer instead of running down to the card's rounded bottom corner.
+
+### Header and footer bar height
+
+The card header and the table's page-size footer are the two fixed bars framing the scrolling rows, and they share one height so they read as a matched pair:
+
+| Variable                   | Default           | Purpose                                                        |
+| -------------------------- | ----------------- | -------------------------------------------------------------- |
+| `--mfp_tableCardBarHeight` | `3.75rem` (60 px) | `min-height` of both the card header and the page-size footer. |
+
+Set it on (or above) the card to resize both at once:
+
+```css
+mfp-declarative-table-card {
+  --mfp_tableCardBarHeight: 3rem;
+}
+```
+
+The variable is declared on the card's root and inherits into the table's shadow tree, so a `DeclarativeTable` used **without** a card falls back to the same `3.75rem` and still matches.
+
+The footer's top border uses `--sapList_HeaderBorderColor` — the same token as the table's own column-header rules — rather than the lighter `--sapList_BorderColor` used for row separators, so the bar reads as chrome rather than as one more row. The footer is `box-sizing: border-box`, so that border is included in the 60 px rather than added to it.
+
+This is what keeps a table inside its tile: without it a card whose natural height exceeds its slot would paint over whatever sits below it, including the next dashboard section.

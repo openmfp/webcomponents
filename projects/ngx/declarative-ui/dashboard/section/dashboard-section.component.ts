@@ -4,6 +4,7 @@ import { CardConfig, SectionConfig } from '../models';
 import {
   Component,
   ViewEncapsulation,
+  computed,
   inject,
   input,
   output,
@@ -44,6 +45,12 @@ export class DashboardSection {
    */
   columns = input<number | undefined>(undefined);
   editMode = input<boolean>(false);
+  protected readonly resolvedCards = computed(() => {
+    const cardsHeight = this.section().cardsHeight;
+    const cards = this.cards();
+    if (cardsHeight === undefined) return cards;
+    return cards.map((card) => ({ ...card, h: cardsHeight }));
+  });
   protected readonly i18n = inject(DashboardI18nService);
   protected readonly i18nKeys = DASHBOARD_I18N_KEYS;
   readonly removeSection = output<void>();

@@ -68,17 +68,18 @@ Available Horizon themes: `sap_horizon`, `sap_horizon_dark`, `sap_horizon_hcb` (
 
 These custom properties form the dashboard's public styling contract. Set them on (or above) the dashboard element.
 
-| Variable                                      | Default                        | Purpose                                                                                                                                                                       |
-| --------------------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--mfp_cardContainerPadding`                  | `10px`                         | Inline padding inside each dashboard card.                                                                                                                                    |
-| `--mfp_cardBorder`                            | `none`                         | Border applied to the inner card surface while an editable card is hovered or focused.                                                                                        |
-| `--row-height`                                | `10px`                         | Height of each grid row track in a section's card grid.                                                                                                                       |
-| `--column-gap`                                | `0px`                          | Horizontal gap between cards in a section grid.                                                                                                                               |
-| `--row-gap`                                   | `0px`                          | Vertical gap between cards in a section grid.                                                                                                                                 |
-| `--mfp-dashboard-background`                  | `none`                         | Background image used when `config.backgroundImageUrl` is omitted — see [`backgroundImageUrl` — dashboard background image](#backgroundimageurl--dashboard-background-image). |
-| `--mfp-dashboard-empty-image`                 | SAP `NoApplications` TNT scene | Artwork shown by the [empty state](#empty-state). Overriding it swaps the illustration from CSS alone.                                                                        |
-| `--dashboard-cols-sm` / `-md` / `-lg` / `-xl` | `1` / `8` / `12` / `14`        | Column-track counts at each responsive breakpoint (driven by container queries).                                                                                              |
-| `--cols`                                      | _unset_                        | Per-section column-count override. Set through `SectionConfig`; overrides the responsive `--dashboard-cols-*` for that section.                                               |
+| Variable                                      | Default                        | Purpose                                                                                                                                                                                   |
+| --------------------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--mfp_cardContainerPadding`                  | `10px`                         | Inline padding inside each dashboard card.                                                                                                                                                |
+| `--mfp_cardBorder`                            | `none`                         | Border applied to the inner card surface while an editable card is hovered or focused.                                                                                                    |
+| `--mfp_cardEditFrameShadow`                   | `none`                         | Edit-mode frame shadow. Set by the dashboard to `--sapContent_Shadow0` on editable cards and on the section in edit mode — see [Section frame in edit mode](#section-frame-in-edit-mode). |
+| `--row-height`                                | `10px`                         | Height of each grid row track in a section's card grid.                                                                                                                                   |
+| `--column-gap`                                | `0px`                          | Horizontal gap between cards in a section grid.                                                                                                                                           |
+| `--row-gap`                                   | `0px`                          | Vertical gap between cards in a section grid.                                                                                                                                             |
+| `--mfp-dashboard-background`                  | `none`                         | Background image used when `config.backgroundImageUrl` is omitted — see [`backgroundImageUrl` — dashboard background image](#backgroundimageurl--dashboard-background-image).             |
+| `--mfp-dashboard-empty-image`                 | SAP `NoApplications` TNT scene | Artwork shown by the [empty state](#empty-state). Overriding it swaps the illustration from CSS alone.                                                                                    |
+| `--dashboard-cols-sm` / `-md` / `-lg` / `-xl` | `1` / `8` / `12` / `14`        | Column-track counts at each responsive breakpoint (driven by container queries).                                                                                                          |
+| `--cols`                                      | _unset_                        | Per-section column-count override. Set through `SectionConfig`; overrides the responsive `--dashboard-cols-*` for that section.                                                           |
 
 `--mfp_cardContainerPadding`, `--mfp_cardBorder`, `--row-height`, `--column-gap`, `--row-gap`, `--mfp-dashboard-background`, and `--mfp-dashboard-empty-image` are the intended consumer knobs. The `--dashboard-cols-*` variables are normally set at runtime by the active layout engine profile — override them only when building a custom layout. Other custom properties seen in the markup (e.g. `--gs-item-margin-top`, `--Container-Spacing-Small`) are internal implementation details and are **not** part of this contract.
 
@@ -89,6 +90,36 @@ mfp-dashboard {
   --mfp_cardBorder: 1px solid var(--sapHighlightColor, #0070f2);
 }
 ```
+
+#### Section frame in edit mode
+
+In edit mode a section draws the same frame as a **transparent** card built on the `MfpCardTemplate` UI5 control, so a section and the cards inside it read as one system. It uses the card template's own tokens rather than hard-coded values:
+
+| Property        | Token                          |
+| --------------- | ------------------------------ |
+| `border-width`  | `--sapElement_BorderWidth`     |
+| `border-color`  | `--sapTile_BorderColor`        |
+| `border-radius` | `--sapTile_BorderCornerRadius` |
+| `box-shadow`    | `--mfp_cardEditFrameShadow`    |
+
+Because `--sapTile_BorderColor` is `transparent` in SAP Horizon, the visible edge of a transparent card comes from its shadow, not its border — so the section sets `--mfp_cardEditFrameShadow: var(--sapContent_Shadow0)` on itself in edit mode, exactly as `.component-card--editing` does for cards. Themes that give `--sapTile_BorderColor` a real colour get a matching solid border for free, with no change here.
+
+The section's top edge stays open where the title sits: `border-top` is `none` and the two line segments flanking the title are drawn by the header's `::before`/`::after`, using the same `--sapTile_BorderColor` and `--sapElement_BorderWidth`.
+
+#### Section spacing
+
+A section's title is absolutely positioned and pulled up by half its own height (`translateY(-50%)`), so it straddles the top border and overhangs the section box by roughly 9 px. Two measurements follow from that:
+
+| Distance                                        | Value             | Set by                                 |
+| ----------------------------------------------- | ----------------- | -------------------------------------- |
+| Card grid ↔ section's top and bottom border     | `1.25rem` (20 px) | `padding-block` on `.section`          |
+| Section's bottom border ↔ next section's border | `2.5rem` (40 px)  | `row-gap` on `.mfp-sections-container` |
+
+`padding-block` is symmetric, so the first and last rows of cards are inset from the section frame by the same amount — without the bottom half a tall card (a table clamped by [`cardsHeight`](#cardsheight--one-height-for-every-card-in-the-section), for instance) sits flush against the border.
+
+The `row-gap` is what separates one section from the next, and it is deliberately larger than the padding: because the title overhangs upward, the usable space between a section's bottom border and the _next section's title_ is `row-gap` minus that overhang — 40 px of gap leaves about 31 px of clear space. Section padding cannot substitute for it, since padding sits inside the border.
+
+`column-gap` stays at `1rem` and is kept separate from `row-gap` on purpose: it feeds the container's column tracks, which must keep matching `.section__grid` and GridStack's `columnOpts`.
 
 ---
 
@@ -796,7 +827,7 @@ before            after
 
 The "full" step is screen-width-dependent: on XL-width pages (≥ 1440 px) a full card fills **3 of 4** columns of the row (¾), and below that it fills **4 of 4** (full-width) so it always fills the row. Cards already sized to the old full-width value are re-snapped automatically when the viewport crosses the 1440 px boundary.
 
-**Fixed card height.** Every loose card is forced to a fixed height — `cardHeight` sets `h`, `maxH`, and `minH` on each loose card (section cards keep their own heights).
+**Fixed card height.** Every loose card is forced to a fixed height — `cardHeight` sets `h`, `maxH`, and `minH` on each loose card (section cards keep their own heights; to unify those, use [`SectionConfig.cardsHeight`](#cardsheight--one-height-for-every-card-in-the-section)).
 
 ```ts
 const config: DashboardConfig = {
@@ -899,10 +930,51 @@ interface ButtonSettings {
 interface SectionConfig {
   id: string;
   w?: number;
+  cardsHeight?: number;
   title?: string;
   editable?: boolean;
 }
 ```
+
+#### `cardsHeight` — one height for every card in the section
+
+By default each card in a section sizes itself from its own `h` (falling back to `100` rows when it declares none), so a section holding cards from different sources ends up with a ragged set of heights. Setting `cardsHeight` on the section forces a single row span onto **every** card inside it:
+
+- A card that declares its own `h` has it **overridden** — the section value wins.
+- A card that declares no `h` takes the section value instead of the `100`-row default.
+- Leave `cardsHeight` unset (the default) to keep the per-card behaviour.
+
+Like `CardConfig.h`, the value is a row span where one row is 10 px by default (`--row-height`), so `cardsHeight: 30` renders every card 300 px tall.
+
+```ts
+const sections: SectionConfig[] = [
+  { id: 'ras', title: 'Recently accessed services', w: 12, cardsHeight: 30 },
+];
+
+const cards: CardConfig[] = [
+  {
+    id: 'a',
+    sectionId: 'ras',
+    w: 3,
+    h: 10,
+    component: 'mfp-wc-visited-service-card',
+  }, // rendered 300 px tall
+  {
+    id: 'b',
+    sectionId: 'ras',
+    w: 3,
+    h: 55,
+    component: 'mfp-wc-visited-service-card',
+  }, // rendered 300 px tall
+  { id: 'c', sectionId: 'ras', w: 3, component: 'mfp-wc-visited-service-card' }, // rendered 300 px tall
+];
+```
+
+Only the height is affected — each card's `w`, `x` and `y` are still its own, so a card that pins a row start with `y` keeps that start and only its span changes.
+
+The override is **presentational**: the cards' configured `h` values are left untouched, so they come back unchanged in the `saved` event payload and the section can be switched back to per-card heights at any time by dropping `cardsHeight`.
+
+This is the section-level counterpart of [`zFlow.cardHeight`](#zflow--reflow-layout-mode), which does the same thing for **loose** cards. The two are independent: `zFlow.cardHeight` never reaches section cards, and `cardsHeight` never reaches the loose-card grid.
 
 ### `CardConfig`
 
@@ -926,7 +998,7 @@ interface CardConfig {
 ```
 
 For sections, `w` controls the column span while height is determined by the section content.
-For cards, `w` and `h` control the rendered grid span. The dashboard does not enable GridStack's `sizeToContent` behaviour, so the configured `h` is retained until the user resizes the card in edit mode. When edit mode is saved, each card's `w` and `h` are persisted in the `saved` event payload. Position (`x`, `y`) is only persisted for **loose** cards (those without a `sectionId`) — section cards are laid out by their section and do not carry `x`/`y`. `minH`/`minW` and `maxH`/`maxW` set hard resize bounds enforced by the grid — the user cannot drag a card below the minimum or above the maximum size in edit mode.
+For cards, `w` and `h` control the rendered grid span — unless the parent section sets [`cardsHeight`](#cardsheight--one-height-for-every-card-in-the-section), which overrides `h` for every card in that section. The dashboard does not enable GridStack's `sizeToContent` behaviour, so the configured `h` is retained until the user resizes the card in edit mode. When edit mode is saved, each card's `w` and `h` are persisted in the `saved` event payload. Position (`x`, `y`) is only persisted for **loose** cards (those without a `sectionId`) — section cards are laid out by their section and do not carry `x`/`y`. `minH`/`minW` and `maxH`/`maxW` set hard resize bounds enforced by the grid — the user cannot drag a card below the minimum or above the maximum size in edit mode.
 
 `component` and `type` work together to determine how the card is rendered:
 

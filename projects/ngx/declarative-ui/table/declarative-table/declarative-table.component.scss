@@ -1,3 +1,14 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+ui5-table {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 .multiline {
   display: block;
 }
@@ -36,7 +47,19 @@ ui5-table-header-row {
 
 .pagination-footer {
   container-type: inline-size;
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 0.5rem;
+  box-sizing: border-box;
+  padding: 0 1rem;
+  min-height: var(--mfp_tableCardBarHeight, 3.75rem);
+  border-top: 1px solid var(--sapList_HeaderBorderColor);
+
+  &[hidden] {
+    display: none;
+  }
 
   &__side {
     flex: 1 1 0;

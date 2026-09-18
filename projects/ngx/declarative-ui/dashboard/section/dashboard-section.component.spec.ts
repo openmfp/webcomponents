@@ -41,6 +41,139 @@ describe('DashboardSection', () => {
     expect(root(fixture).textContent).toContain('Favorites');
   });
 
+  describe('cardsHeight', () => {
+    function cardHosts(fixture: Fixture): HTMLElement[] {
+      return fixture.debugElement
+        .queryAll(By.directive(DashboardCard))
+        .map((d) => d.nativeElement as HTMLElement);
+    }
+
+    it('forces every card in the section to the section height, whatever the card declares', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('section', {
+        id: 'section-1',
+        cardsHeight: 30,
+      });
+      fixture.componentRef.setInput('cards', [
+        { id: 'card-1', component: 'demo-widget', h: 10 },
+        { id: 'card-2', component: 'demo-widget', h: 55 },
+        { id: 'card-3', component: 'demo-widget' },
+      ]);
+      fixture.detectChanges();
+
+      expect(cardHosts(fixture).map((el) => el.style.gridRow)).toEqual([
+        'span 30',
+        'span 30',
+        'span 30',
+      ]);
+    });
+
+    it('keeps the override when the card also pins a row start via y', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('section', {
+        id: 'section-1',
+        cardsHeight: 30,
+      });
+      fixture.componentRef.setInput('cards', [
+        { id: 'card-1', component: 'demo-widget', h: 10, y: 4 },
+      ]);
+      fixture.detectChanges();
+
+      expect(cardHosts(fixture)[0]?.style.gridRow).toBe('5 / span 30');
+    });
+
+    it('leaves the card width untouched', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('section', {
+        id: 'section-1',
+        cardsHeight: 30,
+      });
+      fixture.componentRef.setInput('cards', [
+        { id: 'card-1', component: 'demo-widget', w: 4, h: 10 },
+      ]);
+      fixture.detectChanges();
+
+      expect(cardHosts(fixture)[0]?.style.gridColumn).toBe('span 4');
+    });
+
+    it('falls back to each card own height when the section sets no cardsHeight', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('section', { id: 'section-1' });
+      fixture.componentRef.setInput('cards', [
+        { id: 'card-1', component: 'demo-widget', h: 10 },
+        { id: 'card-2', component: 'demo-widget' },
+      ]);
+      fixture.detectChanges();
+
+      expect(cardHosts(fixture).map((el) => el.style.gridRow)).toEqual([
+        'span 10',
+        'span 100',
+      ]);
+    });
+
+    it('re-applies the height when cardsHeight changes', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('section', {
+        id: 'section-1',
+        cardsHeight: 30,
+      });
+      fixture.componentRef.setInput('cards', [
+        { id: 'card-1', component: 'demo-widget', h: 10 },
+      ]);
+      fixture.detectChanges();
+
+      fixture.componentRef.setInput('section', {
+        id: 'section-1',
+        cardsHeight: 12,
+      });
+      fixture.detectChanges();
+
+      expect(cardHosts(fixture)[0]?.style.gridRow).toBe('span 12');
+    });
+
+    it('does not mutate the cards passed in', () => {
+      const { fixture } = setup();
+      const cards = [{ id: 'card-1', component: 'demo-widget', h: 10 }];
+
+      fixture.componentRef.setInput('section', {
+        id: 'section-1',
+        cardsHeight: 30,
+      });
+      fixture.componentRef.setInput('cards', cards);
+      fixture.detectChanges();
+
+      expect(cards[0]?.h).toBe(10);
+    });
+
+    it('still emits the original card id when an overridden card is removed', () => {
+      const { fixture, component } = setup();
+      const emitted: string[] = [];
+
+      component.removeCard.subscribe((id) => emitted.push(id));
+      fixture.componentRef.setInput('section', {
+        id: 'section-1',
+        editable: true,
+        cardsHeight: 30,
+      });
+      fixture.componentRef.setInput('cards', [
+        { id: 'card-1', component: 'demo-widget', h: 10 },
+      ]);
+      fixture.componentRef.setInput('editMode', true);
+      fixture.detectChanges();
+
+      const card = fixture.debugElement.query(By.directive(DashboardCard))
+        .componentInstance as DashboardCard;
+      card.removeCard.emit();
+
+      expect(emitted).toEqual(['card-1']);
+    });
+  });
+
   it('shows a remove button in editable edit mode and emits when clicked', () => {
     const { fixture, component } = setup();
     let emitted = 0;
