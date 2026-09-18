@@ -1,6 +1,7 @@
 import { build } from 'esbuild';
 import {
   copyFileSync,
+  cpSync,
   mkdirSync,
   readFileSync,
   readdirSync,
@@ -73,6 +74,12 @@ console.log(
 copyFileSync(dashOut, join(publicDir, 'mfp-wc-dashboard.js'));
 console.log('Copied to public/mfp-wc-dashboard.js');
 
+// --- OpenUI5 controls (mfp.ui5.card) ---
+cpSync(resolve('projects/ui5'), join(dist, 'ui5'), {
+  recursive: true,
+});
+console.log('Copied projects/ui5 to dist/webcomponents/ui5');
+
 // --- generate package.json for dist/webcomponents ---
 const rootPkg = JSON.parse(readFileSync(resolve('package.json'), 'utf8'));
 const wcPkg = {
@@ -86,7 +93,7 @@ const wcPkg = {
     '.': './mfp-webcomponents.js',
     './dashboard': './mfp-wc-dashboard.js',
   },
-  files: ['mfp-webcomponents.js', 'mfp-wc-dashboard.js'],
+  files: ['mfp-webcomponents.js', 'mfp-wc-dashboard.js', 'ui5'],
 };
 writeFileSync(
   join(dist, 'package.json'),

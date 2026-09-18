@@ -15,7 +15,7 @@
       separators="Inner"
       [noDataText]="i18n.getTranslation(i18nKeys.NO_CARDS_AVAILABLE)"
     >
-      @for (availableCard of availableCards(); track availableCard.id) {
+      @for (availableCard of sortedCards(); track availableCard.id) {
         <ui5-li-custom
           class="edit-cards-dialog__list-item-container"
           [accessibleName]="availableCard.label || availableCard.component"

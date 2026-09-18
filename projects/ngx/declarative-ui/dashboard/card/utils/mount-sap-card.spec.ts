@@ -84,6 +84,7 @@ describe('mountSapCard', () => {
       name: 'my.sap.App',
       manifest: true,
       async: true,
+      height: '100%',
       settings: { env: 'prod' },
     });
   });

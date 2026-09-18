@@ -201,6 +201,19 @@ export class ZflowGridStackEngine extends GridStackEngine {
     syncNodeOrderFromLayout(this.nodes as ZFlowGridStackNode[]);
   }
 
+  moveNodesToFront(ids: string[]): void {
+    const nodes = this.nodes as ZFlowGridStackNode[];
+    const front = ids
+      .map((id) => nodes.find((node) => node.id === id))
+      .filter((node): node is ZFlowGridStackNode => !!node);
+    const rest = sortNodesByZFlowOrder(
+      nodes.filter((node) => !front.includes(node)),
+    );
+    [...front, ...rest].forEach((node, index) => {
+      node.zFlowOrder = index;
+    });
+  }
+
   private takeLayoutSnapshot(nodes: ZFlowGridStackNode[]): LayoutSnapshot[] {
     return nodes.map((n) => ({
       node: n,

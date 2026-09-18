@@ -1,4 +1,5 @@
 @use '../constants/breakpoints' as bp;
+@use '../constants/card';
 @import 'gridstack/dist/gridstack.min.css';
 
 .grid-stack-placeholder {
@@ -6,11 +7,18 @@
   pointer-events: none;
 
   .placeholder-content {
+    box-sizing: border-box;
     border-radius: 16px;
-    height: calc(100% - 30px);
-    top: calc(var(--gs-item-margin-top) * 2 - 2px) !important;
-    width: calc(100% - 19px);
-    left: 8px !important;
+    height: calc(
+      100% - var(--gs-item-margin-top) - 2 *
+        #{card.$card-container-padding-block}
+    );
+    top: calc(
+      var(--gs-item-margin-top) + #{card.$card-container-padding-block} +
+        #{card.$card-edit-controls-height}
+    ) !important;
+    width: calc(100% - 2 * #{card.$card-container-padding});
+    left: card.$card-container-padding !important;
     background: var(--sapContent_Selected_Hover_Background, #e3f0ff);
     border: 1px solid var(--sapContent_DragAndDropActiveColor, #0064d9);
     z-index: 2 !important;
@@ -267,10 +275,17 @@ mfp-wc-dashboard {
 
   &::after,
   .mfp-dashboard__drag-origin-content {
-    height: calc(100% - 30px);
-    top: calc(var(--gs-item-margin-top) * 2 - 2px) !important;
-    width: calc(100% - 19px);
-    left: 8px !important;
+    box-sizing: border-box;
+    height: calc(
+      100% - var(--gs-item-margin-top) - 2 *
+        #{card.$card-container-padding-block}
+    );
+    top: calc(
+      var(--gs-item-margin-top) + #{card.$card-container-padding-block} +
+        #{card.$card-edit-controls-height}
+    ) !important;
+    width: calc(100% - 2 * #{card.$card-container-padding});
+    left: card.$card-container-padding !important;
     position: absolute;
     border-radius: 16px;
   }
@@ -289,6 +304,21 @@ mfp-wc-dashboard {
 .grid-stack:has(> .mfp-dashboard__drag-origin-placeholder)
   > .grid-stack-placeholder {
   visibility: hidden;
+}
+
+.mfp-dashboard .grid-stack > .grid-stack-item > .grid-stack-item-content {
+  overflow: visible;
+}
+
+.mfp-dashboard
+  .grid-stack
+  > .grid-stack-item.ui-draggable-dragging
+  > .grid-stack-item-content,
+.mfp-dashboard
+  .grid-stack
+  > .grid-stack-item.ui-resizable-resizing
+  > .grid-stack-item-content {
+  box-shadow: none;
 }
 
 gridstack {

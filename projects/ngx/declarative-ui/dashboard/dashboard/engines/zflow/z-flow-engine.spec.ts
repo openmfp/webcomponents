@@ -319,6 +319,25 @@ describe('SteppedResizeGridStackEngine', () => {
     ]);
   });
 
+  it('moves the given nodes to the front of the z-flow order, keeping the rest in order', () => {
+    const nodes: ZFlowGridStackNode[] = [
+      { id: 'existing-1', x: 0, y: 0, w: 1, h: 10, zFlowOrder: 0 },
+      { id: 'existing-2', x: 1, y: 0, w: 1, h: 10, zFlowOrder: 1 },
+      { id: 'added-1', x: 2, y: 0, w: 1, h: 10 },
+      { id: 'added-2', x: 3, y: 0, w: 1, h: 10 },
+    ];
+    const { engine } = createEngine(nodes);
+
+    engine.moveNodesToFront(['added-1', 'added-2']);
+
+    expect(nodes.map((node) => [node.id, node.zFlowOrder])).toEqual([
+      ['existing-1', 2],
+      ['existing-2', 3],
+      ['added-1', 0],
+      ['added-2', 1],
+    ]);
+  });
+
   it('re-projects the entire layout (not only the dragged node) on a z-flow drag', () => {
     const nodes: ZFlowGridStackNode[] = [
       { id: 'recent', x: 0, y: 0, w: 1, h: 10 },

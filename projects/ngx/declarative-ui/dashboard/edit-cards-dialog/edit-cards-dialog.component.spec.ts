@@ -2,6 +2,7 @@ import { DashboardI18nService } from '../i18n';
 import { CardConfig } from '../models';
 import { EditCardsDialog } from './edit-cards-dialog.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { setLanguage } from '@ui5/webcomponents-base/dist/config/Language.js';
 import { axe } from 'vitest-axe';
 
 type Fixture = ComponentFixture<EditCardsDialog>;
@@ -95,6 +96,73 @@ describe('EditCardsDialog', () => {
       fixture.detectChanges();
 
       expect(component.selectedIds().size).toBe(0);
+    });
+  });
+
+  describe('ordering', () => {
+    function rowIds(fixture: Fixture): string[] {
+      return Array.from(
+        root(fixture).querySelectorAll(
+          '[data-testid^="dashboard-edit-cards-row-"]',
+        ),
+      ).map((row) =>
+        (row.getAttribute('data-testid') ?? '').replace(
+          'dashboard-edit-cards-row-',
+          '',
+        ),
+      );
+    }
+
+    afterEach(async () => {
+      await setLanguage('en');
+    });
+
+    it('lists cards sorted by label, falling back to the component name', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('availableCards', [
+        { id: 'c', component: 'mfp-c', label: 'Charlie' },
+        { id: 'no-label', component: 'bravo-component' },
+        { id: 'a', component: 'mfp-a', label: 'alpha' },
+      ]);
+      fixture.detectChanges();
+
+      expect(rowIds(fixture)).toEqual(['a', 'no-label', 'c']);
+    });
+
+    it('re-sorts when the labels change', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('availableCards', [
+        { id: 'first', component: 'mfp-a', label: 'Apple' },
+        { id: 'second', component: 'mfp-b', label: 'Banana' },
+      ]);
+      fixture.detectChanges();
+      expect(rowIds(fixture)).toEqual(['first', 'second']);
+
+      fixture.componentRef.setInput('availableCards', [
+        { id: 'first', component: 'mfp-a', label: 'Zitrone' },
+        { id: 'second', component: 'mfp-b', label: 'Banane' },
+      ]);
+      fixture.detectChanges();
+
+      expect(rowIds(fixture)).toEqual(['second', 'first']);
+    });
+
+    it('collates labels with the UI5 language', async () => {
+      const { fixture } = setup();
+      fixture.componentRef.setInput('availableCards', [
+        { id: 'zebra', component: 'mfp-z', label: 'Zebra' },
+        { id: 'apple', component: 'mfp-a', label: 'Äpple' },
+      ]);
+
+      await setLanguage('de');
+      fixture.detectChanges();
+      expect(rowIds(fixture)).toEqual(['apple', 'zebra']);
+
+      await setLanguage('sv');
+      fixture.detectChanges();
+      expect(rowIds(fixture)).toEqual(['zebra', 'apple']);
     });
   });
 

@@ -345,7 +345,7 @@ export const CompactToolbar: Story = {
     docs: {
       description: {
         story:
-          'Below 726 px the individual toolbar buttons collapse into a single menu2 burger button. Click it to see the custom actions and Edit View item separated by a MenuSeparator.',
+          'Below 726 px the individual toolbar buttons collapse into a single overflow button. Click it to see the custom actions and Edit View item separated by a MenuSeparator.',
       },
     },
   },

@@ -53,7 +53,7 @@ import { MenuItem } from '@fundamental-ngx/ui5-webcomponents/menu-item';
 import { MenuSeparator } from '@fundamental-ngx/ui5-webcomponents/menu-separator';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 import '@ui5/webcomponents-icons/dist/action-settings.js';
-import '@ui5/webcomponents-icons/dist/menu2.js';
+import '@ui5/webcomponents-icons/dist/overflow.js';
 import '@ui5/webcomponents-icons/dist/user-edit.js';
 import {
   GridItemHTMLElement,
@@ -273,6 +273,7 @@ export class Dashboard implements OnInit, OnDestroy {
   private addCardBtn = viewChild<Button>('editCardsBtn');
   private resizeObserver?: ResizeObserver;
   private cardsPosition = new Map<string, GridStackPosition>();
+  private pendingFrontCardIds: string[] = [];
 
   /** Callback that resumes the intercepted navigation once the user resolves the dialog. */
   private pendingNavigation: (() => void) | null = null;
@@ -492,6 +493,7 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   private discardEdit(): void {
+    this.pendingFrontCardIds = [];
     this.sections.set(this.sectionsSnapshot);
     this.cards.set(
       this.cardsSnapshot.map((c) => {
@@ -611,9 +613,13 @@ export class Dashboard implements OnInit, OnDestroy {
       this.getZFlowEngine()?.syncZFlowOrderFromLayout();
     }
 
+    this.pendingFrontCardIds = event.added
+      .filter((card) => !card.sectionId)
+      .map((card) => card.id);
+
     this.cards.update((list) => {
       const withoutRemoved = list.filter((c) => !event.removed.includes(c.id));
-      return [...withoutRemoved, ...event.added.map((ac) => ({ ...ac }))];
+      return [...event.added.map((ac) => ({ ...ac })), ...withoutRemoved];
     });
     this.closeCardPanel();
   }
@@ -640,10 +646,34 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   onGridChange(): void {
+    this.moveAddedCardsToFront();
     this.getZFlowEngine()?.commitZFlowLayout();
     if (this.editMode()) {
       this.gridDirty.set(true);
     }
+  }
+
+  private moveAddedCardsToFront(): void {
+    const ids = this.pendingFrontCardIds;
+    const grid = this.gridStack().grid;
+    if (!ids.length || !grid) return;
+
+    const nodes = grid.engine.nodes;
+    if (!ids.every((id) => nodes.some((node) => node.id === id))) return;
+    this.pendingFrontCardIds = [];
+
+    const zFlowEngine = this.getZFlowEngine();
+    if (zFlowEngine) {
+      zFlowEngine.moveNodesToFront(ids);
+      return;
+    }
+
+    grid.batchUpdate();
+    [...ids].reverse().forEach((id) => {
+      const el = nodes.find((node) => node.id === id)?.el;
+      if (el) grid.update(el, { x: 0, y: 0 });
+    });
+    grid.batchUpdate(false);
   }
 
   private saveCardsPosition(items: GridStackNode[]): void {

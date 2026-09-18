@@ -503,7 +503,7 @@ describe('Dashboard', () => {
     expect(component.cardDialogOpen()).toBe(false);
   });
 
-  it('adds new cards and closes the panel', () => {
+  it('adds new cards first and closes the panel', () => {
     const { fixture, component } = setup();
 
     fixture.componentRef.setInput('config', { title: 'T' });
@@ -524,7 +524,6 @@ describe('Dashboard', () => {
     });
 
     expect(component.cards()).toEqual([
-      { id: 'card-1', component: 'mfp-a' },
       {
         id: 'template-card',
         component: 'mfp-b',
@@ -532,6 +531,7 @@ describe('Dashboard', () => {
         h: 20,
         componentInputs: { size: 'L' },
       },
+      { id: 'card-1', component: 'mfp-a' },
     ]);
     expect(component.cardDialogOpen()).toBe(false);
   });
@@ -551,6 +551,44 @@ describe('Dashboard', () => {
     component.onCardsEdited({ added: [{ ...card }], removed: [] });
 
     expect(component.cards()).toEqual([card]);
+  });
+
+  it('moves added loose cards to the front of the z-flow once the grid has them', () => {
+    const { fixture, component } = setup();
+    const engine = new ZflowGridStackEngine({ column: 4, nodes: [] });
+    const moveToFront = vi.spyOn(engine, 'moveNodesToFront');
+    const commitLayout = vi.spyOn(engine, 'commitZFlowLayout');
+
+    fixture.componentRef.setInput('config', {
+      title: 'T',
+      zFlow: { cardHeight: 40 },
+    });
+    component.cards.set([{ id: 'card-1', component: 'mfp-a' }]);
+    (component as unknown as { gridStack: () => unknown }).gridStack = () => ({
+      grid: { engine },
+    });
+
+    component.onCardsEdited({
+      added: [
+        { id: 'card-2', component: 'mfp-b' },
+        { id: 'section-card', component: 'mfp-c', sectionId: 'section-1' },
+      ],
+      removed: [],
+    });
+
+    engine.nodes = [{ id: 'card-1' }];
+    component.onGridChange();
+    expect(moveToFront).not.toHaveBeenCalled();
+
+    engine.nodes = [{ id: 'card-1' }, { id: 'card-2' }];
+    component.onGridChange();
+    component.onGridChange();
+
+    expect(moveToFront).toHaveBeenCalledOnce();
+    expect(moveToFront).toHaveBeenCalledWith(['card-2']);
+    expect(moveToFront.mock.invocationCallOrder[0]).toBeLessThan(
+      commitLayout.mock.invocationCallOrder[1],
+    );
   });
 
   it('preserves and commits z-flow around edit-card dialog changes', () => {

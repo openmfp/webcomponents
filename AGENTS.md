@@ -92,6 +92,7 @@ webcomponents/
 │   │       ├── form/                  # DeclarativeForm (with submit() method)
 │   │       ├── table/                 # DeclarativeTable, ResourceField (boolean, link, secret, tag-list)
 │   │       └── table-card/            # DeclarativeTableCard (with dialog lifecycle methods)
+│   ├── ui5/mfp-card/                  # mfp.ui5.card.MfpCardTemplate OpenUI5 control (plain JS, copied to dist as-is)
 │   ├── webcomponents/
 │   │   └── main.ts                    # registers all custom elements
 │   └── webcomponents-dashboard/

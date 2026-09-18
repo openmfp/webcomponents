@@ -2,8 +2,10 @@ import { DASHBOARD_I18N_KEYS, DashboardI18nService } from '../i18n';
 import { CardConfig } from '../models';
 import {
   Component,
+  DestroyRef,
   ElementRef,
   ViewEncapsulation,
+  computed,
   effect,
   inject,
   input,
@@ -16,6 +18,15 @@ import { List } from '@fundamental-ngx/ui5-webcomponents/list';
 import { ListItemCustom } from '@fundamental-ngx/ui5-webcomponents/list-item-custom';
 import { Switch } from '@fundamental-ngx/ui5-webcomponents/switch';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
+import getLocale from '@ui5/webcomponents-base/dist/locale/getLocale.js';
+import {
+  attachLanguageChange,
+  detachLanguageChange,
+} from '@ui5/webcomponents-base/dist/locale/languageChange.js';
+
+function cardLabel(card: CardConfig): string {
+  return card.label || card.component;
+}
 
 @Component({
   selector: 'mfp-edit-cards-dialog',
@@ -38,7 +49,27 @@ export class EditCardsDialog {
 
   selectedIds = signal<Set<string>>(new Set());
 
+  private readonly language = signal(getLocale().getLanguage());
+
+  protected readonly sortedCards = computed(() => {
+    const collator = new Intl.Collator(this.language(), {
+      numeric: true,
+      sensitivity: 'base',
+    });
+    return [...this.availableCards()].sort((a, b) =>
+      collator.compare(cardLabel(a), cardLabel(b)),
+    );
+  });
+
   constructor() {
+    const onLanguageChange = async (language: string): Promise<void> => {
+      this.language.set(getLocale(language).getLanguage());
+    };
+    attachLanguageChange(onLanguageChange);
+    inject(DestroyRef).onDestroy(() => {
+      detachLanguageChange(onLanguageChange);
+    });
+
     effect(() => {
       if (this.open()) {
         const initial = new Set(

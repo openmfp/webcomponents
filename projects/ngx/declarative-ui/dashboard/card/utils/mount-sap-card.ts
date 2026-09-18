@@ -8,6 +8,7 @@ export type SapUiRequire = (
       name: string;
       manifest: boolean;
       async: boolean;
+      height: string;
       settings: Record<string, unknown>;
     }) => { placeAt(el: HTMLElement): void; destroy(): void },
   ) => void,
@@ -34,6 +35,7 @@ export function mountSapCard(
         name: cfg.component,
         manifest: true,
         async: true,
+        height: '100%',
         settings: cfg.componentInputs ?? {},
       });
 

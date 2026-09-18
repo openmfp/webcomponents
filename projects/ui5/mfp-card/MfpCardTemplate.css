@@ -1,0 +1,79 @@
+.mfpUi5Card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-width: 0;
+  border: var(--sapElement_BorderWidth) solid var(--sapTile_BorderColor);
+  border-radius: var(--sapTile_BorderCornerRadius);
+  font-family: var(--sapFontFamily);
+}
+
+.mfpUi5CardSolid {
+  background: var(--sapTile_Background);
+  box-shadow: var(--sapContent_Shadow0);
+}
+
+.mfpUi5CardTransparent {
+  background: transparent;
+  box-shadow: var(--mfp_cardEditFrameShadow, none);
+}
+
+.mfpUi5CardBadge {
+  position: absolute;
+  top: 0;
+  right: 1rem;
+  transform: translateY(-50%);
+  z-index: 1;
+}
+
+.mfpUi5CardHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+.mfpUi5CardTitle {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.mfpUi5CardToolbar {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.mfpUi5CardSearch {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.mfpUi5CardMessageStrip {
+  padding: 0 1rem 0.5rem;
+}
+
+.mfpUi5CardMessageStrip:has(> .sapUiHiddenPlaceholder:only-child) {
+  display: none;
+}
+
+.mfpUi5CardContent {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  border-end-start-radius: calc(
+    var(--sapTile_BorderCornerRadius) - var(--sapElement_BorderWidth)
+  );
+  border-end-end-radius: calc(
+    var(--sapTile_BorderCornerRadius) - var(--sapElement_BorderWidth)
+  );
+}
+
+.mfpUi5CardContentScroll {
+  height: 100%;
+  overflow: auto;
+}

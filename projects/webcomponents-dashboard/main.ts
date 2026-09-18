@@ -5,10 +5,16 @@ import {
   defineDashboardElementMethods,
 } from '@openmfp/webcomponents/declarative-ui';
 import { ignoreCustomElements } from '@ui5/webcomponents-base/dist/IgnoreCustomElements.js';
+import { setLanguage } from '@ui5/webcomponents-base/dist/config/Language.js';
 import { setTheme } from '@ui5/webcomponents-base/dist/config/Theme.js';
 import '@ui5/webcomponents-theming/dist/Assets.js';
 
 ignoreCustomElements('mfp');
+
+type OpenUI5Localization = {
+  getLanguageTag: () => { toString: () => string };
+  attachChange: (handler: () => void) => void;
+};
 
 type OpenUI5Theming = {
   getTheme: () => string;
@@ -28,6 +34,21 @@ function syncThemeWithOpenUI5(): void {
   });
 }
 
+function syncLanguageWithOpenUI5(): void {
+  const sapRequire = (globalThis as { sap?: { ui?: { require?: unknown } } })
+    .sap?.ui?.require as
+    | ((deps: string[], cb: (m: OpenUI5Localization) => void) => void)
+    | undefined;
+  if (!sapRequire) return;
+
+  sapRequire(['sap/base/i18n/Localization'], (Localization) => {
+    const apply = () =>
+      void setLanguage(Localization.getLanguageTag().toString());
+    apply();
+    Localization.attachChange(apply);
+  });
+}
+
 (async () => {
   const app = await createApplication();
 
@@ -44,4 +65,5 @@ function syncThemeWithOpenUI5(): void {
   customElements.define('mfp-wc-dashboard', DashboardElement);
 
   syncThemeWithOpenUI5();
+  syncLanguageWithOpenUI5();
 })();

@@ -61,6 +61,12 @@ The script registers the custom elements globally. After it loads, use the tags 
 | -------------------- | ------------------------------ | ----------------------------------------------------------------------------------------- |
 | `<mfp-wc-dashboard>` | Drag-and-drop dashboard layout | [docs/dashboard.md](https://github.com/openmfp/webcomponents/blob/main/docs/dashboard.md) |
 
+### `ui5/mfp-card/` — OpenUI5 card template
+
+| OpenUI5 control                | Description                                                     | Documentation                                                                                                     |
+| ------------------------------ | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `mfp.ui5.card.MfpCardTemplate` | Dashboard card template for SAP UI5 apps (not a custom element) | [docs/mfp-ui5-card-template.md](https://github.com/openmfp/webcomponents/blob/main/docs/mfp-ui5-card-template.md) |
+
 ### Declarative Form API
 
 `mfp-wc-declarative-form` exposes two extra methods:
