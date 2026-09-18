@@ -403,50 +403,11 @@ A page-size selector is always present.
 
 ### Scrolling and the sticky header
 
-The component lays itself out as a column: the `ui5-table` takes the available space and the page-size/count footer is pinned below it. Only the table's **data rows** scroll — the column header row is always sticky, and the footer never scrolls away.
+The component lays itself out as a column: the `ui5-table` sits above the page-size/count footer. By default it is **content-sized** — the table grows with its rows, so a load-more click makes it taller and the load-more trigger always sits directly under the last row.
 
-That holds however the height is constrained:
+Set `height` to constrain it instead. The `ui5-table` then scrolls its data rows inside that height, while the column header row and the footer stay put.
 
-- **`height` set** — the table is that many pixels tall and scrolls inside it.
-- **Height inherited from the container** — when an ancestor gives the component a definite height (a `DeclarativeTableCard` inside a dashboard card slot, for instance), the table fills it and scrolls, with no `height` input needed.
-- **Neither** — the component is content-sized and nothing scrolls.
-
-The header row is sticky in all three cases; where the table does not scroll, that has no visible effect. Earlier versions made it sticky only for `loadMode: 'scroll'` **and** a set `height`, which left the column headers scrolling out of view in a height-constrained container.
-
-```js
-// Button mode (default)
-table.hasMore = true;
-table.loadMoreButtonText = 'Load More';
-
-// Scroll mode with a fixed height
-table.loadMode = 'scroll';
-table.height = 400; // pixels
-table.hasMore = true;
-
-table.addEventListener('loadMoreResources', () => {
-  fetchNextPage().then((rows) => {
-    table.resources = [...table.resources, ...rows];
-  });
-});
-
-table.addEventListener('paginationLimitChanged', (e) => {
-  table.paginationLimit = e.detail;
-  reloadWithNewLimit(e.detail);
-});
-
-// Pager mode with numbered pagination
-table.loadMode = 'pager';
-table.totalItemsCount = 120;
-table.paginationLimit = 20;
-table.currentPage = 1;
-
-table.addEventListener('pageChange', (e) => {
-  table.currentPage = e.detail;
-  fetchPage(e.detail);
-});
-```
-
----
+The header row is sticky in both cases; where the table does not scroll that has no visible effect. Earlier versions made it sticky only for `loadMode: 'scroll'` **and** a set `height`, which left the column headers scrolling out of view whenever the table scrolled for any other reason.
 
 ## Resource shape
 

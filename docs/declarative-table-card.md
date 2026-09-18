@@ -532,22 +532,17 @@ tableConfig: {
 
 ## Sizing
 
-The card is a column flex container whose body (`.card__body`) is the only growing child, so it adapts to whatever height its container gives it:
+The card is a column flex container whose body (`.card__body`) is the only growing child, so it is **content-sized**: the body grows with the rows, the card grows with it, and loading more rows makes the card taller. Nothing scrolls internally.
 
-- **In a container with no definite height** the card is content-sized, exactly as before — the body grows with the rows and nothing scrolls.
-- **In a container with a definite height** — a dashboard card slot, i.e. `CardConfig.h`, `DashboardConfig.zFlow.cardHeight`, or `SectionConfig.cardsHeight` — the card fills that height and only the table's data rows scroll.
+Internal scrolling is opt-in, via the table's own [`height`](./declarative-table.md#inputs) input:
 
-Everything that frames the data stays put while the rows scroll:
+```ts
+tableConfig: { height: 300, loadMode: 'scroll' }
+```
 
-| Region                                        | Behaviour      |
-| --------------------------------------------- | -------------- |
-| Card header (`header`, search, create button) | always visible |
-| Filter tabs                                   | always visible |
-| Table column header row                       | sticky         |
-| Table data rows                               | **scrolls**    |
-| Page-size / item-count footer                 | always visible |
+With `height` set the `ui5-table` scrolls its data rows, the column header row stays sticky, and the page-size footer stays below the table.
 
-Because the scroll container is the table's row area rather than the whole card body, the scrollbar stops above the footer instead of running down to the card's rounded bottom corner.
+> **Known limitation.** A card placed in a slot with a fixed height — a dashboard card's `CardConfig.h`, `DashboardConfig.zFlow.cardHeight` or `SectionConfig.cardsHeight` — is still content-sized, so a table taller than its slot paints over whatever sits below it. Set `tableConfig.height` to match the slot as a workaround. See [openmfp/webcomponents#302](https://github.com/openmfp/webcomponents/issues/302).
 
 ### Header and footer bar height
 
