@@ -24,10 +24,6 @@ import {
   detachLanguageChange,
 } from '@ui5/webcomponents-base/dist/locale/languageChange.js';
 
-function cardLabel(card: CardConfig): string {
-  return card.label || card.component;
-}
-
 @Component({
   selector: 'mfp-edit-cards-dialog',
   imports: [Button, Dialog, List, ListItemCustom, Switch, Title],
@@ -57,7 +53,7 @@ export class EditCardsDialog {
       sensitivity: 'base',
     });
     return [...this.availableCards()].sort((a, b) =>
-      collator.compare(cardLabel(a), cardLabel(b)),
+      collator.compare(this.cardLabel(a), this.cardLabel(b)),
     );
   });
 
@@ -80,6 +76,10 @@ export class EditCardsDialog {
         this.selectedIds.set(initial);
       }
     });
+  }
+
+  private cardLabel(card: CardConfig): string {
+    return card.label || card.component;
   }
 
   toggle(id: string): void {
