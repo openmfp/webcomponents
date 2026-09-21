@@ -1,5 +1,5 @@
 <div class="card" data-testid="generic-table-card">
-  <div class="card__header">
+  <div #cardHeader class="card__header">
     <div class="card__title">
       @if (header(); as header) {
         {{ header }}
@@ -55,6 +55,7 @@
 
   @if (hasFilterTabs()) {
     <mfp-filter-tabs
+      #filterTabsEl
       [tabs]="filterTabs()"
       (tabChanged)="onFilterTabChanged($event)"
     />
@@ -67,7 +68,7 @@
         [currentPage]="config.currentPage ?? 1"
         [error]="error()"
         [hasMore]="config.hasMore ?? false"
-        [height]="config.height"
+        [height]="tableHeight()"
         [loadMode]="config.loadMode ?? 'button'"
         [loadMoreButtonText]="config.loadMoreButtonText ?? 'Load More'"
         [loading]="loading()"

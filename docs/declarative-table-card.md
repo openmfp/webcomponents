@@ -183,6 +183,7 @@ export class MyComponent {
 | `loading`         | `boolean`                  | no       | `false` | Passes the current loading state to the inner table.                                                                                                                            |
 | `loadingDelay`    | `number`                   | no       | `1000`  | Delay in milliseconds before the inner table loading indicator is displayed.                                                                                                    |
 | `error`           | `boolean`                  | no       | `false` | Replaces the inner table content with its failure state.                                                                                                                        |
+| `contentHeight`   | `number`                   | no       | —       | Pixel height the container offers the card. Set automatically by the dashboard; leave unset to keep the card content-sized. See [Sizing](#sizing).                              |
 
 ### Outputs / Events
 
@@ -532,17 +533,50 @@ tableConfig: {
 
 ## Sizing
 
-The card is a column flex container whose body (`.card__body`) is the only growing child, so it is **content-sized**: the body grows with the rows, the card grows with it, and loading more rows makes the card taller. Nothing scrolls internally.
+By default the card is **content-sized**: the body grows with the rows, the card grows with it, and loading more rows makes the card taller. Nothing scrolls internally, so a load-more trigger always sits directly under the last row.
 
-Internal scrolling is opt-in, via the table's own [`height`](./declarative-table.md#inputs) input:
+That changes only when something tells the card how much room it has.
 
-```ts
-tableConfig: { height: 300, loadMode: 'scroll' }
+### `contentHeight` — fitting a fixed-height slot
+
+`contentHeight` is the pixel height available to the **whole card** — header, filter tabs, table and page-size footer together. When it is set, the card subtracts its own chrome and passes the remainder to the inner table's [`height`](./declarative-table.md#inputs), which makes the table scroll its data rows instead of overflowing:
+
+```text
+contentHeight  ─┬─ card header        (--mfp_tableCardBarHeight)
+                ├─ filter tabs        (when present)
+                ├─ ui5-table          ← the remainder, scrolls
+                └─ page-size footer   (--mfp_tableCardBarHeight)
 ```
 
-With `height` set the `ui5-table` scrolls its data rows, the column header row stays sticky, and the page-size footer stays below the table.
+Both subtracted bars are measured rather than assumed: the header and filter tabs from their rendered boxes, the footer from the same `--mfp_tableCardBarHeight` the header resolves, so overriding that token moves all of it together.
 
-> **Known limitation.** A card placed in a slot with a fixed height — a dashboard card's `CardConfig.h`, `DashboardConfig.zFlow.cardHeight` or `SectionConfig.cardsHeight` — is still content-sized, so a table taller than its slot paints over whatever sits below it. Set `tableConfig.height` to match the slot as a workaround. See [openmfp/webcomponents#302](https://github.com/openmfp/webcomponents/issues/302).
+**The dashboard sets this for you.** A dashboard card measures the tile it occupies and hands the result to the mounted component, so a table card inside a tile fits it with no extra configuration. The tile height comes from [`SectionConfig.cardsHeight`](./dashboard.md#cardsheight--one-height-for-every-card-in-the-section) when the section sets one, otherwise from the card's own `CardConfig.h` (or `DashboardConfig.zFlow.cardHeight` for loose cards).
+
+Precedence, highest first:
+
+| Source               | Effect                                              |
+| -------------------- | --------------------------------------------------- |
+| `tableConfig.height` | Used as-is; `contentHeight` is ignored              |
+| `contentHeight`      | Table height derived from it, minus the card chrome |
+| neither              | Content-sized; nothing scrolls                      |
+
+If the chrome leaves no usable room, the card falls back to content sizing rather than rendering a zero-height table.
+
+### Scrolling behaviour
+
+Once the table has a height — from either source — only the data rows scroll:
+
+| Region                                        | Behaviour      |
+| --------------------------------------------- | -------------- |
+| Card header (`header`, search, create button) | always visible |
+| Filter tabs                                   | always visible |
+| Table column header row                       | sticky         |
+| Table data rows                               | **scrolls**    |
+| Page-size / item-count footer                 | always visible |
+
+Because the scroll container is the table's row area rather than the whole card body, the scrollbar stops above the footer instead of running down to the card's rounded bottom corner.
+
+> **Note for `loadMode: 'button'`.** In a fixed-height slot the load-more trigger sits inside the scrolled row area, so it is reached by scrolling to the end of the rows. Leave `contentHeight` unset (the default outside a dashboard tile) if you want the card to grow on each load instead.
 
 ### Header and footer bar height
 

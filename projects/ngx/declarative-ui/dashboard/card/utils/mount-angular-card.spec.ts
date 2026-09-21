@@ -22,6 +22,15 @@ class TestAngularCard {
   count = input<number>();
 }
 
+@Component({
+  selector: 'mfp-test-sizing-card',
+  standalone: true,
+  template: '<span>sizing card</span>',
+})
+class TestSizingCard {
+  contentHeight = input<number | undefined>(undefined);
+}
+
 function makeCleanup(): {
   onCleanup: EffectCleanupRegisterFn;
   runCleanup: () => void;
@@ -47,8 +56,14 @@ function makeMockVcr(): {
     changeDetectorRef: { detectChanges } as unknown as ChangeDetectorRef,
   };
   const clear = vi.fn();
+  const host = document.createElement('div');
+  Object.defineProperty(host, 'clientHeight', {
+    configurable: true,
+    value: 260,
+  });
   const vcr = {
     createComponent: vi.fn(() => componentRef),
+    element: { nativeElement: host },
     clear,
   } as unknown as ViewContainerRef;
   return { vcr, setInput, clear };
@@ -137,5 +152,57 @@ describe('mountAngularCard', () => {
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining('"unknown-card" is not registered'),
     );
+  });
+
+  describe('contentHeight', () => {
+    it('hands the slot height to a card that declares the input', () => {
+      addComponentToRegistry([TestSizingCard]);
+      const { vcr, setInput } = makeMockVcr();
+      const { onCleanup } = makeCleanup();
+
+      mountAngularCard(
+        makeCfg({ component: 'mfp-test-sizing-card' }),
+        vcr,
+        onCleanup,
+      );
+
+      expect(setInput).toHaveBeenCalledWith('contentHeight', 260);
+    });
+
+    it('leaves a card that does not declare the input untouched', () => {
+      const { vcr, setInput } = makeMockVcr();
+      const { onCleanup } = makeCleanup();
+
+      mountAngularCard(makeCfg(), vcr, onCleanup);
+
+      expect(setInput).not.toHaveBeenCalledWith(
+        'contentHeight',
+        expect.anything(),
+      );
+    });
+
+    it('stops observing the slot once the card is torn down', () => {
+      const disconnect = vi.fn();
+      const original = globalThis.ResizeObserver;
+      const noop = (): void => undefined;
+      globalThis.ResizeObserver = class {
+        observe = noop;
+        unobserve = noop;
+        disconnect = disconnect;
+      } as unknown as typeof ResizeObserver;
+      addComponentToRegistry([TestSizingCard]);
+      const { vcr } = makeMockVcr();
+      const { onCleanup, runCleanup } = makeCleanup();
+
+      mountAngularCard(
+        makeCfg({ component: 'mfp-test-sizing-card' }),
+        vcr,
+        onCleanup,
+      );
+      runCleanup();
+
+      globalThis.ResizeObserver = original;
+      expect(disconnect).toHaveBeenCalled();
+    });
   });
 });

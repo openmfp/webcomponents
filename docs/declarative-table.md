@@ -407,6 +407,8 @@ The component lays itself out as a column: the `ui5-table` sits above the page-s
 
 Set `height` to constrain it instead. The `ui5-table` then scrolls its data rows inside that height, while the column header row and the footer stay put.
 
+`height` sizes the `ui5-table` box alone — the page-size footer sits below it — so a table given `height: 200` renders about 260 px tall once the footer is counted. [`DeclarativeTableCard`](./declarative-table-card.md#contentheight--fitting-a-fixed-height-slot) does that arithmetic for you when it is given a `contentHeight`, which is how a table card fits a dashboard tile.
+
 The header row is sticky in both cases; where the table does not scroll that has no visible effect. Earlier versions made it sticky only for `loadMode: 'scroll'` **and** a set `height`, which left the column headers scrolling out of view whenever the table scrolled for any other reason.
 
 ## Resource shape

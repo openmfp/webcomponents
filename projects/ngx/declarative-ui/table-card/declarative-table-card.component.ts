@@ -14,11 +14,14 @@ import {
   CUSTOM_ELEMENTS_SCHEMA,
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   ViewEncapsulation,
   computed,
+  effect,
   input,
   output,
   signal,
+  viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
@@ -55,6 +58,25 @@ export class DeclarativeTableCard<R extends GenericResource> {
   error = input<boolean>(false);
 
   config = input<TableCardConfig<R> | undefined>(undefined);
+  contentHeight = input<number | undefined>(undefined);
+
+  private readonly cardHeaderRef =
+    viewChild<ElementRef<HTMLElement>>('cardHeader');
+  private readonly filterTabsRef =
+    viewChild<ElementRef<HTMLElement>>('filterTabsEl');
+  private readonly chromeHeight = signal(0);
+
+  protected readonly tableHeight = computed(() => {
+    const explicit = this.config()?.tableConfig?.height;
+    if (explicit !== undefined) return explicit;
+
+    const available = this.contentHeight();
+    if (available === undefined) return undefined;
+
+    const height = available - this.chromeHeight();
+    return height > 0 ? height : undefined;
+  });
+
   createFormState = input<TableCardFormState>({});
   editFormState = input<TableCardFormState>({});
 
@@ -160,6 +182,35 @@ export class DeclarativeTableCard<R extends GenericResource> {
   protected hasFilterTabs = computed(() => this.filterTabs().length > 0);
 
   constructor() {
+    effect((onCleanup) => {
+      if (this.contentHeight() === undefined) {
+        this.chromeHeight.set(0);
+        return;
+      }
+
+      const header = this.cardHeaderRef()?.nativeElement;
+      const tabs = this.filterTabsRef()?.nativeElement;
+      if (!header) return;
+
+      const measure = () => {
+        const barHeight = parseFloat(getComputedStyle(header).minHeight) || 0;
+        this.chromeHeight.set(
+          header.offsetHeight + (tabs?.offsetHeight ?? 0) + barHeight,
+        );
+      };
+
+      const observer = new ResizeObserver(() => {
+        measure();
+      });
+      observer.observe(header);
+      if (tabs) observer.observe(tabs);
+      measure();
+
+      onCleanup(() => {
+        observer.disconnect();
+      });
+    });
+
     this.searchControl.valueChanges
       .pipe(debounceTime(500), distinctUntilChanged(), takeUntilDestroyed())
       .subscribe((value) => {

@@ -36,9 +36,24 @@ export function mountAngularCard(
     componentRef.setInput(templateName, value);
   }
 
+  const contentHeightInput = registeredComponent.inputs.get('contentHeight');
+  let observer: ResizeObserver | undefined;
+
+  if (contentHeightInput) {
+    const host = angularHost.element.nativeElement as HTMLElement;
+    const apply = () => {
+      componentRef.setInput(contentHeightInput, host.clientHeight);
+      componentRef.changeDetectorRef.detectChanges();
+    };
+    observer = new ResizeObserver(apply);
+    observer.observe(host);
+    apply();
+  }
+
   componentRef.changeDetectorRef.detectChanges();
 
   onCleanup(() => {
+    observer?.disconnect();
     angularHost.clear();
   });
 }

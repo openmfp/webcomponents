@@ -117,6 +117,7 @@ function setup(
     loading?: boolean;
     loadingDelay?: number;
     error?: boolean;
+    contentHeight?: number;
   } = {},
 ): { fixture: Fixture; component: Comp } {
   const fixture: Fixture = TestBed.createComponent(
@@ -150,6 +151,8 @@ function setup(
     fixture.componentRef.setInput('loadingDelay', opts.loadingDelay);
   if (opts.error !== undefined)
     fixture.componentRef.setInput('error', opts.error);
+  if (opts.contentHeight !== undefined)
+    fixture.componentRef.setInput('contentHeight', opts.contentHeight);
 
   fixture.detectChanges();
   return { fixture, component };
@@ -1511,5 +1514,66 @@ describe('DeclarativeTableCard', () => {
     const { fixture } = setup({ header: 'Pods' });
 
     expect(await axe(fixture.nativeElement)).toHaveNoViolations();
+  });
+
+  describe('contentHeight', () => {
+    function tableOf(fixture: Fixture): DeclarativeTable<GenericResource> {
+      return fixture.debugElement.query(By.directive(DeclarativeTable))
+        .componentInstance as DeclarativeTable<GenericResource>;
+    }
+
+    it('leaves the table content-sized when no content height is supplied', () => {
+      const { fixture } = setup();
+
+      expect(tableOf(fixture).height()).toBeUndefined();
+    });
+
+    it('derives a table height from the space the container offers', () => {
+      const { fixture } = setup({ contentHeight: 300 });
+
+      expect(tableOf(fixture).height()).toBe(300);
+    });
+
+    it('subtracts the card chrome from the supplied height', () => {
+      const { fixture, component } = setup({ contentHeight: 300 });
+      const withChrome = component as unknown as {
+        chromeHeight: { set: (value: number) => void };
+      };
+
+      withChrome.chromeHeight.set(120);
+      fixture.detectChanges();
+
+      expect(tableOf(fixture).height()).toBe(180);
+    });
+
+    it('lets an explicit tableConfig height win over the container', () => {
+      const { fixture } = setup({
+        readConfig: { ...READ_CONFIG, height: 250 },
+        contentHeight: 300,
+      });
+
+      expect(tableOf(fixture).height()).toBe(250);
+    });
+
+    it('falls back to content sizing when the chrome leaves no room', () => {
+      const { fixture, component } = setup({ contentHeight: 120 });
+      const withChrome = component as unknown as {
+        chromeHeight: { set: (value: number) => void };
+      };
+
+      withChrome.chromeHeight.set(300);
+      fixture.detectChanges();
+
+      expect(tableOf(fixture).height()).toBeUndefined();
+    });
+
+    it('drops the derived height again when the container stops supplying one', () => {
+      const { fixture } = setup({ contentHeight: 300 });
+
+      fixture.componentRef.setInput('contentHeight', undefined);
+      fixture.detectChanges();
+
+      expect(tableOf(fixture).height()).toBeUndefined();
+    });
   });
 });

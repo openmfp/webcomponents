@@ -156,21 +156,83 @@ const BASE_CONFIG: TableCardConfig = {
   selector: 'mfp-declarative-table-card-create-story',
   imports: [DeclarativeTableCard],
   template: `
-    <mfp-declarative-table-card
-      #tableCard
-      [config]="config"
-      [createFormState]="createFormState"
-      [permissions]="permissions"
-      [resources]="resources"
-      (createFieldChange)="onCreateFieldChange($event)"
-      (createSubmit)="onCreateSubmit($event, tableCard)"
-    />
+    @if (contentHeight) {
+      <div class="fit-demo">
+        <div class="fit-demo__col">
+          <p class="fit-demo__label">
+            contentHeight: {{ contentHeight }} — fits the box, rows scroll
+          </p>
+          <div
+            class="fit-demo__box fit-demo__box--fitted"
+            [style.height.px]="contentHeight"
+          >
+            <mfp-declarative-table-card
+              [config]="config"
+              [contentHeight]="contentHeight"
+              [resources]="resources"
+            />
+          </div>
+        </div>
+        <div class="fit-demo__col">
+          <p class="fit-demo__label">
+            no contentHeight — content-sized, overflows the box
+          </p>
+          <div
+            class="fit-demo__box fit-demo__box--free"
+            [style.height.px]="contentHeight"
+          >
+            <mfp-declarative-table-card
+              [config]="config"
+              [resources]="resources"
+            />
+          </div>
+        </div>
+      </div>
+    } @else {
+      <mfp-declarative-table-card
+        #tableCard
+        [config]="config"
+        [createFormState]="createFormState"
+        [permissions]="permissions"
+        [resources]="resources"
+        (createFieldChange)="onCreateFieldChange($event)"
+        (createSubmit)="onCreateSubmit($event, tableCard)"
+      />
+    }
+  `,
+  styles: `
+    .fit-demo {
+      display: flex;
+      gap: 2rem;
+      align-items: flex-start;
+      padding: 1.5rem;
+    }
+    .fit-demo__col {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+    .fit-demo__label {
+      margin: 0 0 0.5rem;
+      font-family: var(--sapFontFamily, sans-serif);
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+    .fit-demo__box {
+      outline-offset: 4px;
+    }
+    .fit-demo__box--fitted {
+      outline: 1px dashed var(--sapHighlightColor, #0070f2);
+    }
+    .fit-demo__box--free {
+      outline: 1px dashed var(--sapNegativeColor, #bb0000);
+    }
   `,
 })
 class DeclarativeTableCardCreateStory {
   @Input() config!: TableCardConfig;
   @Input() resources: GenericResource[] = [];
   @Input() permissions: Record<string, string[]> | undefined;
+  @Input() contentHeight: number | undefined;
   createFormState: TableCardFormState = {};
 
   onCreateFieldChange(event: FormFieldChangeEvent): void {
@@ -899,6 +961,44 @@ export const WithRowPermissions: Story = {
       'abc-002': ['get'],
       'abc-003': ['get', 'update', 'delete'],
       'abc-004': ['get', 'delete'],
+    },
+  },
+};
+
+const CONTENT_HEIGHT_CONFIG: TableCardConfig = {
+  ...BASE_CONFIG,
+  tableConfig: {
+    ...BASE_TABLE_CONFIG,
+    hasMore: true,
+    totalItemsCount: 42,
+  },
+};
+
+/**
+ * `contentHeight` tells the card how much room its container is giving it, in
+ * pixels. The card subtracts its own chrome — header, filter tabs and the
+ * page-size footer — and hands the remainder to the inner table, which then
+ * scrolls its data rows instead of overflowing.
+ *
+ * The dashboard sets this automatically from the tile a card occupies
+ * (`SectionConfig.cardsHeight`, or the card's own `CardConfig.h`), so a table
+ * card in a dashboard needs no extra configuration. Set it by hand only when
+ * placing a card in a fixed-height box of your own.
+ *
+ * Both cards below are identical and sit in a box of the same height. The left
+ * one is given `contentHeight`, the right one is not — the right card overflows
+ * its box, which is exactly what this input prevents.
+ *
+ * Both use the load-more trigger, which shows the trade-off: once the card is
+ * fitted, Load More sits at the end of the scrolled rows rather than under the
+ * last visible row. Leave `contentHeight` unset if you would rather the card
+ * grow on each load.
+ */
+export const FittedToContainerHeight: Story = {
+  args: { config: CONTENT_HEIGHT_CONFIG, resources: PODS, contentHeight: 320 },
+  argTypes: {
+    contentHeight: {
+      control: { type: 'range', min: 200, max: 600, step: 10 },
     },
   },
 };

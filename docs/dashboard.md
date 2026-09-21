@@ -974,6 +974,8 @@ Only the height is affected — each card's `w`, `x` and `y` are still its own, 
 
 The override is **presentational**: the cards' configured `h` values are left untouched, so they come back unchanged in the `saved` event payload and the section can be switched back to per-card heights at any time by dropping `cardsHeight`.
 
+Cards are told the pixel height of the tile they land in, so a card that can adapt to it does. `DeclarativeTableCard` uses this to fit its table to the tile and scroll the rows rather than paint over the next section — see [`contentHeight`](./declarative-table-card.md#contentheight--fitting-a-fixed-height-slot). The dashboard measures the tile and sets the `contentHeight` property on the mounted element; components that do not declare that input are left untouched.
+
 This is the section-level counterpart of [`zFlow.cardHeight`](#zflow--reflow-layout-mode), which does the same thing for **loose** cards. The two are independent: `zFlow.cardHeight` never reaches section cards, and `cardsHeight` never reaches the loose-card grid.
 
 ### `CardConfig`

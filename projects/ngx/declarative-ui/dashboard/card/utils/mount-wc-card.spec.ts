@@ -117,4 +117,53 @@ describe('mountWcCard', () => {
       expect.any(HTMLElement),
     );
   });
+
+  describe('contentHeight', () => {
+    it('hands the mounted element the pixel height of its slot', () => {
+      const { container, el } = makeContainer();
+      Object.defineProperty(el, 'clientHeight', {
+        configurable: true,
+        value: 280,
+      });
+      const renderer = makeRenderer();
+      const { onCleanup } = makeCleanup();
+
+      mountWcCard(
+        { component: 'demo-widget' } as CardConfig,
+        container,
+        onCleanup,
+        renderer,
+      );
+
+      const mounted = el.firstElementChild as unknown as {
+        contentHeight?: number;
+      };
+      expect(mounted.contentHeight).toBe(280);
+    });
+
+    it('stops observing the slot once the card is torn down', () => {
+      const disconnect = vi.fn();
+      const original = globalThis.ResizeObserver;
+      const noop = (): void => undefined;
+      globalThis.ResizeObserver = class {
+        observe = noop;
+        unobserve = noop;
+        disconnect = disconnect;
+      } as unknown as typeof ResizeObserver;
+
+      const { container } = makeContainer();
+      const { onCleanup, runCleanup } = makeCleanup();
+
+      mountWcCard(
+        { component: 'demo-widget' } as CardConfig,
+        container,
+        onCleanup,
+        makeRenderer(),
+      );
+      runCleanup();
+
+      globalThis.ResizeObserver = original;
+      expect(disconnect).toHaveBeenCalled();
+    });
+  });
 });

@@ -20,7 +20,14 @@ export function mountWcCard(
 
   renderer.appendChild(host, element);
 
+  const observer = new ResizeObserver(() => {
+    renderer.setProperty(element, 'contentHeight', host.clientHeight);
+  });
+  observer.observe(host);
+  renderer.setProperty(element, 'contentHeight', host.clientHeight);
+
   onCleanup(() => {
+    observer.disconnect();
     host.innerHTML = '';
   });
 }
