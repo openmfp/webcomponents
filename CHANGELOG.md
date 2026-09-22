@@ -9,6 +9,14 @@ and [releases](https://github.com/openmfp/webcomponents/releases) for details.
 
 <!-- git-cliff:insert -->
 
+## [1.6.0] - 2026-09-22
+
+### Features
+- Add table error config (#313)- Add SectionConfig.cardsHeight and keep card content inside its tile (#310)- Add MfpCardTemplate UI5 control and refine dashboard edit mode (#309)
+
+### Bug Fixes
+- _(deps)_ Update dependency gridstack to v13.3.0 (#311)
+
 ## [1.5.0] - 2026-09-11
 
 ### Features
