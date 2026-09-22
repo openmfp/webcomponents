@@ -106,7 +106,7 @@ export class MyComponent {
 | `permissions`        | `Record<string, string[]>`        | no       | —             | Per-row permission map keyed by `resource.id`. Passed to every cell's `mfp-resource-field` to evaluate `requirePermission` on each column definition.                                                         |
 | `loading`            | `boolean`                         | no       | `false`       | Shows the table loading indicator and suppresses the empty state while data is loading.                                                                                                                       |
 | `loadingDelay`       | `number`                          | no       | `1000`        | Delay in milliseconds before the loading indicator is displayed.                                                                                                                                              |
-| `error`              | `boolean`                         | no       | `false`       | Replaces rows and the empty state with an unable-to-load message and Retry button.                                                                                                                            |
+| `error`              | `TableErrorConfig \| null`        | no       | `null`        | Replaces rows and the empty state with an error illustrated message. When null or absent the table renders normally. See [`TableErrorConfig`](#tableerrorconfig).                                             |
 
 ### Outputs / Events
 
@@ -423,18 +423,61 @@ Any plain object works as a resource. Three optional fields control table behavi
 
 ---
 
+## `TableErrorConfig`
+
+Controls the content of the error illustrated message shown when `error` is set.
+
+```ts
+interface TableErrorConfig {
+  status?: number; // HTTP status code — 403 switches to the 'UnsuccessfulAuth' illustration
+  title?: string; // Heading text rendered above the error illustration
+  message?: string; // Subtitle text with additional context
+  withRetryButton?: boolean; // When true, a Retry button is shown; clicking it emits the `retry` output
+}
+```
+
+**Examples:**
+
+```ts
+// Generic error — no retry
+error = {};
+
+// Generic error with retry
+error = { withRetryButton: true };
+
+// 403 Forbidden — distinct illustration, no retry
+error = {
+  status: 403,
+  title: 'Access Denied',
+  message: 'You do not have permission to view this resource.',
+};
+
+// Generic error with all fields
+error = {
+  status: 500,
+  title: 'Failed to load data',
+  message: 'An unexpected error occurred. Please try again.',
+  withRetryButton: true,
+};
+```
+
+---
+
 ## Test IDs
 
 All interactive elements carry `data-testid` attributes for reliable E2E targeting. See [docs/test-ids.md](./test-ids.md) for the full naming convention.
 
-| Element               | `data-testid`                               | Notes                                 |
-| --------------------- | ------------------------------------------- | ------------------------------------- |
-| Table element         | `generic-table`                             |                                       |
-| Header cell           | `generic-table-header-{column}`             | `column` = `group.name` or `property` |
-| Row                   | `generic-table-row-{i}`                     | `i` = 0-based index                   |
-| Cell (simple column)  | `generic-table-cell-{i}-{property}`         |                                       |
-| Cell (grouped column) | `generic-table-cell-{i}-{group}`            | `group` = `group.name`                |
-| Group sub-value       | `generic-table-cell-{i}-{group}-{property}` |                                       |
-| No-data state         | `generic-table-view-nodata`                 | Shown when `resources` is empty       |
-| Load-more trigger     | `generic-table-growing`                     | Shown when `hasMore` is true          |
-| Page-size select      | `generic-table-pagination-select`           | Always present                        |
+| Element               | `data-testid`                               | Notes                                      |
+| --------------------- | ------------------------------------------- | ------------------------------------------ |
+| Table element         | `generic-table`                             |                                            |
+| Header cell           | `generic-table-header-{column}`             | `column` = `group.name` or `property`      |
+| Row                   | `generic-table-row-{i}`                     | `i` = 0-based index                        |
+| Cell (simple column)  | `generic-table-cell-{i}-{property}`         |                                            |
+| Cell (grouped column) | `generic-table-cell-{i}-{group}`            | `group` = `group.name`                     |
+| Group sub-value       | `generic-table-cell-{i}-{group}-{property}` |                                            |
+| No-data state         | `generic-table-view-nodata`                 | Shown when `resources` is empty            |
+| Error state           | `generic-table-view-error`                  | Shown when `error` is set                  |
+| Error title           | `generic-table-error-title`                 | Shown when `error.title` is set            |
+| Retry button          | `generic-table-retry`                       | Shown when `error.withRetryButton` is true |
+| Load-more trigger     | `generic-table-growing`                     | Shown when `hasMore` is true               |
+| Page-size select      | `generic-table-pagination-select`           | Always present                             |

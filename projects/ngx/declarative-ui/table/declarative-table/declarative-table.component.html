@@ -23,18 +23,33 @@
     }
   </ui5-table-header-row>
 
-  @if (error()) {
+  @if (error(); as error) {
     <ui5-illustrated-message
       data-testid="generic-table-view-error"
-      name="UnableToLoad"
       slot="noData"
+      [name]="errorIllustration()"
     >
-      <ui5-button
-        data-testid="generic-table-retry"
-        design="Emphasized"
-        (click)="retry.emit()"
-        >Retry</ui5-button
-      >
+      @if (error.title) {
+        <ui5-title
+          data-testid="generic-table-error-title"
+          level="H1"
+          slot="title"
+          >{{ error.title }}</ui5-title
+        >
+      }
+      @if (error.message) {
+        <div slot="subtitle">
+          <p>{{ error.message }}</p>
+        </div>
+      }
+      @if (error.withRetryButton) {
+        <ui5-button
+          data-testid="generic-table-retry"
+          design="Emphasized"
+          (click)="retry.emit()"
+          >Retry</ui5-button
+        >
+      }
     </ui5-illustrated-message>
   }
 

@@ -1,5 +1,6 @@
 import { ResourceFormDialog } from '../dialogs/resource-form-dialog/resource-form-dialog.component';
 import { FormFieldChangeEvent, FormFieldDefinition } from '../form/models';
+import { TableErrorConfig } from '../models';
 import { DeclarativeTable } from '../table';
 import {
   ButtonSettings,
@@ -116,7 +117,7 @@ function setup(
     permissions?: Record<string, string[]>;
     loading?: boolean;
     loadingDelay?: number;
-    error?: boolean;
+    error?: TableErrorConfig | null;
     contentHeight?: number;
   } = {},
 ): { fixture: Fixture; component: Comp } {
@@ -221,18 +222,18 @@ describe('DeclarativeTableCard', () => {
       const { fixture } = setup({
         loading: true,
         loadingDelay: 250,
-        error: false,
+        error: null,
       });
       const table = fixture.debugElement.query(By.directive(DeclarativeTable))
         .componentInstance as DeclarativeTable<GenericResource>;
 
       expect(table.loading()).toBe(true);
       expect(table.loadingDelay()).toBe(250);
-      expect(table.error()).toBe(false);
+      expect(table.error()).toBe(null);
     });
 
     it('forwards retry from mfp-declarative-table', () => {
-      const { fixture, component } = setup({ error: true });
+      const { fixture, component } = setup({ error: {} });
       const table = fixture.debugElement.query(By.directive(DeclarativeTable))
         .componentInstance as DeclarativeTable<GenericResource>;
       const emitted: void[] = [];

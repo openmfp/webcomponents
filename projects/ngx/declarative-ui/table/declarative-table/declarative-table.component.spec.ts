@@ -1,3 +1,4 @@
+import { TableErrorConfig } from '../../models';
 import { ResourceField } from '../../resource-field/resource-field.component';
 import {
   GenericResource,
@@ -27,7 +28,7 @@ function setup(opts: {
   permissions?: Record<string, string[]>;
   loading?: boolean;
   loadingDelay?: number;
-  error?: boolean;
+  error?: TableErrorConfig | null;
 }): { fixture: Fixture; component: Comp } {
   const fixture: Fixture = TestBed.createComponent(
     DeclarativeTable as unknown as typeof DeclarativeTable<GenericResource>,
@@ -195,7 +196,7 @@ describe('DeclarativeTable', () => {
       const { fixture } = setup({
         columns: [{ property: 'name' }],
         resources: [{ id: '1', name: 'Alice' }],
-        error: true,
+        error: {},
       });
 
       expect(el(fixture, 'generic-table-view-error')).not.toBeNull();
@@ -211,7 +212,7 @@ describe('DeclarativeTable', () => {
       const { fixture } = setup({
         columns: [{ property: 'name' }],
         loading: true,
-        error: true,
+        error: {},
       });
       const table = fixture.debugElement.query(By.directive(Table))
         .componentInstance as Table;
@@ -223,7 +224,7 @@ describe('DeclarativeTable', () => {
     it('emits retry when the retry button is clicked', () => {
       const { fixture, component } = setup({
         columns: [{ property: 'name' }],
-        error: true,
+        error: { withRetryButton: true },
       });
       const emitted: void[] = [];
       component.retry.subscribe(() => emitted.push(undefined));
@@ -231,6 +232,78 @@ describe('DeclarativeTable', () => {
       (el(fixture, 'generic-table-retry') as HTMLElement).click();
 
       expect(emitted).toHaveLength(1);
+    });
+
+    it('shows retry button only when withRetryButton is true', () => {
+      const { fixture: withBtn } = setup({
+        columns: [{ property: 'name' }],
+        error: { withRetryButton: true },
+      });
+      expect(el(withBtn, 'generic-table-retry')).not.toBeNull();
+
+      const { fixture: withoutBtn } = setup({
+        columns: [{ property: 'name' }],
+        error: {},
+      });
+      expect(el(withoutBtn, 'generic-table-retry')).toBeNull();
+    });
+
+    it('renders error title when error.title is set', () => {
+      const { fixture } = setup({
+        columns: [{ property: 'name' }],
+        error: { title: 'Something went wrong' },
+      });
+      const titleEl = el(fixture, 'generic-table-error-title');
+      expect(titleEl).not.toBeNull();
+      expect(titleEl?.textContent?.trim()).toBe('Something went wrong');
+    });
+
+    it('does not render error title when error.title is absent', () => {
+      const { fixture } = setup({
+        columns: [{ property: 'name' }],
+        error: {},
+      });
+      expect(el(fixture, 'generic-table-error-title')).toBeNull();
+    });
+
+    it('renders error message when error.message is set', () => {
+      const { fixture } = setup({
+        columns: [{ property: 'name' }],
+        error: { message: 'Failed to fetch data' },
+      });
+      const shadowRoot = root(fixture);
+      expect(shadowRoot.textContent).toContain('Failed to fetch data');
+    });
+
+    it('uses tnt/UnsuccessfulAuth illustration for 403 errors', () => {
+      const { component } = setup({
+        columns: [{ property: 'name' }],
+        error: { status: 403 },
+      });
+      expect(component.errorIllustration()).toBe('tnt/UnsuccessfulAuth');
+    });
+
+    it('uses UnableToLoad illustration for non-403 errors', () => {
+      const { component } = setup({
+        columns: [{ property: 'name' }],
+        error: { status: 500 },
+      });
+      expect(component.errorIllustration()).toBe('UnableToLoad');
+    });
+
+    it('uses UnableToLoad illustration when error has no status', () => {
+      const { component } = setup({
+        columns: [{ property: 'name' }],
+        error: {},
+      });
+      expect(component.errorIllustration()).toBe('UnableToLoad');
+    });
+
+    it('errorIllustration returns UnableToLoad when error is null', () => {
+      const { component } = setup({
+        columns: [{ property: 'name' }],
+      });
+      expect(component.errorIllustration()).toBe('UnableToLoad');
     });
   });
 

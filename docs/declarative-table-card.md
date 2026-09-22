@@ -173,17 +173,17 @@ export class MyComponent {
 
 ### Inputs
 
-| Input             | Type                       | Required | Default | Description                                                                                                                                                                     |
-| ----------------- | -------------------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `resources`       | `T[]`                      | yes      | -       | Data rows passed to the inner table                                                                                                                                             |
-| `config`          | `TableCardConfig`          | yes      | -       | Static table, button, and dialog configuration                                                                                                                                  |
-| `createFormState` | `TableCardFormState`       | no       | `{}`    | Runtime validation and submit state for the create dialog                                                                                                                       |
-| `editFormState`   | `TableCardFormState`       | no       | `{}`    | Runtime validation and submit state for the edit dialog                                                                                                                         |
-| `permissions`     | `Record<string, string[]>` | no       | —       | Per-row permission map keyed by `resource.id`. Threaded through to `mfp-declarative-table` and each `mfp-resource-field` to evaluate `requirePermission` on column definitions. |
-| `loading`         | `boolean`                  | no       | `false` | Passes the current loading state to the inner table.                                                                                                                            |
-| `loadingDelay`    | `number`                   | no       | `1000`  | Delay in milliseconds before the inner table loading indicator is displayed.                                                                                                    |
-| `error`           | `boolean`                  | no       | `false` | Replaces the inner table content with its failure state.                                                                                                                        |
-| `contentHeight`   | `number`                   | no       | —       | Pixel height the container offers the card. Set automatically by the dashboard; leave unset to keep the card content-sized. See [Sizing](#sizing).                              |
+| Input             | Type                       | Required | Default | Description                                                                                                                                                                            |
+| ----------------- | -------------------------- | -------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `resources`       | `T[]`                      | yes      | -       | Data rows passed to the inner table                                                                                                                                                    |
+| `config`          | `TableCardConfig`          | yes      | -       | Static table, button, and dialog configuration                                                                                                                                         |
+| `createFormState` | `TableCardFormState`       | no       | `{}`    | Runtime validation and submit state for the create dialog                                                                                                                              |
+| `editFormState`   | `TableCardFormState`       | no       | `{}`    | Runtime validation and submit state for the edit dialog                                                                                                                                |
+| `permissions`     | `Record<string, string[]>` | no       | —       | Per-row permission map keyed by `resource.id`. Threaded through to `mfp-declarative-table` and each `mfp-resource-field` to evaluate `requirePermission` on column definitions.        |
+| `loading`         | `boolean`                  | no       | `false` | Passes the current loading state to the inner table.                                                                                                                                   |
+| `loadingDelay`    | `number`                   | no       | `1000`  | Delay in milliseconds before the inner table loading indicator is displayed.                                                                                                           |
+| `error`           | `TableErrorConfig \| null` | no       | `null`  | Passes the error config to the inner table. When set, the table shows an error illustrated message instead of rows. See [`TableErrorConfig`](./declarative-table.md#tableerrorconfig). |
+| `contentHeight`   | `number`                   | no       | —       | Pixel height the container offers the card. Set automatically by the dashboard; leave unset to keep the card content-sized. See [Sizing](#sizing).                                     |
 
 ### Outputs / Events
 

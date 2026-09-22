@@ -1,4 +1,8 @@
-import { GenericResource, ResourceFieldButtonClickEvent } from '../../models';
+import {
+  GenericResource,
+  ResourceFieldButtonClickEvent,
+  TableErrorConfig,
+} from '../../models';
 import { ResourceField } from '../../resource-field';
 import { TableFieldDefinition } from '../models';
 import { processGroupFields } from '../utils/proccess-fields';
@@ -20,8 +24,10 @@ import { TableGrowing } from '@fundamental-ngx/ui5-webcomponents/table-growing';
 import { TableHeaderCell } from '@fundamental-ngx/ui5-webcomponents/table-header-cell';
 import { TableHeaderRow } from '@fundamental-ngx/ui5-webcomponents/table-header-row';
 import { TableRow } from '@fundamental-ngx/ui5-webcomponents/table-row';
+import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 import '@ui5/webcomponents-fiori/dist/illustrations/NoData.js';
 import '@ui5/webcomponents-fiori/dist/illustrations/UnableToLoad.js';
+import '@ui5/webcomponents-fiori/dist/illustrations/tnt/UnsuccessfulAuth.js';
 import '@ui5/webcomponents-icons/dist/close-command-field.js';
 import '@ui5/webcomponents-icons/dist/navigation-left-arrow.js';
 import '@ui5/webcomponents-icons/dist/navigation-right-arrow.js';
@@ -41,6 +47,7 @@ import '@ui5/webcomponents-icons/dist/open-command-field.js';
     Select,
     Option,
     TableGrowing,
+    Title,
   ],
   templateUrl: './declarative-table.component.html',
   styleUrl: './declarative-table.component.scss',
@@ -53,7 +60,7 @@ export class DeclarativeTable<T extends GenericResource> {
   permissions = input<Record<string, string[]>>();
   loading = input<boolean>(false);
   loadingDelay = input<number>(1000);
-  error = input<boolean>(false);
+  error = input<TableErrorConfig | null>(null);
 
   totalItemsCount = input<number>();
   paginationLimit = input<number>(5);
@@ -71,6 +78,18 @@ export class DeclarativeTable<T extends GenericResource> {
   readonly paginationLimitChanged = output<number>();
   readonly pageChange = output<number>();
   readonly retry = output<void>();
+
+  errorIllustration = computed(() => {
+    const error = this.error();
+    switch (error?.status) {
+      case 403: {
+        return 'tnt/UnsuccessfulAuth';
+      }
+      default: {
+        return 'UnableToLoad';
+      }
+    }
+  });
 
   columnTrackBy = (column: TableFieldDefinition, index: number) =>
     column.property ?? column.value ?? index;

@@ -1,7 +1,11 @@
 import { DeleteConfirmationDialog } from '../dialogs/delete-confirmation-dialog/delete-confirmation-dialog.component';
 import { ResourceFormDialog } from '../dialogs/resource-form-dialog/resource-form-dialog.component';
 import { FormFieldChangeEvent, FormFieldDefinition } from '../form';
-import { GenericResource, ResourceFieldButtonClickEvent } from '../models';
+import {
+  GenericResource,
+  ResourceFieldButtonClickEvent,
+  TableErrorConfig,
+} from '../models';
 import { DeclarativeTable } from '../table';
 import { getResourceValueByJsonPath } from '../table/utils/resource-field-by-path';
 import { FilterTabs } from './filter-tabs/filter-tabs.component';
@@ -55,7 +59,7 @@ export class DeclarativeTableCard<R extends GenericResource> {
   permissions = input<Record<string, string[]>>();
   loading = input<boolean>(false);
   loadingDelay = input<number>(1000);
-  error = input<boolean>(false);
+  error = input<TableErrorConfig | null>(null);
 
   config = input<TableCardConfig<R> | undefined>(undefined);
   contentHeight = input<number | undefined>(undefined);
