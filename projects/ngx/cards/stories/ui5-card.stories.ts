@@ -1,4 +1,3 @@
-import { ZFLOW_COLUMN_MAX } from '../../declarative-ui/dashboard/constants';
 import {
   AfterViewInit,
   Component,
@@ -15,7 +14,7 @@ import type { Meta, StoryObj } from '@storybook/angular';
 const OPENUI5_BOOTSTRAP_URL =
   'https://sdk.openui5.org/1.142.0/resources/sap-ui-core.js';
 
-const DASHBOARD_COLUMNS = ZFLOW_COLUMN_MAX;
+const DASHBOARD_COLUMNS = 4;
 
 const THEMES = [
   'sap_horizon',
@@ -346,7 +345,7 @@ const meta: Meta<Ui5CardStory> = {
     layout: 'padded',
     docs: {
       description: {
-        component: `OpenUI5 control \`mfp.ui5.card.MfpCardTemplate\` used as a template for SAP UI5 dashboard cards. Width is expressed in dashboard columns (${DASHBOARD_COLUMNS} in zFlow). The card follows the active SAP theme — switch it with the \`theme\` control.`,
+        component: `OpenUI5 control \`mfp.ui5.card.MfpCardTemplate\` used as a template for SAP UI5 dashboard cards. Width is expressed in columns of the surrounding grid (${DASHBOARD_COLUMNS} in these stories). The card follows the active SAP theme — switch it with the \`theme\` control.`,
       },
     },
   },
@@ -455,6 +454,34 @@ export const Widths: Story = {
         [theme]="theme"
         [width]="4"
       />
+    `,
+  }),
+};
+
+export const VerySmall: Story = {
+  args: {
+    ...AllFeatures.args,
+    badge: 'Action needed: 3 certificates expire this week',
+  },
+  render: (args) => ({
+    props: args,
+    template: `
+      <div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 1rem">
+        @for (width of ['12.5rem', '16rem', '22rem']; track width) {
+          <div [style.width]="'calc(' + width + ' + 2rem)'">
+            <mfp-ui5-card-story
+              height="300px"
+              [actions]="actions"
+              [badge]="badge"
+              [badgeState]="badgeState"
+              [messageStrip]="messageStrip"
+              [name]="'Card width ' + width"
+              [showSearch]="showSearch"
+              [theme]="theme"
+            />
+          </div>
+        }
+      </div>
     `,
   }),
 };

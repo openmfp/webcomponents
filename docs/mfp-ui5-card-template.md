@@ -107,26 +107,26 @@ sap.ui.require(
 
 ### Properties
 
-| Property            | Type                     | Default   | Description                                                                                        |
-| ------------------- | ------------------------ | --------- | -------------------------------------------------------------------------------------------------- |
-| `name`              | `string`                 | `""`      | **Mandatory.** Card title. An error is logged when it is empty.                                    |
-| `background`        | `solid` \| `transparent` | `solid`   | `solid` renders the tile background and shadow; `transparent` renders no background and no shadow. |
-| `height`            | `sap.ui.core.CSSSize`    | `400px`   | Card height. Use `100%` to fill a parent with a definite height (for example a dashboard cell).    |
-| `width`             | `int`                    | `4`       | Width in dashboard columns.                                                                        |
-| `minWidth`          | `int`                    | —         | Optional lower bound for `width`, in dashboard columns.                                            |
-| `maxWidth`          | `int`                    | —         | Optional upper bound for `width`, in dashboard columns.                                            |
-| `badge`             | `string`                 | `""`      | Optional badge text shown on the top-right border. Hidden when empty.                              |
-| `badgeState`        | `sap.ui.core.ValueState` | `Warning` | Badge colour.                                                                                      |
-| `showSearch`        | `boolean`                | `false`   | Shows the search field in the header.                                                              |
-| `searchPlaceholder` | `string`                 | `""`      | Search placeholder. When empty, the translated UI5 default ("Search") is used.                     |
+| Property            | Type                     | Default   | Description                                                                                                                                                             |
+| ------------------- | ------------------------ | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`              | `string`                 | `""`      | **Mandatory.** Card title. An error is logged when it is empty.                                                                                                         |
+| `background`        | `solid` \| `transparent` | `solid`   | `solid` renders the tile background and shadow; `transparent` renders no background and no shadow.                                                                      |
+| `height`            | `sap.ui.core.CSSSize`    | `400px`   | Card height. Use `100%` to fill a parent with a definite height (for example a dashboard cell).                                                                         |
+| `width`             | `int`                    | `4`       | Width in dashboard columns.                                                                                                                                             |
+| `minWidth`          | `int`                    | —         | Optional lower bound for `width`, in dashboard columns.                                                                                                                 |
+| `maxWidth`          | `int`                    | —         | Optional upper bound for `width`, in dashboard columns.                                                                                                                 |
+| `badge`             | `string`                 | `""`      | Optional badge text shown on the top-right border. Hidden when empty. At most half the card's width; longer text ends with "…" and the full text is shown as a tooltip. |
+| `badgeState`        | `sap.ui.core.ValueState` | `Warning` | Badge colour.                                                                                                                                                           |
+| `showSearch`        | `boolean`                | `false`   | Shows the search field in the header.                                                                                                                                   |
+| `searchPlaceholder` | `string`                 | `""`      | Search placeholder. When empty, the translated UI5 default ("Search") is used.                                                                                          |
 
 ### Aggregations
 
-| Aggregation    | Type                  | Multiple | Description                                                                                          |
-| -------------- | --------------------- | -------- | ---------------------------------------------------------------------------------------------------- |
-| `content`      | `sap.ui.core.Control` | yes      | **Default aggregation.** The card body. It fills the remaining height and scrolls when it overflows. |
-| `messageStrip` | `sap.m.MessageStrip`  | no       | Optional message strip below the header. Its space is removed when the strip is closed or hidden.    |
-| `actions`      | `sap.ui.core.Item`    | yes      | Optional overflow actions. The "…" button is shown only when at least one action exists.             |
+| Aggregation    | Type                  | Multiple | Description                                                                                                                                                                                                                 |
+| -------------- | --------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `content`      | `sap.ui.core.Control` | yes      | **Default aggregation.** The card body. It fills the remaining height and scrolls when it overflows; the space for the vertical scrollbar is always reserved, so the body's width does not change when a scrollbar appears. |
+| `messageStrip` | `sap.m.MessageStrip`  | no       | Optional message strip below the header. Its space is removed when the strip is closed or hidden.                                                                                                                           |
+| `actions`      | `sap.ui.core.Item`    | yes      | Optional overflow actions. The "…" button is shown only when at least one action exists.                                                                                                                                    |
 
 ### Events
 

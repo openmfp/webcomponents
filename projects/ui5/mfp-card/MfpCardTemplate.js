@@ -165,7 +165,9 @@ sap.ui.define(
 
       setBadge(badge) {
         this.setProperty('badge', badge);
-        this.getAggregation('_badge').setText(this.getBadge());
+        this.getAggregation('_badge')
+          .setText(this.getBadge())
+          .setTooltip(this.getBadge());
         return this;
       },
 

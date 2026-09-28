@@ -23,19 +23,38 @@
   position: absolute;
   top: 0;
   right: 1rem;
+  max-width: 50%;
   transform: translateY(-50%);
   z-index: 1;
 }
 
+.mfpUi5CardBadge .sapMObjStatus {
+  display: flex;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.mfpUi5CardBadge .sapMObjStatusWrapper {
+  min-width: 0;
+}
+
+.mfpUi5CardBadge .sapMObjStatusText {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .mfpUi5CardHeader {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
   padding: 1rem;
 }
 
 .mfpUi5CardTitle {
-  flex: 1 1 0;
+  flex: 1 1 7rem;
   min-width: 0;
 }
 
@@ -45,12 +64,10 @@
   align-items: center;
   justify-content: flex-end;
   gap: 0.5rem;
-  min-width: 0;
 }
 
 .mfpUi5CardSearch {
   flex: 1 1 auto;
-  min-width: 0;
 }
 
 .mfpUi5CardMessageStrip {
@@ -76,4 +93,5 @@
 .mfpUi5CardContentScroll {
   height: 100%;
   overflow: auto;
+  scrollbar-gutter: stable;
 }
