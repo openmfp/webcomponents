@@ -1,5 +1,5 @@
 import { resetDashboardCardRegistry } from '../card/utils/dashboard-card-registry';
-import { DASHBOARD_CARD_DRAG_ORIGIN_CLASS, XL_PAGE } from '../constants';
+import { DASHBOARD_CARD_DRAG_ORIGIN_CLASS } from '../constants';
 import { EN_DEFAULTS } from '../i18n';
 import { CardConfig, SectionConfig } from '../models';
 import { Dashboard } from './dashboard.component';
@@ -561,7 +561,7 @@ describe('Dashboard', () => {
 
     fixture.componentRef.setInput('config', {
       title: 'T',
-      zFlow: { cardHeight: 40 },
+      zFlow: { cardHeight: 40, defaultCardSize: 'm' },
     });
     component.cards.set([{ id: 'card-1', component: 'mfp-a' }]);
     (component as unknown as { gridStack: () => unknown }).gridStack = () => ({
@@ -599,7 +599,7 @@ describe('Dashboard', () => {
 
     fixture.componentRef.setInput('config', {
       title: 'T',
-      zFlow: { cardHeight: 40 },
+      zFlow: { cardHeight: 40, defaultCardSize: 'm' },
     });
     component.cards.set([{ id: 'card-1', component: 'mfp-a' }]);
     (component as unknown as { gridStack: () => unknown }).gridStack = () => ({
@@ -620,7 +620,7 @@ describe('Dashboard', () => {
     const { fixture, component } = setup();
     fixture.componentRef.setInput('config', {
       title: 'T',
-      zFlow: { cardHeight: 40 },
+      zFlow: { cardHeight: 40, defaultCardSize: 'm' },
     });
     const gridEl = document.createElement('div');
     const gridItemEl = document.createElement('div');
@@ -656,7 +656,7 @@ describe('Dashboard', () => {
     const { fixture, component } = setup();
     fixture.componentRef.setInput('config', {
       title: 'T',
-      zFlow: { cardHeight: 40 },
+      zFlow: { cardHeight: 40, defaultCardSize: 'm' },
     });
     const gridEl = document.createElement('div');
     const gridItemEl = document.createElement('div');
@@ -724,7 +724,7 @@ describe('Dashboard', () => {
     it('onDragStart sets dragOriginStyle and sets dragOriginVisible to true (when renderOriginPosition is on)', () => {
       const { fixture, component } = setup();
       fixture.componentRef.setInput('config', {
-        zFlow: { cardHeight: 30 },
+        zFlow: { cardHeight: 30, defaultCardSize: 'm' },
       });
       fixture.detectChanges();
 
@@ -1474,7 +1474,7 @@ describe('Dashboard', () => {
 
       fixture.componentRef.setInput('config', {
         editable: true,
-        zFlow: { cardHeight: 30 },
+        zFlow: { cardHeight: 30, defaultCardSize: 'm' },
       });
       component.cards.set([
         { id: 'card-1', component: 'mfp-a', label: 'Operations' },
@@ -1526,7 +1526,9 @@ describe('Dashboard', () => {
       const preventDefault = vi.spyOn(event, 'preventDefault');
       const stopPropagation = vi.spyOn(event, 'stopPropagation');
 
-      fixture.componentRef.setInput('config', { zFlow: { cardHeight: 30 } });
+      fixture.componentRef.setInput('config', {
+        zFlow: { cardHeight: 30, defaultCardSize: 'm' },
+      });
       component.editMode.set(true);
       (
         component as unknown as {
@@ -1551,14 +1553,14 @@ describe('Dashboard', () => {
 
       fixture.componentRef.setInput('config', {
         title: 'T',
-        zFlow: { cardHeight: 30 },
+        zFlow: { cardHeight: 30, defaultCardSize: 'm' },
       });
       fixture.detectChanges();
 
       const profile = component['engineProfile']();
       expect(profile.engineClass).toBe(ZflowGridStackEngine);
       expect(profile.fixedCardHeight).toBe(true);
-      expect(profile.xlWidthSwap).toBe(true);
+      expect(profile.columnMax).toBe(16);
       expect(profile.sectionColumns).toEqual([1, 2, 3, 3]);
     });
 
@@ -1571,7 +1573,7 @@ describe('Dashboard', () => {
       const profile = component['engineProfile']();
       expect(profile.engineClass).toBeUndefined();
       expect(profile.fixedCardHeight).toBe(false);
-      expect(profile.xlWidthSwap).toBe(false);
+      expect(profile.columnMax).toBeUndefined();
       expect(profile.sectionColumns).toEqual([1, 8, 12, 14]);
     });
 
@@ -1580,7 +1582,7 @@ describe('Dashboard', () => {
 
       fixture.componentRef.setInput('config', {
         title: 'T',
-        zFlow: { cardHeight: 30 },
+        zFlow: { cardHeight: 30, defaultCardSize: 'm' },
       });
       fixture.detectChanges();
 
@@ -1596,18 +1598,24 @@ describe('Dashboard', () => {
       expect(component['gridStackEngine']()).toBeUndefined();
     });
 
-    it('gridBreakpoints() column counts are [4,4,4,1] under zFlow', () => {
+    it('gridBreakpoints() are [12,8,4] widest first with a 16-column max under zFlow', () => {
       const { fixture, component } = setup();
 
       fixture.componentRef.setInput('config', {
         title: 'T',
-        zFlow: { cardHeight: 30 },
+        zFlow: { cardHeight: 30, defaultCardSize: 'm' },
       });
       fixture.detectChanges();
 
-      expect(component['gridBreakpoints']().map((bp) => bp.c)).toEqual([
-        4, 4, 4, 1,
+      expect(component['gridBreakpoints']().map((bp) => [bp.w, bp.c])).toEqual([
+        [1439, 12],
+        [1023, 8],
+        [599, 4],
       ]);
+      expect(component['gridOptions']().columnOpts?.columnMax).toBe(16);
+      expect(component['gridOptions']().columnOpts?.breakpointForWindow).toBe(
+        true,
+      );
     });
 
     it('gridBreakpoints() column counts are [14,12,8,1] by default', () => {
@@ -1619,6 +1627,9 @@ describe('Dashboard', () => {
       expect(component['gridBreakpoints']().map((bp) => bp.c)).toEqual([
         14, 12, 8, 1,
       ]);
+      expect(component['gridOptions']().columnOpts?.breakpointForWindow).toBe(
+        true,
+      );
     });
 
     it('columnVars() reflects the zFlow column layout', () => {
@@ -1626,7 +1637,7 @@ describe('Dashboard', () => {
 
       fixture.componentRef.setInput('config', {
         title: 'T',
-        zFlow: { cardHeight: 30 },
+        zFlow: { cardHeight: 30, defaultCardSize: 'm' },
       });
       fixture.detectChanges();
 
@@ -1657,7 +1668,7 @@ describe('Dashboard', () => {
 
       fixture.componentRef.setInput('config', {
         title: 'T',
-        zFlow: { cardHeight: 30 },
+        zFlow: { cardHeight: 30, defaultCardSize: 'm' },
       });
       component.cards.set([
         { id: 'loose-1', component: 'mfp-a', h: 50, maxH: 55 },
@@ -1689,7 +1700,7 @@ describe('Dashboard', () => {
 
       fixture.componentRef.setInput('config', {
         title: 'T',
-        zFlow: { cardHeight: 30 },
+        zFlow: { cardHeight: 30, defaultCardSize: 'm' },
       });
       component.cards.set([
         {
@@ -1712,104 +1723,248 @@ describe('Dashboard', () => {
       });
     });
 
-    it('xlWidthSwap is false by default and true under zFlow', () => {
+    it('looseCards() resolves size from defaultCardSize and derives w from the page columns under zFlow', () => {
       const { fixture, component } = setup();
-
-      fixture.componentRef.setInput('config', { title: 'T' });
-      fixture.detectChanges();
-      expect(component['engineProfile']().xlWidthSwap).toBe(false);
 
       fixture.componentRef.setInput('config', {
         title: 'T',
-        zFlow: { cardHeight: 30 },
+        zFlow: { cardHeight: 30, defaultCardSize: 'm' },
       });
+      component.cards.set([
+        { id: 'default', component: 'mfp-a', w: 2, minW: 1, maxW: 3 },
+        { id: 'small', component: 'mfp-b', size: 's' },
+        { id: 'wide', component: 'mfp-c', size: 'xl' },
+      ]);
+      component['zFlowColumns'].set(16);
       fixture.detectChanges();
-      expect(component['engineProfile']().xlWidthSwap).toBe(true);
+
+      const loose = component['looseCards']();
+      expect(loose.map(({ id, size, w }) => ({ id, size, w }))).toEqual([
+        { id: 'default', size: 'm', w: 8 },
+        { id: 'small', size: 's', w: 4 },
+        { id: 'wide', size: 'xl', w: 12 },
+      ]);
+      expect(loose[0]).not.toHaveProperty('minW');
+      expect(loose[0]).not.toHaveProperty('maxW');
+    });
+
+    it('looseCards() omits w until the engine reports its columns', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', {
+        title: 'T',
+        zFlow: { cardHeight: 30, defaultCardSize: 's' },
+      });
+      component.cards.set([{ id: 'c1', component: 'mfp-a', w: 2 }]);
+      fixture.detectChanges();
+
+      const [card] = component['looseCards']();
+      expect(card).toMatchObject({ id: 'c1', size: 's' });
+      expect(card).not.toHaveProperty('w');
+    });
+
+    it('looseCards() recomputes w when the page columns change', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', {
+        title: 'T',
+        zFlow: { cardHeight: 30, defaultCardSize: 's' },
+      });
+      component.cards.set([{ id: 'c1', component: 'mfp-a' }]);
+      component['zFlowColumns'].set(12);
+      fixture.detectChanges();
+      expect(component['looseCards']()[0].w).toBe(3);
+
+      component['zFlowColumns'].set(8);
+      expect(component['looseCards']()[0].w).toBe(2);
     });
   });
 
-  describe('XL width swap (changeCardSettingsForXlPage)', () => {
-    function stubEmptyGrid(component: Dashboard): void {
+  describe('zFlow card sizes', () => {
+    function zFlowSetup(defaultCardSize: 's' | 'm' | 'xl' = 'm') {
+      const { fixture, component } = setup();
+      const engine = new ZflowGridStackEngine({ column: 16, nodes: [] });
+      fixture.componentRef.setInput('config', {
+        title: 'T',
+        zFlow: { cardHeight: 30, defaultCardSize },
+      });
       (component as unknown as { gridStack: () => unknown }).gridStack =
-        () => ({ gridstackItems: { toArray: () => [] } });
+        () => ({
+          grid: { engine },
+          gridstackItems: {
+            toArray: () => engine.nodes.map((options) => ({ options })),
+          },
+        });
+      return { fixture, component, engine };
     }
 
-    function swap(component: Dashboard, width: number): void {
-      (
-        component as unknown as {
-          changeCardSettingsForXlPage: (w: number) => void;
-        }
-      ).changeCardSettingsForXlPage(width);
-    }
+    it('tracks the engine column count and exposes the page size', () => {
+      const { fixture, component, engine } = zFlowSetup();
+      component['connectZFlowEngine']();
+      fixture.detectChanges();
 
-    it('does nothing under the default profile (xlWidthSwap is false)', () => {
+      expect(component['pageSize']()).toBe('xl');
+      expect(
+        root(fixture)
+          .querySelector('[data-testid="dashboard"]')
+          ?.getAttribute('data-page-size'),
+      ).toBe('xl');
+
+      engine.column = 8;
+      engine.columnChanged(16, 8);
+      fixture.detectChanges();
+
+      expect(component['pageSize']()).toBe('m');
+      expect(
+        root(fixture)
+          .querySelector('[data-testid="dashboard"]')
+          ?.getAttribute('data-page-size'),
+      ).toBe('m');
+      expect(
+        root(fixture)
+          .querySelector('[data-testid="dashboard"]')
+          ?.getAttribute('data-page-columns'),
+      ).toBe('8');
+    });
+
+    it('has no page size outside zFlow', () => {
       const { fixture, component } = setup();
       fixture.componentRef.setInput('config', { title: 'T' });
-      component.cards.set([{ id: 'c1', component: 'mfp-a', w: 4, maxW: 4 }]);
-      stubEmptyGrid(component);
       fixture.detectChanges();
 
-      // Dropping below the XL page would swap 4→? only under zFlow.
-      swap(component, 1000);
-
-      expect(component.cards()[0]).toMatchObject({ w: 4, maxW: 4 });
+      expect(component['pageSize']()).toBeNull();
+      expect(
+        root(fixture)
+          .querySelector('[data-testid="dashboard"]')
+          ?.hasAttribute('data-page-size'),
+      ).toBe(false);
+      expect(
+        root(fixture)
+          .querySelector('[data-testid="dashboard"]')
+          ?.hasAttribute('data-page-columns'),
+      ).toBe(false);
     });
 
-    it('narrows w/maxW from 4 to 3 when growing to an XL-width page under zFlow', () => {
-      const { fixture, component } = setup();
-      fixture.componentRef.setInput('config', {
-        title: 'T',
-        zFlow: { cardHeight: 30 },
-      });
+    it('exposes the resolved card size on each loose grid item', () => {
+      const { fixture, component } = zFlowSetup('s');
       component.cards.set([
-        { id: 'c1', component: 'mfp-a', w: 4, maxW: 4 },
-        { id: 'c2', component: 'mfp-b', w: 2, maxW: 2 },
+        { id: 'c1', component: 'mfp-a' },
+        { id: 'c2', component: 'mfp-b', size: 'xl' },
       ]);
-      stubEmptyGrid(component);
       fixture.detectChanges();
 
-      // Start on a sub-XL page, then grow to XL.
-      swap(component, 1000);
-      swap(component, XL_PAGE);
-
-      expect(component.cards()[0]).toMatchObject({ w: 3, maxW: 3 });
-      // Cards that are not exactly 4 wide are left untouched.
-      expect(component.cards()[1]).toMatchObject({ w: 2, maxW: 2 });
+      const sizes = Array.from(
+        root(fixture).querySelectorAll('[data-card-size]'),
+      ).map((el) => el.getAttribute('data-card-size'));
+      expect(sizes).toEqual(['s', 'xl']);
     });
 
-    it('widens w/maxW from 3 to 4 when shrinking below the XL page under zFlow', () => {
-      const { fixture, component } = setup();
-      fixture.componentRef.setInput('config', {
-        title: 'T',
-        zFlow: { cardHeight: 30 },
-      });
-      component.cards.set([{ id: 'c1', component: 'mfp-a', w: 3, maxW: 3 }]);
-      stubEmptyGrid(component);
+    it('exposes the column span of each loose grid item', () => {
+      const { fixture, component, engine } = zFlowSetup('s');
+      component.cards.set([
+        { id: 'c1', component: 'mfp-a' },
+        { id: 'c2', component: 'mfp-b', size: 'm' },
+        { id: 'c3', component: 'mfp-c', size: 'xl' },
+      ]);
+      fixture.detectChanges();
+      engine.column = 12;
+      engine.columnChanged(16, 12);
       fixture.detectChanges();
 
-      // The component starts assuming an XL page, so shrinking triggers 3→4.
-      swap(component, XL_PAGE - 1);
-
-      expect(component.cards()[0]).toMatchObject({ w: 4, maxW: 4 });
+      const spans = Array.from(
+        root(fixture).querySelectorAll('[data-card-columns]'),
+      ).map((el) => el.getAttribute('data-card-columns'));
+      expect(spans).toEqual(['3', '6', '12']);
     });
 
-    it('does not re-run the swap while staying within the same page bracket', () => {
+    it('does not expose card sizes outside zFlow', () => {
       const { fixture, component } = setup();
-      fixture.componentRef.setInput('config', {
-        title: 'T',
-        zFlow: { cardHeight: 30 },
-      });
-      // A card already at 3 that a second XL notification must not touch.
-      component.cards.set([{ id: 'c1', component: 'mfp-a', w: 3, maxW: 3 }]);
-      stubEmptyGrid(component);
+      fixture.componentRef.setInput('config', { title: 'T' });
+      component.cards.set([{ id: 'c1', component: 'mfp-a', size: 'xl' }]);
       fixture.detectChanges();
 
-      // Two XL-width notifications in a row: the guard keeps isXLPage true, so
-      // the 3→4 widening branch never runs and the card stays at 3.
-      swap(component, XL_PAGE);
-      swap(component, XL_PAGE + 200);
+      expect(root(fixture).querySelector('[data-card-size]')).toBeNull();
+      expect(root(fixture).querySelector('[data-card-columns]')).toBeNull();
+    });
 
-      expect(component.cards()[0]).toMatchObject({ w: 3, maxW: 3 });
+    it('gives added loose cards without a size the defaultCardSize', () => {
+      const { component } = zFlowSetup('s');
+
+      component.onCardsEdited({
+        added: [
+          { id: 'plain', component: 'mfp-a' },
+          { id: 'sized', component: 'mfp-b', size: 'xl' },
+          { id: 'in-section', component: 'mfp-c', sectionId: 'alpha' },
+        ],
+        removed: [],
+      });
+
+      expect(component.cards()).toEqual([
+        { id: 'plain', component: 'mfp-a', size: 's' },
+        { id: 'sized', component: 'mfp-b', size: 'xl' },
+        { id: 'in-section', component: 'mfp-c', sectionId: 'alpha' },
+      ]);
+    });
+
+    it('writes the size a card snapped to back into the card config', () => {
+      const { component, engine } = zFlowSetup('m');
+      component.cards.set([
+        { id: 'c1', component: 'mfp-a' },
+        { id: 'c2', component: 'mfp-b', size: 's' },
+      ]);
+      engine.nodes = [
+        { id: 'c1', x: 0, y: 0, w: 12, h: 30, size: 'xl' },
+        { id: 'c2', x: 12, y: 0, w: 4, h: 30, size: 's' },
+      ] as ZFlowGridStackNode[];
+
+      component.onGridChange();
+
+      expect(component.cards()).toEqual([
+        { id: 'c1', component: 'mfp-a', size: 'xl' },
+        { id: 'c2', component: 'mfp-b', size: 's' },
+      ]);
+    });
+
+    it('leaves the cards untouched when no card changed size', () => {
+      const { component, engine } = zFlowSetup('m');
+      const cards: CardConfig[] = [{ id: 'c1', component: 'mfp-a' }];
+      component.cards.set(cards);
+      engine.nodes = [
+        { id: 'c1', x: 0, y: 0, w: 8, h: 30, size: 'm' },
+      ] as ZFlowGridStackNode[];
+
+      component.onGridChange();
+
+      expect(component.cards()).toBe(cards);
+    });
+
+    it('saves the size of every loose card', () => {
+      const { fixture, component, engine } = zFlowSetup('m');
+      component.cards.set([{ id: 'c1', component: 'mfp-a' }]);
+      fixture.detectChanges();
+      component.enterEditMode();
+      engine.nodes = [
+        { id: 'c1', x: 0, y: 0, w: 8, h: 30, size: 'm' },
+      ] as ZFlowGridStackNode[];
+      const saved = vi.fn();
+      component.saved.subscribe(saved);
+
+      component.saveEdit();
+
+      expect(saved).toHaveBeenCalledWith({
+        sections: [],
+        cards: [
+          {
+            id: 'c1',
+            component: 'mfp-a',
+            x: 0,
+            y: 0,
+            w: 8,
+            h: 30,
+            size: 'm',
+          },
+        ],
+      });
     });
   });
 

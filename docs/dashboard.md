@@ -78,7 +78,7 @@ These custom properties form the dashboard's public styling contract. Set them o
 | `--row-gap`                                   | `0px`                          | Vertical gap between cards in a section grid.                                                                                                                                             |
 | `--mfp-dashboard-background`                  | `none`                         | Background image used when `config.backgroundImageUrl` is omitted — see [`backgroundImageUrl` — dashboard background image](#backgroundimageurl--dashboard-background-image).             |
 | `--mfp-dashboard-empty-image`                 | SAP `NoApplications` TNT scene | Artwork shown by the [empty state](#empty-state). Overriding it swaps the illustration from CSS alone.                                                                                    |
-| `--dashboard-cols-sm` / `-md` / `-lg` / `-xl` | `1` / `8` / `12` / `14`        | Column-track counts at each responsive breakpoint (driven by container queries).                                                                                                          |
+| `--dashboard-cols-sm` / `-md` / `-lg` / `-xl` | `1` / `8` / `12` / `14`        | Column-track counts at each responsive breakpoint (driven by media queries on the viewport width).                                                                                        |
 | `--cols`                                      | _unset_                        | Per-section column-count override. Set through `SectionConfig`; overrides the responsive `--dashboard-cols-*` for that section.                                                           |
 
 `--mfp_cardContainerPadding`, `--mfp_cardBorder`, `--row-height`, `--column-gap`, `--row-gap`, `--mfp-dashboard-background`, and `--mfp-dashboard-empty-image` are the intended consumer knobs. The `--dashboard-cols-*` variables are normally set at runtime by the active layout engine profile — override them only when building a custom layout. Other custom properties seen in the markup (e.g. `--gs-item-margin-top`, `--Container-Spacing-Small`) are internal implementation details and are **not** part of this contract.
@@ -735,6 +735,7 @@ interface DashboardConfig {
   editButtonFirst?: boolean;
   zFlow?: {
     cardHeight: number;
+    defaultCardSize: 's' | 'm' | 'xl';
   };
 }
 ```
@@ -784,7 +785,7 @@ html.sapUiTheme-sap_horizon_hcb #my-dashboard {
 
 #### `zFlow` — reflow layout mode
 
-Providing `zFlow` switches the loose-card grid from the default free-placement engine to the **z-flow engine**. It changes two things fundamentally: how cards are ordered, and how they can be resized.
+Providing `zFlow` switches the loose-card grid from the default free-placement engine to the **z-flow engine**. It changes two things fundamentally: how cards are ordered, and how they are sized.
 
 **Keyboard navigation.** Keyboard navigation is available only when `zFlow` is configured and the dashboard is in edit mode. The default GridStack engine does **not** support dashboard keyboard navigation. Only loose cards participate; section cards are not keyboard-navigable.
 
@@ -792,7 +793,7 @@ In edit mode, focus stays on the GridStack card item rather than moving into the
 
 | Shortcut                                   | Action                                                                           |
 | ------------------------------------------ | -------------------------------------------------------------------------------- |
-| `Shift + ArrowRight` / `Shift + ArrowLeft` | Grow / shrink the card by one z-flow width step.                                 |
+| `Shift + ArrowRight` / `Shift + ArrowLeft` | Grow / shrink the card to the next / previous card size available on the page.   |
 | `Ctrl + ArrowLeft` / `Ctrl + ArrowRight`   | Move the card left / right within the z-flow order.                              |
 | `Ctrl + ArrowUp` / `Ctrl + ArrowDown`      | Move the card to the adjacent row while preserving the closest column.           |
 | `Ctrl + Home` / `Ctrl + End`               | Move the card to the start / end of its current row.                             |
@@ -817,21 +818,46 @@ before            after
 [D] [E] [F]       [F] [D] [E]
 ```
 
-**Snapped (stepped) resize.** Instead of allowing any column count, the z-flow engine snaps every resize to three fixed fractions of the dashboard width — the drag handle jumps between them rather than moving pixel by pixel:
+**Page sizes and columns.** The z-flow grid picks its column count from the width of the whole page (the viewport, the same width CSS media queries use), not from the width of the dashboard itself:
 
-| Card Size | Width | Fraction of the row                                  |
-| --------- | ----- | ---------------------------------------------------- |
-| S         | 1     | ¼                                                    |
-| M         | 2     | ½                                                    |
-| XL        | 3     | ¾ on XL Page (min-width: 1440) / full-width below XL |
+| Page size | Page width     | Columns |
+| --------- | -------------- | ------- |
+| S         | 0 – 599 px     | 4       |
+| M         | 600 – 1023 px  | 8       |
+| L         | 1024 – 1439 px | 12      |
+| XL        | ≥ 1440 px      | 16      |
 
-The "full" step is screen-width-dependent: on XL-width pages (≥ 1440 px) a full card fills **3 of 4** columns of the row (¾), and below that it fills **4 of 4** (full-width) so it always fills the row. Cards already sized to the old full-width value are re-snapped automatically when the viewport crosses the 1440 px boundary.
+**Card sizes.** A loose card is sized by [`CardConfig.size`](#cardconfig) — `'s'`, `'m'` or `'xl'` — not by `w`. The size maps to a column span per page size:
+
+| Card size | Page S | Page M | Page L | Page XL |
+| --------- | ------ | ------ | ------ | ------- |
+| `s`       | 4      | 2      | 3      | 4       |
+| `m`       | 4      | 4      | 6      | 8       |
+| `xl`      | 4      | 8      | 12     | 12      |
+
+When the page size changes, every loose card takes the span of its size on the new page and the z-flow order is re-packed, so a card keeps its size across page sizes. A loose card without a `size` gets `zFlow.defaultCardSize` — both when the dashboard renders it and when it is added through the Edit Cards dialog, where the default is written into its config. `w`, `minW` and `maxW` are ignored for loose cards in z-flow.
+
+**Snapped resize.** Resizing a card in edit mode — with the resize handle or with `Shift + ArrowRight` / `Shift + ArrowLeft` — snaps only to the spans of the three card sizes on the current page. The card cannot grow past the right edge of the grid, and on page S, where every size spans all 4 columns, it cannot be resized at all. After a resize, the card's `size` in the `cards` model is set to the size it snapped to, and `saveEdit()` reports `size` for every loose card in the `saved` payload. Section cards are not affected by `size`.
+
+**Current sizes in the DOM.** In z-flow the dashboard exposes the active sizes as data attributes, so a card can read them from its own DOM ancestors:
+
+| Attribute           | Element                                      | Values                                 |
+| ------------------- | -------------------------------------------- | -------------------------------------- |
+| `data-page-size`    | `.mfp-dashboard` (`data-testid="dashboard"`) | `s`, `m`, `l`, `xl`                    |
+| `data-page-columns` | `.mfp-dashboard` (`data-testid="dashboard"`) | column count of the page: 4, 8, 12, 16 |
+| `data-card-size`    | the GridStack item of every loose card       | `s`, `m`, `xl`                         |
+| `data-card-columns` | the GridStack item of every loose card       | column span of the card on the page    |
+
+For example, `element.closest('[data-card-size]')?.getAttribute('data-card-size')`. All four attributes are updated in place when the page size changes or the card is resized.
 
 **Fixed card height.** Every loose card is forced to a fixed height — `cardHeight` sets `h`, `maxH`, and `minH` on each loose card (section cards keep their own heights; to unify those, use [`SectionConfig.cardsHeight`](#cardsheight--one-height-for-every-card-in-the-section)).
 
 ```ts
 const config: DashboardConfig = {
-  zFlow: { cardHeight: 30 }, // each loose card is 30 rows (300 px) tall
+  zFlow: {
+    cardHeight: 30, // each loose card is 30 rows (300 px) tall
+    defaultCardSize: 'm', // loose cards without a `size` are medium
+  },
 };
 ```
 
@@ -992,6 +1018,7 @@ interface CardConfig {
   minH?: number;
   minW?: number;
   sectionId?: string;
+  size?: 's' | 'm' | 'xl'; // z-flow loose cards only, see zFlow
   component: string;
   type?: 'wc' | 'angular' | 'sap-ui';
   componentInputs?: Record<string, unknown>;

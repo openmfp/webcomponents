@@ -1,9 +1,11 @@
+import type { CardSize } from '../../../models';
 import type { CardMoveCommand } from '../keyboard/keyboard.types';
 import type { GridStackNode } from 'gridstack';
 import type { GridStackEngine } from 'gridstack/dist/gridstack-engine';
 
 export type ZFlowGridStackNode = GridStackNode & {
   zFlowOrder?: number;
+  size?: CardSize;
 };
 
 type NotifyableGridStackEngine = GridStackEngine & {

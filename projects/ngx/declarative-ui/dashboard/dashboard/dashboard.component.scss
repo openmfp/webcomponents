@@ -40,13 +40,6 @@ mfp-wc-dashboard {
 
 .mfp-dashboard {
   padding: calc(var(--sapShell_Space_XL, 3rem) - 10px);
-  // Acts as the inline-size query container for everything below. The
-  // `.mfp-sections-container` grid then reacts to *this element's* width
-  // instead of the viewport, which matches Gridstack (whose breakpoints also
-  // measure the grid element by default — see DashboardConfig.allowedWidths
-  // discussion / GridStackOptions.columnOpts.breakpointForWindow).
-  container-type: inline-size;
-  container-name: mfp-dashboard;
 }
 
 .mfp-dashboard.edit {

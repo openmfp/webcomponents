@@ -8,6 +8,14 @@ export const CARD_TYPES = {
 
 export type CardsType = (typeof CARD_TYPES)[keyof typeof CARD_TYPES];
 
+export const CARD_SIZES = {
+  S: 's',
+  M: 'm',
+  XL: 'xl',
+} as const;
+
+export type CardSize = (typeof CARD_SIZES)[keyof typeof CARD_SIZES];
+
 /** Configuration for a single card placed in the dashboard grid or a section. */
 export interface CardConfig {
   /** Unique identifier for this card. Used as a stable key for position persistence. */
@@ -46,6 +54,7 @@ export interface CardConfig {
   componentInputs?: Record<string, unknown>;
   /** Human-readable label shown in the "Edit Cards" dialog. */
   label?: string;
+  size?: CardSize;
 }
 
 export type MountCfg = Pick<
@@ -96,5 +105,6 @@ export interface DashboardConfig {
   zFlow?: {
     /** Sets the height of each card in the z-flow layout. */
     cardHeight: number;
+    defaultCardSize: CardSize;
   };
 }

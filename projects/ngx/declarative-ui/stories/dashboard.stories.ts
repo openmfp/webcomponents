@@ -503,7 +503,7 @@ export const ZFlowLayout: Story = {
   args: {
     config: {
       ...SAMPLE_CONFIG,
-      zFlow: { cardHeight: 40 },
+      zFlow: { cardHeight: 40, defaultCardSize: 'm' },
     },
     i18n: {
       ...SAMPLE_I18N,

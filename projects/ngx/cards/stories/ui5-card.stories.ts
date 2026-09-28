@@ -1,4 +1,4 @@
-import { ZFLOW_DASHBOARD_BREAKPOINTS } from '../../declarative-ui/dashboard/constants';
+import { ZFLOW_COLUMN_MAX } from '../../declarative-ui/dashboard/constants';
 import {
   AfterViewInit,
   Component,
@@ -15,7 +15,7 @@ import type { Meta, StoryObj } from '@storybook/angular';
 const OPENUI5_BOOTSTRAP_URL =
   'https://sdk.openui5.org/1.142.0/resources/sap-ui-core.js';
 
-const DASHBOARD_COLUMNS = ZFLOW_DASHBOARD_BREAKPOINTS[0].c;
+const DASHBOARD_COLUMNS = ZFLOW_COLUMN_MAX;
 
 const THEMES = [
   'sap_horizon',

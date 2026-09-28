@@ -3,6 +3,12 @@ import type {
   CardMoveCommand,
 } from '../keyboard/keyboard.types';
 import {
+  getZFlowCardSpan,
+  getZFlowCardSpans,
+  isCardSize,
+  resolveZFlowCardSize,
+} from './card-size.helpers';
+import {
   type ResizeDirection,
   resolveDirectionalResizeWidthStep,
   resolveResizeWidthStep,
@@ -35,6 +41,35 @@ interface LayoutSnapshot {
 }
 
 export class ZflowGridStackEngine extends GridStackEngine {
+  columnChangeListener?: (column: number) => void;
+
+  override prepareNode(node: GridStackNode, resizing?: boolean): GridStackNode {
+    this.applyCardSpan(node as ZFlowGridStackNode, this.column);
+    return super.prepareNode(node, resizing);
+  }
+
+  columnChanged(prevColumn: number, column: number): this {
+    if (column && prevColumn !== column) {
+      const nodes = this.nodes as ZFlowGridStackNode[];
+      normalizeNodeOrder(nodes);
+
+      const snapshot = this.takeLayoutSnapshot(nodes);
+      nodes.forEach((node) => {
+        this.applyCardSpan(node, column);
+      });
+      applyProjectedLayout(
+        nodes,
+        projectZFlowLayout(sortNodesByZFlowOrder(nodes), column),
+      );
+      if (this.markLayoutChangesDirty(snapshot)) {
+        notifyEngine(this);
+      }
+    }
+
+    this.columnChangeListener?.(column);
+    return this;
+  }
+
   applyKeyboardCommand(id: string, command: CardKeyboardCommand): boolean {
     if (command === 'grow' || command === 'shrink') {
       return this.stepNodeWidth(id, command);
@@ -81,19 +116,11 @@ export class ZflowGridStackEngine extends GridStackEngine {
     if (!node) return false;
 
     syncNodeOrderFromLayout(nodes);
-    const x = node.x ?? 0;
-    const maxWidth = node.maxW ?? this.column;
-    const hardMax = Math.min(maxWidth, this.column - x);
-    const minWidth = Math.max(1, node.minW ?? 1);
-    if (minWidth > hardMax) return false;
-
     const target = resolveDirectionalResizeWidthStep(
       node.w ?? 1,
       direction,
-      maxWidth,
-      this.column,
-      minWidth,
-      hardMax,
+      getZFlowCardSpans(this.column),
+      this.column - (node.x ?? 0),
     );
     if (target === null) return false;
 
@@ -124,21 +151,19 @@ export class ZflowGridStackEngine extends GridStackEngine {
 
     const nodes = this.nodes as ZFlowGridStackNode[];
     const sourceNode = nodes.find((n) => n.id === node.id);
-    if (!sourceNode) return super.moveNodeCheck(node, opts);
+    const spans = getZFlowCardSpans(this.column);
+    if (!sourceNode || !spans.length) return super.moveNodeCheck(node, opts);
 
     syncNodeOrderFromLayout(nodes);
 
     const snapshot = this.takeLayoutSnapshot(nodes);
-    const effectiveMax = this.column - (sourceNode.x ?? 0);
     const nextWidth = resolveResizeWidthStep(
       opts.w,
-      sourceNode.maxW ?? this.column,
-      this.column,
-      sourceNode.minW ?? 1,
-      effectiveMax,
+      spans,
+      this.column - (sourceNode.x ?? 0),
     );
 
-    sourceNode.w = nextWidth;
+    this.applyWidth(sourceNode, nextWidth);
     opts.w = nextWidth;
     opts.x = sourceNode.x;
     opts.y = sourceNode.y;
@@ -158,13 +183,7 @@ export class ZflowGridStackEngine extends GridStackEngine {
   private applyKeyboardWidth(node: ZFlowGridStackNode, width: number): boolean {
     const nodes = this.nodes as ZFlowGridStackNode[];
     const snapshot = this.takeLayoutSnapshot(nodes);
-    node.w = resolveResizeWidthStep(
-      width,
-      node.maxW ?? this.column,
-      this.column,
-      node.minW ?? 1,
-      this.column - (node.x ?? 0),
-    );
+    this.applyWidth(node, width);
     applyProjectedLayout(
       nodes,
       projectZFlowLayout(sortNodesByZFlowOrder(nodes), this.column),
@@ -174,6 +193,18 @@ export class ZflowGridStackEngine extends GridStackEngine {
 
     this.notifyAndFinalizeKeyboardChange();
     return true;
+  }
+
+  private applyWidth(node: ZFlowGridStackNode, width: number): void {
+    node.w = width;
+    node.size = resolveZFlowCardSize(width, this.column, node.size);
+  }
+
+  private applyCardSpan(node: ZFlowGridStackNode, column: number): void {
+    if (!isCardSize(node.size)) return;
+
+    const span = getZFlowCardSpan(node.size, column);
+    if (span !== undefined) node.w = span;
   }
 
   private notifyAndFinalizeKeyboardChange(): void {

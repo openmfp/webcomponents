@@ -39,7 +39,7 @@ export class DashboardSection {
    * Optional override for the section's inner grid column count. Leave unset
    * (the default) to inherit the responsive defaults from CSS — the section
    * grid then mirrors the dashboard breakpoints (4/8/12/14 columns) via the
-   * `mfp-dashboard` container query in dashboard-section.component.scss.
+   * viewport media queries in dashboard-section.component.scss.
    * Pass an explicit number only when a section needs a fixed column count
    * regardless of width.
    */

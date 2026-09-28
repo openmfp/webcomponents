@@ -2,13 +2,16 @@ import { ZflowGridStackEngine } from './z-flow-engine';
 import type { ZFlowGridStackNode } from './z-flow.helpers';
 import type { GridStackMoveOpts, GridStackNode } from 'gridstack';
 
-function createEngine(nodes: ZFlowGridStackNode[]): {
+function createEngine(
+  nodes: ZFlowGridStackNode[],
+  column = 4,
+): {
   engine: ZflowGridStackEngine;
   onChange: ReturnType<typeof vi.fn>;
 } {
   const onChange = vi.fn();
   const engine = new ZflowGridStackEngine({
-    column: 4,
+    column,
     nodes,
     onChange,
   });
@@ -54,17 +57,31 @@ describe('SteppedResizeGridStackEngine', () => {
       ).toBe(true);
     });
 
-    it('dispatches grow and shrink through the keyboard command entry point', () => {
+    it('dispatches grow and shrink through the card sizes of the page', () => {
       const nodes = withInternalIds([
-        { id: 'a', x: 0, y: 0, w: 1, h: 10, maxW: 4 },
-        { id: 'b', x: 1, y: 0, w: 1, h: 10 },
+        { id: 'a', x: 0, y: 0, w: 2, h: 10, size: 's' },
+        { id: 'b', x: 2, y: 0, w: 2, h: 10, size: 's' },
       ]);
-      const { engine } = createEngine(nodes);
+      const { engine } = createEngine(nodes, 8);
 
       expect(engine.applyKeyboardCommand('a', 'grow')).toBe(true);
-      expect(nodes[0].w).toBe(2);
+      expect(nodes[0]).toMatchObject({ w: 4, size: 'm' });
+      expect(engine.applyKeyboardCommand('a', 'grow')).toBe(true);
+      expect(nodes[0]).toMatchObject({ w: 8, size: 'xl' });
+      expect(engine.applyKeyboardCommand('a', 'grow')).toBe(false);
       expect(engine.applyKeyboardCommand('a', 'shrink')).toBe(true);
-      expect(nodes[0].w).toBe(1);
+      expect(nodes[0]).toMatchObject({ w: 4, size: 'm' });
+    });
+
+    it('cannot grow or shrink on the small page where every size spans all columns', () => {
+      const nodes = withInternalIds([
+        { id: 'a', x: 0, y: 0, w: 4, h: 10, size: 'm' },
+      ]);
+      const { engine } = createEngine(nodes, 4);
+
+      expect(engine.applyKeyboardCommand('a', 'grow')).toBe(false);
+      expect(engine.applyKeyboardCommand('a', 'shrink')).toBe(false);
+      expect(nodes[0]).toMatchObject({ w: 4, size: 'm' });
     });
 
     it('returns false without changing state for an unknown card', () => {
@@ -220,32 +237,99 @@ describe('SteppedResizeGridStackEngine', () => {
     ]);
   });
 
-  it('snaps resize width and projects the affected nodes through z-flow', () => {
+  it('snaps resize width to a card size and projects the affected nodes through z-flow', () => {
     const nodes: ZFlowGridStackNode[] = [
-      { id: 'a', x: 0, y: 0, w: 2, h: 10, minW: 1, maxW: 4 },
-      { id: 'b', x: 2, y: 0, w: 2, h: 10 },
-      { id: 'c', x: 0, y: 10, w: 2, h: 10 },
+      { id: 'a', x: 0, y: 0, w: 4, h: 10, size: 's' },
+      { id: 'b', x: 4, y: 0, w: 8, h: 10, size: 'm' },
+      { id: 'c', x: 12, y: 0, w: 4, h: 10, size: 's' },
     ];
-    const { engine, onChange } = createEngine(nodes);
-    const opts: GridStackMoveOpts = { w: 3, resizing: true };
+    const { engine, onChange } = createEngine(nodes, 16);
+    const opts: GridStackMoveOpts = { w: 11, resizing: true };
 
     const changed = engine.moveNodeCheck(nodes[0], opts);
 
     expect(changed).toBe(true);
-    expect(opts.w).toBe(4);
+    expect(opts.w).toBe(12);
     expect(
-      nodes.map((node) => ({
-        id: node.id,
-        x: node.x,
-        y: node.y,
-        w: node.w,
-      })),
+      nodes.map(({ id, x, y, w, size }) => ({ id, x, y, w, size })),
     ).toEqual([
-      { id: 'a', x: 0, y: 0, w: 4 },
-      { id: 'b', x: 0, y: 10, w: 2 },
-      { id: 'c', x: 2, y: 10, w: 2 },
+      { id: 'a', x: 0, y: 0, w: 12, size: 'xl' },
+      { id: 'b', x: 0, y: 10, w: 8, size: 'm' },
+      { id: 'c', x: 8, y: 10, w: 4, size: 's' },
     ]);
     expect(onChange).toHaveBeenCalled();
+  });
+
+  it('never snaps a resize past the right edge of the grid', () => {
+    const nodes: ZFlowGridStackNode[] = [
+      { id: 'a', x: 0, y: 0, w: 8, h: 10, size: 'm' },
+      { id: 'b', x: 8, y: 0, w: 4, h: 10, size: 's' },
+    ];
+    const { engine } = createEngine(nodes, 16);
+    const opts: GridStackMoveOpts = { w: 8, resizing: true };
+
+    engine.moveNodeCheck(nodes[1], opts);
+
+    expect(nodes[1]).toMatchObject({ w: 8, size: 'm' });
+  });
+
+  describe('card sizes across page sizes', () => {
+    it('derives the width of an added node from its size', () => {
+      const { engine } = createEngine([], 12);
+
+      expect(
+        engine.prepareNode({ id: 'a', w: 1, size: 'm' } as GridStackNode),
+      ).toMatchObject({ w: 6 });
+      expect(engine.prepareNode({ id: 'b', w: 5 })).toMatchObject({ w: 5 });
+    });
+
+    it('re-derives every width from its size and re-projects on a column change', () => {
+      const nodes = withInternalIds([
+        { id: 'a', x: 0, y: 0, w: 4, h: 10, size: 's', zFlowOrder: 0 },
+        { id: 'b', x: 4, y: 0, w: 8, h: 10, size: 'm', zFlowOrder: 1 },
+        { id: 'c', x: 0, y: 10, w: 12, h: 10, size: 'xl', zFlowOrder: 2 },
+      ]);
+      const { engine, onChange } = createEngine(nodes, 16);
+
+      engine.column = 8;
+      engine.columnChanged(16, 8);
+
+      expect(nodes.map(({ id, x, y, w }) => ({ id, x, y, w }))).toEqual([
+        { id: 'a', x: 0, y: 0, w: 2 },
+        { id: 'b', x: 2, y: 0, w: 4 },
+        { id: 'c', x: 0, y: 10, w: 8 },
+      ]);
+      expect(onChange).toHaveBeenCalled();
+    });
+
+    it('keeps the size of every node when the page shrinks and grows back', () => {
+      const nodes = withInternalIds([
+        { id: 'a', x: 0, y: 0, w: 4, h: 10, size: 's' },
+        { id: 'b', x: 4, y: 0, w: 12, h: 10, size: 'xl' },
+      ]);
+      const { engine } = createEngine(nodes, 16);
+
+      engine.column = 4;
+      engine.columnChanged(16, 4);
+      expect(nodes.map(({ w }) => w)).toEqual([4, 4]);
+
+      engine.column = 16;
+      engine.columnChanged(4, 16);
+      expect(nodes.map(({ w, size }) => ({ w, size }))).toEqual([
+        { w: 4, size: 's' },
+        { w: 12, size: 'xl' },
+      ]);
+    });
+
+    it('reports every column change to the listener, even without nodes', () => {
+      const { engine } = createEngine([], 16);
+      const listener = vi.fn();
+      engine.columnChangeListener = listener;
+
+      engine.columnChanged(16, 12);
+
+      expect(listener).toHaveBeenCalledWith(12);
+    });
   });
 
   it('does not pull the previous row tail down when dragging a wide card to the next row start', () => {

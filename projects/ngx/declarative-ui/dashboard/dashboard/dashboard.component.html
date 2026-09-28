@@ -1,6 +1,8 @@
 <div
   class="mfp-dashboard"
   data-testid="dashboard"
+  [attr.data-page-columns]="pageColumns()"
+  [attr.data-page-size]="pageSize()"
   [class.edit]="editMode()"
   [style]="columnVars()"
 >
@@ -274,6 +276,8 @@
                 ? card.label || card.component || card.id
                 : null
             "
+            [attr.data-card-columns]="isZFlow() ? card.w : null"
+            [attr.data-card-size]="isZFlow() ? card.size : null"
             [attr.role]="keyboardNavigationActive() ? 'listitem' : null"
             [attr.tabindex]="keyboardNavigationActive() ? '0' : null"
             [options]="card"

@@ -1,31 +1,19 @@
 export function getAllowedResizeWidths(
-  maxWidth: number,
-  columnCount: number,
-  minWidth = 1,
-  effectiveMax = columnCount,
+  spans: readonly number[],
+  effectiveMax: number,
 ): number[] {
-  return [1, 2, maxWidth]
-    .map((w) => Math.min(Math.max(w, minWidth), columnCount))
-    .filter((w, i, list) => list.indexOf(w) === i && w <= effectiveMax)
-    .sort((a, b) => a - b);
+  return spans.filter((span) => span <= effectiveMax);
 }
 
 export function resolveResizeWidthStep(
   rawWidth: number,
-  maxWidth: number,
-  columnCount: number,
-  minWidth = 1,
-  effectiveMax = columnCount,
+  spans: readonly number[],
+  effectiveMax: number,
 ): number {
-  const allowed = getAllowedResizeWidths(
-    maxWidth,
-    columnCount,
-    minWidth,
-    effectiveMax,
-  );
+  const allowed = getAllowedResizeWidths(spans, effectiveMax);
 
   if (!allowed.length) {
-    return effectiveMax;
+    return spans[0];
   }
 
   return allowed.reduce((best, candidate) => {
@@ -40,17 +28,10 @@ export type ResizeDirection = 'grow' | 'shrink';
 export function resolveDirectionalResizeWidthStep(
   currentWidth: number,
   direction: ResizeDirection,
-  maxWidth: number,
-  columnCount: number,
-  minWidth = 1,
-  hardMax = columnCount,
+  spans: readonly number[],
+  hardMax: number,
 ): number | null {
-  const allowed = getAllowedResizeWidths(
-    maxWidth,
-    columnCount,
-    minWidth,
-    hardMax,
-  );
+  const allowed = getAllowedResizeWidths(spans, hardMax);
 
   if (direction === 'grow') {
     return allowed.find((width) => width > currentWidth) ?? null;

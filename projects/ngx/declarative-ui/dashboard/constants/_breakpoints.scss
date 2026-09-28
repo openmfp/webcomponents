@@ -9,7 +9,7 @@
 // var is set (i.e. for the default engine). They MUST match the column counts
 // in DASHBOARD_BREAKPOINTS (currently 14/12/8/1 for xl/lg/md/sm).
 
-// The zFlow engine pushes [1,4,4,4] via --dashboard-cols-* at runtime — no
+// The zFlow engine pushes [1,2,3,3] via --dashboard-cols-* at runtime — no
 // SCSS changes are needed when adding a new engine.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -24,8 +24,8 @@ $dashboard-cols-md: 8;
 $dashboard-cols-lg: 12;
 $dashboard-cols-xl: 14;
 
-/// Emit `grid-template-columns: repeat(N, 1fr)` rules wrapped in @container
-/// queries against the `mfp-dashboard` named container. Every dashboard grid
+/// Emit `grid-template-columns: repeat(N, 1fr)` rules wrapped in @media
+/// queries against the viewport width. Every dashboard grid
 /// (the section-laying-out one and each section's card-laying-out one) calls
 /// this so the column counts stay aligned.
 ///
@@ -60,15 +60,15 @@ $dashboard-cols-xl: 14;
 
   grid-template-columns: repeat(#{$xl}, 1fr);
 
-  @container mfp-dashboard (max-width: #{$dashboard-bp-sm}) {
+  @media screen and (max-width: #{$dashboard-bp-sm}) {
     grid-template-columns: repeat(#{$sm}, 1fr);
   }
 
-  @container mfp-dashboard (min-width: #{$dashboard-bp-sm + 1px}) and (max-width: #{$dashboard-bp-md}) {
+  @media screen and (min-width: #{$dashboard-bp-sm + 1px}) and (max-width: #{$dashboard-bp-md}) {
     grid-template-columns: repeat(#{$md}, 1fr);
   }
 
-  @container mfp-dashboard (min-width: #{$dashboard-bp-md + 1px}) and (max-width: #{$dashboard-bp-lg}) {
+  @media screen and (min-width: #{$dashboard-bp-md + 1px}) and (max-width: #{$dashboard-bp-lg}) {
     grid-template-columns: repeat(#{$lg}, 1fr);
   }
 }
