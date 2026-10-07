@@ -1,6 +1,6 @@
 # Dashboard
 
-An Angular dashboard layout component that combines editable sections with draggable loose cards. Cards can render either registered Angular components or pre-registered web components through the same `component` field.
+An Angular dashboard layout component that combines the editable sections with draggable loose cards. Cards can render either registered Angular components or pre-registered web components through the same `component` field.
 
 ## Tags
 
