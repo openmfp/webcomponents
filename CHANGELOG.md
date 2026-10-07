@@ -12,9 +12,11 @@ and [releases](https://github.com/openmfp/webcomponents/releases) for details.
 ## [1.9.0] - 2026-10-06
 
 ### Features
+
 - Align modal headers (#331)- Add border and header for e2e cards (#326)- Add e2e tests (#324)
 
 ### Bug Fixes
+
 - Fix flack test (#334)- _(deps)_ Update dependency gridstack to v14 (#322)
 
 ## [1.8.0] - 2026-09-28
