@@ -84,6 +84,7 @@
     "@openmfp/eslint-config-typescript": {
       "angular-eslint": "^22.1.0"
     },
+    "shell-quote": "^1.11.0",
     "uuid": "^14.0.0",
     "webpack-dev-server": "^6.0.0"
   },
