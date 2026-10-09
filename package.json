@@ -78,7 +78,7 @@
     "typescript-eslint": "^8.33.0",
     "vitest": "4.1.11",
     "vitest-axe": "0.1.0",
-    "wait-on": "9.1.0"
+    "wait-on": "9.5.1"
   },
   "overrides": {
     "@openmfp/eslint-config-typescript": {
