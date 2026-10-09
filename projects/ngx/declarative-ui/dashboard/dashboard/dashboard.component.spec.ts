@@ -321,6 +321,54 @@ describe('Dashboard', () => {
     expect(component.cards()[0]).toMatchObject({ id: 'card-1', w: 3, h: 10 });
   });
 
+  it('saveEdit masks loose zFlow card h to cardHeight in the emitted payload while keeping internal h:1', () => {
+    // Loose zFlow cards use h:1 internally (engine mode:'list'), but the frozen
+    // public API must emit h === zFlow.cardHeight. Section cards are unaffected.
+    const { fixture, component } = setup();
+
+    fixture.componentRef.setInput('config', {
+      title: 'T',
+      zFlow: { cardHeight: 40, defaultCardSize: 'm' },
+    });
+
+    // One loose card (no sectionId) and one section card – both start with the
+    // internal h:1 that toZFlowCard assigns.
+    component.cards.set([
+      { id: 'loose-1', component: 'mfp-a', h: 1 },
+      { id: 'section-1', component: 'mfp-b', sectionId: 'alpha', h: 20 },
+    ]);
+    (component as unknown as { gridStack: () => unknown }).gridStack = () => ({
+      gridstackItems: {
+        toArray: () => [
+          { options: { id: 'loose-1', x: 0, y: 0, w: 4, h: 1 } },
+          { options: { id: 'section-1', x: 0, y: 0, w: 4, h: 20 } },
+        ],
+      },
+    });
+    component.editMode.set(true);
+
+    const emitted: { sections: SectionConfig[]; cards: CardConfig[] }[] = [];
+    component.saved.subscribe((value) => emitted.push(value));
+    component.onGridChange();
+
+    component.saveEdit();
+
+    const emittedCards = emitted[0].cards;
+    const looseCard = emittedCards.find((c) => c.id === 'loose-1')!;
+    const sectionCard = emittedCards.find((c) => c.id === 'section-1')!;
+
+    // Public API: loose zFlow card must emit the configured cardHeight.
+    expect(looseCard.h).toBe(40);
+    // Section cards are not masked – their h comes from the grid position.
+    expect(sectionCard.h).toBe(20);
+
+    // Internal representation (what toZFlowCard will re-read on next load)
+    // stays at h:1 for the loose card so the engine continues to work correctly.
+    expect(component['looseCards']().find((c) => c.id === 'loose-1')?.h).toBe(
+      1,
+    );
+  });
+
   it('restores snapshot data and saved positions when edit mode is cancelled', () => {
     const { component } = setup();
     const sections: SectionConfig[] = [{ id: 'alpha', title: 'Alpha' }];
@@ -1663,7 +1711,7 @@ describe('Dashboard', () => {
       });
     });
 
-    it('looseCards() overrides h and maxH to cardHeight for loose cards under zFlow', () => {
+    it('looseCards() overrides h/maxH/minH to 1 for loose cards under zFlow', () => {
       const { fixture, component } = setup();
 
       fixture.componentRef.setInput('config', {
@@ -1678,8 +1726,20 @@ describe('Dashboard', () => {
 
       const loose = component['looseCards']();
       expect(loose).toHaveLength(2);
-      expect(loose[0]).toMatchObject({ id: 'loose-1', h: 30, maxH: 30 });
-      expect(loose[1]).toMatchObject({ id: 'loose-2', h: 30, maxH: 30 });
+      expect(loose[0]).toMatchObject({ id: 'loose-1', h: 1, maxH: 1, minH: 1 });
+      expect(loose[1]).toMatchObject({ id: 'loose-2', h: 1, maxH: 1, minH: 1 });
+    });
+
+    it('gridOptions() cellHeight equals cardHeight * CELL_HEIGHT under zFlow', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', {
+        title: 'T',
+        zFlow: { cardHeight: 30, defaultCardSize: 'm' },
+      });
+      fixture.detectChanges();
+
+      expect(component['gridOptions']().cellHeight).toBe(300);
     });
 
     it('looseCards() passes loose cards through unchanged by default', () => {
@@ -1718,8 +1778,8 @@ describe('Dashboard', () => {
       const loose = component['looseCards']();
       expect(loose.map((c) => c.id)).not.toContain('section-card');
       expect(loose.find((c) => c.id === 'loose-card')).toMatchObject({
-        h: 30,
-        maxH: 30,
+        h: 1,
+        maxH: 1,
       });
     });
 

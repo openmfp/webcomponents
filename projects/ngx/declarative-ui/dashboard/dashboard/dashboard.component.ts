@@ -257,14 +257,22 @@ export class Dashboard implements OnInit, OnDestroy {
   protected isEmpty = computed(() => this.looseCards().length === 0);
   protected isDashboardEditable = computed(() => this.config().editable);
 
+  private cellHeight = computed(() => {
+    const zFlow = this.config().zFlow;
+    return this.engineProfile().fixedCardHeight && zFlow
+      ? zFlow.cardHeight * CELL_HEIGHT
+      : CELL_HEIGHT;
+  });
+
   protected gridOptions = computed((): GridStackOptions => ({
-    cellHeight: CELL_HEIGHT,
+    cellHeight: this.cellHeight(),
     disableResize: !this.editMode(),
     disableDrag: !this.editMode(),
     marginBottom: 0,
     marginLeft: 0,
     marginRight: 0,
     engineClass: this.gridStackEngine(),
+    ...(this.engineProfile().mode ? { mode: this.engineProfile().mode } : {}),
     columnOpts: {
       // Source of truth: ../constants/breakpoints.ts — active profile's
       // breakpoints (paired with ../constants/_breakpoints.scss for the
@@ -416,14 +424,22 @@ export class Dashboard implements OnInit, OnDestroy {
   saveEdit(): void {
     this.updateCardsPositions();
 
+    // Mirror the width/size round-trip: loose zFlow cards use internal h:1
+    // (engine runs mode:'list'), but the frozen public cardHeight contract
+    // requires emitting h === zFlow.cardHeight. toZFlowCard always overrides
+    // h back to 1 on next load, so this mask is safe and self-correcting.
+    const zFlow = this.config().zFlow;
+    const fixedCardHeight = this.engineProfile().fixedCardHeight;
+
     const savedCards = this.cards().map((c) => {
       const pos = this.cardsPosition.get(c.id);
+      const isLooseZFlowCard = !c.sectionId && fixedCardHeight && !!zFlow;
       return {
         ...c,
         x: pos?.x,
         y: pos?.y,
         w: pos?.w ?? c.w,
-        h: pos?.h ?? c.h,
+        h: isLooseZFlowCard ? zFlow.cardHeight : (pos?.h ?? c.h),
         ...(pos?.size ? { size: pos.size } : {}),
       };
     });
@@ -669,7 +685,9 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   onDragStop(): void {
-    this.getZFlowEngine()?.commitZFlowLayout();
+    const engine = this.getZFlowEngine();
+    engine?.syncZFlowOrderFromLayout();
+    engine?.commitZFlowLayout();
     this.dragOriginVisible.set(false);
     this.dragOriginStyle.set(null);
   }
@@ -759,9 +777,9 @@ export class Dashboard implements OnInit, OnDestroy {
       ...rest,
       size,
       ...(span === undefined ? {} : { w: span }),
-      h: zFlow.cardHeight,
-      maxH: zFlow.cardHeight,
-      minH: zFlow.cardHeight,
+      h: 1,
+      maxH: 1,
+      minH: 1,
     };
   }
 

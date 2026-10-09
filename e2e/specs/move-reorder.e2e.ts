@@ -1,5 +1,5 @@
 import { dragCardByRows, dragCardToSlot } from '../utils/drag';
-import { getWidth, orderByDom, slotOf } from '../utils/grid';
+import { getWidth, orderByDom, rowOrdinals, slotOf } from '../utils/grid';
 import { enterEditMode, openHarness } from '../utils/harness';
 import { pressCommand } from '../utils/keyboard';
 import { readSaved, resetSaved, saveEdit, savedCard } from '../utils/saved';
@@ -229,8 +229,8 @@ test.describe('Move / Reorder cards', () => {
 
     // 12-col layout:
     //   Row 0 (gs-y=0):  a(x=0,w=3), b(x=3,w=6)
-    //   Row 1 (gs-y=40): c(x=0,w=6), d(x=6,w=3), e(x=9,w=3)
-    //   Row 2 (gs-y=80): g(x=0,w=3), h(x=3,w=3)
+    //   Row 1 (gs-y=1): c(x=0,w=6), d(x=6,w=3), e(x=9,w=3)
+    //   Row 2 (gs-y=2): g(x=0,w=3), h(x=3,w=3)
     //
     // Drag d (Row 1, x=6) up to col 3 of Row 0 — between a(x=0,w=3) and b(x=3,w=6).
     // d(w=3) inserts at x=3, pushing b to x=6: a(x=0)+d(x=3)+b(x=6)=12 fills Row 0.
@@ -239,7 +239,8 @@ test.describe('Move / Reorder cards', () => {
     // d is 4th in zFlowOrder (index 3).
     const dId = orderBefore[3];
     const dSlotBefore = await slotOf(page, dId);
-    expect(dSlotBefore.y).toBe(40);
+    const rowYs = await rowOrdinals(page);
+    expect(dSlotBefore.y).toBe(rowYs[1]); // d starts in row ordinal 1 (second distinct row)
     expect(dSlotBefore.x).toBe(6);
 
     // Drag d to Row 0 (gs-y=0) at col 3 — between a (x=0,w=3) and b (x=3,w=6).
@@ -253,10 +254,10 @@ test.describe('Move / Reorder cards', () => {
       orderBefore[0], // a: x=0, y=0
       dId, // d: x=3, y=0
       orderBefore[1], // b: x=6, y=0
-      orderBefore[2], // c: x=0, y=40
-      orderBefore[4], // e: x=6, y=40
-      orderBefore[5], // g: x=9, y=40
-      orderBefore[6], // h: x=0, y=80
+      orderBefore[2], // c: x=0, y=1
+      orderBefore[4], // e: x=6, y=1
+      orderBefore[5], // g: x=9, y=1
+      orderBefore[6], // h: x=0, y=2
     ];
 
     await expect.poll(() => orderByDom(page)).toEqual(expectedOrder);

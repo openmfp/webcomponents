@@ -179,40 +179,31 @@ describe('SteppedResizeGridStackEngine', () => {
     ]);
   });
 
-  it('keeps non-dragged nodes visually frozen during z-flow drag', () => {
+  it('delegates non-resizing moveNodeCheck to super (native list-mode drag)', () => {
     const nodes: ZFlowGridStackNode[] = [
-      { id: 'a', x: 0, y: 0, w: 2, h: 10 },
-      { id: 'b', x: 2, y: 0, w: 2, h: 10 },
-      { id: 'c', x: 0, y: 10, w: 2, h: 10 },
-      { id: 'd', x: 2, y: 10, w: 2, h: 10 },
+      { id: 'a', x: 0, y: 0, w: 2, h: 1 },
+      { id: 'b', x: 2, y: 0, w: 2, h: 1 },
+      { id: 'c', x: 0, y: 1, w: 2, h: 1 },
+      { id: 'd', x: 2, y: 1, w: 2, h: 1 },
     ];
-    const { engine, onChange } = createEngine(nodes);
+    const { engine } = createEngine(nodes);
     const source = nodes[2] as GridStackNode & { _moving: boolean };
-
     source._moving = true;
 
-    const changed = engine.moveNodeCheck(source, {
+    const superSpy = vi.spyOn(
+      Object.getPrototypeOf(Object.getPrototypeOf(engine)) as {
+        moveNodeCheck: (...args: unknown[]) => unknown;
+      },
+      'moveNodeCheck',
+    );
+
+    engine.moveNodeCheck(source, {
       cellWidth: 100,
-      cellHeight: 10,
-      rect: { x: 0, y: 0, w: 200, h: 100 },
+      cellHeight: 400,
+      rect: { x: 0, y: 0, w: 200, h: 400 },
     } as GridStackMoveOpts);
 
-    expect(changed).toBe(true);
-    expect(
-      nodes.map((node) => ({ id: node.id, x: node.x, y: node.y })),
-    ).toEqual([
-      { id: 'a', x: 2, y: 0 },
-      { id: 'b', x: 0, y: 10 },
-      { id: 'c', x: 0, y: 0 },
-      { id: 'd', x: 2, y: 10 },
-    ]);
-    expect(nodes.map((node) => [node.id, node.zFlowOrder])).toEqual([
-      ['a', 1],
-      ['b', 2],
-      ['c', 0],
-      ['d', 3],
-    ]);
-    expect(onChange).toHaveBeenCalledWith([nodes[0], nodes[1], source]);
+    expect(superSpy).toHaveBeenCalledWith(source, expect.any(Object));
   });
 
   it('commits the full z-flow layout after frozen drag', () => {
@@ -332,60 +323,6 @@ describe('SteppedResizeGridStackEngine', () => {
     });
   });
 
-  it('does not pull the previous row tail down when dragging a wide card to the next row start', () => {
-    const nodes: ZFlowGridStackNode[] = [
-      { id: 'recent', x: 0, y: 0, w: 1, h: 10, zFlowOrder: 0 },
-      { id: 'quick', x: 1, y: 0, w: 1, h: 10, zFlowOrder: 1 },
-      { id: 'team', x: 2, y: 0, w: 1, h: 10, zFlowOrder: 2 },
-      { id: 'cost', x: 3, y: 0, w: 1, h: 10, zFlowOrder: 3 },
-      { id: 'favorites', x: 0, y: 10, w: 1, h: 10, zFlowOrder: 4 },
-      { id: 'resource', x: 1, y: 10, w: 2, h: 10, zFlowOrder: 5 },
-    ];
-    const { engine } = createEngine(nodes);
-    const source = nodes[5] as GridStackNode & { _moving: boolean };
-
-    source._moving = true;
-
-    const changed = engine.moveNodeCheck(source, {
-      cellWidth: 100,
-      cellHeight: 10,
-      rect: { x: 0, y: 100, w: 200, h: 100 },
-    } as GridStackMoveOpts);
-
-    expect(changed).toBe(true);
-    expect(nodes.map((node) => [node.id, node.zFlowOrder])).toEqual([
-      ['recent', 0],
-      ['quick', 1],
-      ['team', 2],
-      ['cost', 3],
-      ['favorites', 5],
-      ['resource', 4],
-    ]);
-    expect(
-      nodes.map((node) => ({ id: node.id, x: node.x, y: node.y })),
-    ).toEqual([
-      { id: 'recent', x: 0, y: 0 },
-      { id: 'quick', x: 1, y: 0 },
-      { id: 'team', x: 2, y: 0 },
-      { id: 'cost', x: 3, y: 0 },
-      { id: 'favorites', x: 2, y: 10 },
-      { id: 'resource', x: 0, y: 10 },
-    ]);
-
-    engine.commitZFlowLayout();
-
-    expect(
-      nodes.map((node) => ({ id: node.id, x: node.x, y: node.y })),
-    ).toEqual([
-      { id: 'recent', x: 0, y: 0 },
-      { id: 'quick', x: 1, y: 0 },
-      { id: 'team', x: 2, y: 0 },
-      { id: 'cost', x: 3, y: 0 },
-      { id: 'favorites', x: 2, y: 10 },
-      { id: 'resource', x: 0, y: 10 },
-    ]);
-  });
-
   it('syncs z-flow order from the current visual layout', () => {
     const nodes: ZFlowGridStackNode[] = [
       { id: 'bottom', x: 0, y: 10, w: 2, h: 10, zFlowOrder: 0 },
@@ -419,79 +356,6 @@ describe('SteppedResizeGridStackEngine', () => {
       ['existing-2', 3],
       ['added-1', 0],
       ['added-2', 1],
-    ]);
-  });
-
-  it('re-projects the entire layout (not only the dragged node) on a z-flow drag', () => {
-    const nodes: ZFlowGridStackNode[] = [
-      { id: 'recent', x: 0, y: 0, w: 1, h: 10 },
-      { id: 'quick', x: 1, y: 0, w: 1, h: 10 },
-      { id: 'team', x: 2, y: 0, w: 1, h: 10 },
-      { id: 'favorites', x: 0, y: 10, w: 1, h: 10 },
-      { id: 'resource', x: 1, y: 10, w: 1, h: 10 },
-      { id: 'news', x: 2, y: 10, w: 1, h: 10 },
-    ];
-    const { engine } = createEngine(nodes);
-    const source = nodes[3] as GridStackNode & { _moving: boolean };
-
-    source._moving = true;
-
-    const changed = engine.moveNodeCheck(source, {
-      cellWidth: 100,
-      cellHeight: 10,
-      rect: { x: 200, y: 0, w: 100, h: 100 },
-    } as GridStackMoveOpts);
-
-    // favorites is dragged to the top row at (2,0). The whole layout re-projects:
-    // the other non-adjacent nodes (recent/quick/team/resource/news) are repositioned
-    // to their projected coordinates, not only favorites.
-    expect(changed).toBe(true);
-    expect(
-      nodes.map((node) => ({ id: node.id, x: node.x, y: node.y })),
-    ).toEqual([
-      { id: 'recent', x: 0, y: 0 },
-      { id: 'quick', x: 1, y: 0 },
-      { id: 'team', x: 3, y: 0 },
-      { id: 'favorites', x: 2, y: 0 },
-      { id: 'resource', x: 0, y: 10 },
-      { id: 'news', x: 1, y: 10 },
-    ]);
-  });
-
-  it('re-projects a non-adjacent sibling when a node crosses rows (top-vs-bottom row drag)', () => {
-    const nodes: ZFlowGridStackNode[] = [
-      { id: 'recent', x: 0, y: 0, w: 1, h: 10 },
-      { id: 'quick', x: 1, y: 0, w: 1, h: 10 },
-      { id: 'team', x: 2, y: 0, w: 1, h: 10 },
-      { id: 'favorites', x: 0, y: 10, w: 1, h: 10 },
-      { id: 'resource', x: 1, y: 10, w: 1, h: 10 },
-      { id: 'news', x: 2, y: 10, w: 1, h: 10 },
-    ];
-    const { engine } = createEngine(nodes);
-    const source = nodes[5] as GridStackNode & { _moving: boolean };
-
-    source._moving = true;
-
-    const changed = engine.moveNodeCheck(source, {
-      cellWidth: 100,
-      cellHeight: 10,
-      rect: { x: 200, y: 0, w: 100, h: 100 },
-    } as GridStackMoveOpts);
-
-    // news (2,10) is dragged to (2,0) — a cross-row move that lands in the top row
-    // next to team (2,0). team is non-adjacent to news and is repositioned to (3,0),
-    // while recent/quick (top row) and favorites/resource (bottom row) keep their
-    // positions. changed=true signals a reorder.
-    expect(changed).toBe(true);
-    expect(
-      nodes.map((node) => ({ id: node.id, x: node.x, y: node.y })),
-    ).toEqual([
-      { id: 'recent', x: 0, y: 0 },
-      { id: 'quick', x: 1, y: 0 },
-      { id: 'team', x: 3, y: 0 },
-      { id: 'favorites', x: 0, y: 10 },
-      { id: 'resource', x: 1, y: 10 },
-      { id: 'news', x: 2, y: 0 },
     ]);
   });
 });

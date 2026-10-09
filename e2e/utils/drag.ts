@@ -1,9 +1,8 @@
-import { CELL_HEIGHT, gridBox, slotOf } from './grid';
+import { ROW_PITCH_PX, gridBox, slotOf } from './grid';
 import { type Page, expect } from '@playwright/test';
 
-// Re-export for consumers that previously imported these from here.
+// Re-export for consumers that previously imported this from here.
 export { getWidth } from './grid';
-export { getHeight } from './grid';
 
 /**
  * Drag a card to a target grid column and row using simulated mouse events.
@@ -14,8 +13,8 @@ export { getHeight } from './grid';
  * Assumptions:
  *   - The page is already in edit mode before this is called.
  *   - targetCol is 0-based (left column = 0).
- *   - targetRow is the raw gs-y cell value (Row 0 = 0, Row 1 = 40, Row 2 = 80
- *     for h:40 loose cards). Pixel position is derived via CELL_HEIGHT.
+ *   - targetRow is the gs-y row ordinal (Row 0 = 0, Row 1 = 1, Row 2 = 2).
+ *     Pixel position is derived via ROW_PITCH_PX (400px per row ordinal).
  */
 export async function dragCardToSlot(
   page: Page,
@@ -41,12 +40,11 @@ export async function dragCardToSlot(
   // Read the source card's gs-y (row in grid-row/cell units) AFTER scroll.
   const srcSlot = await slotOf(page, id);
 
-  // Compute destination Y relative to srcY: the row difference in cell units
-  // times CELL_HEIGHT (10px/cell) gives the pixel offset between row origins.
-  // z-flow loose cards are h:40 rows each, so one logical row = 400px of
-  // vertical pitch. The destination center is at the same relative height
-  // within the target row as the source center is within its row.
-  const rowDeltaPx = (targetRow - srcSlot.y) * CELL_HEIGHT;
+  // Compute destination Y relative to srcY: the row-ordinal difference times
+  // ROW_PITCH_PX (400px per ordinal step) gives the pixel offset between rows.
+  // z-flow loose cards are h:1 row-ordinal each, rendering at 400px tall.
+  // The destination center is at the same relative height within the target row.
+  const rowDeltaPx = (targetRow - srcSlot.y) * ROW_PITCH_PX;
   const dstY = srcY + rowDeltaPx;
 
   // For the horizontal target, the column center is stable under vertical
@@ -139,7 +137,7 @@ export async function resizeCardByStep(
     await expect(handle).toBeVisible();
     // Hovering the CONTENT alone reveals the autohide handle but leaves it in a
     // state where the subsequent mouse.down lands next to (not on) the rotated
-    // 45° handle for cards in lower rows (e.g. e2e-d at y:40) — the resizable
+    // 45° handle for cards in lower rows (e.g. e2e-d at row ordinal 1) — the resizable
     // never arms and the drag silently no-ops. Hovering the handle ITSELF
     // settles its final geometry so boundingBox() measures the real target and
     // the pointer-down grabs it, arming `ui-resizable-resizing` reliably.
@@ -223,7 +221,7 @@ export async function resizeCardByStep(
  * Assumptions:
  *   - The page is already in edit mode before this is called.
  *   - The pitch equals the card's own height in px (z-flow loose cards all
- *     share cardHeight=40 rows × 10px/row = 400px).
+ *     share h:1 row ordinal × ROW_PITCH_PX = 400px rendered height).
  */
 export async function dragCardByRows(
   page: Page,
@@ -243,7 +241,7 @@ export async function dragCardByRows(
   const srcY = srcBox.y + srcBox.height / 2;
 
   // The vertical pitch per "one row change" = card's own pixel height.
-  // z-flow loose cards: h:40 grid rows × CELL_HEIGHT(10px) = 400px each.
+  // z-flow loose cards: h:1 row ordinal × ROW_PITCH_PX(400px) = 400px each.
   // Using the measured bounding box avoids hard-coded literals.
   const pitchPx = srcBox.height;
   const dstY = srcY + deltaRows * pitchPx * 1.1; // 10% overshoot → cross midpoint

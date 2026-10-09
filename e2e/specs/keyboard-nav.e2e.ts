@@ -1,4 +1,4 @@
-import { getWidth, orderByDom, slotOf } from '../utils/grid';
+import { getWidth, orderByDom, rowOrdinals, slotOf } from '../utils/grid';
 import { enterEditMode, openHarness } from '../utils/harness';
 import { focusCard, pressCommand } from '../utils/keyboard';
 import { readSaved, resetSaved, saveEdit, savedCard } from '../utils/saved';
@@ -437,9 +437,10 @@ test.describe('Keyboard navigation', () => {
     await enterEditMode(page);
 
     // Find the row-end card — the card with the highest gs-x in any row.
-    // We use row 1 (gs-y=40) to vary the target from the Ctrl+Right no-op
-    // test above (which used row 0). In the deterministic layout, e is last
-    // in row 1 at x=9. Find it dynamically.
+    // We use the second distinct row for variety vs the Ctrl+Right no-op test
+    // (which used row 0). In the deterministic layout, e is last in row 1 at x=9.
+    // The second row's gs-y ordinal is derived from the live DOM to avoid coupling
+    // to hard-coded gs-y values (previously 40, now row ordinal 1).
     const orderBefore = await orderByDom(page);
 
     const rowEndCard = await page.evaluate(() => {
@@ -454,8 +455,11 @@ test.describe('Keyboard navigation', () => {
         const cur = byRow.get(y);
         if (!cur || x > cur.x) byRow.set(y, { id, x });
       }
-      // Use row 1 (gs-y=40) for variety; fall back to row 0 if absent.
-      const row1End = byRow.get(40);
+      // Use the second distinct row (index 1 in sorted row keys) for variety;
+      // fall back to row 0 if only one row exists.
+      const sortedRows = Array.from(byRow.keys()).sort((a, b) => a - b);
+      const secondRowKey = sortedRows[1] ?? sortedRows[0];
+      const row1End = byRow.get(secondRowKey);
       return row1End?.id ?? byRow.get(0)?.id ?? null;
     });
     if (!rowEndCard) throw new Error('Could not find a row-end card');
@@ -633,7 +637,8 @@ test.describe('Keyboard navigation', () => {
     const startSlot = await slotOf(page, dId);
 
     // Precondition: d must be at x=6 (above row-start) to exercise the nearest-by-x rule.
-    expect(startSlot.y).toBe(40); // Row 1
+    const rowYs = await rowOrdinals(page);
+    expect(startSlot.y).toBe(rowYs[1]); // Row ordinal 1
     expect(startSlot.x).toBe(6); // x>0 — this is the crux
 
     await pressCommand(page, dId, 'Control+ArrowUp');
@@ -692,7 +697,8 @@ test.describe('Keyboard navigation', () => {
     const startSlot = await slotOf(page, eId);
 
     // Precondition: e must be at x=9 (above row-start) to exercise nearest-by-x.
-    expect(startSlot.y).toBe(40); // Row 1
+    const rowYs = await rowOrdinals(page);
+    expect(startSlot.y).toBe(rowYs[1]); // Row ordinal 1
     expect(startSlot.x).toBe(9); // x>0 — this is the crux
 
     await pressCommand(page, eId, 'Control+ArrowDown');

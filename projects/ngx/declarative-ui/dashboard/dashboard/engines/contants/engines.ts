@@ -5,6 +5,7 @@ import {
   ZFLOW_DASHBOARD_BREAKPOINTS,
 } from '../../../constants/breakpoints';
 import { ZflowGridStackEngine } from '../zflow/z-flow-engine';
+import { GridStackMode } from 'gridstack';
 import { GridStackEngine } from 'gridstack/dist/gridstack-engine';
 
 export interface EngineProfile {
@@ -19,6 +20,8 @@ export interface EngineProfile {
   fixedCardHeight: boolean;
   /** When true, the origin position is rendered. */
   renderOriginPosition: boolean;
+  /** Optional GridStack layout mode. 'list' delegates drag reorder to GridStack's native row-major list packing. */
+  mode?: GridStackMode;
 }
 
 const getColumns = (breakpoints: readonly DashboardBreakpoint[]) =>
@@ -32,6 +35,7 @@ export const ENGINE_PROFILES = {
     sectionColumns: [1, 2, 3, 3],
     fixedCardHeight: true,
     renderOriginPosition: true,
+    mode: 'list',
   },
   default: {
     engineClass: undefined,

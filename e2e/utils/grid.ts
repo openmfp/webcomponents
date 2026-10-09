@@ -1,10 +1,11 @@
 import { type Page } from '@playwright/test';
 
 /**
- * z-flow grid cell height in px (CELL_HEIGHT constant). gs-y is expressed in
- * grid-row units, each row = 10px.
+ * Pixel pitch between consecutive z-flow row ordinals (gs-y difference of 1).
+ * Loose zFlow cards render at cardHeight(40) × base cell 10px = 400px tall, so
+ * one row-ordinal step = 400px of vertical travel.
  */
-export const CELL_HEIGHT = 10;
+export const ROW_PITCH_PX = 400;
 
 /**
  * Read the current CSS-var width (--gs-w) of a card. Returns 1 when the var
@@ -17,21 +18,6 @@ export async function getWidth(page: Page, id: string): Promise<number> {
     );
     if (!el) throw new Error(`Card ${cardId} not found`);
     const raw = getComputedStyle(el).getPropertyValue('--gs-w').trim();
-    return raw ? parseInt(raw, 10) : 1;
-  }, id);
-}
-
-/**
- * Read the current CSS-var height (--gs-h) of a card. Returns 1 when the var
- * is absent.
- */
-export async function getHeight(page: Page, id: string): Promise<number> {
-  return page.evaluate((cardId) => {
-    const el = document.querySelector<HTMLElement>(
-      `.grid-stack-item[gs-id="${cardId}"]`,
-    );
-    if (!el) throw new Error(`Card ${cardId} not found`);
-    const raw = getComputedStyle(el).getPropertyValue('--gs-h').trim();
     return raw ? parseInt(raw, 10) : 1;
   }, id);
 }
@@ -143,4 +129,36 @@ export async function slotOf(page: Page, id: string): Promise<Slot> {
       h: varInt('--gs-h', 1),
     };
   }, id);
+}
+
+/**
+ * Return the sorted array of unique gs-y row ordinals currently in the DOM
+ * (ascending). Lets tests say "the second distinct row = rowYs[1]" instead of
+ * hard-coding internal GridStack units (e.g. 40).
+ *
+ * When `ids` is provided, only the cards with those ids are considered.
+ * Otherwise all `.grid-stack-item[gs-id]` elements are included — mirrors
+ * `orderByDom`'s optional-ids signature exactly.
+ */
+export async function rowOrdinals(
+  page: Page,
+  ids?: string[],
+): Promise<number[]> {
+  return page.evaluate((knownIds) => {
+    let elements: Element[];
+    if (knownIds) {
+      elements = knownIds
+        .map((id) => document.querySelector(`.grid-stack-item[gs-id="${id}"]`))
+        .filter((el): el is Element => el !== null);
+    } else {
+      elements = Array.from(
+        document.querySelectorAll('.grid-stack-item[gs-id]'),
+      );
+    }
+
+    const ys = new Set<number>(
+      elements.map((el) => parseInt(el.getAttribute('gs-y') ?? '0', 10)),
+    );
+    return Array.from(ys).sort((a, b) => a - b);
+  }, ids ?? null);
 }

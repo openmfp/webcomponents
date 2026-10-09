@@ -1,5 +1,5 @@
 import { resizeCardByStep } from '../utils/drag';
-import { getHeight, getWidth, slotOf } from '../utils/grid';
+import { getWidth, slotOf } from '../utils/grid';
 import { enterEditMode, openHarness } from '../utils/harness';
 import { readSaved, resetSaved, saveEdit, savedCard } from '../utils/saved';
 import { expect, test } from '@playwright/test';
@@ -76,17 +76,23 @@ test.describe('Resize constraints', () => {
   }) => {
     await enterEditMode(page);
 
-    // Record height before resize.
-    const hBefore = await getHeight(page, 'e2e-a');
+    // Measure rendered pixel height before resize.
+    const hBefore = (await page
+      .locator('.grid-stack-item[gs-id="e2e-a"]')
+      .boundingBox())!.height;
 
     // Grow e2e-a by one step.
     await resizeCardByStep(page, 'e2e-a', 'grow', 1);
 
     // Height must remain unchanged — z-flow pins h = maxH = minH = cardHeight.
-    const hAfter = await getHeight(page, 'e2e-a');
+    const hAfterBox = await page
+      .locator('.grid-stack-item[gs-id="e2e-a"]')
+      .boundingBox();
+    const hAfter = hAfterBox!.height;
     expect(hAfter).toBe(hBefore);
-    // Confirm it is still the cardHeight value (40).
-    expect(hAfter).toBe(40);
+    // Confirm it renders at ~400px (cardHeight=40 logical units × 10px base = 400px).
+    expect(hAfter).toBeGreaterThan(380);
+    expect(hAfter).toBeLessThan(420);
   });
 
   test('saved payload w matches final --gs-w after resize', async ({
