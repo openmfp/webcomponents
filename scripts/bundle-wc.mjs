@@ -91,9 +91,17 @@ const wcPkg = {
   type: 'module',
   exports: {
     '.': './mfp-webcomponents.js',
-    './dashboard': './mfp-wc-dashboard.js',
+    './dashboard': {
+      types: './mfp-wc-dashboard.d.ts',
+      default: './mfp-wc-dashboard.js',
+    },
   },
-  files: ['mfp-webcomponents.js', 'mfp-wc-dashboard.js', 'ui5'],
+  files: [
+    'mfp-webcomponents.js',
+    'mfp-wc-dashboard.js',
+    'mfp-wc-dashboard.d.ts',
+    'ui5',
+  ],
 };
 writeFileSync(
   join(dist, 'package.json'),
@@ -106,3 +114,9 @@ copyFileSync(
   join(dist, 'README.md'),
 );
 console.log('Copied README.md to dist/webcomponents/README.md');
+
+copyFileSync(
+  resolve('projects/webcomponents/mfp-wc-dashboard.d.ts'),
+  join(dist, 'mfp-wc-dashboard.d.ts'),
+);
+console.log('Copied mfp-wc-dashboard.d.ts to dist/webcomponents/');

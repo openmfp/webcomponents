@@ -39,6 +39,26 @@ The dashboard is shipped as a **dedicated standalone bundle** `mfp-wc-dashboard.
 
 All inputs (`config`, `sections`, `cards`, `availableCards`) and the `saved` event work the same as the Angular component.
 
+### TypeScript support
+
+TypeScript declarations ship with the package and are imported from the `@openmfp/webcomponents/dashboard` subpath. `document.querySelector('mfp-wc-dashboard')` and `document.createElement('mfp-wc-dashboard')` are typed automatically via the `HTMLElementTagNameMap` augmentation — no extra cast needed.
+
+```ts
+import type {
+  CardConfig,
+  DashboardConfig,
+  SectionConfig,
+} from '@openmfp/webcomponents/dashboard';
+
+const el = document.querySelector('mfp-wc-dashboard')!; // typed via HTMLElementTagNameMap
+const config: DashboardConfig = { editable: true };
+el.config = config;
+
+el.addEventListener('saved', (e) => {
+  const { sections, cards } = e.detail; // typed as SectionConfig[] / CardConfig[]
+});
+```
+
 > **A SAP Horizon theme must be applied**, or the dashboard's own markup renders with a serif fallback and unthemed colors. See [Theming & CSS variables](#theming--css-variables).
 
 ---

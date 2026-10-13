@@ -61,6 +61,15 @@ The script registers the custom elements globally. After it loads, use the tags 
 | -------------------- | ------------------------------ | ----------------------------------------------------------------------------------------- |
 | `<mfp-wc-dashboard>` | Drag-and-drop dashboard layout | [docs/dashboard.md](https://github.com/openmfp/webcomponents/blob/main/docs/dashboard.md) |
 
+TypeScript declarations for `<mfp-wc-dashboard>` are included in this package. Import types from the `@openmfp/webcomponents/dashboard` subpath:
+
+```ts
+import type {
+  CardConfig,
+  DashboardConfig,
+} from '@openmfp/webcomponents/dashboard';
+```
+
 ### `ui5/mfp-card/` — OpenUI5 card template
 
 | OpenUI5 control                | Description                                                     | Documentation                                                                                                     |
