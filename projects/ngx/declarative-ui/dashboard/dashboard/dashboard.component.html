@@ -250,6 +250,7 @@
         #grid
         data-testid="dashboard-grid"
         [attr.role]="keyboardNavigationActive() ? 'list' : null"
+        [class.mfp-dashboard__grid--zflow]="isZFlow()"
         [class.zflow-dragging]="!!dragOriginStyle()"
         [options]="gridOptions()"
         (addedCB)="onGridChange()"

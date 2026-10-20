@@ -25,7 +25,7 @@
 export type CardsType = 'wc' | 'angular' | 'sap-ui';
 
 /** Named size tokens used in z-flow layout mode. */
-export type CardSize = 's' | 'm' | 'xl';
+export type CardSize = 's' | 'm' | 'l' | 'xl' | 'xxl';
 
 /** Configuration for a single card placed in the dashboard grid or a section. */
 export interface CardConfig {

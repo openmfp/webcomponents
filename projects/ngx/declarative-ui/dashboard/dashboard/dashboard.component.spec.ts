@@ -1,7 +1,7 @@
 import { resetDashboardCardRegistry } from '../card/utils/dashboard-card-registry';
 import { DASHBOARD_CARD_DRAG_ORIGIN_CLASS } from '../constants';
 import { EN_DEFAULTS } from '../i18n';
-import { CardConfig, SectionConfig } from '../models';
+import { CardConfig, CardSize, SectionConfig } from '../models';
 import { Dashboard } from './dashboard.component';
 import { CARD_ARIA_KEYSHORTCUTS } from './engines/keyboard/keyboard.types';
 import { ZflowGridStackEngine } from './engines/zflow/z-flow-engine';
@@ -1608,7 +1608,7 @@ describe('Dashboard', () => {
       const profile = component['engineProfile']();
       expect(profile.engineClass).toBe(ZflowGridStackEngine);
       expect(profile.fixedCardHeight).toBe(true);
-      expect(profile.columnMax).toBe(16);
+      expect(profile.columnMax).toBe(20);
       expect(profile.sectionColumns).toEqual([1, 2, 3, 3]);
     });
 
@@ -1646,7 +1646,7 @@ describe('Dashboard', () => {
       expect(component['gridStackEngine']()).toBeUndefined();
     });
 
-    it('gridBreakpoints() are [12,8,4] widest first with a 16-column max under zFlow', () => {
+    it('gridBreakpoints() are [20,16,12,12,8,4] widest first with a 20-column max under zFlow', () => {
       const { fixture, component } = setup();
 
       fixture.componentRef.setInput('config', {
@@ -1656,11 +1656,14 @@ describe('Dashboard', () => {
       fixture.detectChanges();
 
       expect(component['gridBreakpoints']().map((bp) => [bp.w, bp.c])).toEqual([
+        [1919, 20],
+        [1679, 16],
         [1439, 12],
+        [1279, 12],
         [1023, 8],
         [599, 4],
       ]);
-      expect(component['gridOptions']().columnOpts?.columnMax).toBe(16);
+      expect(component['gridOptions']().columnOpts?.columnMax).toBe(20);
       expect(component['gridOptions']().columnOpts?.breakpointForWindow).toBe(
         true,
       );
@@ -1742,6 +1745,37 @@ describe('Dashboard', () => {
       expect(component['gridOptions']().cellHeight).toBe(300);
     });
 
+    it('marks the grid as a z-flow grid and drops the GridStack item top margin under zFlow', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', {
+        title: 'T',
+        zFlow: { cardHeight: 30, defaultCardSize: 'm' },
+      });
+      fixture.detectChanges();
+
+      expect(component['gridOptions']().marginTop).toBe(0);
+      expect(
+        root(fixture)
+          .querySelector('gridstack')
+          ?.classList.contains('mfp-dashboard__grid--zflow'),
+      ).toBe(true);
+    });
+
+    it('keeps the GridStack item top margin and the plain grid by default', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', { title: 'T' });
+      fixture.detectChanges();
+
+      expect(component['gridOptions']().marginTop).toBeUndefined();
+      expect(
+        root(fixture)
+          .querySelector('gridstack')
+          ?.classList.contains('mfp-dashboard__grid--zflow'),
+      ).toBe(false);
+    });
+
     it('looseCards() passes loose cards through unchanged by default', () => {
       const { fixture, component } = setup();
 
@@ -1800,7 +1834,7 @@ describe('Dashboard', () => {
 
       const loose = component['looseCards']();
       expect(loose.map(({ id, size, w }) => ({ id, size, w }))).toEqual([
-        { id: 'default', size: 'm', w: 8 },
+        { id: 'default', size: 'm', w: 6 },
         { id: 'small', size: 's', w: 4 },
         { id: 'wide', size: 'xl', w: 12 },
       ]);
@@ -1828,20 +1862,20 @@ describe('Dashboard', () => {
 
       fixture.componentRef.setInput('config', {
         title: 'T',
-        zFlow: { cardHeight: 30, defaultCardSize: 's' },
+        zFlow: { cardHeight: 30, defaultCardSize: 'm' },
       });
       component.cards.set([{ id: 'c1', component: 'mfp-a' }]);
       component['zFlowColumns'].set(12);
       fixture.detectChanges();
-      expect(component['looseCards']()[0].w).toBe(3);
+      expect(component['looseCards']()[0].w).toBe(8);
 
       component['zFlowColumns'].set(8);
-      expect(component['looseCards']()[0].w).toBe(2);
+      expect(component['looseCards']()[0].w).toBe(6);
     });
   });
 
   describe('zFlow card sizes', () => {
-    function zFlowSetup(defaultCardSize: 's' | 'm' | 'xl' = 'm') {
+    function zFlowSetup(defaultCardSize: CardSize = 'm') {
       const { fixture, component } = setup();
       const engine = new ZflowGridStackEngine({ column: 16, nodes: [] });
       fixture.componentRef.setInput('config', {
@@ -1887,6 +1921,78 @@ describe('Dashboard', () => {
       ).toBe('8');
     });
 
+    it.each([
+      [12, 1100, 'ml'],
+      [12, 1300, 'l'],
+      [20, 1800, 'xxl'],
+      [20, 2000, 'xxxl'],
+    ])(
+      'tells apart page sizes that share %i columns by the %i px viewport width',
+      (columns, width, pageSize) => {
+        const { fixture, component, engine } = zFlowSetup();
+        component['connectZFlowEngine']();
+        component['viewportWidth'].set(width);
+        engine.column = columns;
+        engine.columnChanged(16, columns);
+        fixture.detectChanges();
+
+        const dashboard = root(fixture).querySelector(
+          '[data-testid="dashboard"]',
+        );
+        expect(dashboard?.getAttribute('data-page-size')).toBe(pageSize);
+        expect(dashboard?.getAttribute('data-page-columns')).toBe(
+          String(columns),
+        );
+      },
+    );
+
+    it('re-reads the viewport width when the dashboard is resized without a column change', () => {
+      const observed: {
+        target: Element;
+        callback: ResizeObserverCallback;
+      }[] = [];
+      const original = globalThis.ResizeObserver;
+      const noop = (): void => undefined;
+      globalThis.ResizeObserver = class {
+        constructor(private readonly callback: ResizeObserverCallback) {}
+        observe = (target: Element): void => {
+          observed.push({ target, callback: this.callback });
+        };
+        unobserve = noop;
+        disconnect = noop;
+      } as unknown as typeof ResizeObserver;
+      const innerWidth = vi
+        .spyOn(window, 'innerWidth', 'get')
+        .mockReturnValue(1100);
+
+      try {
+        const { fixture, component, engine } = zFlowSetup();
+        fixture.detectChanges();
+        engine.column = 12;
+        engine.columnChanged(16, 12);
+        fixture.detectChanges();
+        expect(component['pageSize']()).toBe('ml');
+
+        innerWidth.mockReturnValue(1300);
+        observed
+          .filter(({ target }) => target === fixture.nativeElement)
+          .forEach(({ callback }) => {
+            callback([], {} as ResizeObserver);
+          });
+        fixture.detectChanges();
+
+        expect(component['pageSize']()).toBe('l');
+        expect(
+          root(fixture)
+            .querySelector('[data-testid="dashboard"]')
+            ?.getAttribute('data-page-size'),
+        ).toBe('l');
+      } finally {
+        innerWidth.mockRestore();
+        globalThis.ResizeObserver = original;
+      }
+    });
+
     it('has no page size outside zFlow', () => {
       const { fixture, component } = setup();
       fixture.componentRef.setInput('config', { title: 'T' });
@@ -1924,17 +2030,19 @@ describe('Dashboard', () => {
       component.cards.set([
         { id: 'c1', component: 'mfp-a' },
         { id: 'c2', component: 'mfp-b', size: 'm' },
-        { id: 'c3', component: 'mfp-c', size: 'xl' },
+        { id: 'c3', component: 'mfp-c', size: 'l' },
+        { id: 'c4', component: 'mfp-d', size: 'xl' },
+        { id: 'c5', component: 'mfp-e', size: 'xxl' },
       ]);
       fixture.detectChanges();
-      engine.column = 12;
-      engine.columnChanged(16, 12);
+      engine.column = 20;
+      engine.columnChanged(16, 20);
       fixture.detectChanges();
 
       const spans = Array.from(
         root(fixture).querySelectorAll('[data-card-columns]'),
       ).map((el) => el.getAttribute('data-card-columns'));
-      expect(spans).toEqual(['3', '6', '12']);
+      expect(spans).toEqual(['4', '6', '10', '12', '20']);
     });
 
     it('does not expose card sizes outside zFlow', () => {

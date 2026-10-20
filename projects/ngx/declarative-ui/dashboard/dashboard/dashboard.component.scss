@@ -319,6 +319,14 @@ gridstack {
   position: relative;
 }
 
+.mfp-dashboard__grid--zflow {
+  --mfp-dashboard-card-gutter: calc(#{card.$zflow-card-gap} / 2);
+  margin-inline: calc(
+    var(--mfp_cardContainerPadding, #{card.$card-container-padding-fallback}) -
+      #{card.$card-container-padding}
+  );
+}
+
 .grid-stack:has(.ui-resizable-resizing),
 .grid-stack:has(.ui-resizable-resizing) * {
   cursor: nwse-resize !important;

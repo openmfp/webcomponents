@@ -136,6 +136,7 @@ export class Dashboard implements OnInit, OnDestroy {
   /** True once the user has dragged/resized any grid item while in edit mode. */
   private gridDirty = signal(false);
   private zFlowColumns = signal<number | undefined>(undefined);
+  private viewportWidth = signal(window.innerWidth);
 
   editMode = signal(false);
   compactToolbar = signal(false);
@@ -189,7 +190,9 @@ export class Dashboard implements OnInit, OnDestroy {
   protected pageSize = computed(() => {
     const columns = this.zFlowColumns();
     if (!this.isZFlow() || columns === undefined) return null;
-    return getZFlowPageSizeConfig(columns)?.pageSize ?? null;
+    return (
+      getZFlowPageSizeConfig(columns, this.viewportWidth())?.pageSize ?? null
+    );
   });
   protected pageColumns = computed(() =>
     this.pageSize() ? this.zFlowColumns() : null,
@@ -268,6 +271,7 @@ export class Dashboard implements OnInit, OnDestroy {
     cellHeight: this.cellHeight(),
     disableResize: !this.editMode(),
     disableDrag: !this.editMode(),
+    marginTop: this.engineProfile().itemMarginTop,
     marginBottom: 0,
     marginLeft: 0,
     marginRight: 0,
@@ -373,6 +377,7 @@ export class Dashboard implements OnInit, OnDestroy {
     this.resizeObserver = new ResizeObserver((entries) => {
       const width = entries[0]?.contentRect.width ?? 0;
       this.compactToolbar.set(width < COMPACT_BREAKPOINT);
+      this.viewportWidth.set(window.innerWidth);
     });
     this.resizeObserver.observe(this.hostEl.nativeElement);
     window.addEventListener('beforeunload', this.beforeUnloadHandler);

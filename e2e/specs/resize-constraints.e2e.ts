@@ -1,51 +1,55 @@
-import { resizeCardByStep } from '../utils/drag';
+import { resizeCardTo } from '../utils/drag';
 import { getWidth, slotOf } from '../utils/grid';
 import { enterEditMode, openHarness } from '../utils/harness';
 import { readSaved, resetSaved, saveEdit, savedCard } from '../utils/saved';
 import { expect, test } from '@playwright/test';
 
-// At 1280px viewport the z-flow grid uses 12 columns (breakpoint 'l').
-// Spans per size: s=3, m=6, xl=12.
-// Resize ladder = getZFlowCardSpans(12) = [3, 6, 12].
+// At 1280px viewport the z-flow grid uses 12 columns (page size 'l').
+// Spans per size: s=4, m=8, l=10, xl=12, xxl=12.
+// Resize ladder = getZFlowCardSpans(12) = [4, 8, 10, 12].
 
 test.describe('Resize constraints', () => {
   test.beforeEach(async ({ page }) => {
     await openHarness(page);
   });
 
-  test('e2e-a: full ladder s→m→xl (3→6→12) via drag resize', async ({
+  test('e2e-a: full ladder s→m→l→xl (4→8→10→12) via drag resize', async ({
     page,
   }) => {
     await enterEditMode(page);
 
-    // e2e-a is size='s'; at 12 cols span=3.
-    await expect.poll(() => getWidth(page, 'e2e-a')).toBe(3);
+    // e2e-a is size='s'; at 12 cols span=4.
+    await expect.poll(() => getWidth(page, 'e2e-a')).toBe(4);
 
-    // Grow step 1: 3 → 6 (next step in [3,6,12]).
-    await resizeCardByStep(page, 'e2e-a', 'grow', 1);
-    await expect.poll(() => getWidth(page, 'e2e-a')).toBe(6);
+    // Grow step 1: 4 → 8 (next step in [4,8,10,12]).
+    await resizeCardTo(page, 'e2e-a', 8);
+    await expect.poll(() => getWidth(page, 'e2e-a')).toBe(8);
 
-    // Grow step 2: 6 → 12.
-    await resizeCardByStep(page, 'e2e-a', 'grow', 1);
+    // Grow step 2: 8 → 10.
+    await resizeCardTo(page, 'e2e-a', 10);
+    await expect.poll(() => getWidth(page, 'e2e-a')).toBe(10);
+
+    await resizeCardTo(page, 'e2e-a', 12);
     await expect.poll(() => getWidth(page, 'e2e-a')).toBe(12);
   });
 
-  test('e2e-a: shrink xl→m→s (12→6→3)', async ({ page }) => {
+  test('e2e-a: shrink xl→l→m→s (12→10→8→4)', async ({ page }) => {
     await enterEditMode(page);
 
     // Grow to max first.
-    await resizeCardByStep(page, 'e2e-a', 'grow', 1);
-    await expect.poll(() => getWidth(page, 'e2e-a')).toBe(6);
-    await resizeCardByStep(page, 'e2e-a', 'grow', 1);
+    await resizeCardTo(page, 'e2e-a', 12);
     await expect.poll(() => getWidth(page, 'e2e-a')).toBe(12);
 
-    // Shrink 12 → 6.
-    await resizeCardByStep(page, 'e2e-a', 'shrink', 1);
-    await expect.poll(() => getWidth(page, 'e2e-a')).toBe(6);
+    // Shrink 12 → 10.
+    await resizeCardTo(page, 'e2e-a', 10);
+    await expect.poll(() => getWidth(page, 'e2e-a')).toBe(10);
 
-    // Shrink 6 → 3.
-    await resizeCardByStep(page, 'e2e-a', 'shrink', 1);
-    await expect.poll(() => getWidth(page, 'e2e-a')).toBe(3);
+    await resizeCardTo(page, 'e2e-a', 8);
+    await expect.poll(() => getWidth(page, 'e2e-a')).toBe(8);
+
+    // Shrink 8 → 4.
+    await resizeCardTo(page, 'e2e-a', 4);
+    await expect.poll(() => getWidth(page, 'e2e-a')).toBe(4);
   });
 
   test('e2e-b: pinned by effectiveMax (columns - x) — growing is a no-op', async ({
@@ -53,19 +57,19 @@ test.describe('Resize constraints', () => {
   }) => {
     await enterEditMode(page);
 
-    // e2e-b is size='m' (span=6), packed at x=3 behind e2e-a (x=0,w=3).
-    // effectiveMax = 12 - 3 = 9; getAllowedResizeWidths([3,6,12], 9) = [3,6].
-    // e2e-b starts at 6 — the TOP of [3,6] — so every grow step is a no-op.
-    await expect.poll(() => getWidth(page, 'e2e-b')).toBe(6);
+    // e2e-b is size='m' (span=8), packed at x=4 behind e2e-a (x=0,w=4).
+    // effectiveMax = 12 - 4 = 8; getAllowedResizeWidths([4,8,10,12], 8) = [4,8].
+    // e2e-b starts at 8 — the TOP of [4,8] — so every grow step is a no-op.
+    await expect.poll(() => getWidth(page, 'e2e-b')).toBe(8);
 
     const widthBefore = await getWidth(page, 'e2e-b');
 
     // Attempt to grow — width must stay pinned at the cap.
-    await resizeCardByStep(page, 'e2e-b', 'grow', 1);
+    await resizeCardTo(page, 'e2e-b', 10);
     await expect.poll(() => getWidth(page, 'e2e-b')).toBe(widthBefore);
 
     // A second grow attempt is likewise a no-op.
-    await resizeCardByStep(page, 'e2e-b', 'grow', 1);
+    await resizeCardTo(page, 'e2e-b', 12);
     const capped = await getWidth(page, 'e2e-b');
     expect(capped).toBe(widthBefore);
     expect(capped).toBeLessThanOrEqual(12);
@@ -82,7 +86,7 @@ test.describe('Resize constraints', () => {
       .boundingBox())!.height;
 
     // Grow e2e-a by one step.
-    await resizeCardByStep(page, 'e2e-a', 'grow', 1);
+    await resizeCardTo(page, 'e2e-a', 8);
 
     // Height must remain unchanged — z-flow pins h = maxH = minH = cardHeight.
     const hAfterBox = await page
@@ -100,9 +104,9 @@ test.describe('Resize constraints', () => {
   }) => {
     await enterEditMode(page);
 
-    // Grow e2e-a to width 6 (s→m).
-    await resizeCardByStep(page, 'e2e-a', 'grow', 1);
-    await expect.poll(() => getWidth(page, 'e2e-a')).toBe(6);
+    // Grow e2e-a to width 8 (s→m).
+    await resizeCardTo(page, 'e2e-a', 8);
+    await expect.poll(() => getWidth(page, 'e2e-a')).toBe(8);
 
     const domSlot = await slotOf(page, 'e2e-a');
 
@@ -112,6 +116,7 @@ test.describe('Resize constraints', () => {
 
     const card = savedCard(payload, 'e2e-a');
     expect(card.w).toBe(domSlot.w);
-    expect(card.w).toBe(6);
+    expect(card.w).toBe(8);
+    expect(card['size']).toBe('m');
   });
 });

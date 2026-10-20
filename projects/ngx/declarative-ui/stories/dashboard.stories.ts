@@ -4,10 +4,11 @@ import { ServiceStatusCard } from '../../cards/service-status/service-status-car
 import { VisitedServiceCard } from '../../cards/visited-service-card/visited-service-card.component';
 import { Dashboard } from '../dashboard/dashboard/dashboard.component';
 import { type DashboardTranslations, EN_DEFAULTS } from '../dashboard/i18n';
-import type {
-  CardConfig,
-  DashboardConfig,
-  SectionConfig,
+import {
+  CARD_SIZES,
+  type CardConfig,
+  type DashboardConfig,
+  type SectionConfig,
 } from '../dashboard/models';
 import { ButtonSettings } from '../models/ui-definition';
 import { CARDS, RAS_CARDS, SECTIONS } from './dashboard.cards';
@@ -170,17 +171,21 @@ const ANGULAR_REGISTRY_AVAILABLE_CARDS: CardConfig[] = [
 
 // Empty placeholder cards used to fill out the z-flow grid so the reflow,
 // drag/resize and width-swap behaviour is easy to see against a uniform
-// baseline. One column wide each → four cards per row on the 4-column grid.
-const ZFLOW_MOCK_CARDS: CardConfig[] = Array.from({ length: 8 }, (_, i) => ({
-  id: `mock-card-${i}`,
-  type: 'angular' as const,
-  component: 'mfp-mock-card',
-  componentInputs: {
-    title: `Card ${i + 1}`,
-  },
-  w: 1,
-  h: 40,
-}));
+// baseline. Two cards of every card size, so each size shows its span on the
+// current page size.
+const ZFLOW_MOCK_CARDS: CardConfig[] = Object.values(CARD_SIZES).flatMap(
+  (size) =>
+    [1, 2].map((n) => ({
+      id: `mock-card-${size}-${n}`,
+      type: 'angular' as const,
+      component: 'mfp-mock-card',
+      componentInputs: {
+        title: `Card size ${size.toUpperCase()} · ${n}`,
+      },
+      size,
+      h: 40,
+    })),
+);
 
 const SECTION_CARDS_HEIGHT_SECTIONS: SectionConfig[] = [
   {
@@ -518,7 +523,7 @@ export const ZFlowLayout: Story = {
     docs: {
       description: {
         story:
-          'The z-flow engine reflows loose cards left-to-right, top-to-bottom. Card widths here are proportional to the Default story (default 12-col base → z-flow 4-col base), so a half-width card stays half-width.',
+          'The z-flow engine reflows loose cards left-to-right, top-to-bottom. The loose cards come in all five card sizes (`s`, `m`, `l`, `xl`, `xxl`); resize the canvas to see each size take its column span on every page size. Card widths here are proportional to the Default story (default 12-col base → z-flow 4-col base), so a half-width card stays half-width.',
       },
     },
   },

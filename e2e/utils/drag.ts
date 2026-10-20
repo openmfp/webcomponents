@@ -81,17 +81,16 @@ export async function dragCardToSlot(
 }
 
 /**
- * Resize a card by dragging its SE resize handle horizontally.
- * direction: 'grow' moves the handle right, 'shrink' moves it left.
- * steps: how many column-widths to drag.
+ * Resize a card by dragging its SE resize handle horizontally until the card
+ * spans `targetW` columns. The engine then snaps that raw width to the
+ * nearest span allowed on the page.
  *
  * Returns the card's final width (from --gs-w) after the resize settles.
  */
-export async function resizeCardByStep(
+export async function resizeCardTo(
   page: Page,
   id: string,
-  direction: 'grow' | 'shrink',
-  steps: number = 1,
+  targetW: number,
 ): Promise<number> {
   const readWidth = () =>
     page.evaluate((cardId) => {
@@ -117,12 +116,6 @@ export async function resizeCardByStep(
     // target cell (source of resize flake). Aiming at the center of the last
     // column the card should span makes gridstack snap deterministically.
     const slot = await slotOf(page, id);
-    // Aim past the midpoint between the current span and the adjacent span.
-    // The z-flow ladder roughly doubles each step (3→6→12 at 12 cols, 4→8→12 at
-    // 16 cols). Half the current width is a reliable offset that crosses the
-    // midpoint, letting the engine snap to the next/previous span deterministically.
-    const spanStep = Math.max(2, Math.ceil(slot.w / 2));
-    const targetW = slot.w + steps * spanStep * (direction === 'grow' ? 1 : -1);
 
     // gridstack renders the SE resize handle with autohide (class
     // `ui-resizable-autohide`): it is display:none / zero-size until the grid

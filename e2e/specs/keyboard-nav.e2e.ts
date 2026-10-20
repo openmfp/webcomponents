@@ -26,35 +26,42 @@ test.describe('Keyboard navigation', () => {
     await expect(host).toHaveAttribute('aria-keyshortcuts');
   });
 
-  test('Shift+ArrowRight grows e2e-a: 3 → 6 → 12', async ({ page }) => {
+  test('Shift+ArrowRight grows e2e-a: 4 → 8 → 10 → 12', async ({ page }) => {
     await enterEditMode(page);
 
-    // At 12 cols, size='s' → span=3. Ladder = [3,6,12].
-    await expect.poll(() => getWidth(page, 'e2e-a')).toBe(3);
+    // At 12 cols, size='s' → span=4. Ladder = [4,8,10,12].
+    await expect.poll(() => getWidth(page, 'e2e-a')).toBe(4);
 
-    await pressCommand(page, 'e2e-a', 'Shift+ArrowRight', { w: 6 });
-    await expect.poll(() => getWidth(page, 'e2e-a')).toBe(6);
+    await pressCommand(page, 'e2e-a', 'Shift+ArrowRight', { w: 8 });
+    await expect.poll(() => getWidth(page, 'e2e-a')).toBe(8);
 
-    // Next allowed step from 6 is 12.
+    // Next allowed step from 8 is 10.
+    await pressCommand(page, 'e2e-a', 'Shift+ArrowRight', { w: 10 });
+    await expect.poll(() => getWidth(page, 'e2e-a')).toBe(10);
+
     await pressCommand(page, 'e2e-a', 'Shift+ArrowRight', { w: 12 });
     await expect.poll(() => getWidth(page, 'e2e-a')).toBe(12);
   });
 
-  test('Shift+ArrowLeft shrinks e2e-a: 12 → 6 → 3', async ({ page }) => {
+  test('Shift+ArrowLeft shrinks e2e-a: 12 → 10 → 8 → 4', async ({ page }) => {
     await enterEditMode(page);
 
     // First grow to 12.
-    await pressCommand(page, 'e2e-a', 'Shift+ArrowRight', { w: 6 });
+    await pressCommand(page, 'e2e-a', 'Shift+ArrowRight', { w: 8 });
+    await pressCommand(page, 'e2e-a', 'Shift+ArrowRight', { w: 10 });
     await pressCommand(page, 'e2e-a', 'Shift+ArrowRight', { w: 12 });
     await expect.poll(() => getWidth(page, 'e2e-a')).toBe(12);
 
-    // Shrink 12 → 6.
-    await pressCommand(page, 'e2e-a', 'Shift+ArrowLeft', { w: 6 });
-    await expect.poll(() => getWidth(page, 'e2e-a')).toBe(6);
+    // Shrink 12 → 10.
+    await pressCommand(page, 'e2e-a', 'Shift+ArrowLeft', { w: 10 });
+    await expect.poll(() => getWidth(page, 'e2e-a')).toBe(10);
 
-    // Shrink 6 → 3.
-    await pressCommand(page, 'e2e-a', 'Shift+ArrowLeft', { w: 3 });
-    await expect.poll(() => getWidth(page, 'e2e-a')).toBe(3);
+    await pressCommand(page, 'e2e-a', 'Shift+ArrowLeft', { w: 8 });
+    await expect.poll(() => getWidth(page, 'e2e-a')).toBe(8);
+
+    // Shrink 8 → 4.
+    await pressCommand(page, 'e2e-a', 'Shift+ArrowLeft', { w: 4 });
+    await expect.poll(() => getWidth(page, 'e2e-a')).toBe(4);
   });
 
   test('e2e-b: Shift+ArrowRight no-op — pinned by effectiveMax (columns - x), not its own maxW', async ({
@@ -62,14 +69,14 @@ test.describe('Keyboard navigation', () => {
   }) => {
     await enterEditMode(page);
 
-    // e2e-b is size='m' (span=6), packed at x=3 in Row 0 (behind e2e-a at x=0,w=3).
-    // effectiveMax = 12 - 3 = 9; getAllowedResizeWidths([3,6,12], 9) = [3,6].
-    // e2e-b starts at 6 — the TOP of [3,6] — so a grow finds no larger allowed
+    // e2e-b is size='m' (span=8), packed at x=4 in Row 0 (behind e2e-a at x=0,w=4).
+    // effectiveMax = 12 - 4 = 8; getAllowedResizeWidths([4,8,10,12], 8) = [4,8].
+    // e2e-b starts at 8 — the TOP of [4,8] — so a grow finds no larger allowed
     // width and is a no-op.
-    await expect.poll(() => getWidth(page, 'e2e-b')).toBe(6);
+    await expect.poll(() => getWidth(page, 'e2e-b')).toBe(8);
 
     const widthBefore = await getWidth(page, 'e2e-b');
-    expect(widthBefore).toBe(6);
+    expect(widthBefore).toBe(8);
 
     await focusCard(page, 'e2e-b');
     await page.keyboard.press('Shift+ArrowRight');
@@ -121,7 +128,7 @@ test.describe('Keyboard navigation', () => {
   }) => {
     await enterEditMode(page);
 
-    // With 7 cards (widths 1+2+2+1+1+1+1) packed into 4 cols, row 0 holds
+    // With 7 cards (widths 4+8+8+4+4+4+4) packed into 12 cols, row 0 holds
     // some subset. Read the live row-0 cards, then move the front to the end.
     const orderBefore = await orderByDom(page);
     const front = orderBefore[0];
@@ -174,9 +181,9 @@ test.describe('Keyboard navigation', () => {
     await enterEditMode(page);
 
     // With 7 cards the deterministic z-flow layout is:
-    //   Row 0 (gs-y=0):  a(x=0,w=3), b(x=3,w=6)
-    //   Row 1 (gs-y=40): c(x=0,w=6), d(x=6,w=3), e(x=9,w=3)
-    //   Row 2 (gs-y=80): g(x=0,w=3), h(x=3,w=3)
+    //   Row 0 (gs-y=0): a(x=0,w=4), b(x=4,w=8)
+    //   Row 1 (gs-y=1): c(x=0,w=8), d(x=8,w=4)
+    //   Row 2 (gs-y=2): e(x=0,w=4), g(x=4,w=4), h(x=8,w=4)
     // Resolve positions from live DOM.
     const orderBefore = await orderByDom(page);
     const front = orderBefore[0]; // card at zFlowOrder[0]
@@ -246,7 +253,7 @@ test.describe('Keyboard navigation', () => {
     expect(slotAfter.y).toBe(slotBefore.y);
   });
 
-  test('Control+ArrowDown moves front card to row 1 x:0; neighbours reflow up', async ({
+  test('Control+ArrowDown moves front card into row 1; neighbours reflow up', async ({
     page,
   }) => {
     await enterEditMode(page);
@@ -287,15 +294,16 @@ test.describe('Keyboard navigation', () => {
   }) => {
     await enterEditMode(page);
 
-    // 12-col layout: Row0=[a(x=0,w=3),b(x=3,w=6)], Row1=[c(x=0,w=6),d(x=6,w=3),e(x=9,w=3)], Row2=[g,h]
+    // 12-col layout: Row0=[a(x=0,w=4),b(x=4,w=8)], Row1=[c(x=0,w=8),d(x=8,w=4)], Row2=[e,g,h]
     // Ctrl+Down on a (x=0,y=0): engine finds the slot that places a in row 1
-    // closest to x=0. Trying [b,a,...]: b(6)+a(3)=9 cols, a is at x=6 in row 0
-    // (not row 1). Trying [b,c,a,...]: b(6)+c(6)=12 fills row 0; a lands at
-    // x=0,row=1 — distance=0, so this slot wins.
+    // closest to x=0. Trying [b,a,...]: b(8)+a(4)=12 cols, a is at x=8 in row 0
+    // (not row 1). Trying [b,c,a,...]: c(8) no longer fits beside b and wraps
+    // to row 1; a lands at x=8,row=1 — the only slot that puts a in row 1.
     // New order: [b, c, a, d, e, g, h].
-    //   Row 0: b(x=0,w=6), c(x=6,w=6)
-    //   Row 1: a(x=0,w=3), d(x=3,w=3), e(x=6,w=3)
-    //   Row 2: g(x=0,w=3), h(x=3,w=3)
+    //   Row 0: b(x=0,w=8)
+    //   Row 1: c(x=0,w=8), a(x=8,w=4)
+    //   Row 2: d(x=0,w=4), e(x=4,w=4), g(x=8,w=4)
+    //   Row 3: h(x=0,w=4)
     const orderBefore = await orderByDom(page);
     const front = orderBefore[0]; // a
 
@@ -303,12 +311,12 @@ test.describe('Keyboard navigation', () => {
 
     const expectedOrder = [
       orderBefore[1], // b: x=0, y=0
-      orderBefore[2], // c: x=6, y=0
-      front, // a: x=0, y=40
-      orderBefore[3], // d: x=3, y=40
-      orderBefore[4], // e: x=6, y=40
-      orderBefore[5], // g: x=0, y=80
-      orderBefore[6], // h: x=3, y=80
+      orderBefore[2], // c: x=0, y=1
+      front, // a: x=8, y=1
+      orderBefore[3], // d: x=0, y=2
+      orderBefore[4], // e: x=4, y=2
+      orderBefore[5], // g: x=8, y=2
+      orderBefore[6], // h: x=0, y=3
     ];
 
     await expect.poll(() => orderByDom(page)).toEqual(expectedOrder);
@@ -360,8 +368,8 @@ test.describe('Keyboard navigation', () => {
     await enterEditMode(page);
 
     // Find the rightmost card in any row (max gs-x in its row). In the
-    // deterministic layout, b at x=3 is the last in row 0 (it spans cols 3-8),
-    // e at x=9 is the last in row 1. We find any row-end card dynamically.
+    // deterministic layout, b at x=4 is the last in row 0 (it spans cols 4-11),
+    // d at x=8 is the last in row 1. We find any row-end card dynamically.
     const orderBefore = await orderByDom(page);
 
     // Build a map from gs-y to max gs-x card id.
@@ -400,7 +408,7 @@ test.describe('Keyboard navigation', () => {
     await enterEditMode(page);
 
     // Find a card in the last row (max gs-y). In the deterministic layout,
-    // g and h are in row 2 (gs-y=80).
+    // e, g and h are in row 2 (gs-y=2).
     const orderBefore = await orderByDom(page);
 
     const lastRowCard = await page.evaluate(() => {
@@ -438,7 +446,7 @@ test.describe('Keyboard navigation', () => {
 
     // Find the row-end card — the card with the highest gs-x in any row.
     // We use the second distinct row for variety vs the Ctrl+Right no-op test
-    // (which used row 0). In the deterministic layout, e is last in row 1 at x=9.
+    // (which used row 0). In the deterministic layout, d is last in row 1 at x=8.
     // The second row's gs-y ordinal is derived from the live DOM to avoid coupling
     // to hard-coded gs-y values (previously 40, now row ordinal 1).
     const orderBefore = await orderByDom(page);
@@ -481,8 +489,8 @@ test.describe('Keyboard navigation', () => {
   }) => {
     await enterEditMode(page);
 
-    // With 7 cards the z-flow layout guarantees cards in row 1 (gs-y=40):
-    // c(x=0,w=6), d(x=6,w=3), e(x=9,w=3). Find any card NOT in row 0 from the
+    // With 7 cards the z-flow layout guarantees cards in row 1 (gs-y=1):
+    // c(x=0,w=8), d(x=8,w=4). Find any card NOT in row 0 from the
     // live layout to remain non-determinism-safe.
     const orderBefore = await orderByDom(page);
     const cardInRow1 = await (async () => {
@@ -584,7 +592,7 @@ test.describe('Keyboard navigation', () => {
     await enterEditMode(page);
 
     // Find the first card in orderBefore that is NOT at x:0 in its row.
-    // In the deterministic layout, b (orderBefore[1]) is at x=1 in row 0.
+    // In the deterministic layout, b (orderBefore[1]) is at x=4 in row 0.
     const orderBefore = await orderByDom(page);
     const midRowCard = await (async () => {
       for (const id of orderBefore) {
@@ -609,37 +617,33 @@ test.describe('Keyboard navigation', () => {
     await expect.poll(() => orderByDom(page)).toEqual(expectedOrder);
   });
 
-  test('Control+ArrowUp nearest-by-x: d at Row1 x=6 lands in Row0 at x=9, not row-start', async ({
+  test('Control+ArrowUp nearest-by-x: d at Row1 x=8 lands in Row0 at x=4, not row-start', async ({
     page,
   }) => {
     await enterEditMode(page);
 
     // 12-col layout:
-    //   Row 0 (gs-y=0):  a(x=0,w=3), b(x=3,w=6)
-    //   Row 1 (gs-y=40): c(x=0,w=6), d(x=6,w=3), e(x=9,w=3)
-    //   Row 2 (gs-y=80): g(x=0,w=3), h(x=3,w=3)
+    //   Row 0 (gs-y=0): a(x=0,w=4), b(x=4,w=8)
+    //   Row 1 (gs-y=1): c(x=0,w=8), d(x=8,w=4)
+    //   Row 2 (gs-y=2): e(x=0,w=4), g(x=4,w=4), h(x=8,w=4)
     //
-    // d is orderBefore[3] — source.x=6, source.row=1.
+    // d is orderBefore[3] — source.x=8, source.row=1.
     // Row 0 insertion slots with projected x of d:
-    //   slot0 (before a): a,b stay, d inserted first → pack: d(x=0), a(x=3), b(x=6). projected.x=0
-    //   slot1 (after a, before b): → pack: a(x=0), d(x=3), b(x=6). projected.x=3
-    //   slot2 (after b): → pack: a(x=0), b(x=3), d(x=9). projected.x=9
-    // Distances from source.x=6: |0-6|=6, |3-6|=3, |9-6|=3 → tie slot1/slot2.
-    // Tiebreak |new_d_idx - old_d_idx=3|: slot1→idx=2 |2-3|=1, slot2→idx=2... wait:
-    //   slot1: [a,d,b,...] → d at idx=1 in full order, |1-3|=2
-    //   slot2: [a,b,d,...] → d at idx=2 in full order, |2-3|=1 → slot2 wins.
-    // Result order: [a, b, d, c, e, g, h].
-    // Repack: a(x=0,w=3), b(x=3,w=6), d(x=9,w=3) fills row 0 (3+6+3=12).
-    //         c(x=0,w=6), e(x=6,w=3), g(x=9,w=3) fills row 1.
-    //         h(x=0,w=3) in row 2.
+    //   slot0 (before a): → pack: d(x=0), a(x=4), b wraps. projected.x=0
+    //   slot1 (after a, before b): → pack: a(x=0), d(x=4), b wraps. projected.x=4
+    //   slot2 (after b): a(x=0), b(x=4) fill row 0, d wraps to row 1 → not row 0.
+    // Distances from source.x=8: |0-8|=8, |4-8|=4 → slot1 wins.
+    // Result order: [a, d, b, c, e, g, h].
+    // Repack: a(x=0,w=4), d(x=4,w=4) in row 0; b(x=0,w=8) in row 1;
+    //         c(x=0,w=8), e(x=8,w=4) in row 2; g(x=0,w=4), h(x=4,w=4) in row 3.
     const orderBefore = await orderByDom(page);
     const dId = orderBefore[3]; // d is 4th in zFlowOrder (0-based index 3)
     const startSlot = await slotOf(page, dId);
 
-    // Precondition: d must be at x=6 (above row-start) to exercise the nearest-by-x rule.
+    // Precondition: d must be at x=8 (above row-start) to exercise the nearest-by-x rule.
     const rowYs = await rowOrdinals(page);
     expect(startSlot.y).toBe(rowYs[1]); // Row ordinal 1
-    expect(startSlot.x).toBe(6); // x>0 — this is the crux
+    expect(startSlot.x).toBe(8); // x>0 — this is the crux
 
     await pressCommand(page, dId, 'Control+ArrowUp');
 
@@ -655,80 +659,81 @@ test.describe('Keyboard navigation', () => {
 
     // d must have moved UP (into Row 0).
     expect(landedSlot.y).toBeLessThan(startSlot.y);
-    // d must NOT collapse to row-start — nearest-by-x lands it at x=9, not x=0.
+    // d must NOT collapse to row-start — nearest-by-x lands it at x=4, not x=0.
     expect(landedSlot.x).not.toBe(0);
 
-    // Exact order: slot2 selected → [a, b, d, c, e, g, h]
-    // Pack: a(x=0,r0), b(x=3,r0), d(x=9,r0) | c(x=0,r1), e(x=6,r1), g(x=9,r1) | h(x=0,r2)
-    // orderByDom: [a,b,d,c,e,g,h]
+    // Exact order: slot1 selected → [a, d, b, c, e, g, h]
+    // Pack: a(x=0,r0), d(x=4,r0) | b(x=0,r1) | c(x=0,r2), e(x=8,r2) | g(x=0,r3), h(x=4,r3)
+    // orderByDom: [a,d,b,c,e,g,h]
     const expectedOrder = [
       orderBefore[0], // a: x=0, y=0
-      orderBefore[1], // b: x=3, y=0
-      dId, // d: x=9, y=0 (nearest to source.x=6 via tie-break)
-      orderBefore[2], // c: x=0, y=40
-      orderBefore[4], // e: x=6, y=40
-      orderBefore[5], // g: x=9, y=40
-      orderBefore[6], // h: x=0, y=80
+      dId, // d: x=4, y=0 (nearest to source.x=8)
+      orderBefore[1], // b: x=0, y=1
+      orderBefore[2], // c: x=0, y=2
+      orderBefore[4], // e: x=8, y=2
+      orderBefore[5], // g: x=0, y=3
+      orderBefore[6], // h: x=4, y=3
     ];
 
     await expect.poll(() => orderByDom(page)).toEqual(expectedOrder);
   });
 
-  test('Control+ArrowDown nearest-by-x: e at Row1 x=9 lands in Row2 at x=3, not row-start', async ({
+  test('Control+ArrowDown nearest-by-x: d at Row1 x=8 lands in Row2 at x=8, not row-start', async ({
     page,
   }) => {
     await enterEditMode(page);
 
     // 12-col layout:
-    //   Row 0 (gs-y=0):  a(x=0,w=3), b(x=3,w=6)
-    //   Row 1 (gs-y=40): c(x=0,w=6), d(x=6,w=3), e(x=9,w=3)
-    //   Row 2 (gs-y=80): g(x=0,w=3), h(x=3,w=3)
+    //   Row 0 (gs-y=0): a(x=0,w=4), b(x=4,w=8)
+    //   Row 1 (gs-y=1): c(x=0,w=8), d(x=8,w=4)
+    //   Row 2 (gs-y=2): e(x=0,w=4), g(x=4,w=4), h(x=8,w=4)
     //
-    // e is orderBefore[4] — source.x=9, source.row=1.
-    // Row 2 insertion slots with projected x of e:
-    //   slot0 (before g): → pack row2: e(x=0), g(x=3), h(x=6). projected.x=0
-    //   slot1 (between g,h): → pack row2: g(x=0), e(x=3), h(x=6). projected.x=3
-    //   slot2 (after h): → pack row2: g(x=0), h(x=3), e(x=6). projected.x=6
-    // Distances from source.x=9: |0-9|=9, |3-9|=6, |6-9|=3 → slot2 wins.
-    // Result order: [a, b, c, d, g, h, e].
-    // Repack: Row0=a,b | Row1=c,d,g | Row2=h(x=0),e(x=3).
+    // d is orderBefore[3] — source.x=8, source.row=1. Once d leaves row 1,
+    // e moves up beside c, so row 2 holds g, h and d.
+    // Row 2 insertion slots with projected x of d:
+    //   slot4 (before g): → pack row2: d(x=0), g(x=4), h(x=8). projected.x=0
+    //   slot5 (between g,h): → pack row2: g(x=0), d(x=4), h(x=8). projected.x=4
+    //   slot6 (after h): → pack row2: g(x=0), h(x=4), d(x=8). projected.x=8
+    // Distances from source.x=8: |0-8|=8, |4-8|=4, |8-8|=0 → slot6 wins.
+    // Result order: [a, b, c, e, g, h, d].
+    // Repack: Row0=a,b | Row1=c,e | Row2=g(x=0),h(x=4),d(x=8).
     const orderBefore = await orderByDom(page);
-    const eId = orderBefore[4]; // e is 5th in zFlowOrder
-    const startSlot = await slotOf(page, eId);
+    const dId = orderBefore[3]; // d is 4th in zFlowOrder
+    const startSlot = await slotOf(page, dId);
 
-    // Precondition: e must be at x=9 (above row-start) to exercise nearest-by-x.
+    // Precondition: d must be at x=8 (above row-start) to exercise nearest-by-x.
     const rowYs = await rowOrdinals(page);
     expect(startSlot.y).toBe(rowYs[1]); // Row ordinal 1
-    expect(startSlot.x).toBe(9); // x>0 — this is the crux
+    expect(startSlot.x).toBe(8); // x>0 — this is the crux
 
-    await pressCommand(page, eId, 'Control+ArrowDown');
+    await pressCommand(page, dId, 'Control+ArrowDown');
 
     const landedSlot = await (async () => {
       await expect
         .poll(async () => {
-          const s = await slotOf(page, eId);
+          const s = await slotOf(page, dId);
           return s.y > startSlot.y;
         })
         .toBe(true);
-      return slotOf(page, eId);
+      return slotOf(page, dId);
     })();
 
-    // e must have moved DOWN (into Row 2).
+    // d must have moved DOWN (into Row 2).
     expect(landedSlot.y).toBeGreaterThan(startSlot.y);
-    // e must NOT collapse to row-start — nearest-by-x lands it at x=3, not x=0.
+    // d must NOT collapse to row-start — nearest-by-x lands it at x=8, not x=0.
     // An "always insert at row-start" regression makes x===0 and fails here.
     expect(landedSlot.x).not.toBe(0);
 
-    // Exact order: slot2 selected → [a, b, c, d, g, h, e]
-    // Pack: Row0=a(x=0),b(x=3) | Row1=c(x=0),d(x=6),g(x=9) | Row2=h(x=0),e(x=3)
+    // Exact order: slot6 selected → [a, b, c, e, g, h, d]
+    // Pack: Row0=a(x=0),b(x=4) | Row1=c(x=0),e(x=8) | Row2=g(x=0),h(x=4),d(x=8)
     const expectedOrder = [
       orderBefore[0], // a: x=0, y=0
-      orderBefore[1], // b: x=3, y=0
-      orderBefore[2], // c: x=0, y=40
-      orderBefore[3], // d: x=6, y=40
-      orderBefore[5], // g: x=9, y=40
-      orderBefore[6], // h: x=0, y=80
-      eId, // e: x=3, y=80 (nearest to source.x=9, slot after h)
+      orderBefore[1], // b: x=4, y=0
+      orderBefore[2], // c: x=0, y=1
+      orderBefore[4], // e: x=8, y=1
+      orderBefore[5], // g: x=0, y=2
+      orderBefore[6], // h: x=4, y=2
+      dId, // d: x=8, y=2 (nearest to source.x=8, slot after h)
     ];
 
     await expect.poll(() => orderByDom(page)).toEqual(expectedOrder);
@@ -740,7 +745,7 @@ test.describe('Keyboard navigation', () => {
     await enterEditMode(page);
 
     // Find a card that is NOT at x:0 in its row. With 7 cards, row 0 has cards
-    // a(x=0) and b(x=3), so b is a deterministic mid-row candidate. We resolve
+    // a(x=0) and b(x=4), so b is a deterministic mid-row candidate. We resolve
     // it dynamically to stay non-determinism-safe.
     const orderBefore = await orderByDom(page);
     const midRowCard = await (async () => {

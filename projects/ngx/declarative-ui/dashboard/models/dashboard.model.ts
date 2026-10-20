@@ -11,7 +11,9 @@ export type CardsType = (typeof CARD_TYPES)[keyof typeof CARD_TYPES];
 export const CARD_SIZES = {
   S: 's',
   M: 'm',
+  L: 'l',
   XL: 'xl',
+  XXL: 'xxl',
 } as const;
 
 export type CardSize = (typeof CARD_SIZES)[keyof typeof CARD_SIZES];

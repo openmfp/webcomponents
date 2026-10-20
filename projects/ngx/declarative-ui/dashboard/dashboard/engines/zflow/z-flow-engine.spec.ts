@@ -59,19 +59,53 @@ describe('SteppedResizeGridStackEngine', () => {
 
     it('dispatches grow and shrink through the card sizes of the page', () => {
       const nodes = withInternalIds([
-        { id: 'a', x: 0, y: 0, w: 2, h: 10, size: 's' },
-        { id: 'b', x: 2, y: 0, w: 2, h: 10, size: 's' },
+        { id: 'a', x: 0, y: 0, w: 4, h: 10, size: 's' },
+        { id: 'b', x: 4, y: 0, w: 4, h: 10, size: 's' },
       ]);
       const { engine } = createEngine(nodes, 8);
 
       expect(engine.applyKeyboardCommand('a', 'grow')).toBe(true);
-      expect(nodes[0]).toMatchObject({ w: 4, size: 'm' });
+      expect(nodes[0]).toMatchObject({ w: 6, size: 'm' });
       expect(engine.applyKeyboardCommand('a', 'grow')).toBe(true);
-      expect(nodes[0]).toMatchObject({ w: 8, size: 'xl' });
+      expect(nodes[0]).toMatchObject({ w: 8, size: 'l' });
       expect(engine.applyKeyboardCommand('a', 'grow')).toBe(false);
       expect(engine.applyKeyboardCommand('a', 'shrink')).toBe(true);
-      expect(nodes[0]).toMatchObject({ w: 4, size: 'm' });
+      expect(nodes[0]).toMatchObject({ w: 6, size: 'm' });
     });
+
+    it.each([
+      [
+        12,
+        [
+          { w: 8, size: 'm' },
+          { w: 10, size: 'l' },
+          { w: 12, size: 'xl' },
+        ],
+      ],
+      [
+        20,
+        [
+          { w: 6, size: 'm' },
+          { w: 10, size: 'l' },
+          { w: 12, size: 'xl' },
+          { w: 20, size: 'xxl' },
+        ],
+      ],
+    ])(
+      'grows a card through every distinct span of a %i-column page',
+      (columns, steps) => {
+        const nodes = withInternalIds([
+          { id: 'a', x: 0, y: 0, w: 4, h: 10, size: 's' },
+        ]);
+        const { engine } = createEngine(nodes, columns);
+
+        for (const step of steps) {
+          expect(engine.applyKeyboardCommand('a', 'grow')).toBe(true);
+          expect(nodes[0]).toMatchObject(step);
+        }
+        expect(engine.applyKeyboardCommand('a', 'grow')).toBe(false);
+      },
+    );
 
     it('cannot grow or shrink on the small page where every size spans all columns', () => {
       const nodes = withInternalIds([
@@ -231,8 +265,8 @@ describe('SteppedResizeGridStackEngine', () => {
   it('snaps resize width to a card size and projects the affected nodes through z-flow', () => {
     const nodes: ZFlowGridStackNode[] = [
       { id: 'a', x: 0, y: 0, w: 4, h: 10, size: 's' },
-      { id: 'b', x: 4, y: 0, w: 8, h: 10, size: 'm' },
-      { id: 'c', x: 12, y: 0, w: 4, h: 10, size: 's' },
+      { id: 'b', x: 4, y: 0, w: 6, h: 10, size: 'm' },
+      { id: 'c', x: 10, y: 0, w: 4, h: 10, size: 's' },
     ];
     const { engine, onChange } = createEngine(nodes, 16);
     const opts: GridStackMoveOpts = { w: 11, resizing: true };
@@ -245,23 +279,36 @@ describe('SteppedResizeGridStackEngine', () => {
       nodes.map(({ id, x, y, w, size }) => ({ id, x, y, w, size })),
     ).toEqual([
       { id: 'a', x: 0, y: 0, w: 12, size: 'xl' },
-      { id: 'b', x: 0, y: 10, w: 8, size: 'm' },
-      { id: 'c', x: 8, y: 10, w: 4, size: 's' },
+      { id: 'b', x: 0, y: 10, w: 6, size: 'm' },
+      { id: 'c', x: 6, y: 10, w: 4, size: 's' },
     ]);
     expect(onChange).toHaveBeenCalled();
   });
 
+  it('snaps a resize to the full row as card size xxl on a 16-column page', () => {
+    const nodes: ZFlowGridStackNode[] = [
+      { id: 'a', x: 0, y: 0, w: 12, h: 10, size: 'xl' },
+    ];
+    const { engine } = createEngine(nodes, 16);
+    const opts: GridStackMoveOpts = { w: 15, resizing: true };
+
+    engine.moveNodeCheck(nodes[0], opts);
+
+    expect(opts.w).toBe(16);
+    expect(nodes[0]).toMatchObject({ w: 16, size: 'xxl' });
+  });
+
   it('never snaps a resize past the right edge of the grid', () => {
     const nodes: ZFlowGridStackNode[] = [
-      { id: 'a', x: 0, y: 0, w: 8, h: 10, size: 'm' },
-      { id: 'b', x: 8, y: 0, w: 4, h: 10, size: 's' },
+      { id: 'a', x: 0, y: 0, w: 10, h: 10, size: 'l' },
+      { id: 'b', x: 10, y: 0, w: 4, h: 10, size: 's' },
     ];
     const { engine } = createEngine(nodes, 16);
     const opts: GridStackMoveOpts = { w: 8, resizing: true };
 
     engine.moveNodeCheck(nodes[1], opts);
 
-    expect(nodes[1]).toMatchObject({ w: 8, size: 'm' });
+    expect(nodes[1]).toMatchObject({ w: 6, size: 'm' });
   });
 
   describe('card sizes across page sizes', () => {
@@ -270,14 +317,20 @@ describe('SteppedResizeGridStackEngine', () => {
 
       expect(
         engine.prepareNode({ id: 'a', w: 1, size: 'm' } as GridStackNode),
-      ).toMatchObject({ w: 6 });
-      expect(engine.prepareNode({ id: 'b', w: 5 })).toMatchObject({ w: 5 });
+      ).toMatchObject({ w: 8 });
+      expect(
+        engine.prepareNode({ id: 'b', w: 1, size: 'l' } as GridStackNode),
+      ).toMatchObject({ w: 10 });
+      expect(
+        engine.prepareNode({ id: 'c', w: 1, size: 'xxl' } as GridStackNode),
+      ).toMatchObject({ w: 12 });
+      expect(engine.prepareNode({ id: 'd', w: 5 })).toMatchObject({ w: 5 });
     });
 
     it('re-derives every width from its size and re-projects on a column change', () => {
       const nodes = withInternalIds([
         { id: 'a', x: 0, y: 0, w: 4, h: 10, size: 's', zFlowOrder: 0 },
-        { id: 'b', x: 4, y: 0, w: 8, h: 10, size: 'm', zFlowOrder: 1 },
+        { id: 'b', x: 4, y: 0, w: 6, h: 10, size: 'm', zFlowOrder: 1 },
         { id: 'c', x: 0, y: 10, w: 12, h: 10, size: 'xl', zFlowOrder: 2 },
       ]);
       const { engine, onChange } = createEngine(nodes, 16);
@@ -286,29 +339,51 @@ describe('SteppedResizeGridStackEngine', () => {
       engine.columnChanged(16, 8);
 
       expect(nodes.map(({ id, x, y, w }) => ({ id, x, y, w }))).toEqual([
-        { id: 'a', x: 0, y: 0, w: 2 },
-        { id: 'b', x: 2, y: 0, w: 4 },
-        { id: 'c', x: 0, y: 10, w: 8 },
+        { id: 'a', x: 0, y: 0, w: 4 },
+        { id: 'b', x: 0, y: 10, w: 6 },
+        { id: 'c', x: 0, y: 20, w: 8 },
       ]);
       expect(onChange).toHaveBeenCalled();
+    });
+
+    it('widens the xxl card to the full row when the page grows to 20 columns', () => {
+      const nodes = withInternalIds([
+        { id: 'a', x: 0, y: 0, w: 16, h: 10, size: 'xxl', zFlowOrder: 0 },
+        { id: 'b', x: 0, y: 10, w: 4, h: 10, size: 's', zFlowOrder: 1 },
+      ]);
+      const { engine } = createEngine(nodes, 16);
+
+      engine.column = 20;
+      engine.columnChanged(16, 20);
+
+      expect(nodes.map(({ id, x, y, w }) => ({ id, x, y, w }))).toEqual([
+        { id: 'a', x: 0, y: 0, w: 20 },
+        { id: 'b', x: 0, y: 10, w: 4 },
+      ]);
     });
 
     it('keeps the size of every node when the page shrinks and grows back', () => {
       const nodes = withInternalIds([
         { id: 'a', x: 0, y: 0, w: 4, h: 10, size: 's' },
-        { id: 'b', x: 4, y: 0, w: 12, h: 10, size: 'xl' },
+        { id: 'b', x: 4, y: 0, w: 6, h: 10, size: 'm' },
+        { id: 'c', x: 0, y: 10, w: 10, h: 10, size: 'l' },
+        { id: 'd', x: 0, y: 20, w: 12, h: 10, size: 'xl' },
+        { id: 'e', x: 0, y: 30, w: 16, h: 10, size: 'xxl' },
       ]);
       const { engine } = createEngine(nodes, 16);
 
       engine.column = 4;
       engine.columnChanged(16, 4);
-      expect(nodes.map(({ w }) => w)).toEqual([4, 4]);
+      expect(nodes.map(({ w }) => w)).toEqual([4, 4, 4, 4, 4]);
 
       engine.column = 16;
       engine.columnChanged(4, 16);
       expect(nodes.map(({ w, size }) => ({ w, size }))).toEqual([
         { w: 4, size: 's' },
+        { w: 6, size: 'm' },
+        { w: 10, size: 'l' },
         { w: 12, size: 'xl' },
+        { w: 16, size: 'xxl' },
       ]);
     });
 

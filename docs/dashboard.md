@@ -90,7 +90,7 @@ These custom properties form the dashboard's public styling contract. Set them o
 
 | Variable                                      | Default                        | Purpose                                                                                                                                                                                   |
 | --------------------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--mfp_cardContainerPadding`                  | `10px`                         | Inline padding inside each dashboard card.                                                                                                                                                |
+| `--mfp_cardContainerPadding`                  | `10px`, `0.5rem` in z-flow     | Inline padding inside each dashboard card. For loose cards in z-flow it is half the gap between cards — see [Card gap](#zflow--reflow-layout-mode).                                       |
 | `--mfp_cardBorder`                            | `none`                         | Border applied to the inner card surface while an editable card is hovered or focused.                                                                                                    |
 | `--mfp_cardEditFrameShadow`                   | `none`                         | Edit-mode frame shadow. Set by the dashboard to `--sapContent_Shadow0` on editable cards and on the section in edit mode — see [Section frame in edit mode](#section-frame-in-edit-mode). |
 | `--row-height`                                | `10px`                         | Height of each grid row track in a section's card grid.                                                                                                                                   |
@@ -755,7 +755,7 @@ interface DashboardConfig {
   editButtonFirst?: boolean;
   zFlow?: {
     cardHeight: number;
-    defaultCardSize: 's' | 'm' | 'xl';
+    defaultCardSize: 's' | 'm' | 'l' | 'xl' | 'xxl';
   };
 }
 ```
@@ -844,29 +844,38 @@ before            after
 | --------- | -------------- | ------- |
 | S         | 0 – 599 px     | 4       |
 | M         | 600 – 1023 px  | 8       |
-| L         | 1024 – 1439 px | 12      |
-| XL        | ≥ 1440 px      | 16      |
+| ML        | 1024 – 1279 px | 12      |
+| L         | 1280 – 1439 px | 12      |
+| XL        | 1440 – 1679 px | 16      |
+| XXL       | 1680 – 1919 px | 20      |
+| XXXL      | ≥ 1920 px      | 20      |
 
-**Card sizes.** A loose card is sized by [`CardConfig.size`](#cardconfig) — `'s'`, `'m'` or `'xl'` — not by `w`. The size maps to a column span per page size:
+The page sizes, their width ranges and column counts are those of the SAPUI5 [`sap.ui.layout.cssgrid.ResponsiveColumnLayout`](https://github.com/SAP/openui5/blob/master/src/sap.ui.layout/src/sap/ui/layout/cssgrid/ResponsiveColumnLayout.js), the grid the SAP BTP cockpit home page cards follow.
 
-| Card size | Page S | Page M | Page L | Page XL |
-| --------- | ------ | ------ | ------ | ------- |
-| `s`       | 4      | 2      | 3      | 4       |
-| `m`       | 4      | 4      | 6      | 8       |
-| `xl`      | 4      | 8      | 12     | 12      |
+**Card sizes.** A loose card is sized by [`CardConfig.size`](#cardconfig) — `'s'`, `'m'`, `'l'`, `'xl'` or `'xxl'` — not by `w`. The size maps to a column span per page size:
+
+| Card size | Page S | Page M | Page ML | Page L | Page XL | Page XXL | Page XXXL |
+| --------- | ------ | ------ | ------- | ------ | ------- | -------- | --------- |
+| `s`       | 4      | 4      | 4       | 4      | 4       | 4        | 4         |
+| `m`       | 4      | 6      | 8       | 8      | 6       | 6        | 6         |
+| `l`       | 4      | 8      | 10      | 10     | 10      | 10       | 10        |
+| `xl`      | 4      | 8      | 12      | 12     | 12      | 12       | 12        |
+| `xxl`     | 4      | 8      | 12      | 12     | 16      | 20       | 20        |
 
 When the page size changes, every loose card takes the span of its size on the new page and the z-flow order is re-packed, so a card keeps its size across page sizes. A loose card without a `size` gets `zFlow.defaultCardSize` — both when the dashboard renders it and when it is added through the Edit Cards dialog, where the default is written into its config. `w`, `minW` and `maxW` are ignored for loose cards in z-flow.
 
-**Snapped resize.** Resizing a card in edit mode — with the resize handle or with `Shift + ArrowRight` / `Shift + ArrowLeft` — snaps only to the spans of the three card sizes on the current page. The card cannot grow past the right edge of the grid, and on page S, where every size spans all 4 columns, it cannot be resized at all. After a resize, the card's `size` in the `cards` model is set to the size it snapped to, and `saveEdit()` reports `size` for every loose card in the `saved` payload. Section cards are not affected by `size`.
+**Snapped resize.** Resizing a card in edit mode — with the resize handle or with `Shift + ArrowRight` / `Shift + ArrowLeft` — snaps only to the distinct spans of the five card sizes on the current page. On page L, for example, the steps are 4, 8, 10 and 12 columns, because `xl` and `xxl` both span 12. The card cannot grow past the right edge of the grid, and on page S, where every size spans all 4 columns, it cannot be resized at all. After a resize, the card's `size` in the `cards` model is set to the size it snapped to, and `saveEdit()` reports `size` for every loose card in the `saved` payload. When several sizes share the span, the card keeps its current size if that is one of them; otherwise it takes the smallest of them. Section cards are not affected by `size`.
+
+**Card gap.** Loose cards in z-flow sit `1rem` apart, horizontally and vertically, like the cards of the ResponsiveColumnLayout grid: every loose card is inset by `0.5rem` on each side, and the grid is shifted so that the outer edges of the cards stay aligned with the dashboard header and the section cards. Setting [`--mfp_cardContainerPadding`](#css-variable-contract) replaces the inline inset, and with it the horizontal gap, for every card, z-flow included.
 
 **Current sizes in the DOM.** In z-flow the dashboard exposes the active sizes as data attributes, so a card can read them from its own DOM ancestors:
 
-| Attribute           | Element                                      | Values                                 |
-| ------------------- | -------------------------------------------- | -------------------------------------- |
-| `data-page-size`    | `.mfp-dashboard` (`data-testid="dashboard"`) | `s`, `m`, `l`, `xl`                    |
-| `data-page-columns` | `.mfp-dashboard` (`data-testid="dashboard"`) | column count of the page: 4, 8, 12, 16 |
-| `data-card-size`    | the GridStack item of every loose card       | `s`, `m`, `xl`                         |
-| `data-card-columns` | the GridStack item of every loose card       | column span of the card on the page    |
+| Attribute           | Element                                      | Values                                     |
+| ------------------- | -------------------------------------------- | ------------------------------------------ |
+| `data-page-size`    | `.mfp-dashboard` (`data-testid="dashboard"`) | `s`, `m`, `ml`, `l`, `xl`, `xxl`, `xxxl`   |
+| `data-page-columns` | `.mfp-dashboard` (`data-testid="dashboard"`) | column count of the page: 4, 8, 12, 16, 20 |
+| `data-card-size`    | the GridStack item of every loose card       | `s`, `m`, `l`, `xl`, `xxl`                 |
+| `data-card-columns` | the GridStack item of every loose card       | column span of the card on the page        |
 
 For example, `element.closest('[data-card-size]')?.getAttribute('data-card-size')`. All four attributes are updated in place when the page size changes or the card is resized.
 
@@ -1038,7 +1047,7 @@ interface CardConfig {
   minH?: number;
   minW?: number;
   sectionId?: string;
-  size?: 's' | 'm' | 'xl'; // z-flow loose cards only, see zFlow
+  size?: 's' | 'm' | 'l' | 'xl' | 'xxl'; // z-flow loose cards only, see zFlow
   component: string;
   type?: 'wc' | 'angular' | 'sap-ui';
   componentInputs?: Record<string, unknown>;

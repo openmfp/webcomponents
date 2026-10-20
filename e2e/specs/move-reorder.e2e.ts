@@ -54,7 +54,7 @@ test.describe('Move / Reorder cards', () => {
     await page.mouse.down();
 
     // Arm the drag deterministically while staying INSIDE the origin cell
-    // (309×400px) so the card does not yet leave its slot. gridstack arms its
+    // (411×400px) so the card does not yet leave its slot. gridstack arms its
     // draggable only once the pointer clears a ~3px start threshold; fire a
     // distinct arming nudge first, then a second small in-cell hop, each as a
     // separate mouse.move so gridstack sees discrete pointermove events.
@@ -193,14 +193,15 @@ test.describe('Move / Reorder cards', () => {
     await enterEditMode(page);
 
     // Grow front card to xl (w:12 = full 12-column row at 1280px).
-    // Keyboard resize steps: 3→6 (s→m), 6→12 (m→xl).
+    // Keyboard resize steps: 4→8 (s→m), 8→10 (m→l), 10→12 (l→xl).
 
     const orderBefore = await orderByDom(page);
     const front = orderBefore[0];
     const second = orderBefore[1];
 
     // Grow front card to fill the entire row (w:12 = 12 columns).
-    await pressCommand(page, front, 'Shift+ArrowRight', { w: 6 });
+    await pressCommand(page, front, 'Shift+ArrowRight', { w: 8 });
+    await pressCommand(page, front, 'Shift+ArrowRight', { w: 10 });
     await pressCommand(page, front, 'Shift+ArrowRight', { w: 12 });
 
     // The front card now spans all 12 columns (x:0, w:12).
@@ -222,18 +223,18 @@ test.describe('Move / Reorder cards', () => {
     expect(secondSlot.y).toBeGreaterThan(0);
   });
 
-  test('drag-to-arbitrary-slot: drag d from Row 1 to Row 0 col 3 and assert exact resulting order', async ({
+  test('drag-to-arbitrary-slot: drag d from Row 1 to Row 0 col 4 and assert exact resulting order', async ({
     page,
   }) => {
     await enterEditMode(page);
 
     // 12-col layout:
-    //   Row 0 (gs-y=0):  a(x=0,w=3), b(x=3,w=6)
-    //   Row 1 (gs-y=1): c(x=0,w=6), d(x=6,w=3), e(x=9,w=3)
-    //   Row 2 (gs-y=2): g(x=0,w=3), h(x=3,w=3)
+    //   Row 0 (gs-y=0): a(x=0,w=4), b(x=4,w=8)
+    //   Row 1 (gs-y=1): c(x=0,w=8), d(x=8,w=4)
+    //   Row 2 (gs-y=2): e(x=0,w=4), g(x=4,w=4), h(x=8,w=4)
     //
-    // Drag d (Row 1, x=6) up to col 3 of Row 0 — between a(x=0,w=3) and b(x=3,w=6).
-    // d(w=3) inserts at x=3, pushing b to x=6: a(x=0)+d(x=3)+b(x=6)=12 fills Row 0.
+    // Drag d (Row 1, x=8) up to col 4 of Row 0 — between a(x=0,w=4) and b(x=4,w=8).
+    // d(w=4) inserts at x=4; b(w=8) no longer fits beside a+d and wraps to Row 1.
     const orderBefore = await orderByDom(page);
 
     // d is 4th in zFlowOrder (index 3).
@@ -241,23 +242,23 @@ test.describe('Move / Reorder cards', () => {
     const dSlotBefore = await slotOf(page, dId);
     const rowYs = await rowOrdinals(page);
     expect(dSlotBefore.y).toBe(rowYs[1]); // d starts in row ordinal 1 (second distinct row)
-    expect(dSlotBefore.x).toBe(6);
+    expect(dSlotBefore.x).toBe(8);
 
-    // Drag d to Row 0 (gs-y=0) at col 3 — between a (x=0,w=3) and b (x=3,w=6).
-    await dragCardToSlot(page, dId, 3, 0);
+    // Drag d to Row 0 (gs-y=0) at col 4 — between a (x=0,w=4) and b (x=4,w=8).
+    await dragCardToSlot(page, dId, 4, 0);
 
     // New order: [a, d, b, c, e, g, h].
-    // Repack: a(x=0,w=3), d(x=3,w=3), b(x=6,w=6) fills Row 0 (3+3+6=12).
-    //         c(x=0,w=6), e(x=6,w=3), g(x=9,w=3) fills Row 1.
-    //         h(x=0,w=3) in Row 2.
+    // Repack: a(x=0,w=4), d(x=4,w=4) in Row 0; b(x=0,w=8) in Row 1.
+    //         c(x=0,w=8), e(x=8,w=4) fills Row 2.
+    //         g(x=0,w=4), h(x=4,w=4) in Row 3.
     const expectedOrder = [
       orderBefore[0], // a: x=0, y=0
-      dId, // d: x=3, y=0
-      orderBefore[1], // b: x=6, y=0
-      orderBefore[2], // c: x=0, y=1
-      orderBefore[4], // e: x=6, y=1
-      orderBefore[5], // g: x=9, y=1
-      orderBefore[6], // h: x=0, y=2
+      dId, // d: x=4, y=0
+      orderBefore[1], // b: x=0, y=1
+      orderBefore[2], // c: x=0, y=2
+      orderBefore[4], // e: x=8, y=2
+      orderBefore[5], // g: x=0, y=3
+      orderBefore[6], // h: x=4, y=3
     ];
 
     await expect.poll(() => orderByDom(page)).toEqual(expectedOrder);

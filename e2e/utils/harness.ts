@@ -5,8 +5,8 @@ import { type Page, expect } from '@playwright/test';
  * and rendered. The fixture sets `window.__mfpReady = true` once
  * customElements.whenDefined('mfp-wc-dashboard') resolves.
  */
-export async function openHarness(page: Page): Promise<void> {
-  await page.goto('/');
+export async function openHarness(page: Page, path = '/'): Promise<void> {
+  await page.goto(path);
 
   // Wait for the element definition + readiness flag set by the fixture.
   await page.waitForFunction(

@@ -39,8 +39,8 @@
   overflow: visible;
   isolation: isolate;
   padding-block: card.$card-container-padding-block;
-  padding-inline-start: var(--mfp_cardContainerPadding, 10px);
-  padding-inline-end: var(--mfp_cardContainerPadding, 10px);
+  padding-inline-start: card.$card-container-padding;
+  padding-inline-end: card.$card-container-padding;
 
   &--editing {
     --mfp_cardEditFrameShadow: var(--sapContent_Shadow0);
@@ -123,12 +123,13 @@
 .card__resize-indicator {
   position: absolute;
   // Anchored to the .component-card edges. The card has horizontal padding
-  // (--mfp_cardContainerPadding, default 10px) and vertical padding
-  // (--mfp_cardContainerPaddingBlock, default 5px), so we pull the chevron back
-  // by that much to land inside the visible card surface rather than the
-  // padding gutter. The indicator only shows in edit mode, where the edit
-  // controls row pushes the card down, so the bottom offset follows the card.
-  right: calc(var(--mfp_cardContainerPadding, 10px) + 4px);
+  // (--mfp_cardContainerPadding, default 10px, 0.5rem in z-flow) and vertical
+  // padding (--mfp_cardContainerPaddingBlock, default 5px, 0.5rem in z-flow),
+  // so we pull the chevron back by that much to land inside the visible card
+  // surface rather than the padding gutter. The indicator only shows in edit
+  // mode, where the edit controls row pushes the card down, so the bottom
+  // offset follows the card.
+  right: calc(#{card.$card-container-padding} + 4px);
   bottom: calc(
     #{card.$card-container-padding-block} - #{card.$card-edit-controls-height} +
       4px

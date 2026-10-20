@@ -22,6 +22,7 @@ export interface EngineProfile {
   renderOriginPosition: boolean;
   /** Optional GridStack layout mode. 'list' delegates drag reorder to GridStack's native row-major list packing. */
   mode?: GridStackMode;
+  itemMarginTop?: number;
 }
 
 const getColumns = (breakpoints: readonly DashboardBreakpoint[]) =>
@@ -36,6 +37,7 @@ export const ENGINE_PROFILES = {
     fixedCardHeight: true,
     renderOriginPosition: true,
     mode: 'list',
+    itemMarginTop: 0,
   },
   default: {
     engineClass: undefined,

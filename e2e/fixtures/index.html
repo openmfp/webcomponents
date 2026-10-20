@@ -57,24 +57,24 @@
         // placeholders keep the harness free of the Angular component registry
         // and external data. Their visible headers identify cards during UI runs.
         //
-        // At 1280px viewport the z-flow grid uses 12 columns (breakpoint 'l').
-        // Card spans per size: s=3, m=6, xl=12.
+        // At 1280px viewport the z-flow grid uses 12 columns (page size 'l').
+        // Card spans per size: s=4, m=8, l=10, xl=12, xxl=12.
         //
-        //   e2e-a  size=s  -> span=3  (full ladder [3,6,12]; effectiveMax=12)
-        //   e2e-b  size=m  -> span=6  (packed at x=3; effectiveMax=12-3=9; ladder [3,6])
-        //   e2e-c  size=m  -> span=6  (shrink/grow tests)
-        //   e2e-d  size=s  -> span=3  (move / reorder target)
-        //   e2e-e  size=s  -> span=3  (move / reorder target)
-        //   e2e-g  size=s  -> span=3  (plain card, ensures ≥2 rows)
-        //   e2e-h  size=s  -> span=3  (plain card, ensures ≥3 rows)
+        //   e2e-a  size=s  -> span=4  (full ladder [4,8,10,12]; effectiveMax=12)
+        //   e2e-b  size=m  -> span=8  (packed at x=4; effectiveMax=12-4=8; ladder [4,8])
+        //   e2e-c  size=m  -> span=8  (shrink/grow tests)
+        //   e2e-d  size=s  -> span=4  (move / reorder target)
+        //   e2e-e  size=s  -> span=4  (move / reorder target)
+        //   e2e-g  size=s  -> span=4  (plain card, ensures ≥2 rows)
+        //   e2e-h  size=s  -> span=4  (plain card, ensures ≥3 rows)
         //   e2e-f  size=s             -> availableCards ONLY -> add flow
         //   e2e-i  size=s             -> availableCards ONLY -> multi-add flow
         //
         // zFlowOrder is set explicitly so z-flow uses this order directly
         // (hasZFlowOrder() skips position-based re-seeding). Layout at 12 cols:
-        //   Row 0 (gs-y=0):  a(x=0,w=3), b(x=3,w=6)
-        //   Row 1 (gs-y=40): c(x=0,w=6), d(x=6,w=3), e(x=9,w=3)
-        //   Row 2 (gs-y=80): g(x=0,w=3), h(x=3,w=3)
+        //   Row 0 (gs-y=0): a(x=0,w=4), b(x=4,w=8)
+        //   Row 1 (gs-y=1): c(x=0,w=8), d(x=8,w=4)
+        //   Row 2 (gs-y=2): e(x=0,w=4), g(x=4,w=4), h(x=8,w=4)
         const H = 40; // z-flow cardHeight (px rows); loose height pinned to this.
 
         const cardContent = (id, number) => ({
@@ -95,15 +95,22 @@
           label: id,
         });
 
-        const CARDS = [
-          card('e2e-a', 's', 0), // w=3 at 12 cols
-          card('e2e-b', 'm', 1), // w=6 at 12 cols
-          card('e2e-c', 'm', 2), // w=6 at 12 cols
-          card('e2e-d', 's', 3), // w=3 at 12 cols
-          card('e2e-e', 's', 4), // w=3 at 12 cols
-          card('e2e-g', 's', 5), // w=3 at 12 cols
-          card('e2e-h', 's', 6), // w=3 at 12 cols
-        ];
+        const SIZES_DATASET =
+          new URLSearchParams(location.search).get('dataset') === 'sizes';
+
+        const CARDS = SIZES_DATASET
+          ? ['s', 'm', 'l', 'xl', 'xxl'].map((size, zFlowOrder) =>
+              card(`size-${size}`, size, zFlowOrder),
+            )
+          : [
+              card('e2e-a', 's', 0), // w=4 at 12 cols
+              card('e2e-b', 'm', 1), // w=8 at 12 cols
+              card('e2e-c', 'm', 2), // w=8 at 12 cols
+              card('e2e-d', 's', 3), // w=4 at 12 cols
+              card('e2e-e', 's', 4), // w=4 at 12 cols
+              card('e2e-g', 's', 5), // w=4 at 12 cols
+              card('e2e-h', 's', 6), // w=4 at 12 cols
+            ];
 
         // AVAILABLE_CARDS copies strip zFlowOrder: available-only cards have no
         // predetermined order — zFlowOrder is assigned when they are added to front.

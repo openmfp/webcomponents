@@ -1,3 +1,12 @@
-$card-container-padding: var(--mfp_cardContainerPadding, 10px);
-$card-container-padding-block: var(--mfp_cardContainerPaddingBlock, 5px);
+$card-container-padding-fallback: 10px;
+$card-container-padding-block-fallback: 5px;
+$card-container-padding: var(
+  --mfp_cardContainerPadding,
+  var(--mfp-dashboard-card-gutter, #{$card-container-padding-fallback})
+);
+$card-container-padding-block: var(
+  --mfp_cardContainerPaddingBlock,
+  var(--mfp-dashboard-card-gutter, #{$card-container-padding-block-fallback})
+);
 $card-edit-controls-height: 0.5rem;
+$zflow-card-gap: 1rem;

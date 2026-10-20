@@ -8,7 +8,7 @@
 //                                MUST match these values (they are the fallbacks
 //                                when no --dashboard-cols-* CSS var is set).
 //
-//   ZFLOW_DASHBOARD_BREAKPOINTS — zFlow engine (4/8/12/16 columns), derived
+//   ZFLOW_DASHBOARD_BREAKPOINTS — zFlow engine (4/8/12/16/20 columns), derived
 //                                 from ZFLOW_PAGE_SIZES together with the
 //                                 card-size column spans per page size.
 //                                 Overrides the CSS vars at runtime via the
@@ -52,7 +52,7 @@ export const DASHBOARD_BREAKPOINTS: readonly DashboardBreakpoint[] = [
   { w: 599, c: 1, layout: 'list' },
 ] as const;
 
-export type ZFlowPageSize = 's' | 'm' | 'l' | 'xl';
+export type ZFlowPageSize = 's' | 'm' | 'ml' | 'l' | 'xl' | 'xxl' | 'xxxl';
 
 export interface ZFlowPageSizeConfig {
   pageSize: ZFlowPageSize;
@@ -66,21 +66,43 @@ export const ZFLOW_PAGE_SIZES: readonly ZFlowPageSizeConfig[] = [
     pageSize: 's',
     maxWidth: 599,
     columns: 4,
-    cardSpans: { s: 4, m: 4, xl: 4 },
+    cardSpans: { s: 4, m: 4, l: 4, xl: 4, xxl: 4 },
   },
   {
     pageSize: 'm',
     maxWidth: 1023,
     columns: 8,
-    cardSpans: { s: 2, m: 4, xl: 8 },
+    cardSpans: { s: 4, m: 6, l: 8, xl: 8, xxl: 8 },
+  },
+  {
+    pageSize: 'ml',
+    maxWidth: 1279,
+    columns: 12,
+    cardSpans: { s: 4, m: 8, l: 10, xl: 12, xxl: 12 },
   },
   {
     pageSize: 'l',
     maxWidth: 1439,
     columns: 12,
-    cardSpans: { s: 3, m: 6, xl: 12 },
+    cardSpans: { s: 4, m: 8, l: 10, xl: 12, xxl: 12 },
   },
-  { pageSize: 'xl', columns: 16, cardSpans: { s: 4, m: 8, xl: 12 } },
+  {
+    pageSize: 'xl',
+    maxWidth: 1679,
+    columns: 16,
+    cardSpans: { s: 4, m: 6, l: 10, xl: 12, xxl: 16 },
+  },
+  {
+    pageSize: 'xxl',
+    maxWidth: 1919,
+    columns: 20,
+    cardSpans: { s: 4, m: 6, l: 10, xl: 12, xxl: 20 },
+  },
+  {
+    pageSize: 'xxxl',
+    columns: 20,
+    cardSpans: { s: 4, m: 6, l: 10, xl: 12, xxl: 20 },
+  },
 ] as const;
 
 export const ZFLOW_COLUMN_MAX = Math.max(
