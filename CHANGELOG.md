@@ -12,6 +12,7 @@ and [releases](https://github.com/openmfp/webcomponents/releases) for details.
 ## [1.11.0] - 2026-10-21
 
 ### Features
+
 - _(dashboard)_ Align z-flow with ResponsiveColumnLayout page and card sizes (#351)
 
 ## [1.10.0] - 2026-10-13
