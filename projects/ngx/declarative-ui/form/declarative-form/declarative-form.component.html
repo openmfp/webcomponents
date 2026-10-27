@@ -28,7 +28,7 @@
         @if (getError(field.name); as error) {
           <div class="collection-error" role="alert">{{ error }}</div>
         }
-      } @else if (field.values?.length) {
+      } @else if (field.values !== undefined) {
         <ui5-select
           class="input"
           [attr.data-testid]="'generic-form-field-' + field.name"
@@ -39,12 +39,11 @@
           [valueState]="getValueState(field.name)"
           (blur)="onFieldBlur(field)"
           (change)="setFormControlValue($event, field)"
-          (input)="setFormControlValue($event, field)"
         >
           @if (getError(field.name); as error) {
             <div slot="valueStateMessage">{{ error }}</div>
           }
-          @for (value of [''].concat(field.values ?? []); track value) {
+          @for (value of selectOptions(field, control.value); track value) {
             <ui5-option
               [attr.data-testid]="
                 'generic-form-field-' +

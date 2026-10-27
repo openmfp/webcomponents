@@ -30,7 +30,10 @@ A dynamic form web component that renders fields from a declarative field defini
   ];
 
   form.addEventListener('fieldChange', (event) => {
-    const { fieldProperty, value } = event.detail;
+    const { fieldProperty, value, source } = event.detail;
+    // Ignore seed echoes if the host should react only to real user edits.
+    if (source === 'seed') return;
+
     const fieldErrors = { ...form.fieldErrors };
 
     if (fieldProperty === 'metadata.name' && !value) {
@@ -142,7 +145,7 @@ interface FormFieldDefinition {
   name: string; // Field key; dots create nested submit output paths
   label: string; // Display label shown above the field
   required?: boolean; // Visual required marker only
-  values?: string[]; // Static select options
+  values?: string[]; // Options rendered as a select; an empty array keeps the select visible with just the blank placeholder
   disabled?: boolean; // Disables the field
   inputType?: 'Text' | 'Password' | 'Switch'; // Control type; defaults to Text
   showPasswordToggle?: boolean; // Password fields only; defaults to true
@@ -156,6 +159,8 @@ interface FormFieldDefinition {
 interface FormFieldChangeEvent {
   fieldProperty: string; // The field property name (matches field.name)
   value: unknown; // Current value of the control; for a `propertyCollection` field this is the full `Array<Record<string, unknown>>`
+  source?: 'seed' | 'user'; // Origin of the emit; see "Seed vs user emits" below. Absence is treated as 'user' for backward compatibility.
+  formValues?: Readonly<Record<string, unknown>>; // Flat values of all controls after this change (keyed by `field.name`), including disabled controls
 }
 
 type FormFieldErrors = Record<string, string | null>;
@@ -164,7 +169,12 @@ type FormFieldErrors = Record<string, string | null>;
 `fieldChange` emits a single field at a time:
 
 ```ts
-{ fieldProperty: 'metadata.name', value: 'my-app' }
+{
+  fieldProperty: 'metadata.name',
+  value: 'my-app',
+  source: 'user',
+  formValues: { 'metadata.name': 'my-app', 'metadata.namespace': 'default' },
+}
 ```
 
 For a `propertyCollection` field the payload carries the whole array:
@@ -300,6 +310,50 @@ const initialValues = {
 - The host validates the received `FormFieldChangeEvent` and updates `fieldErrors`.
 - A field shows `Negative` value state and the error message only when it is dirty or touched and `fieldErrors[field.name]` is a non-empty string. Text inputs and selects show errors inline via UI5 `valueState`; switches and collection fields render the message in a `.field-error` / `.collection-error` element below the control.
 - Empty, missing, or `null` errors render as no error.
+
+---
+
+## Seed vs user emits
+
+`FormFieldChangeEvent.source` distinguishes **user interactions** from **programmatic seeds**:
+
+| `source`    | Fired by                                                                                                                           |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `'user'`    | Keystrokes / change / blur on text and select, switch toggle, collection add / remove / edit                                       |
+| `'seed'`    | Every validation field on an `[initialValues]` input identity push (including first mount) and on `patchForm({ emitEvent: true })` |
+| `undefined` | Treated as `'user'` for backward compatibility with external consumers that construct `FormFieldChangeEvent` manually              |
+
+Alongside `source`, every emit carries `formValues` — the flat value of **every** control after the change (keyed by exact `field.name`, disabled controls included). Dependent-field resolvers can read sibling values without a separate `formValueChange` subscription.
+
+Updating `fields` alone (including select options) does not emit `fieldChange`. New controls are also added silently; a subsequent `initialValues` identity change emits seeds for the current validation fields.
+
+`formValues` is a snapshot attached to the field event, including on blur and collection changes. `formValueChange` is a separate output and uses `form.value`, which excludes controls disabled through the Angular forms API. Field events use `getRawValue()`, which includes them. A field definition's `disabled` flag currently disables the rendered UI5 input; it does not disable the Angular control.
+
+Hosts that run validation on every emit can treat `'seed'` the same as `'user'`. Hosts that drive dependent fields (where a parent change should clear or re-resolve dependents) typically gate on `source === 'user'` and ignore seeds — otherwise the dialog's own prefill on edit-open would be interpreted as the user editing the parent and would wipe prefilled dependents.
+
+The input binding is the **emit** path; `patchForm({ emitEvent: false })` is the **silent** path.
+
+---
+
+## `patchForm()` — programmatic value seeding
+
+The component exposes a `patchForm` method for hosts that need to seed values **without** pushing a new `[initialValues]` identity (for example, from a dependent-field resolver reacting to a `fieldChange`). It mirrors Angular's `AbstractControl.setValue(v, { emitEvent })` convention:
+
+```ts
+form.patchForm(
+  { 'metadata.namespace': 'default' },
+  { emitEvent: false, markAsDirty: true },
+);
+```
+
+| Option        | Default | Effect                                                                                                                                                 |
+| ------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `emitEvent`   | `true`  | When `true` (or omitted), re-fires `fieldChange` with `source: 'seed'` for every validation field (same as an input push). When `false`, stays silent. |
+| `markAsDirty` | `false` | When `true`, marks each patched control as dirty so `fieldErrors` for those fields begin to render immediately.                                        |
+
+Use `emitEvent: false` when the host already knows the write is **not** a user change — e.g. when applying resolver output into dependent fields — so dependent resolvers don't interpret the write as a user edit and self-clear.
+
+Keys absent from the partial are left untouched (switch fields keep their current value, collections keep their current entries).
 
 ---
 

@@ -22,10 +22,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { axe } from 'vitest-axe';
 
-// --------------------------------------------------------------------------
-// Helpers
-// --------------------------------------------------------------------------
-
 type TableCardCreateConfig = ResourceFormConfig;
 type TableCardReadConfig = TableConfig;
 type TableCardEditConfig = ResourceFormConfig & {
@@ -159,10 +155,6 @@ function setup(
   return { fixture, component };
 }
 
-// ---------------------------------------------------------------------------
-// Tests
-// ---------------------------------------------------------------------------
-
 /** Query inside a ResourceFormDialog child's shadow root by test-id prefix. */
 function dialogRoot(
   fixture: ComponentFixture<DeclarativeTableCard<GenericResource>>,
@@ -195,18 +187,10 @@ describe('DeclarativeTableCard', () => {
     vi.useRealTimers();
   });
 
-  // -------------------------------------------------------------------------
-  // 1. Component creation
-  // -------------------------------------------------------------------------
-
   it('should create', () => {
     const { component } = setup();
     expect(component).toBeTruthy();
   });
-
-  // -------------------------------------------------------------------------
-  // 2. DOM: mfp-declarative-table rendered
-  // -------------------------------------------------------------------------
 
   describe('DOM: mfp-declarative-table', () => {
     it('renders mfp-declarative-table in the host element', () => {
@@ -245,10 +229,6 @@ describe('DeclarativeTableCard', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // 3. header input
-  // -------------------------------------------------------------------------
-
   describe('header input', () => {
     it('renders the header title when header is provided', () => {
       const { fixture } = setup({ header: 'My Pods' });
@@ -259,10 +239,6 @@ describe('DeclarativeTableCard', () => {
       expect(title?.textContent?.trim()).toBe('My Pods');
     });
   });
-
-  // -------------------------------------------------------------------------
-  // 4. headerTooltip input
-  // -------------------------------------------------------------------------
 
   describe('headerTooltip input', () => {
     it('renders info icon when headerTooltip is provided', () => {
@@ -284,10 +260,6 @@ describe('DeclarativeTableCard', () => {
       expect(root.querySelector('ui5-icon[name="hint"]')).toBeNull();
     });
   });
-
-  // -------------------------------------------------------------------------
-  // 5. Search behaviour
-  // -------------------------------------------------------------------------
 
   describe('search', () => {
     const setupSearch = (searchConfig: TableCardConfig['searchConfig']) => {
@@ -412,10 +384,6 @@ describe('DeclarativeTableCard', () => {
       expect((component as any).searchPlaceholder()).toBe('Search');
     });
   });
-
-  // -------------------------------------------------------------------------
-  // 5.b searchConfig one-shot seeds (initialSearch / initialFilter)
-  // -------------------------------------------------------------------------
 
   /**
    * Small fixture builder — the shared `setup()` helper doesn't accept a
@@ -659,10 +627,6 @@ describe('DeclarativeTableCard', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // 6. Create button visibility
-  // -------------------------------------------------------------------------
-
   describe('create button', () => {
     it('create button is absent when createConfig is not provided', () => {
       const { fixture } = setup();
@@ -678,10 +642,6 @@ describe('DeclarativeTableCard', () => {
       expect(root.querySelector('.card__create-btn')).not.toBeNull();
     });
   });
-
-  // -------------------------------------------------------------------------
-  // 7. effectiveColumns() computed
-  // -------------------------------------------------------------------------
 
   describe('effectiveColumns()', () => {
     it('returns readConfig.fields unchanged', () => {
@@ -721,41 +681,6 @@ describe('DeclarativeTableCard', () => {
       expect(cols).toHaveLength(COLUMNS.length);
     });
   });
-
-  // -------------------------------------------------------------------------
-  // 8. editInitialValue() computed
-  // -------------------------------------------------------------------------
-
-  describe('editInitialValue()', () => {
-    it('returns empty object when pendingResource is null', () => {
-      const { component } = setup({ editConfig: EDIT_CONFIG });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).editInitialValue()).toEqual({});
-    });
-
-    it('returns empty object when editConfig is not set', () => {
-      const { component } = setup();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((component as any).editInitialValue()).toEqual({});
-    });
-
-    it('builds initial values from pendingResource fields when editConfig is set', async () => {
-      const { component } = setup({ editConfig: EDIT_CONFIG });
-      const resource = RESOURCES[0];
-      // Edit fields are resolved when the edit dialog opens; drive that path.
-      component.onButtonClick(makeEvent('update', resource));
-      await Promise.resolve();
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const values = (component as any).editInitialValue();
-      expect(values['metadata.name']).toBe('pod-alpha');
-      expect(values['metadata.namespace']).toBe('default');
-    });
-  });
-
-  // -------------------------------------------------------------------------
-  // 9. onButtonClick()
-  // -------------------------------------------------------------------------
 
   describe('onButtonClick()', () => {
     it('intercepts action="update": sets pendingResource and opens editDialogOpen', async () => {
@@ -826,10 +751,6 @@ describe('DeclarativeTableCard', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // 9.b openCreateDialog() — lazy field resolution
-  // -------------------------------------------------------------------------
-
   describe('openCreateDialog()', () => {
     it('resolves an array fields config and opens the dialog', async () => {
       const { component } = setup({ createConfig: CREATE_CONFIG });
@@ -864,10 +785,6 @@ describe('DeclarativeTableCard', () => {
       expect((component as any).createDialogOpen()).toBe(true);
     });
   });
-
-  // -------------------------------------------------------------------------
-  // 9.c openEditDialog() — concurrency / stale-resolver guard
-  // -------------------------------------------------------------------------
 
   describe('openEditDialog() concurrency', () => {
     /** A promise plus its resolver, so the test controls when it settles. */
@@ -975,9 +892,156 @@ describe('DeclarativeTableCard', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // 10. form state and submit flow
-  // -------------------------------------------------------------------------
+  describe('runtime form patches', () => {
+    it('does not echo field changes when the host patches dependent options', async () => {
+      vi.useRealTimers();
+      const fields: FormFieldDefinition[] = [
+        { name: 'metadata.name', label: 'Name', validation: 'onChange' },
+        {
+          name: 'metadata.namespace',
+          label: 'Namespace',
+          validation: 'onBlur',
+          values: ['team-a'],
+        },
+      ];
+      const { fixture, component } = setup({ createConfig: { fields } });
+      await component.openCreateDialog();
+      await fixture.whenStable();
+      const emitted: FormFieldChangeEvent[] = [];
+      component.createFieldChange.subscribe((event) => {
+        emitted.push(event);
+        if (emitted.length > 1) return;
+        component.applyCreateFormPatch({
+          values: { 'metadata.namespace': '' },
+          fieldUpdates: { 'metadata.namespace': { values: ['team-b'] } },
+        });
+      });
+      const event: FormFieldChangeEvent = {
+        fieldProperty: 'metadata.name',
+        value: 'new-name',
+        source: 'user',
+      };
+
+      component.onCreateFieldChange(event);
+      await fixture.whenStable();
+
+      expect(emitted).toEqual([event]);
+      expect(component['resolvedCreateFields']()[1].values).toEqual(['team-b']);
+    });
+
+    const UPDATED_FIELDS: FormFieldDefinition[] = [
+      { name: 'metadata.name', label: 'Name' },
+      {
+        name: 'metadata.namespace',
+        label: 'Namespace',
+        values: ['team-a'],
+      },
+    ];
+
+    /**
+     * Grab a reference to one of the two possible dialogs by data-testid prefix.
+     * The dialog is only rendered when its `*DialogOpen()` signal is true, so
+     * callers must open the right one before resolving.
+     */
+    function dialogByPrefix(
+      fixture: Fixture,
+      prefix: string,
+    ): ResourceFormDialog | null {
+      const dialogs = fixture.debugElement.queryAll(
+        By.directive(ResourceFormDialog),
+      );
+      return (
+        (dialogs.find(
+          (de) =>
+            (de.componentInstance as ResourceFormDialog).dataTestidPrefix() ===
+            prefix,
+        )?.componentInstance as ResourceFormDialog) ?? null
+      );
+    }
+
+    it('patches a create field and its value without replacing siblings', () => {
+      const { fixture, component } = setup({ createConfig: CREATE_CONFIG });
+      component['resolvedCreateFields'].set(UPDATED_FIELDS);
+      component['createDialogOpen'].set(true);
+      fixture.detectChanges();
+      const dialog = dialogByPrefix(fixture, 'generic-table-card-create');
+      const spy = vi.spyOn(dialog!, 'patchForm');
+
+      component.applyCreateFormPatch({
+        values: { 'metadata.namespace': '' },
+        fieldUpdates: {
+          'metadata.namespace': { values: ['staging'] },
+        },
+      });
+
+      expect(component['resolvedCreateFields']()[0]).toEqual(UPDATED_FIELDS[0]);
+      expect(component['resolvedCreateFields']()[1]).toMatchObject({
+        values: ['staging'],
+      });
+      expect(spy).toHaveBeenCalledWith(
+        { 'metadata.namespace': '' },
+        { emitEvent: false, markAsDirty: true },
+      );
+    });
+
+    it('patches an edit field and its value without replacing siblings', () => {
+      const { fixture, component } = setup({ editConfig: EDIT_CONFIG });
+      component['resolvedEditFields'].set(UPDATED_FIELDS);
+      component['editDialogOpen'].set(true);
+      fixture.detectChanges();
+      const dialog = dialogByPrefix(fixture, 'generic-table-card-edit');
+      const spy = vi.spyOn(dialog!, 'patchForm');
+
+      component.applyEditFormPatch({
+        values: { 'metadata.namespace': '' },
+        fieldUpdates: {
+          'metadata.namespace': { values: ['staging'] },
+        },
+      });
+
+      expect(component['resolvedEditFields']()[0]).toEqual(UPDATED_FIELDS[0]);
+      expect(component['resolvedEditFields']()[1]).toMatchObject({
+        values: ['staging'],
+      });
+      expect(spy).toHaveBeenCalledWith(
+        { 'metadata.namespace': '' },
+        { emitEvent: false, markAsDirty: true },
+      );
+    });
+
+    it('seeds edit values on every open', async () => {
+      // Each dialog session receives the resource's values.
+      const { fixture, component } = setup({ editConfig: EDIT_CONFIG });
+
+      component.onButtonClick(makeEvent('update', RESOURCES[0]));
+      await Promise.resolve();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      let dialog = dialogByPrefix(fixture, 'generic-table-card-edit');
+      expect(dialog).not.toBeNull();
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let form = (dialog as any).form();
+      expect(form.form.controls['metadata.name']?.value).toBe('pod-alpha');
+
+      component.closeEditDialog();
+      fixture.detectChanges();
+
+      component.onButtonClick(makeEvent('update', RESOURCES[1]));
+      await Promise.resolve();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      dialog = dialogByPrefix(fixture, 'generic-table-card-edit');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      form = (dialog as any).form();
+      expect(form.form.controls['metadata.name']?.value).toBe('pod-beta');
+      expect(form.form.controls['metadata.namespace']?.value).toBe(
+        'kube-system',
+      );
+    });
+  });
 
   describe('form state and submit flow', () => {
     const fieldChange: FormFieldChangeEvent = {
@@ -1085,11 +1149,90 @@ describe('DeclarativeTableCard', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // 11. close methods
-  // -------------------------------------------------------------------------
-
   describe('close methods', () => {
+    it.each(['create', 'edit'] as const)(
+      'emits %sDialogClosed once when cancellation follows a host close',
+      async (kind) => {
+        vi.useRealTimers();
+        const { fixture, component } = setup({
+          createConfig: CREATE_CONFIG,
+          editConfig: EDIT_CONFIG,
+        });
+        const closed = vi.fn();
+        const close = () => {
+          if (kind === 'create') {
+            component.closeCreateDialog();
+          } else {
+            component.closeEditDialog();
+          }
+        };
+        const output =
+          kind === 'create'
+            ? component.createDialogClosed
+            : component.editDialogClosed;
+        output.subscribe(closed);
+
+        if (kind === 'create') {
+          await component.openCreateDialog();
+        } else {
+          component.onButtonClick(makeEvent('update', RESOURCES[0]));
+        }
+        await fixture.whenStable();
+
+        close();
+        await fixture.whenStable();
+        const dialog = fixture.debugElement
+          .queryAll(By.directive(ResourceFormDialog))
+          .map((element) => element.componentInstance as ResourceFormDialog)
+          .find(
+            (candidate) =>
+              candidate.dataTestidPrefix() === `generic-table-card-${kind}`,
+          );
+        if (!dialog) throw new Error(`Missing ${kind} dialog`);
+        // Simulate the cancellation output caused by UI5's before-close event.
+        dialog.cancelled.emit();
+        close();
+
+        expect(closed).toHaveBeenCalledTimes(1);
+      },
+    );
+
+    it.each(['create', 'edit'] as const)(
+      'cancels a pending %s open without emitting a close event',
+      async (kind) => {
+        vi.useRealTimers();
+        let resolveFields: (fields: FormFieldDefinition[]) => void = () =>
+          undefined;
+        const fields = new Promise<FormFieldDefinition[]>((resolve) => {
+          resolveFields = resolve;
+        });
+        const config = { fields: () => fields };
+        const { fixture, component } = setup({
+          createConfig: config,
+          editConfig: config,
+        });
+        const closed = vi.fn();
+        if (kind === 'create') {
+          component.createDialogClosed.subscribe(closed);
+          void component.openCreateDialog();
+          component.closeCreateDialog();
+        } else {
+          component.editDialogClosed.subscribe(closed);
+          component.onButtonClick(makeEvent('update', RESOURCES[0]));
+          component.closeEditDialog();
+        }
+        resolveFields(FORM_FIELDS);
+        await fixture.whenStable();
+
+        expect(
+          component[
+            kind === 'create' ? 'createDialogOpen' : 'editDialogOpen'
+          ](),
+        ).toBe(false);
+        expect(closed).not.toHaveBeenCalled();
+      },
+    );
+
     it('closeCreateDialog() closes the create dialog', () => {
       const { component } = setup({ createConfig: CREATE_CONFIG });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1123,10 +1266,6 @@ describe('DeclarativeTableCard', () => {
       expect((component as any).deleteDialogOpen()).toBe(false);
     });
   });
-
-  // -------------------------------------------------------------------------
-  // 12. runtime form state
-  // -------------------------------------------------------------------------
 
   describe('runtime form state', () => {
     it('disables the create submit button when fieldErrors has errors', () => {
@@ -1202,10 +1341,6 @@ describe('DeclarativeTableCard', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // 14. Pass-through outputs
-  // -------------------------------------------------------------------------
-
   describe('pass-through outputs', () => {
     it('exposes tableRowClicked output', () => {
       const { component } = setup();
@@ -1229,10 +1364,6 @@ describe('DeclarativeTableCard', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // 15. readConfig pagination pass-through
-  // -------------------------------------------------------------------------
-
   describe('readConfig pagination', () => {
     it('effectiveColumns() uses fields from readConfig', () => {
       const customColumns: TableFieldDefinition[] = [
@@ -1251,10 +1382,6 @@ describe('DeclarativeTableCard', () => {
       expect(cols[0]).toEqual(customColumns[0]);
     });
   });
-
-  // -------------------------------------------------------------------------
-  // 16. TableConfig: loadMode / height / loadMoreButtonText pass-through
-  // -------------------------------------------------------------------------
 
   describe('tableConfig passthrough: loadMode, height, loadMoreButtonText', () => {
     it('exposes loadMode via tableConfig signal', () => {
@@ -1299,10 +1426,6 @@ describe('DeclarativeTableCard', () => {
       expect(emitted).toEqual([4]);
     });
   });
-
-  // -------------------------------------------------------------------------
-  // 16b. permissions input threading
-  // -------------------------------------------------------------------------
 
   describe('permissions input threading', () => {
     it('accepts a permissions map and exposes it via the permissions() signal', () => {
@@ -1357,10 +1480,6 @@ describe('DeclarativeTableCard', () => {
       expect(tableComp.permissions()).toBe(permissions);
     });
   });
-
-  // -------------------------------------------------------------------------
-  // 17. data-testid attributes
-  // -------------------------------------------------------------------------
 
   describe('data-testid attributes', () => {
     it('root card div has data-testid="generic-table-card"', () => {

@@ -23,6 +23,12 @@ export interface ResourceFormConfig {
 export interface TableCardFormState {
   /** Map of field names to their current error messages. Any truthy error in the map disables the submit button. */
   fieldErrors?: FormFieldErrors;
+  pending?: boolean;
+}
+
+export interface ResourceFormPatch {
+  values?: Record<string, unknown>;
+  fieldUpdates?: Record<string, Partial<Pick<FormFieldDefinition, 'values'>>>;
 }
 
 /** Configuration for the delete-confirmation dialog. */

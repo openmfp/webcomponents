@@ -6,7 +6,7 @@ export interface FormFieldDefinition {
   label: string;
   /** When `true`, passes the `required` attribute to the UI5 input — shows a visual required indicator. Validation itself is the host's responsibility via `FormFieldErrors`. */
   required?: boolean;
-  /** Fixed list of options rendered as a select/dropdown. */
+  /** Options rendered as a select; an empty array keeps the select visible. */
   values?: string[];
   /** When `true`, the field is disabled (not interactive). */
   disabled?: boolean;
@@ -50,6 +50,18 @@ export interface FormFieldChangeEvent {
   fieldProperty: string;
   /** The new value entered by the user. */
   value: unknown;
+  /**
+   * Origin of the emit. `'user'` for direct user interactions
+   * (change/blur/switch toggle/collection edit). `'seed'` for the one-shot
+   * emits that fire when `initialValues` input identity changes (including
+   * on first mount) and for `patchForm({ emitEvent: true })` calls.
+   *
+   * Absence (undefined) is treated as `'user'` for backward compatibility
+   * with external consumers that construct `FormFieldChangeEvent` manually.
+   */
+  source?: 'seed' | 'user';
+  /** Flat values of all controls after this change, including disabled controls. */
+  formValues?: Readonly<Record<string, unknown>>;
 }
 
 /** Map of field names to their current validation error messages (`null` = no error). */

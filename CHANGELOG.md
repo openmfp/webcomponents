@@ -12,6 +12,7 @@ and [releases](https://github.com/openmfp/webcomponents/releases) for details.
 ## [1.11.2] - 2026-10-26
 
 ### Bug Fixes
+
 - _(deps)_ Resolve npm audit and Dependabot vulnerabilities (#355)
 
 ## [1.11.1] - 2026-10-23

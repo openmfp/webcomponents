@@ -6,6 +6,7 @@ import {
   DeclarativeTable,
   DeclarativeTableCard,
   GenericResource,
+  ResourceFormPatch,
 } from '@openmfp/webcomponents/declarative-ui';
 import { ignoreCustomElements } from '@ui5/webcomponents-base/dist/IgnoreCustomElements.js';
 
@@ -54,6 +55,14 @@ ignoreCustomElements('mfp');
     },
   ) as CustomElementConstructor;
   class DeclarativeTableCardElement extends DeclarativeTableCardElementBase {
+    applyCreateFormPatch(patch: ResourceFormPatch): void {
+      this.componentInstance()?.applyCreateFormPatch(patch);
+    }
+
+    applyEditFormPatch(patch: ResourceFormPatch): void {
+      this.componentInstance()?.applyEditFormPatch(patch);
+    }
+
     closeCreateDialog(): void {
       this.componentInstance()?.closeCreateDialog();
     }

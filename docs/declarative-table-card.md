@@ -177,8 +177,8 @@ export class MyComponent {
 | ----------------- | -------------------------- | -------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `resources`       | `T[]`                      | yes      | -       | Data rows passed to the inner table                                                                                                                                                    |
 | `config`          | `TableCardConfig`          | yes      | -       | Static table, button, and dialog configuration                                                                                                                                         |
-| `createFormState` | `TableCardFormState`       | no       | `{}`    | Runtime validation and submit state for the create dialog                                                                                                                              |
-| `editFormState`   | `TableCardFormState`       | no       | `{}`    | Runtime validation and submit state for the edit dialog                                                                                                                                |
+| `createFormState` | `TableCardFormState`       | no       | `{}`    | Runtime validation and submit state for the create dialog. `pending: true` disables the confirm button while an async save is in flight.                                               |
+| `editFormState`   | `TableCardFormState`       | no       | `{}`    | Runtime validation and submit state for the edit dialog. `pending: true` disables the confirm button while an async save is in flight.                                                 |
 | `permissions`     | `Record<string, string[]>` | no       | —       | Per-row permission map keyed by `resource.id`. Threaded through to `mfp-declarative-table` and each `mfp-resource-field` to evaluate `requirePermission` on column definitions.        |
 | `loading`         | `boolean`                  | no       | `false` | Passes the current loading state to the inner table.                                                                                                                                   |
 | `loadingDelay`    | `number`                   | no       | `1000`  | Delay in milliseconds before the inner table loading indicator is displayed.                                                                                                           |
@@ -187,30 +187,36 @@ export class MyComponent {
 
 ### Outputs / Events
 
-| Event                    | Payload                                                  | Description                                                  |
-| ------------------------ | -------------------------------------------------------- | ------------------------------------------------------------ |
-| `createFieldChange`      | `FormFieldChangeEvent`                                   | Re-emits per-field change from the create form               |
-| `editFieldChange`        | `{ resource: T; formChangeEvent: FormFieldChangeEvent }` | Re-emits per-field change from the edit form with resource   |
-| `createSubmit`           | `Record<string, unknown>`                                | Fires when the create dialog Save button is clicked          |
-| `editSubmit`             | `{ resource: T; value: Record<string, unknown> }`        | Fires when the edit dialog Save button is clicked            |
-| `deleteSubmit`           | `T`                                                      | Fires when the delete dialog Delete button is clicked        |
-| `searchChanged`          | `string`                                                 | Emits 300 ms after the search input changes                  |
-| `filterTabChanged`       | `FieldFilterDefinition \| undefined`                     | Emits when the user picks a filter tab                       |
-| `tableRowClicked`        | `T`                                                      | Emits when a table row is clicked                            |
-| `loadMoreResources`      | -                                                        | Emits when the user triggers load more                       |
-| `paginationLimitChanged` | `number`                                                 | Emits when the user changes page size                        |
-| `actionButtonClick`      | `ResourceFieldButtonClickEvent<T>`                       | Emits for row-action buttons other than built-in edit/delete |
-| `retry`                  | -                                                        | Re-emits Retry from the inner table failure state            |
+| Event                    | Payload                                                  | Description                                                           |
+| ------------------------ | -------------------------------------------------------- | --------------------------------------------------------------------- |
+| `createFieldChange`      | `FormFieldChangeEvent`                                   | Re-emits per-field change from the create form                        |
+| `editFieldChange`        | `{ resource: T; formChangeEvent: FormFieldChangeEvent }` | Re-emits per-field change from the edit form with resource            |
+| `createSubmit`           | `Record<string, unknown>`                                | Fires when the create dialog Save button is clicked                   |
+| `editSubmit`             | `{ resource: T; value: Record<string, unknown> }`        | Fires when the edit dialog Save button is clicked                     |
+| `deleteSubmit`           | `T`                                                      | Fires when the delete dialog Delete button is clicked                 |
+| `createDialogClosed`     | -                                                        | Fires when the create dialog closes (cancel or `closeCreateDialog()`) |
+| `editDialogClosed`       | -                                                        | Fires when the edit dialog closes (cancel or `closeEditDialog()`)     |
+| `searchChanged`          | `string`                                                 | Emits 300 ms after the search input changes                           |
+| `filterTabChanged`       | `FieldFilterDefinition \| undefined`                     | Emits when the user picks a filter tab                                |
+| `tableRowClicked`        | `T`                                                      | Emits when a table row is clicked                                     |
+| `loadMoreResources`      | -                                                        | Emits when the user triggers load more                                |
+| `paginationLimitChanged` | `number`                                                 | Emits when the user changes page size                                 |
+| `actionButtonClick`      | `ResourceFieldButtonClickEvent<T>`                       | Emits for row-action buttons other than built-in edit/delete          |
+| `retry`                  | -                                                        | Re-emits Retry from the inner table failure state                     |
 
 ### Methods
 
-| Method                | Description              |
-| --------------------- | ------------------------ |
-| `closeCreateDialog()` | Closes the create dialog |
-| `closeEditDialog()`   | Closes the edit dialog   |
-| `closeDeleteDialog()` | Closes the delete dialog |
+| Method                        | Description                                                                                                                                                |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `closeCreateDialog()`         | Closes the create dialog and emits `createDialogClosed`                                                                                                    |
+| `closeEditDialog()`           | Closes the edit dialog and emits `editDialogClosed`                                                                                                        |
+| `closeDeleteDialog()`         | Closes the delete dialog                                                                                                                                   |
+| `applyCreateFormPatch(patch)` | Patches the open create dialog's values and/or `field.values` options. No-op when the dialog is closed. See [Runtime form patches](#runtime-form-patches). |
+| `applyEditFormPatch(patch)`   | Patches the open edit dialog's values and/or `field.values` options. No-op when the dialog is closed. See [Runtime form patches](#runtime-form-patches).   |
 
 Submit events do not close dialogs automatically. Close the dialog after successful validation, save, or delete.
+
+`createDialogClosed` and `editDialogClosed` fire once per open-to-closed transition. Calling a close method on an already closed dialog emits nothing, but still cancels any pending asynchronous open.
 
 ---
 
@@ -295,6 +301,15 @@ interface ResourceFormConfig {
 
 interface TableCardFormState {
   fieldErrors?: FormFieldErrors;
+  /** When `true`, the dialog's confirm button is disabled (e.g. while an async save is in flight). */
+  pending?: boolean;
+}
+
+interface ResourceFormPatch {
+  /** Partial values keyed by exact `field.name`; applied silently to the open dialog's form. */
+  values?: Record<string, unknown>;
+  /** Partial field-definition updates (currently `values`) keyed by `field.name`; swaps a field's select options in place. */
+  fieldUpdates?: Record<string, Partial<Pick<FormFieldDefinition, 'values'>>>;
 }
 ```
 
@@ -335,6 +350,52 @@ The same applies to the `ResourceFormConfig.fields` returned by
 `editResourceFormConfig(resource)`; its thunk runs when a row's edit action
 opens the edit dialog. A plain array is resolved synchronously and needs no
 `await` — prefer it for static forms.
+
+---
+
+## Runtime form patches
+
+Once a dialog is open, the host often needs to react to a field change by:
+
+- updating the **value** of another field (e.g. clearing a dependent field when its parent changes), and/or
+- swapping the **select options** of another field (e.g. loading namespaces after a cluster is picked).
+
+Both work through a single `ResourceFormPatch` object applied via `applyCreateFormPatch` or `applyEditFormPatch`:
+
+```ts
+import { DeclarativeTableCard, FormFieldChangeEvent } from '@openmfp/ngx';
+
+onEditFieldChange(
+  event: { resource: Pod; formChangeEvent: FormFieldChangeEvent },
+  tableCard: DeclarativeTableCard<Pod>,
+): void {
+  // Ignore seed echoes — react only to real user edits.
+  if (event.formChangeEvent.source !== 'user') return;
+
+  if (event.formChangeEvent.fieldProperty === 'spec.cluster') {
+    tableCard.applyEditFormPatch({
+      // Clear the dependent field.
+      values: { 'spec.namespace': '' },
+      // Replace its select options.
+      fieldUpdates: {
+        'spec.namespace': { values: this.namespacesFor(event.formChangeEvent.value) },
+      },
+    });
+  }
+}
+```
+
+### Semantics
+
+- Both methods are **no-ops** when the corresponding dialog is closed — safe to call defensively.
+- `patch.values` is forwarded to the open form as `patchForm(values, { emitEvent: false, markAsDirty: true })`:
+  - `emitEvent: false` keeps the write silent, so dependent-field resolvers listening to `createFieldChange` / `editFieldChange` don't interpret the write as a user edit (which would loop back).
+  - `markAsDirty: true` makes the patched fields eligible for `fieldErrors` display right away.
+- `patch.fieldUpdates` merges each entry into the matching `FormFieldDefinition` by name; keys absent from the current field list are ignored. Only `values` is supported today.
+
+### Edit dialog initial values
+
+Unlike previous releases, the edit dialog's initial values are seeded **once per open**, from the resource passed to the row's `editResourceFormConfig(resource)` call. Subsequent writes via `applyEditFormPatch({ values })` and user edits don't trigger a re-seed — the host owns the dialog's values after open.
 
 ---
 

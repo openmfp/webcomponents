@@ -88,37 +88,37 @@
   </div>
 </div>
 
-@if (createDialogOpen()) {
-  <mfp-resource-form-dialog
-    dataTestidPrefix="generic-table-card-create"
-    defaultConfirmLabel="Save"
-    defaultTitle="Create"
-    [config]="createFormConfig()"
-    [fieldErrors]="createFormState().fieldErrors ?? {}"
-    [fields]="resolvedCreateFields()"
-    [initialValues]="{}"
-    [open]="createDialogOpen()"
-    (cancelled)="closeCreateDialog()"
-    (fieldChange)="onCreateFieldChange($event)"
-    (submitted)="onCreateSubmit($event)"
-  />
-}
+<mfp-resource-form-dialog
+  #createDialog
+  dataTestidPrefix="generic-table-card-create"
+  defaultConfirmLabel="Save"
+  defaultTitle="Create"
+  [config]="createFormConfig()"
+  [fieldErrors]="createFormState().fieldErrors ?? {}"
+  [fields]="resolvedCreateFields()"
+  [initialValues]="createInitialValues()"
+  [open]="createDialogOpen()"
+  [pending]="createFormState().pending ?? false"
+  (cancelled)="closeCreateDialog()"
+  (fieldChange)="onCreateFieldChange($event)"
+  (submitted)="onCreateSubmit($event)"
+/>
 
-@if (editDialogOpen()) {
-  <mfp-resource-form-dialog
-    dataTestidPrefix="generic-table-card-edit"
-    defaultConfirmLabel="Edit"
-    defaultTitle="Edit"
-    [config]="editFormConfig()"
-    [fieldErrors]="editFormState().fieldErrors ?? {}"
-    [fields]="resolvedEditFields()"
-    [initialValues]="editInitialValue()"
-    [open]="editDialogOpen()"
-    (cancelled)="closeEditDialog()"
-    (fieldChange)="onEditFieldChange($event)"
-    (submitted)="onEditSubmit($event)"
-  />
-}
+<mfp-resource-form-dialog
+  #editDialog
+  dataTestidPrefix="generic-table-card-edit"
+  defaultConfirmLabel="Edit"
+  defaultTitle="Edit"
+  [config]="editFormConfig()"
+  [fieldErrors]="editFormState().fieldErrors ?? {}"
+  [fields]="resolvedEditFields()"
+  [initialValues]="editInitialValues()"
+  [open]="editDialogOpen()"
+  [pending]="editFormState().pending ?? false"
+  (cancelled)="closeEditDialog()"
+  (fieldChange)="onEditFieldChange($event)"
+  (submitted)="onEditSubmit($event)"
+/>
 
 <mfp-delete-confirmation-dialog
   [config]="deleteConfirmationConfig()"

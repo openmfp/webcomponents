@@ -12,21 +12,23 @@
     </ui5-title>
   </div>
   <div class="dialog__body">
-    <mfp-declarative-form
-      #form
-      [fieldErrors]="fieldErrors()"
-      [fields]="fields()"
-      [initialValues]="initialValues()"
-      (fieldChange)="fieldChange.emit($event)"
-      (formSubmit)="submitted.emit($event)"
-    />
+    @if (open()) {
+      <mfp-declarative-form
+        #form
+        [fieldErrors]="fieldErrors()"
+        [fields]="fields()"
+        [initialValues]="initialValues()"
+        (fieldChange)="fieldChange.emit($event)"
+        (formSubmit)="submitted.emit($event)"
+      />
+    }
   </div>
   <div class="dialog__footer" slot="footer">
     <ui5-button
       design="Emphasized"
       [attr.data-testid]="dataTestidPrefix() + '-confirm'"
-      [disabled]="hasErrors()"
-      (click)="form.submit()"
+      [disabled]="hasErrors() || pending()"
+      (click)="submit()"
     >
       {{ config()?.confirmLabel ?? defaultConfirmLabel() }}
     </ui5-button>

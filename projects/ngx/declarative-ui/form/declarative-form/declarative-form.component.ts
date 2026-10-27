@@ -8,6 +8,7 @@ import { coerceBoolean } from '../utils/coerce-boolean';
 import { setPropertyByPath } from '../utils/set-property-by-path';
 import { FormCollectionField } from './form-collection-field/form-collection-field.component';
 import {
+  ChangeDetectorRef,
   Component,
   ViewEncapsulation,
   effect,
@@ -15,6 +16,7 @@ import {
   input,
   output,
   signal,
+  untracked,
 } from '@angular/core';
 import {
   FormArray,
@@ -51,6 +53,15 @@ export class DeclarativeForm<T extends GenericResource> {
   readonly initialValues = input<T>({} as T);
   readonly fieldErrors = input<FormFieldErrors>({});
 
+  /**
+   * Emitted on user interaction with a validated field (change/blur/switch/
+   * collection) with `source: 'user'`, and on every `[initialValues]` input
+   * identity push for every validated field with `source: 'seed'`. Mirrors
+   * Angular's `AbstractControl.setValue(v, { emitEvent })` convention: the
+   * input binding is the "emit" path, {@link patchForm} is the "silent"
+   * path. Consumers distinguishing user changes from seeds (e.g. dependent
+   * resolvers) must gate on `source`.
+   */
   readonly fieldChange = output<FormFieldChangeEvent>();
   readonly formSubmit = output<T>();
   readonly formValueChange = output<Record<string, unknown>>();
@@ -64,6 +75,7 @@ export class DeclarativeForm<T extends GenericResource> {
   private readonly passwordVisible = signal<Record<string, boolean>>({});
 
   private readonly fb = inject(FormBuilder);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   constructor() {
     this.form = this.fb.group({});
@@ -73,22 +85,60 @@ export class DeclarativeForm<T extends GenericResource> {
     });
 
     effect(() => {
-      this.setInitialValues(this.initialValues());
+      const values = this.initialValues();
+      untracked(() => {
+        this.setInitialValues(values);
+      });
     });
 
     effect(() => {
-      const fields = this.fields();
       this.initialValues();
-
-      for (const field of fields) {
-        if (field.validation) {
-          this.fieldChange.emit({
-            fieldProperty: field.name,
-            value: this.form.controls[field.name]?.value ?? '',
-          });
-        }
-      }
+      untracked(() => {
+        this.seedValidationFields();
+      });
     });
+  }
+
+  /**
+   * Programmatically seed the form's values.
+   *
+   * When `emitEvent` is false, {@link fieldChange} is NOT fired for the seeded
+   * values — useful when the host is reloading an existing resource (edit
+   * open) and does not want dependent-field resolvers to interpret the seeded
+   * parent as a user change (which would trigger a self-clear).
+   *
+   * When `emitEvent` is omitted or `true` (default), behavior matches an
+   * `[initialValues]` input push: `fieldChange` fires once for every
+   * validation field with its resulting control value.
+   */
+  patchForm(
+    values: Partial<T>,
+    options?: { emitEvent?: boolean; markAsDirty?: boolean },
+  ): void {
+    this.setInitialValues(values as T, false);
+    if (options?.markAsDirty) {
+      for (const name of Object.keys(values as object)) {
+        this.form.controls[name]?.markAsDirty();
+      }
+    }
+    if (options?.emitEvent !== false) {
+      this.seedValidationFields();
+    }
+    this.cdr.markForCheck();
+  }
+
+  private seedValidationFields(): void {
+    for (const field of this.fields()) {
+      if (!field.validation) continue;
+      const control = this.form.controls[field.name];
+      if (!control) continue;
+      this.fieldChange.emit({
+        fieldProperty: field.name,
+        value: control.value,
+        source: 'seed',
+        formValues: this.form.getRawValue(),
+      });
+    }
   }
 
   setFormControlValue($event: Event, field: FormFieldDefinition): void {
@@ -106,6 +156,8 @@ export class DeclarativeForm<T extends GenericResource> {
       this.fieldChange.emit({
         fieldProperty: field.name,
         value: control.value,
+        source: 'user',
+        formValues: this.form.getRawValue(),
       });
     }
   }
@@ -124,6 +176,8 @@ export class DeclarativeForm<T extends GenericResource> {
       this.fieldChange.emit({
         fieldProperty: field.name,
         value: checked,
+        source: 'user',
+        formValues: this.form.getRawValue(),
       });
     }
   }
@@ -180,6 +234,8 @@ export class DeclarativeForm<T extends GenericResource> {
       this.fieldChange.emit({
         fieldProperty: field.name,
         value: entries,
+        source: 'user',
+        formValues: this.form.getRawValue(),
       });
     }
   }
@@ -199,9 +255,12 @@ export class DeclarativeForm<T extends GenericResource> {
     this.form.controls[field.name]?.markAsTouched();
 
     if (field.validation === 'onBlur') {
+      const value = this.form.controls[field.name]?.value;
       this.fieldChange.emit({
         fieldProperty: field.name,
-        value: this.form.controls[field.name]?.value,
+        value,
+        source: 'user',
+        formValues: this.form.getRawValue(),
       });
     }
   }
@@ -212,7 +271,23 @@ export class DeclarativeForm<T extends GenericResource> {
 
   clear(): void {
     this.form.reset();
+    this.collectionSeeds.set({});
     this.passwordVisible.set({});
+  }
+
+  protected selectOptions(
+    field: FormFieldDefinition,
+    currentValue: unknown,
+  ): string[] {
+    const options = ['', ...(field.values ?? [])];
+    if (
+      typeof currentValue === 'string' &&
+      currentValue &&
+      !options.includes(currentValue)
+    ) {
+      options.push(currentValue);
+    }
+    return options;
   }
 
   collectionEntries(field: FormFieldDefinition): Record<string, unknown>[] {
@@ -222,6 +297,7 @@ export class DeclarativeForm<T extends GenericResource> {
   private rebuildControls(fields: FormFieldDefinition[]): void {
     const existingControls = this.form.controls;
     const nextFieldNames = new Set(fields.map((field) => field.name));
+    const added: string[] = [];
 
     for (const field of fields) {
       const existingControl = existingControls[field.name];
@@ -242,6 +318,7 @@ export class DeclarativeForm<T extends GenericResource> {
       } else {
         this.form.addControl(field.name, new FormControl(''));
       }
+      added.push(field.name);
     }
 
     for (const controlName of Object.keys(existingControls)) {
@@ -251,16 +328,47 @@ export class DeclarativeForm<T extends GenericResource> {
     }
 
     this.form.updateValueAndValidity({ emitEvent: false });
+    if (added.length) {
+      const values = untracked(this.initialValues) as Record<string, unknown>;
+      const seed = Object.fromEntries(
+        added
+          .filter((name) => this.hasKey(values, name))
+          .map((name) => [name, values[name]]),
+      );
+      this.setInitialValues(seed as T, false);
+    }
   }
 
-  private setInitialValues(initialValues: T | null | undefined): void {
+  private setInitialValues(
+    initialValues: T | null | undefined,
+    markPristine = true,
+  ): void {
     if (!initialValues) {
       return;
     }
 
-    const seeds: Record<string, Record<string, unknown>[]> = {};
+    this.rebuildCollectionArrays(initialValues);
+    const normalizedValues =
+      this.buildPatchObjectWithSwitchCoercion(initialValues);
+
+    this.form.patchValue(normalizedValues, { emitEvent: false });
+    if (markPristine) this.form.markAsPristine({ emitEvent: false });
+    this.form.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private rebuildCollectionArrays(initialValues: T): void {
+    const seeds: Record<string, Record<string, unknown>[]> = {
+      ...untracked(this.collectionSeeds),
+    };
     for (const field of this.fields()) {
-      if (!field.propertyCollection?.length) continue;
+      if (!field.propertyCollection?.length) {
+        continue;
+      }
+
+      if (!this.hasKey(initialValues, field.name)) {
+        continue;
+      }
+
       const raw = (initialValues as Record<string, unknown>)[field.name];
       const entries = Array.isArray(raw)
         ? (raw as Record<string, unknown>[])
@@ -276,19 +384,31 @@ export class DeclarativeForm<T extends GenericResource> {
       seeds[field.name] = entries;
     }
     this.collectionSeeds.set(seeds);
+  }
 
+  private buildPatchObjectWithSwitchCoercion(
+    initialValues: T,
+  ): Record<string, unknown> {
     const normalizedValues = { ...(initialValues as Record<string, unknown>) };
     for (const field of this.fields()) {
-      if (field.inputType === 'Switch') {
+      if (
+        field.inputType === 'Switch' &&
+        this.hasKey(normalizedValues, field.name)
+      ) {
         normalizedValues[field.name] = coerceBoolean(
           normalizedValues[field.name],
         );
       }
     }
+    return normalizedValues;
+  }
 
-    this.form.patchValue(normalizedValues, { emitEvent: false });
-    this.form.markAsPristine({ emitEvent: false });
-    this.form.updateValueAndValidity({ emitEvent: false });
+  private hasKey(obj: unknown, name: string): boolean {
+    return (
+      obj != null &&
+      typeof obj === 'object' &&
+      Object.prototype.hasOwnProperty.call(obj, name)
+    );
   }
 
   private buildOutputValue(): T {
