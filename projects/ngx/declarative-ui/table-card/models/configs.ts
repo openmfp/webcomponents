@@ -75,6 +75,8 @@ export interface FieldFilterDefinition {
 
 /** Configuration for the inner `mfp-declarative-table`. */
 export interface TableConfig {
+  /** Horizontal overflow behavior. Defaults to Scroll. */
+  overflowMode?: 'Scroll' | 'Popin';
   /** Column definitions. */
   fields: TableFieldDefinition[];
   /** Total number of items on the server (used by pagination). */

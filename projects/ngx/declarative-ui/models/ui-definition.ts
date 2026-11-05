@@ -70,7 +70,7 @@ export interface UiSettings {
   cssRules?: CssRule[];
   /** Conditional value rules evaluated at render time. First match replaces the displayed value; raw value shown when none match. */
   valueRules?: ValueRule[];
-  /** Fixed column width including unit (e.g. `'200px'`, `'20%'`). */
+  /** @deprecated Use TableFieldDefinition.columnSettings.width. */
   columnWidth?: string;
   align?: 'start' | 'center' | 'end';
 }

@@ -501,7 +501,7 @@ export const WithTextActions: Story = {
 };
 
 /**
- * Actions column constrained to 90 px via `columnWidth`.
+ * Actions column constrained to 90 px via `columnSettings.width`.
  * The width is driven by the first field in the `actions` group — here a custom
  * detail-view button placed before the auto-generated edit / delete buttons.
  */
@@ -514,8 +514,8 @@ export const WithNarrowActionsColumn: Story = {
         fields: [
           ...BASE_COLUMNS,
           {
-            uiSettings: {
-              columnWidth: '90px',
+            columnSettings: {
+              width: '90px',
             },
             group: { name: 'actions', label: '', multiline: false },
           } satisfies TableFieldDefinition,

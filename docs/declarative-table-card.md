@@ -282,6 +282,7 @@ interface FieldFilterDefinition {
 }
 
 interface TableConfig {
+  overflowMode?: 'Scroll' | 'Popin'; // default: 'Scroll'; see table column settings
   fields: TableFieldDefinition[];
   totalItemsCount?: number;
   paginationLimit?: number;
@@ -574,15 +575,15 @@ Custom button clicks that are not `'edit'` or `'delete'` are forwarded through t
 
 ### Controlling the actions column width
 
-The column width is determined by `uiSettings.columnWidth` of the **first** field in the `actions` group (see [grouped columns](./declarative-table.md#grouped-columns)). Place a custom action field first and set `columnWidth` there:
+The column width is determined by `columnSettings.width` of the **first** field in the `actions` group (see [grouped columns](./declarative-table.md#grouped-columns)). Place a custom action field first and set `columnSettings.width` there:
 
 ```ts
 tableConfig: {
   fields: [
     ...BASE_COLUMNS,
     {
-      uiSettings: {
-        columnWidth: '90px',   // ← drives the header cell width for the whole group
+      columnSettings: {
+        width: '90px', // drives the header cell width for the whole group
       },
       group: { name: 'actions', label: '', multiline: false },
     },
@@ -643,9 +644,11 @@ Because the scroll container is the table's row area rather than the whole card 
 
 The card header and the table's page-size footer are the two fixed bars framing the scrolling rows, and they share one height so they read as a matched pair:
 
-| Variable                   | Default           | Purpose                                                        |
-| -------------------------- | ----------------- | -------------------------------------------------------------- |
-| `--mfp_tableCardBarHeight` | `3.75rem` (60 px) | `min-height` of both the card header and the page-size footer. |
+| Variable                             | Default           | Purpose                                                         |
+| ------------------------------------ | ----------------- | --------------------------------------------------------------- |
+| `--mfp_tableHeaderPaddingBlockStart` | `0`               | Table column header start padding; inherits through Shadow DOM. |
+| `--mfp_tableHeaderPaddingBlockEnd`   | `0`               | Table column header end padding; inherits through Shadow DOM.   |
+| `--mfp_tableCardBarHeight`           | `3.75rem` (60 px) | `min-height` of both the card header and the page-size footer.  |
 
 Set it on (or above) the card to resize both at once:
 

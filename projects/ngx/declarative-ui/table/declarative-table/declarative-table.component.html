@@ -2,21 +2,43 @@
   data-testid="generic-table"
   [loading]="loading() && !error()"
   [loadingDelay]="loadingDelay()"
+  [overflowMode]="overflowMode()"
   [style.height]="height() ? height() + 'px' : null"
   [style.overflow-y]="'auto'"
 >
   <ui5-table-header-row slot="headerRow" [sticky]="true">
+    <!-- Reset to UI5's default minimum: an empty minWidth produces invalid grid tracks. -->
     @for (column of viewColumns(); track columnTrackBy(column, $index)) {
       @if (column.group) {
         <ui5-table-header-cell
           [attr.data-testid]="'generic-table-header-' + column.group.name"
-          [width]="column.uiSettings?.columnWidth ?? 'auto'"
+          [importance]="column.columnSettings?.importance ?? 0"
+          [minWidth]="column.columnSettings?.minWidth || '3rem'"
+          [popinHidden]="column.columnSettings?.popinHidden ?? false"
+          [popinText]="
+            column.columnSettings?.popinText ??
+            column.group.label ??
+            column.group.name
+          "
+          [width]="
+            column.columnSettings?.width ??
+            column.uiSettings?.columnWidth ??
+            'auto'
+          "
           >{{ column.group.label ?? column.group.name }}</ui5-table-header-cell
         >
       } @else {
         <ui5-table-header-cell
           [attr.data-testid]="'generic-table-header-' + column.property"
-          [width]="column.uiSettings?.columnWidth ?? 'auto'"
+          [importance]="column.columnSettings?.importance ?? 0"
+          [minWidth]="column.columnSettings?.minWidth || '3rem'"
+          [popinHidden]="column.columnSettings?.popinHidden ?? false"
+          [popinText]="column.columnSettings?.popinText ?? column.label ?? ''"
+          [width]="
+            column.columnSettings?.width ??
+            column.uiSettings?.columnWidth ??
+            'auto'
+          "
           >{{ column.label }}</ui5-table-header-cell
         >
       }

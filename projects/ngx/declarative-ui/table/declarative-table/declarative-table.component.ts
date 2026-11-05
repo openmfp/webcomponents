@@ -55,6 +55,7 @@ import '@ui5/webcomponents-icons/dist/open-command-field.js';
 })
 export class DeclarativeTable<T extends GenericResource> {
   columns = input<TableFieldDefinition[]>([]);
+  overflowMode = input<'Scroll' | 'Popin'>('Scroll');
   resources = input<T[]>([]);
   trackByPath = input<string>('id');
   permissions = input<Record<string, string[]>>();
