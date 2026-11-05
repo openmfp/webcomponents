@@ -74,7 +74,8 @@ export const TABLE_COLUMNS: TableFieldDefinition[] = [
   {
     label: 'Ready',
     property: 'status.ready',
-    uiSettings: { displayAs: 'boolIcon', columnWidth: '56px' },
+    uiSettings: { displayAs: 'boolIcon' },
+    columnSettings: { width: '56px' },
   },
   {
     label: 'Phase',
@@ -114,7 +115,8 @@ export const TABLE_COLUMNS: TableFieldDefinition[] = [
   {
     label: 'Alert',
     property: 'status.message',
-    uiSettings: { displayAs: 'alert', columnWidth: '42px' },
+    uiSettings: { displayAs: 'alert' },
+    columnSettings: { width: '42px' },
   },
   { label: 'Message', property: 'status.message', value: '—' },
   {

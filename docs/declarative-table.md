@@ -93,6 +93,7 @@ export class MyComponent {
 
 | Input                | Type                              | Required | Default       | Description                                                                                                                                                                                                   |
 | -------------------- | --------------------------------- | -------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `overflowMode`       | `'Scroll' \| 'Popin'`             | no       | `'Scroll'`    | Horizontal overflow behavior                                                                                                                                                                                  |
 | `columns`            | `TableFieldDefinition[]`          | yes      | —             | Column definitions                                                                                                                                                                                            |
 | `resources`          | `GenericResource[]`               | yes      | —             | Data rows                                                                                                                                                                                                     |
 | `trackByPath`        | `string`                          | no       | `'id'`        | JSONPath (dot-notation) into each resource used as the row identity key                                                                                                                                       |
@@ -146,6 +147,7 @@ interface TableFieldDefinition {
   propertyField?: PropertyField; // access a sub-key with optional transforms
   value?: string; // static fallback value
   uiSettings?: UiSettings;
+  columnSettings?: TableColumnSettings;
   group?: {
     name: string; // columns sharing the same name are merged into one header
     label?: string; // label for the merged header
@@ -226,10 +228,12 @@ Add a copy-to-clipboard icon to any cell:
 
 ### Column width
 
+Set `overflowMode` to `'Popin'` to move columns below each row when space runs out (`'Scroll'` by default). In `columnSettings`, use `minWidth` (default `3rem`, applies to automatic/percentage widths), `importance` (higher stays visible longer, default `0`), `popinText` (defaults to the column/group label), and `popinHidden` (default `false`; hides the value on narrow screens). Grouped columns use the first field's settings. For existing configurations, `uiSettings.columnWidth` remains supported; `columnSettings.width` takes precedence when provided.
+
 Set an explicit width on a column header cell:
 
 ```ts
-{ label: 'Actions', uiSettings: { columnWidth: '10rem' } }
+{ label: 'Actions', columnSettings: { width: '10rem' } }
 ```
 
 > **UI5 constraint.** The value must be a valid CSS `<length>` — `px`, `rem`, `em`, `%`, or `calc()`. Sizing keywords such as `min-content` and `max-content` are rejected by UI5 and fall back to equal-stretch distribution across all columns.
@@ -303,21 +307,21 @@ The above produces two visible columns: **Full Name** and **Email**.
 
 ### Column-level settings via the first field
 
-The **first** field in a group sets the column-level configuration. `uiSettings.columnWidth` controls the `<ui5-table-header-cell>` width; `uiSettings.align` controls `justify-content` of the cell content wrapper. The column header text comes from `group.label` (or `group.name` if omitted) of the first field. These values on subsequent fields in the same group are ignored.
+The **first** field in a group sets the column-level configuration. `columnSettings.width` controls the `<ui5-table-header-cell>` width; `uiSettings.align` controls `justify-content` of the cell content wrapper. The column header text comes from `group.label` (or `group.name` if omitted) of the first field. These values on subsequent fields in the same group are ignored.
 
 ```ts
 columns = [
   // First field — drives column width and right-alignment for the whole group
   {
+    columnSettings: { width: '8rem' },
     uiSettings: {
       displayAs: 'button',
-      columnWidth: '8rem',
       align: 'end',
       buttonSettings: { icon: 'edit', design: 'Transparent', action: 'edit' },
     },
     group: { name: 'actions', label: '', multiline: false },
   },
-  // Second field — uiSettings.columnWidth and uiSettings.align are ignored here
+  // Second field — columnSettings and uiSettings.align are ignored here
   {
     uiSettings: {
       displayAs: 'button',

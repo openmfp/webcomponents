@@ -504,7 +504,7 @@ interface UiSettings {
   cssCustomization?: Partial<CSSStyleDeclaration>;
   cssRules?: CssRule[];
   valueRules?: ValueRule[];
-  columnWidth?: string;
+  columnWidth?: string; // deprecated; tables use columnSettings.width
   align?: 'start' | 'center' | 'end';
 }
 

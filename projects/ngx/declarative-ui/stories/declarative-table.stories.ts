@@ -95,6 +95,7 @@ const PODS: Pod[] = [
       [loadMode]="loadMode"
       [loading]="loading"
       [loadingDelay]="loadingDelay"
+      [overflowMode]="overflowMode"
       [paginationLimit]="paginationLimit"
       [resources]="visibleResources"
       [totalItemsCount]="totalItemsCount"
@@ -109,6 +110,7 @@ const PODS: Pod[] = [
 })
 class DeclarativeTableStory {
   @Input() columns: TableFieldDefinition[] = [];
+  @Input() overflowMode: 'Scroll' | 'Popin' = 'Scroll';
   @Input() resources: GenericResource[] = PODS;
   @Input() trackByProperty = 'metadata.uid';
   @Input() hasMore = false;
@@ -171,6 +173,7 @@ const meta: Meta<DeclarativeTableStory> = {
   },
   argTypes: {
     columns: { control: 'object' },
+    overflowMode: { options: ['Scroll', 'Popin'], control: 'select' },
     resources: { control: 'object' },
     trackByProperty: { control: 'text' },
     hasMore: { control: 'boolean' },
@@ -210,6 +213,34 @@ export const Basic: Story = {
       { label: 'Namespace', property: 'metadata.namespace' },
       { label: 'Node', property: 'spec.nodeName' },
     ] satisfies TableFieldDefinition[],
+  },
+};
+
+/** Resize the container to move less important columns into the pop-in area. */
+export const Popin: Story = {
+  args: {
+    overflowMode: 'Popin',
+    columns: [
+      {
+        label: 'Name',
+        property: 'metadata.name',
+        columnSettings: { minWidth: '14rem', importance: 10 },
+      },
+      {
+        label: 'Namespace',
+        property: 'metadata.namespace',
+        columnSettings: { minWidth: '12rem', importance: 5 },
+      },
+      {
+        label: 'Node',
+        property: 'spec.nodeName',
+        columnSettings: {
+          minWidth: '10rem',
+          importance: 0,
+          popinText: 'Node name',
+        },
+      },
+    ],
   },
 };
 
@@ -399,7 +430,7 @@ export const GroupedWithTagsAndAlert: Story = {
 };
 
 /**
- * `uiSettings.columnWidth` sets the width of the header cell (and thus the
+ * `columnSettings.width` sets the width of the header cell (and thus the
  * whole column). Useful for icon-only columns like `alert` or `boolIcon` where
  * the default `auto` width is wider than necessary.
  */
@@ -410,12 +441,14 @@ export const ColumnWidth: Story = {
       {
         label: 'Alert',
         property: 'status.message',
-        uiSettings: { displayAs: 'alert', columnWidth: '60px' },
+        uiSettings: { displayAs: 'alert' },
+        columnSettings: { width: '60px' },
       },
       {
         label: 'Ready',
         property: 'status.ready',
-        uiSettings: { displayAs: 'boolIcon', columnWidth: '60px' },
+        uiSettings: { displayAs: 'boolIcon' },
+        columnSettings: { width: '60px' },
       },
       { label: 'Phase', property: 'status.phase' },
     ] satisfies TableFieldDefinition[],

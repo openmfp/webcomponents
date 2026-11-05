@@ -9,6 +9,9 @@ import { DeclarativeTable } from './declarative-table.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { Table } from '@fundamental-ngx/ui5-webcomponents/table';
+import type TableElement from '@ui5/webcomponents/dist/Table.js';
+import type TableHeaderCellElement from '@ui5/webcomponents/dist/TableHeaderCell.js';
+import type TableHeaderRowElement from '@ui5/webcomponents/dist/TableHeaderRow.js';
 import { axe } from 'vitest-axe';
 
 type Fixture = ComponentFixture<DeclarativeTable<GenericResource>>;
@@ -90,6 +93,171 @@ describe('DeclarativeTable', () => {
   });
 
   describe('column headers', () => {
+    it('keeps valid UI5 grid tracks for columns without responsive settings', () => {
+      const { fixture } = setup({
+        columns: [
+          { property: 'name', label: 'Name' },
+          {
+            property: 'displayName',
+            label: 'Display name',
+            uiSettings: { columnWidth: '40%' },
+          },
+          { property: 'type', group: { name: 'details' } },
+        ],
+        resources: [{ id: 'a', name: 'a', displayName: 'b', type: 'account' }],
+      });
+      const table = el(fixture, 'generic-table') as TableElement;
+      // jsdom does not distribute UI5 slots; connect the rendered elements
+      // before exercising UI5's actual grid-track calculation.
+      const headerRow = root(fixture).querySelector(
+        'ui5-table-header-row',
+      ) as TableHeaderRowElement;
+      headerRow.cells.push(
+        ...headerRow.querySelectorAll<TableHeaderCellElement>(
+          'ui5-table-header-cell',
+        ),
+      );
+      table.headerRow.push(headerRow);
+      const configuredTracks = table._gridTemplateColumns;
+      // Compare with native UI5's omitted-minWidth behavior. This also avoids
+      // relying on jsdom's different validation of CSS auto column widths.
+      headerRow.cells.forEach((header) => {
+        header.minWidth = undefined;
+      });
+      expect(configuredTracks).toBe(table._gridTemplateColumns);
+      expect(configuredTracks).not.toMatch(/(?:minmax|max)\(\s*,/);
+    });
+
+    it('defaults to scrolling and updates the overflow mode at runtime', () => {
+      const { fixture } = setup({ columns: [] });
+      const table = el(fixture, 'generic-table') as TableElement;
+      expect(table.overflowMode).toBe('Scroll');
+      fixture.componentRef.setInput('overflowMode', 'Popin');
+      fixture.detectChanges();
+      expect(table.overflowMode).toBe('Popin');
+      fixture.componentRef.setInput('overflowMode', 'Scroll');
+      fixture.detectChanges();
+      expect(table.overflowMode).toBe('Scroll');
+    });
+
+    it('passes responsive settings to regular and grouped columns and clears removed settings', () => {
+      const columnSettings = {
+        minWidth: '12rem',
+        importance: 10,
+        popinText: 'Details',
+        popinHidden: true,
+      };
+      const { fixture } = setup({
+        columns: [
+          { property: 'name', label: 'Name', columnSettings },
+          {
+            property: 'city',
+            group: { name: 'location', label: 'Location' },
+            columnSettings,
+          },
+          {
+            property: 'country',
+            group: { name: 'location' },
+            columnSettings: { importance: 99 },
+          },
+        ],
+      });
+      for (const testId of [
+        'generic-table-header-name',
+        'generic-table-header-location',
+      ]) {
+        const header = el(fixture, testId) as TableHeaderCellElement;
+        expect(header.minWidth).toBe('12rem');
+        expect(header.importance).toBe(10);
+        expect(header.popinText).toBe('Details');
+        expect(header.popinHidden).toBe(true);
+      }
+      fixture.componentRef.setInput('columns', [
+        { property: 'name', label: 'Name' },
+        { property: 'city', group: { name: 'location', label: 'Location' } },
+        { property: 'other', group: { name: 'fallback' } },
+      ]);
+      fixture.detectChanges();
+      const header = el(
+        fixture,
+        'generic-table-header-name',
+      ) as TableHeaderCellElement;
+      expect(header.minWidth).toBe('3rem');
+      expect(header.importance).toBe(0);
+      expect(header.popinHidden).toBe(false);
+      expect(header.popinText).toBe('Name');
+      expect(
+        (el(fixture, 'generic-table-header-location') as TableHeaderCellElement)
+          .popinText,
+      ).toBe('Location');
+      expect(
+        (el(fixture, 'generic-table-header-fallback') as TableHeaderCellElement)
+          .popinText,
+      ).toBe('fallback');
+    });
+
+    it('supports legacy columnWidth and gives columnSettings.width precedence', () => {
+      const legacy = {
+        columnWidth: '25%',
+      };
+      const { fixture } = setup({
+        columns: [
+          { property: 'name', label: 'Name', uiSettings: legacy },
+          { property: 'city', group: { name: 'location' }, uiSettings: legacy },
+        ],
+      });
+      const headers = [
+        'generic-table-header-name',
+        'generic-table-header-location',
+      ].map((testId) => el(fixture, testId) as TableHeaderCellElement);
+      for (const header of headers) {
+        expect(header.width).toBe('25%');
+        expect(header.minWidth).toBe('3rem');
+        expect(header.popinHidden).toBe(false);
+        expect(header.importance).toBe(0);
+      }
+      expect(headers[0].popinText).toBe('Name');
+      expect(headers[1].popinText).toBe('location');
+      const columnSettings = {
+        width: '40%',
+        minWidth: '16rem',
+        importance: 0,
+        popinText: '',
+        popinHidden: false,
+      };
+      fixture.componentRef.setInput('columns', [
+        { property: 'name', label: 'Name', uiSettings: legacy, columnSettings },
+        {
+          property: 'city',
+          group: { name: 'location' },
+          uiSettings: legacy,
+          columnSettings,
+        },
+      ]);
+      fixture.detectChanges();
+      for (const header of headers) {
+        expect(header.width).toBe('40%');
+        expect(header.minWidth).toBe('16rem');
+        expect(header.popinText).toBe('');
+        expect(header.popinHidden).toBe(false);
+        expect(header.importance).toBe(0);
+      }
+      fixture.componentRef.setInput('columns', [
+        {
+          property: 'name',
+          label: 'Name',
+          uiSettings: legacy,
+          columnSettings: { importance: 5 },
+        },
+      ]);
+      fixture.detectChanges();
+      expect(headers[0].width).toBe('25%');
+      expect(headers[0].minWidth).toBe('3rem');
+      expect(headers[0].popinText).toBe('Name');
+      expect(headers[0].popinHidden).toBe(false);
+      expect(headers[0].importance).toBe(5);
+    });
+
     it('renders a header cell for each column', () => {
       const { fixture } = setup({
         columns: [

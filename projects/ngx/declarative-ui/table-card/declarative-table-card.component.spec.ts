@@ -1384,6 +1384,18 @@ describe('DeclarativeTableCard', () => {
   });
 
   describe('tableConfig passthrough: loadMode, height, loadMoreButtonText', () => {
+    it('passes Popin to the inner table and defaults to Scroll', () => {
+      const { fixture } = setup({
+        readConfig: { fields: COLUMNS, overflowMode: 'Popin' },
+      });
+      const table = fixture.debugElement.query(By.directive(DeclarativeTable))
+        .componentInstance as DeclarativeTable<GenericResource>;
+      expect(table.overflowMode()).toBe('Popin');
+      fixture.componentRef.setInput('config', { tableConfig: READ_CONFIG });
+      fixture.detectChanges();
+      expect(table.overflowMode()).toBe('Scroll');
+    });
+
     it('exposes loadMode via tableConfig signal', () => {
       const { component } = setup({
         readConfig: { fields: COLUMNS, loadMode: 'scroll' },

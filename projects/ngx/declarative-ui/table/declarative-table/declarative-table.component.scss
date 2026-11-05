@@ -30,8 +30,8 @@
 }
 
 ui5-table-header-row {
-  padding-block-start: 0.75rem;
-  padding-block-end: 0.25rem;
+  padding-block-start: var(--mfp_tableHeaderPaddingBlockStart, 0);
+  padding-block-end: var(--mfp_tableHeaderPaddingBlockEnd, 0);
 }
 
 .pagination-footer {
