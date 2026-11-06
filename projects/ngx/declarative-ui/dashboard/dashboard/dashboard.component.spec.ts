@@ -1,3 +1,4 @@
+import { DashboardCard } from '../card/dashboard-card.component';
 import { resetDashboardCardRegistry } from '../card/utils/dashboard-card-registry';
 import { DASHBOARD_CARD_DRAG_ORIGIN_CLASS } from '../constants';
 import { EN_DEFAULTS } from '../i18n';
@@ -59,6 +60,14 @@ function setup(): { fixture: Fixture; component: Dashboard } {
   return { fixture, component };
 }
 
+function setCardsWithCatalogue(fixture: Fixture, cards: CardConfig[]): void {
+  fixture.componentRef.setInput(
+    'availableCards',
+    cards.filter((card) => !card.sectionId),
+  );
+  fixture.componentInstance.cards.set(cards);
+}
+
 function root(fixture: Fixture): ShadowRoot | HTMLElement {
   return fixture.nativeElement.shadowRoot ?? fixture.nativeElement;
 }
@@ -113,7 +122,7 @@ describe('Dashboard', () => {
       description: 'Platform status',
     });
     component.sections.set([{ id: 'alpha', title: 'Alpha' }]);
-    component.cards.set([
+    setCardsWithCatalogue(fixture, [
       { id: 'card-1', component: 'mfp-a', sectionId: 'alpha' },
       { id: 'card-2', component: 'mfp-b' },
     ]);
@@ -175,7 +184,7 @@ describe('Dashboard', () => {
     ).gridOptions;
 
     fixture.componentRef.setInput('config', { title: 'T' });
-    component.cards.set(cards);
+    setCardsWithCatalogue(fixture, cards);
 
     expect(component['addedCardsIds']()).toEqual(
       new Set(['card-1', 'card-2', 'card-3']),
@@ -234,13 +243,13 @@ describe('Dashboard', () => {
   });
 
   it('emits the saved payload and persists the latest order on save', () => {
-    const { component } = setup();
+    const { fixture, component } = setup();
     const sections: SectionConfig[] = [{ id: 'alpha', title: 'Alpha' }];
     const cards: CardConfig[] = [{ id: 'card-1', component: 'mfp-a' }];
     const emitted: { sections: SectionConfig[]; cards: CardConfig[] }[] = [];
 
     component.sections.set(sections);
-    component.cards.set(cards);
+    setCardsWithCatalogue(fixture, cards);
     (component as unknown as { gridStack: () => unknown }).gridStack = () => ({
       gridstackItems: {
         toArray: () => [{ options: { id: 'card-1', x: 7, y: 5, w: 8, h: 30 } }],
@@ -268,13 +277,13 @@ describe('Dashboard', () => {
   });
 
   it('emits updated w and h in the saved payload when a card is resized', () => {
-    const { component } = setup();
+    const { fixture, component } = setup();
     const cards: CardConfig[] = [
       { id: 'card-1', component: 'mfp-a', w: 6, h: 20 },
     ];
     const emitted: { sections: SectionConfig[]; cards: CardConfig[] }[] = [];
 
-    component.cards.set(cards);
+    setCardsWithCatalogue(fixture, cards);
     (component as unknown as { gridStack: () => unknown }).gridStack = () => ({
       gridstackItems: {
         toArray: () => [{ options: { id: 'card-1', x: 0, y: 0, w: 3, h: 10 } }],
@@ -291,12 +300,12 @@ describe('Dashboard', () => {
   });
 
   it('preserves saved w/h after save-then-re-enter-then-cancel (regression)', () => {
-    const { component } = setup();
+    const { fixture, component } = setup();
     const cards: CardConfig[] = [
       { id: 'card-1', component: 'mfp-a', w: 6, h: 20 },
     ];
 
-    component.cards.set(cards);
+    setCardsWithCatalogue(fixture, cards);
     (component as unknown as { gridStack: () => unknown }).gridStack = () => ({
       gridstackItems: {
         toArray: () => [{ options: { id: 'card-1', x: 0, y: 0, w: 3, h: 10 } }],
@@ -333,7 +342,7 @@ describe('Dashboard', () => {
 
     // One loose card (no sectionId) and one section card – both start with the
     // internal h:1 that toZFlowCard assigns.
-    component.cards.set([
+    setCardsWithCatalogue(fixture, [
       { id: 'loose-1', component: 'mfp-a', h: 1 },
       { id: 'section-1', component: 'mfp-b', sectionId: 'alpha', h: 20 },
     ]);
@@ -494,7 +503,7 @@ describe('Dashboard', () => {
             toArray: () => nodes.map((node) => ({ options: node })),
           },
         });
-      component.cards.set([
+      setCardsWithCatalogue(fixture, [
         { id: 'card-1', component: 'mfp-a', x: 0, y: 0, w: 2, h: 10 },
         { id: 'card-2', component: 'mfp-b', x: 2, y: 0, w: 2, h: 10 },
       ]);
@@ -526,7 +535,7 @@ describe('Dashboard', () => {
       { id: 'alpha', title: 'Alpha' },
       { id: 'beta', title: 'Beta' },
     ]);
-    component.cards.set([
+    setCardsWithCatalogue(fixture, [
       { id: 'card-1', component: 'mfp-a', sectionId: 'alpha' },
       { id: 'card-2', component: 'mfp-b', sectionId: 'beta' },
       { id: 'card-3', component: 'mfp-c' },
@@ -957,7 +966,7 @@ describe('Dashboard', () => {
   });
 
   it('preserves card constraint fields (maxH/maxW/minH/minW) through saveEdit', () => {
-    const { component } = setup();
+    const { fixture, component } = setup();
     const cards: CardConfig[] = [
       {
         id: 'card-1',
@@ -971,7 +980,7 @@ describe('Dashboard', () => {
       },
     ];
 
-    component.cards.set(cards);
+    setCardsWithCatalogue(fixture, cards);
     (component as unknown as { gridStack: () => unknown }).gridStack = () => ({
       gridstackItems: {
         toArray: () => [{ options: { id: 'card-1', x: 1, y: 2 } }],
@@ -1505,7 +1514,7 @@ describe('Dashboard', () => {
       const { fixture, component } = setup();
 
       fixture.componentRef.setInput('config', { editable: true });
-      component.cards.set([{ id: 'card-1', component: 'mfp-a' }]);
+      setCardsWithCatalogue(fixture, [{ id: 'card-1', component: 'mfp-a' }]);
       component.editMode.set(true);
       fixture.detectChanges();
 
@@ -1524,7 +1533,7 @@ describe('Dashboard', () => {
         editable: true,
         zFlow: { cardHeight: 30, defaultCardSize: 'm' },
       });
-      component.cards.set([
+      setCardsWithCatalogue(fixture, [
         { id: 'card-1', component: 'mfp-a', label: 'Operations' },
       ]);
       component.editMode.set(true);
@@ -1721,7 +1730,7 @@ describe('Dashboard', () => {
         title: 'T',
         zFlow: { cardHeight: 30, defaultCardSize: 'm' },
       });
-      component.cards.set([
+      setCardsWithCatalogue(fixture, [
         { id: 'loose-1', component: 'mfp-a', h: 50, maxH: 55 },
         { id: 'loose-2', component: 'mfp-b', h: 20 },
       ]);
@@ -1780,7 +1789,7 @@ describe('Dashboard', () => {
       const { fixture, component } = setup();
 
       fixture.componentRef.setInput('config', { title: 'T' });
-      component.cards.set([
+      setCardsWithCatalogue(fixture, [
         { id: 'loose-1', component: 'mfp-a', h: 50, maxH: 55 },
       ]);
       fixture.detectChanges();
@@ -1796,7 +1805,7 @@ describe('Dashboard', () => {
         title: 'T',
         zFlow: { cardHeight: 30, defaultCardSize: 'm' },
       });
-      component.cards.set([
+      setCardsWithCatalogue(fixture, [
         {
           id: 'section-card',
           component: 'mfp-a',
@@ -1824,7 +1833,7 @@ describe('Dashboard', () => {
         title: 'T',
         zFlow: { cardHeight: 30, defaultCardSize: 'm' },
       });
-      component.cards.set([
+      setCardsWithCatalogue(fixture, [
         { id: 'default', component: 'mfp-a', w: 2, minW: 1, maxW: 3 },
         { id: 'small', component: 'mfp-b', size: 's' },
         { id: 'wide', component: 'mfp-c', size: 'xl' },
@@ -1849,7 +1858,7 @@ describe('Dashboard', () => {
         title: 'T',
         zFlow: { cardHeight: 30, defaultCardSize: 's' },
       });
-      component.cards.set([{ id: 'c1', component: 'mfp-a', w: 2 }]);
+      setCardsWithCatalogue(fixture, [{ id: 'c1', component: 'mfp-a', w: 2 }]);
       fixture.detectChanges();
 
       const [card] = component['looseCards']();
@@ -1864,7 +1873,7 @@ describe('Dashboard', () => {
         title: 'T',
         zFlow: { cardHeight: 30, defaultCardSize: 'm' },
       });
-      component.cards.set([{ id: 'c1', component: 'mfp-a' }]);
+      setCardsWithCatalogue(fixture, [{ id: 'c1', component: 'mfp-a' }]);
       component['zFlowColumns'].set(12);
       fixture.detectChanges();
       expect(component['looseCards']()[0].w).toBe(8);
@@ -2012,8 +2021,8 @@ describe('Dashboard', () => {
     });
 
     it('exposes the resolved card size on each loose grid item', () => {
-      const { fixture, component } = zFlowSetup('s');
-      component.cards.set([
+      const { fixture } = zFlowSetup('s');
+      setCardsWithCatalogue(fixture, [
         { id: 'c1', component: 'mfp-a' },
         { id: 'c2', component: 'mfp-b', size: 'xl' },
       ]);
@@ -2026,8 +2035,8 @@ describe('Dashboard', () => {
     });
 
     it('exposes the column span of each loose grid item', () => {
-      const { fixture, component, engine } = zFlowSetup('s');
-      component.cards.set([
+      const { fixture, engine } = zFlowSetup('s');
+      setCardsWithCatalogue(fixture, [
         { id: 'c1', component: 'mfp-a' },
         { id: 'c2', component: 'mfp-b', size: 'm' },
         { id: 'c3', component: 'mfp-c', size: 'l' },
@@ -2046,9 +2055,11 @@ describe('Dashboard', () => {
     });
 
     it('does not expose card sizes outside zFlow', () => {
-      const { fixture, component } = setup();
+      const { fixture } = setup();
       fixture.componentRef.setInput('config', { title: 'T' });
-      component.cards.set([{ id: 'c1', component: 'mfp-a', size: 'xl' }]);
+      setCardsWithCatalogue(fixture, [
+        { id: 'c1', component: 'mfp-a', size: 'xl' },
+      ]);
       fixture.detectChanges();
 
       expect(root(fixture).querySelector('[data-card-size]')).toBeNull();
@@ -2108,7 +2119,7 @@ describe('Dashboard', () => {
 
     it('saves the size of every loose card', () => {
       const { fixture, component, engine } = zFlowSetup('m');
-      component.cards.set([{ id: 'c1', component: 'mfp-a' }]);
+      setCardsWithCatalogue(fixture, [{ id: 'c1', component: 'mfp-a' }]);
       fixture.detectChanges();
       component.enterEditMode();
       engine.nodes = [
@@ -2348,13 +2359,13 @@ describe('Dashboard', () => {
     });
 
     it('keeps the empty state hidden when a finished load produced cards', () => {
-      const { fixture, component } = setup();
+      const { fixture } = setup();
 
       fixture.componentRef.setInput('config', { editable: true });
       fixture.componentRef.setInput('loading', true);
       fixture.detectChanges();
 
-      component.cards.set([{ id: 'card-1', component: 'mfp-a' }]);
+      setCardsWithCatalogue(fixture, [{ id: 'card-1', component: 'mfp-a' }]);
       fixture.componentRef.setInput('loading', false);
       fixture.detectChanges();
 
@@ -2562,13 +2573,13 @@ describe('Dashboard', () => {
     });
 
     it('hides the empty state as soon as a loose card exists', () => {
-      const { fixture, component } = setup();
+      const { fixture } = setup();
 
       fixture.componentRef.setInput('config', { editable: true });
       fixture.detectChanges();
       expect(emptyState(fixture)).not.toBeNull();
 
-      component.cards.set([{ id: 'card-1', component: 'mfp-a' }]);
+      setCardsWithCatalogue(fixture, [{ id: 'card-1', component: 'mfp-a' }]);
       fixture.detectChanges();
       expect(emptyState(fixture)).toBeNull();
     });
@@ -2577,6 +2588,9 @@ describe('Dashboard', () => {
       const { fixture, component } = setup();
 
       fixture.componentRef.setInput('config', { editable: true });
+      fixture.componentRef.setInput('availableCards', [
+        { id: 'loose-1', component: 'mfp-c' },
+      ]);
       component.sections.set([
         { id: 'recent', title: 'Recently accessed services' },
       ]);
@@ -2637,14 +2651,185 @@ describe('Dashboard', () => {
     });
 
     it('keeps the empty state hidden on a populated, non-editable dashboard', () => {
-      const { fixture, component } = setup();
+      const { fixture } = setup();
 
       fixture.componentRef.setInput('config', { editable: false });
-      component.cards.set([{ id: 'card-1', component: 'mfp-a' }]);
+      setCardsWithCatalogue(fixture, [{ id: 'card-1', component: 'mfp-a' }]);
       fixture.detectChanges();
 
       expect(emptyState(fixture)).toBeNull();
       expect(editButton(fixture)).toBeNull();
+    });
+  });
+
+  describe('merge with availableCards', () => {
+    const catalogueEntry: CardConfig = {
+      id: 'orders',
+      label: 'Orders',
+      component: 'mfp-orders',
+      w: 4,
+      h: 40,
+      minW: 2,
+      maxW: 6,
+      componentInputs: { region: 'EU' },
+      componentTemplate: { actions: [{ key: 'export', text: 'Export' }] },
+    };
+
+    it('takes x, y, w, h and size from the saved loose card and everything else from the catalogue entry with the same id', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('availableCards', [catalogueEntry]);
+      component.cards.set([
+        {
+          id: 'orders',
+          label: 'Bestellungen',
+          component: 'mfp-old-orders',
+          x: 1,
+          y: 2,
+          w: 3,
+          h: 30,
+          size: 'xl',
+          componentInputs: { region: 'US' },
+        },
+      ]);
+
+      expect(component['looseCards']()).toEqual([
+        {
+          ...catalogueEntry,
+          x: 1,
+          y: 2,
+          w: 3,
+          h: 30,
+          size: 'xl',
+        },
+      ]);
+    });
+
+    it('falls back to the catalogue entry for layout fields the saved card omits', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('availableCards', [catalogueEntry]);
+      component.cards.set([{ id: 'orders', component: 'mfp-orders' }]);
+
+      expect(component['looseCards']()[0]).toMatchObject({ w: 4, h: 40 });
+    });
+
+    it('adds no layout keys that neither the card nor its catalogue entry sets', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('availableCards', [
+        { id: 'orders', component: 'mfp-orders', sectionId: 'alpha' },
+      ]);
+      component.cards.set([{ id: 'orders', component: 'mfp-orders' }]);
+
+      expect(Object.keys(component['looseCards']()[0]).sort()).toEqual([
+        'component',
+        'id',
+      ]);
+    });
+
+    it('drops a loose card whose id is not in availableCards', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('availableCards', [catalogueEntry]);
+      component.cards.set([
+        { id: 'orders', component: 'mfp-orders' },
+        { id: 'retired', component: 'mfp-retired' },
+      ]);
+      fixture.detectChanges();
+
+      expect(component['looseCards']().map((card) => card.id)).toEqual([
+        'orders',
+      ]);
+      expect(root(fixture).querySelectorAll('gridstack-item')).toHaveLength(1);
+    });
+
+    it('drops every loose card when availableCards is empty', () => {
+      const { fixture, component } = setup();
+
+      component.cards.set([{ id: 'orders', component: 'mfp-orders' }]);
+      fixture.detectChanges();
+
+      expect(component['looseCards']()).toEqual([]);
+      expect(root(fixture).querySelector('gridstack-item')).toBeNull();
+    });
+
+    it('keeps section cards as passed, whether or not the catalogue has an entry with the same id', () => {
+      const { fixture, component } = setup();
+      const sectionCards: CardConfig[] = [
+        {
+          id: 'orders',
+          label: 'Section orders',
+          component: 'mfp-section-orders',
+          sectionId: 'alpha',
+        },
+        { id: 'tile', component: 'mfp-tile', sectionId: 'alpha' },
+      ];
+
+      fixture.componentRef.setInput('availableCards', [catalogueEntry]);
+      component.sections.set([{ id: 'alpha', title: 'Alpha' }]);
+      component.cards.set(sectionCards);
+
+      expect(component['sectionCards']()('alpha')).toEqual(sectionCards);
+    });
+
+    it('emits the merged cards without the dropped ones on save', () => {
+      const { fixture, component } = setup();
+      const emitted: { sections: SectionConfig[]; cards: CardConfig[] }[] = [];
+
+      fixture.componentRef.setInput('availableCards', [catalogueEntry]);
+      component.cards.set([
+        { id: 'orders', label: 'Stale', component: 'mfp-orders' },
+        { id: 'retired', component: 'mfp-retired' },
+        { id: 'tile', component: 'mfp-tile', sectionId: 'alpha' },
+      ]);
+      component.saved.subscribe((value) => emitted.push(value));
+      component.enterEditMode();
+
+      component.saveEdit();
+
+      expect(emitted[0]?.cards).toEqual([
+        { ...catalogueEntry, x: undefined, y: undefined },
+        { id: 'tile', component: 'mfp-tile', sectionId: 'alpha' },
+      ]);
+      expect(component.cards()).toEqual(emitted[0]?.cards);
+    });
+  });
+
+  describe('cardAction', () => {
+    it('emits the card id and action key when a loose card reports an action', () => {
+      const { fixture, component } = setup();
+      const emitted: { cardId: string; key: string }[] = [];
+
+      setCardsWithCatalogue(fixture, [
+        { id: 'orders', component: 'mfp-orders' },
+      ]);
+      component.cardAction.subscribe((value) => emitted.push(value));
+      fixture.detectChanges();
+
+      fixture.debugElement
+        .query(By.directive(DashboardCard))
+        .componentInstance.cardAction.emit('export');
+
+      expect(emitted).toEqual([{ cardId: 'orders', key: 'export' }]);
+    });
+
+    it('emits the card id and action key when a section card reports an action', () => {
+      const { fixture, component } = setup();
+      const emitted: { cardId: string; key: string }[] = [];
+
+      component.sections.set([{ id: 'alpha', title: 'Alpha' }]);
+      component.cards.set([
+        { id: 'tile', component: 'mfp-tile', sectionId: 'alpha' },
+      ]);
+      component.cardAction.subscribe((value) => emitted.push(value));
+      fixture.detectChanges();
+
+      fixture.debugElement
+        .query(By.directive(DashboardCard))
+        .componentInstance.cardAction.emit('open');
+
+      expect(emitted).toEqual([{ cardId: 'tile', key: 'open' }]);
     });
   });
 

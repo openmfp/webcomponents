@@ -31,17 +31,36 @@
       [class]="componentHostClasses"
       [style.pointer-events]="editMode() ? 'none' : 'auto'"
     >
-      <div #elementHost class="element-host"></div>
+      @if (card().componentTemplate; as template) {
+        <mfp-card-template
+          [actions]="template.actions ?? []"
+          [actionsLabel]="i18n.getTranslation(i18nKeys.ACTIONS)"
+          [background]="template.background ?? 'solid'"
+          [badge]="template.badge"
+          [header]="template.header !== false"
+          [messageStrip]="template.messageStrip"
+          [name]="card().label ?? ''"
+          [search]="templateSearch()"
+          [(searchValue)]="searchQuery"
+          (actionPress)="onTemplateAction($event)"
+        >
+          <div #elementHost class="element-host"></div>
+        </mfp-card-template>
+      } @else {
+        <div #elementHost class="element-host"></div>
+      }
     </div>
   </div>
 } @else {
   <div class="card" [attr.data-testid]="'dashboard-card-' + card().id">
-    <div
-      [attr.inert]="editMode() ? '' : null"
-      [class]="cardBodyClasses"
-      [style.pointer-events]="editMode() ? 'none' : 'auto'"
-    >
-      <ng-content />
-    </div>
+    <mfp-card-template [header]="false" [name]="card().label ?? card().id">
+      <div
+        [attr.inert]="editMode() ? '' : null"
+        [class]="cardBodyClasses"
+        [style.pointer-events]="editMode() ? 'none' : 'auto'"
+      >
+        <ng-content />
+      </div>
+    </mfp-card-template>
   </div>
 }

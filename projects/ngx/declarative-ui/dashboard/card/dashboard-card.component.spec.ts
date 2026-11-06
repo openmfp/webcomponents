@@ -1,8 +1,43 @@
+import { CardTemplate } from '../../../cards/card-template/card-template.component';
 import { DASHBOARD_CARD_DRAG_ORIGIN_CLASS } from '../constants';
 import { DashboardI18nService } from '../i18n';
+import { CardConfig } from '../models';
 import { DashboardCard } from './dashboard-card.component';
+import {
+  addComponentToRegistry,
+  resetDashboardCardRegistry,
+} from './utils/dashboard-card-registry';
+import { SapComponentCreatedEvent } from './utils/mount-sap-card';
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { axe } from 'vitest-axe';
+
+class SearchableWidget extends HTMLElement {
+  readonly searches: string[] = [];
+  readonly actions: string[] = [];
+
+  onCardSearch(query: string): void {
+    this.searches.push(query);
+  }
+
+  onCardAction(key: string): void {
+    this.actions.push(key);
+  }
+}
+customElements.define('searchable-widget', SearchableWidget);
+
+@Component({
+  selector: 'mfp-searchable-angular-card',
+  template: '<span>angular card</span>',
+})
+class SearchableAngularCard {
+  readonly searches: string[] = [];
+
+  onCardSearch(query: string): void {
+    this.searches.push(query);
+  }
+}
 
 type Fixture = ComponentFixture<DashboardCard>;
 
@@ -227,6 +262,225 @@ describe('DashboardCard', () => {
     });
   });
 
+  describe('componentTemplate', () => {
+    const templatedCard: CardConfig = {
+      id: 'orders',
+      label: 'Recent Orders',
+      component: 'searchable-widget',
+      componentTemplate: {
+        search: { placeholder: 'Search orders' },
+        actions: [{ key: 'export', text: 'Export' }],
+      },
+    };
+
+    function cardTemplate(fixture: Fixture): CardTemplate {
+      return fixture.debugElement.query(By.directive(CardTemplate))
+        .componentInstance as CardTemplate;
+    }
+
+    function mountedWidget(fixture: Fixture): SearchableWidget {
+      return root(fixture).querySelector(
+        'searchable-widget',
+      ) as SearchableWidget;
+    }
+
+    function search(fixture: Fixture, query: string): void {
+      cardTemplate(fixture).searchValue.set(query);
+      fixture.detectChanges();
+    }
+
+    afterEach(() => {
+      resetDashboardCardRegistry();
+    });
+
+    it('renders the card as before when componentTemplate is not set', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('card', {
+        id: 'orders',
+        label: 'Recent Orders',
+        component: 'demo-widget',
+      });
+      fixture.detectChanges();
+
+      expect(root(fixture).querySelector('mfp-card-template')).toBeNull();
+      expect(root(fixture).querySelector('demo-widget')).not.toBeNull();
+    });
+
+    it('wraps the card in the card template and takes the title from label', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('card', templatedCard);
+      fixture.detectChanges();
+
+      const template = root(fixture).querySelector('mfp-card-template');
+      expect(template?.querySelector('searchable-widget')).not.toBeNull();
+      expect(
+        template?.querySelector('[data-testid="card-template-title"]')
+          ?.textContent,
+      ).toContain('Recent Orders');
+    });
+
+    it('draws only the frame for header: false and names it by label', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('card', {
+        ...templatedCard,
+        componentTemplate: { header: false },
+      });
+      fixture.detectChanges();
+
+      const frame = root(fixture).querySelector(
+        '[data-testid="card-template"]',
+      );
+      expect(frame?.getAttribute('aria-label')).toBe('Recent Orders');
+      expect(frame?.querySelector('header')).toBeNull();
+      expect(frame?.querySelector('searchable-widget')).not.toBeNull();
+    });
+
+    it('passes the search text to onCardSearch of the card', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('card', templatedCard);
+      fixture.detectChanges();
+      search(fixture, 'acme');
+
+      expect(mountedWidget(fixture).searches).toEqual(['acme']);
+    });
+
+    it('does not call onCardSearch on mount while the search text is empty', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('card', templatedCard);
+      fixture.detectChanges();
+
+      expect(mountedWidget(fixture).searches).toEqual([]);
+    });
+
+    it('keeps the header and passes the search text to the new content when the card re-mounts', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('card', templatedCard);
+      fixture.detectChanges();
+      const template = cardTemplate(fixture);
+      search(fixture, 'acme');
+      const firstWidget = mountedWidget(fixture);
+
+      fixture.componentRef.setInput('card', {
+        ...templatedCard,
+        componentInputs: { region: 'EU' },
+      });
+      fixture.detectChanges();
+
+      expect(mountedWidget(fixture)).not.toBe(firstWidget);
+      expect(mountedWidget(fixture).searches).toEqual(['acme']);
+      expect(cardTemplate(fixture)).toBe(template);
+      expect(cardTemplate(fixture).searchValue()).toBe('acme');
+    });
+
+    it('hides the search field and warns in dev mode when the card has no onCardSearch', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(vi.fn());
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('card', {
+        ...templatedCard,
+        component: 'demo-widget',
+      });
+      fixture.detectChanges();
+
+      expect(
+        root(fixture).querySelector('[data-testid="card-template-search"]'),
+      ).toBeNull();
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('has no onCardSearch(query) method'),
+      );
+      warn.mockRestore();
+    });
+
+    it('shows the search field when the card implements onCardSearch', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('card', templatedCard);
+      fixture.detectChanges();
+
+      expect(
+        root(fixture).querySelector('[data-testid="card-template-search"]'),
+      ).not.toBeNull();
+    });
+
+    it('calls onCardAction of the card and emits cardAction when an action is chosen', () => {
+      const { fixture, component } = setup();
+      const emitted: string[] = [];
+      component.cardAction.subscribe((key) => emitted.push(key));
+
+      fixture.componentRef.setInput('card', templatedCard);
+      fixture.detectChanges();
+      cardTemplate(fixture).actionPress.emit('export');
+
+      expect(mountedWidget(fixture).actions).toEqual(['export']);
+      expect(emitted).toEqual(['export']);
+    });
+
+    it('emits cardAction for a card without onCardAction', () => {
+      const { fixture, component } = setup();
+      const emitted: string[] = [];
+      component.cardAction.subscribe((key) => emitted.push(key));
+
+      fixture.componentRef.setInput('card', {
+        ...templatedCard,
+        component: 'demo-widget',
+      });
+      fixture.detectChanges();
+      cardTemplate(fixture).actionPress.emit('export');
+
+      expect(emitted).toEqual(['export']);
+    });
+
+    it('passes the search text to an Angular card', () => {
+      addComponentToRegistry([SearchableAngularCard]);
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('card', {
+        ...templatedCard,
+        type: 'angular',
+        component: 'mfp-searchable-angular-card',
+      });
+      fixture.detectChanges();
+      search(fixture, 'acme');
+
+      const angularCard = fixture.debugElement.query(
+        By.directive(SearchableAngularCard),
+      ).componentInstance as SearchableAngularCard;
+      expect(angularCard.searches).toEqual(['acme']);
+    });
+
+    it('draws the fallback card of a card without component as a frame without header', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('card', {
+        id: 'empty',
+        label: 'Placeholder',
+        component: '',
+      });
+      fixture.detectChanges();
+
+      const frame = root(fixture).querySelector(
+        '.card [data-testid="card-template"]',
+      );
+      expect(frame?.getAttribute('aria-label')).toBe('Placeholder');
+      expect(frame?.querySelector('header')).toBeNull();
+    });
+
+    it('has no automatically-detectable accessibility violations', async () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('card', templatedCard);
+      fixture.detectChanges();
+
+      expect(await axe(fixture.nativeElement)).toHaveNoViolations();
+    });
+  });
+
   describe('sap-ui type', () => {
     let placeAt: ReturnType<typeof vi.fn>;
     let destroy: ReturnType<typeof vi.fn>;
@@ -332,6 +586,40 @@ describe('DashboardCard', () => {
 
       expect(ComponentContainer).not.toHaveBeenCalled();
       expect(placeAt).not.toHaveBeenCalled();
+    });
+
+    it('passes search text and actions of a templated card to the UI5 Component', () => {
+      const { fixture, component } = setup();
+      const ui5Component = { onCardSearch: vi.fn(), onCardAction: vi.fn() };
+      const emitted: string[] = [];
+      component.cardAction.subscribe((key) => emitted.push(key));
+
+      fixture.componentRef.setInput('card', {
+        id: 'orders',
+        label: 'Recent Orders',
+        component: 'my.sap.App',
+        type: 'sap-ui',
+        componentTemplate: {
+          search: { placeholder: 'Search orders' },
+          actions: [{ key: 'export', text: 'Export' }],
+        },
+      });
+      fixture.detectChanges();
+      const [settings] = ComponentContainer.mock.calls[0] as [
+        { componentCreated: (event: SapComponentCreatedEvent) => void },
+      ];
+      settings.componentCreated({ getParameter: () => ui5Component });
+      fixture.detectChanges();
+
+      const template = fixture.debugElement.query(By.directive(CardTemplate))
+        .componentInstance as CardTemplate;
+      template.searchValue.set('acme');
+      fixture.detectChanges();
+      template.actionPress.emit('export');
+
+      expect(ui5Component.onCardSearch).toHaveBeenCalledWith('acme');
+      expect(ui5Component.onCardAction).toHaveBeenCalledWith('export');
+      expect(emitted).toEqual(['export']);
     });
 
     it('logs an error when window.sap is not available', () => {

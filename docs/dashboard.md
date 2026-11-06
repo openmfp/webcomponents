@@ -113,7 +113,7 @@ mfp-dashboard {
 
 #### Section frame in edit mode
 
-In edit mode a section draws the same frame as a **transparent** card built on the `MfpCardTemplate` UI5 control, so a section and the cards inside it read as one system. It uses the card template's own tokens rather than hard-coded values:
+In edit mode a section draws the same frame as a card with [`componentTemplate`](#card-template--componenttemplate) and `background: 'transparent'`, so a section and the cards inside it read as one system. It uses the card template's own tokens rather than hard-coded values:
 
 | Property        | Token                          |
 | --------------- | ------------------------------ |
@@ -296,20 +296,192 @@ const cards: CardConfig[] = [
 
 ---
 
+## Card template — `componentTemplate`
+
+Set `componentTemplate` on a card and the dashboard draws the MFP card frame and header around it — title, badge, search, overflow actions and message strip — with UI5 Web Components, for every card type (`wc`, `angular` and `sap-ui`). The card renders its content only: no frame CSS, no title and no search field of its own.
+
+```ts
+const card: CardConfig = {
+  id: 'sales-orders',
+  label: 'Recent Sales Orders',
+  type: 'sap-ui',
+  component: 'my.app.components.salesOrders',
+  w: 4,
+  minW: 1,
+  maxW: 4,
+  h: 40,
+  componentTemplate: {
+    background: 'solid',
+    badge: { text: 'Action Needed', state: 'Critical' },
+    search: { placeholder: 'Search orders' },
+    actions: [{ key: 'export', text: 'Export to Spreadsheet' }],
+    messageStrip: {
+      text: 'Showing orders from the last 30 days.',
+      type: 'Information',
+    },
+  },
+  componentInputs: {},
+};
+```
+
+- **Opt-in.** Only cards with `componentTemplate` get the frame and header. Every other card renders as before.
+- **Title and size come from the card config.** The title is `label`, which is also the card's accessible name, and the size is `w`/`minW`/`maxW`/`h`. Don't repeat them in `componentInputs`.
+- **Texts come from the host.** Pass `label`, the search placeholder, the action texts, the badge and the message strip in the current language. They are plain strings and never reach a UI5 binding parser, so `{…}` in them is safe.
+- **`componentTemplate` changes don't re-mount the card.** Only `type`, `component` and `componentInputs` do; the header stays in place either way.
+
+| Field          | Type                                                    | Default   | Description                                                                                                                                 |
+| -------------- | ------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `header`       | `boolean`                                               | `true`    | `false` draws only the frame, for compact tiles without a title or toolbar. The frame still takes its accessible name from `label`.         |
+| `background`   | `'solid' \| 'transparent'`                              | `'solid'` | `transparent` draws no background and no shadow outside edit mode.                                                                          |
+| `badge`        | `{ text: string; state?: CardTemplateBadgeState }`      | —         | Badge on the top-right border. `state`: `Neutral`, `Information`, `Positive`, `Negative` or `Critical` (default `Critical`).                |
+| `search`       | `{ placeholder: string }`                               | —         | Search field in the header. Shown only for cards that implement `onCardSearch` — see [Search and actions](#search-and-actions).             |
+| `actions`      | `{ key: string; text: string }[]`                       | —         | Overflow "…" menu. Each choice calls `onCardAction(key)` on the card and emits `cardAction`.                                                |
+| `messageStrip` | `{ text: string; type?: CardTemplateMessageStripType }` | —         | Message strip below the header. `type`: `Information`, `Positive`, `Negative` or `Critical` (default `Information`). The user can close it. |
+
+The header is the [`CardTemplate`](./card-template.md) component, which Angular applications can also use directly to build cards.
+
+### Search and actions
+
+`CardConfig` stays plain JSON — the dashboard emits it in `saved` and compares cards with `JSON.stringify` — so it only _declares_ search and actions. The card implements them with two optional methods, the same for every card type:
+
+```ts
+interface DashboardCardContent {
+  onCardSearch?(query: string): void;
+  onCardAction?(key: string): void;
+}
+```
+
+`DashboardCardContent` is exported from `@openmfp/ngx` and from `@openmfp/webcomponents/dashboard`. The dashboard calls the methods on:
+
+| `type`    | Instance                                                                                                                                                                                                            |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sap-ui`  | The UI5 Component that `ComponentContainer` created (its `componentCreated` event). Define the methods on your `UIComponent` subclass.                                                                              |
+| `wc`      | The custom element. Define the methods on the element class. Elements built with `@angular/elements` expose only inputs, so add the methods to the element class the way `mfp-wc-declarative-form` adds `submit()`. |
+| `angular` | The instance of the registered Angular component.                                                                                                                                                                   |
+
+- **`onCardSearch(query)`** is called with the whole search text on every keystroke, and with `''` when the user clears the field. A card mounted while the search text is empty gets no call.
+- **The search text survives a re-mount.** When `type`, `component` or `componentInputs` change, the header stays and the new content gets `onCardSearch(query)` with the current text right after it mounts.
+- **A card without `onCardSearch` gets no search field**, and the dashboard logs a warning in dev mode. `sap-ui` Components are created asynchronously, so their search field appears once the Component exists.
+- **`onCardAction(key)`** is called when the user chooses an action. Every action is also emitted as the [`cardAction`](#outputs) output (`cardAction` DOM event on `<mfp-wc-dashboard>`) with `{ cardId, key }`, so the host can handle app-level actions — navigate, share — without card code. A card that only relies on `cardAction` doesn't need `onCardAction`.
+
+A SAP UI5 card:
+
+```ts
+export default class Component extends UIComponent {
+  public onCardSearch(query: string): void {
+    const table = (this.getRootControl() as View).byId('orders') as Table;
+    (table.getBinding('items') as ListBinding).filter(
+      query ? [new Filter('customer', FilterOperator.Contains, query)] : [],
+    );
+  }
+
+  public onCardAction(key: string): void {
+    if (key === 'export') this.exportToSpreadsheet();
+  }
+}
+```
+
+An Angular card:
+
+```ts
+@Component({ selector: 'app-orders-card', template: '…' })
+export class OrdersCard {
+  protected readonly query = signal('');
+
+  onCardSearch(query: string): void {
+    this.query.set(query);
+  }
+
+  onCardAction(key: string): void {
+    if (key === 'export') this.exportToSpreadsheet();
+  }
+}
+```
+
+A custom element:
+
+```js
+class OrdersCard extends HTMLElement {
+  onCardSearch(query) {
+    this.filter(query);
+  }
+
+  onCardAction(key) {
+    if (key === 'export') this.exportToSpreadsheet();
+  }
+}
+customElements.define('app-orders-card', OrdersCard);
+```
+
+Listening to `cardAction` on the web component:
+
+```ts
+dashboard.addEventListener('cardAction', (event) => {
+  const { cardId, key } = event.detail;
+  if (key === 'share') shareCard(cardId);
+});
+```
+
+### Card frame
+
+The card frame — background, border, corner radius and shadow — is drawn by the template from SAP theme tokens, so it follows `sap_horizon`, `sap_horizon_dark`, `sap_horizon_hcw` and `sap_horizon_hcb`. See [CardTemplate theming](./card-template.md#theming) for the tokens. The edit-mode highlight works on it unchanged, because the dashboard overrides `--sapTile_BorderColor` on hover, focus and drag.
+
+- **A wrapped card must not draw its own background, border, corner radius or shadow.** Delete copied frame CSS when you move a card to `componentTemplate`: a copied frame hard-codes the light Horizon values and is wrong in the other themes.
+- **The content fills the rest of the card and scrolls** when it overflows. A `sap-ui` card's root view can set `height="100%"` to fill the card instead.
+- **Cards without `component`** (the dashboard's fallback card) are drawn with the same frame, without a header.
+
+### Saving and loading — merge with `availableCards`
+
+`saved` emits the full `CardConfig` of every card, and hosts typically store it and pass it back as `cards`. So that stored cards never hold stale texts, the dashboard merges **loose cards** (cards without `sectionId`) with the catalogue by `id` every time it renders:
+
+- `x`, `y`, `w`, `h`, `size` and `sectionId` come from the card in `cards`. A value the card omits falls back to the catalogue entry.
+- Everything else — `label`, `type`, `component`, `componentInputs`, `componentTemplate`, `minW`/`maxW`/`minH`/`maxH` — comes from the `availableCards` entry with the same `id`.
+- **A loose card whose `id` is not in `availableCards` is not rendered**, and it is left out of the next `saved` payload. With an empty `availableCards`, no loose card is rendered: list every loose card in the catalogue.
+- **Cards in sections are rendered exactly as passed in `cards`.** They are neither merged nor dropped.
+
+Hosts can keep storing what `saved` emits: labels, texts and actions of loose cards always come from the current catalogue in the current language, and actions removed from a card disappear.
+
+### Migrating from `MfpCardTemplate`
+
+The OpenUI5 control `mfp.ui5.card.MfpCardTemplate` (`ui5/mfp-card/` in the package) has been removed. Move cards that used it to `componentTemplate`:
+
+1. Remove `<card:MfpCardTemplate>` and `xmlns:card="mfp.ui5.card"` from the card's view. What was inside the control is now the whole view; point the card config's `component` at the component that renders it.
+2. Delete the bridge Component that re-declared the control's properties and copied them into a `card` JSON model.
+3. Delete the card's own frame CSS (background, border, radius, shadow).
+4. Move the settings into the card config:
+
+   | `MfpCardTemplate`                            | Card config                                                                 |
+   | -------------------------------------------- | --------------------------------------------------------------------------- |
+   | `name`                                       | `label`                                                                     |
+   | `width`, `minWidth`, `maxWidth`, `height`    | `w`, `minW`, `maxW`, `h` — once, on the card                                |
+   | `background`                                 | `componentTemplate.background`                                              |
+   | `badge` + `badgeState`                       | `componentTemplate.badge: { text, state }`                                  |
+   | `showSearch` + `searchPlaceholder`           | `componentTemplate.search: { placeholder }` — the placeholder is required   |
+   | `messageStrip` aggregation                   | `componentTemplate.messageStrip: { text, type }`                            |
+   | `actions` aggregation (`core:Item` key/text) | `componentTemplate.actions: [{ key, text }]`                                |
+   | `search` / `searchLiveChange` events         | `onCardSearch(query)` on the Component                                      |
+   | `actionPress` event                          | `onCardAction(key)` on the Component, or the dashboard's `cardAction` event |
+
+   State names follow UI5 Web Components: `Warning` → `Critical`, `Error` → `Negative`, `Success` → `Positive`, `None` → `Neutral` (badge only); `Information` stays.
+
+5. Remove the `mfp.ui5.card` resource root from the UI5 bootstrap.
+
+---
+
 ## API
 
 ### Inputs
 
-| Input            | Type                                         | Required | Default       | Description                                                                                                                                                                                                                             |
-| ---------------- | -------------------------------------------- | -------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `config`         | `DashboardConfig`                            | yes      | —             | Optional title/description (overridden by `i18n` when not present), background image (falls back to the `--mfp-dashboard-background` CSS variable), and layout/edit flags                                                               |
-| `sections`       | `SectionConfig[]`                            | no       | `[]`          | Named dashboard sections rendered above the loose-card grid                                                                                                                                                                             |
-| `cards`          | `CardConfig[]`                               | no       | `[]`          | All cards shown in sections or in the grid                                                                                                                                                                                              |
-| `availableCards` | `CardConfig[]`                               | no       | `[]`          | Card templates that can be added in edit mode                                                                                                                                                                                           |
-| `customActions`  | `ButtonSettings[]`                           | no       | `[]`          | Extra action buttons rendered in the toolbar alongside the built-in ones. Clicking one emits `actionButtonClick`.                                                                                                                       |
-| `i18n`           | `DashboardTranslations \| null \| undefined` | no       | `EN_DEFAULTS` | Full set of dashboard chrome + title/description strings. When `null`, `undefined`, or `{}`, the built-in English defaults are used; when provided, it must be the complete `DashboardTranslations`. See [Localization](#localization). |
-| `loading`        | `boolean`                                    | no       | `false`       | Busy flag for the dashboard body. While `true` the whole page is covered by a busy indicator and the empty state is suppressed. See [Initial loading](#initial-loading).                                                                |
-| `loadingDelay`   | `number`                                     | no       | `1000`        | Milliseconds to wait after `loading` turns `true` before the spinner paints. A load that finishes inside the window never shows one. See [Initial loading](#initial-loading).                                                           |
+| Input            | Type                                         | Required | Default       | Description                                                                                                                                                                                                                                                |
+| ---------------- | -------------------------------------------- | -------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `config`         | `DashboardConfig`                            | yes      | —             | Optional title/description (overridden by `i18n` when not present), background image (falls back to the `--mfp-dashboard-background` CSS variable), and layout/edit flags                                                                                  |
+| `sections`       | `SectionConfig[]`                            | no       | `[]`          | Named dashboard sections rendered above the loose-card grid                                                                                                                                                                                                |
+| `cards`          | `CardConfig[]`                               | no       | `[]`          | All cards shown in sections or in the grid                                                                                                                                                                                                                 |
+| `availableCards` | `CardConfig[]`                               | no       | `[]`          | Card catalogue: the cards that can be added in edit mode. Loose cards in `cards` are merged with the entry of the same `id`, and loose cards without an entry are not rendered — see [Saving and loading](#saving-and-loading--merge-with-availablecards). |
+| `customActions`  | `ButtonSettings[]`                           | no       | `[]`          | Extra action buttons rendered in the toolbar alongside the built-in ones. Clicking one emits `actionButtonClick`.                                                                                                                                          |
+| `i18n`           | `DashboardTranslations \| null \| undefined` | no       | `EN_DEFAULTS` | Full set of dashboard chrome + title/description strings. When `null`, `undefined`, or `{}`, the built-in English defaults are used; when provided, it must be the complete `DashboardTranslations`. See [Localization](#localization).                    |
+| `loading`        | `boolean`                                    | no       | `false`       | Busy flag for the dashboard body. While `true` the whole page is covered by a busy indicator and the empty state is suppressed. See [Initial loading](#initial-loading).                                                                                   |
+| `loadingDelay`   | `number`                                     | no       | `1000`        | Milliseconds to wait after `loading` turns `true` before the spinner paints. A load that finishes inside the window never shows one. See [Initial loading](#initial-loading).                                                                              |
 
 ### Outputs
 
@@ -318,6 +490,7 @@ const cards: CardConfig[] = [
 | `saved`                | `{ sections: SectionConfig[]; cards: CardConfig[] }` | Emits when the user saves edits                                                                                                                                                                                                                       |
 | `actionButtonClick`    | `{ event: MouseEvent; action: ButtonSettings }`      | Emits when a custom action button from the `customActions` input is clicked                                                                                                                                                                           |
 | `unsavedChangesChange` | `boolean`                                            | Emits whenever the unsaved-changes state flips — `true` when the user first makes an unsaved edit, `false` after save/discard. Use this to drive your own navigation guard (see [Showing your own dialog instead](#showing-your-own-dialog-instead)). |
+| `cardAction`           | `{ cardId: string; key: string }`                    | Emits when the user chooses an action from the header of a card with `componentTemplate` — see [Search and actions](#search-and-actions).                                                                                                             |
 
 ### Public methods
 
@@ -1051,7 +1224,8 @@ interface CardConfig {
   component: string;
   type?: 'wc' | 'angular' | 'sap-ui';
   componentInputs?: Record<string, unknown>;
-  label?: string;
+  label?: string; // also the title and accessible name with componentTemplate
+  componentTemplate?: CardTemplateConfig; // see Card template
 }
 ```
 
@@ -1092,6 +1266,10 @@ const cards: CardConfig[] = [
 
 If `window.sap` is not available when the card is rendered, an error is logged and the card host element is left empty.
 
+Give the card `componentTemplate` to have the dashboard draw its frame and header — the card's Component then implements `onCardSearch(query)` and `onCardAction(key)`; see [Card template](#card-template--componenttemplate).
+
+> **Do not pass strings containing `{` `}` in `componentInputs`.** UI5 parses string settings with curly braces as binding syntax, so a value like `'You clicked "{0}"'` becomes a binding and never reaches the property. Format such texts before passing them, or pass them inside an object (`object` / `object[]` properties are not parsed). Header texts in `componentTemplate` are not affected.
+
 ---
 
 ## Test IDs
@@ -1129,6 +1307,8 @@ All interactive elements carry `data-testid` attributes for reliable E2E targeti
 | ------------- | ---------------------------- | -------------------- |
 | Card root     | `dashboard-card-{id}`        | `id` = `card.id`     |
 | Remove button | `dashboard-card-{id}-remove` | Visible in edit mode |
+
+A card with `componentTemplate`, and the fallback card of a card without `component`, contains the [CardTemplate test IDs](./card-template.md#test-ids) (`card-template`, `card-template-title`, `card-template-search`, …). Scope them by the card root.
 
 ### DashboardSection
 

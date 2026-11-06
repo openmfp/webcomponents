@@ -118,6 +118,15 @@ describe('mountWcCard', () => {
     );
   });
 
+  it('reports the mounted element through onMounted', () => {
+    const { onCleanup } = makeCleanup();
+    const { container, el } = makeContainer();
+    const onMounted = vi.fn();
+    mountWcCard(makeCfg(), container, onCleanup, makeRenderer(), onMounted);
+
+    expect(onMounted).toHaveBeenCalledWith(el.querySelector('demo-widget'));
+  });
+
   describe('contentHeight', () => {
     it('hands the mounted element the pixel height of its slot', () => {
       const { container, el } = makeContainer();
