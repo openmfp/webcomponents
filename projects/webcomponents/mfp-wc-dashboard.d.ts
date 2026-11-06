@@ -27,6 +27,42 @@ export type CardsType = 'wc' | 'angular' | 'sap-ui';
 /** Named size tokens used in z-flow layout mode. */
 export type CardSize = 's' | 'm' | 'l' | 'xl' | 'xxl';
 
+export type CardTemplateBackground = 'solid' | 'transparent';
+
+export type CardTemplateBadgeState =
+  'Neutral' | 'Information' | 'Positive' | 'Negative' | 'Critical';
+
+export type CardTemplateMessageStripType =
+  'Information' | 'Positive' | 'Negative' | 'Critical';
+
+export interface CardTemplateBadge {
+  text: string;
+  state?: CardTemplateBadgeState;
+}
+
+export interface CardTemplateSearch {
+  placeholder: string;
+}
+
+export interface CardTemplateAction {
+  key: string;
+  text: string;
+}
+
+export interface CardTemplateMessageStrip {
+  text: string;
+  type?: CardTemplateMessageStripType;
+}
+
+export interface CardTemplateConfig {
+  header?: boolean;
+  background?: CardTemplateBackground;
+  badge?: CardTemplateBadge;
+  search?: CardTemplateSearch;
+  actions?: CardTemplateAction[];
+  messageStrip?: CardTemplateMessageStrip;
+}
+
 /** Configuration for a single card placed in the dashboard grid or a section. */
 export interface CardConfig {
   /** Unique identifier for this card. Used as a stable key for position persistence. */
@@ -63,9 +99,15 @@ export interface CardConfig {
   type?: CardsType;
   /** Key/value pairs passed to the rendered card. Behaviour depends on `type`. */
   componentInputs?: Record<string, unknown>;
-  /** Human-readable label shown in the "Edit Cards" dialog. */
+  /** Human-readable label shown in the "Edit Cards" dialog, and the card title and accessible name when `componentTemplate` is set. */
   label?: string;
   size?: CardSize;
+  componentTemplate?: CardTemplateConfig;
+}
+
+export interface DashboardCardContent {
+  onCardSearch?(query: string): void;
+  onCardAction?(key: string): void;
 }
 
 /** The minimal config subset needed to mount a card component. */
@@ -219,6 +261,11 @@ export interface DashboardActionButtonClickDetail {
   action: ButtonSettings;
 }
 
+export interface DashboardCardActionDetail {
+  cardId: string;
+  key: string;
+}
+
 /** Typed event map for `<mfp-wc-dashboard>`. */
 export interface MfpWcDashboardEventMap {
   /** Emitted when the user saves edits in the dashboard edit mode. */
@@ -227,6 +274,7 @@ export interface MfpWcDashboardEventMap {
   actionButtonClick: CustomEvent<DashboardActionButtonClickDetail>;
   /** Emitted whenever the unsaved-changes state flips — `true` when the user first makes an unsaved edit, `false` after save/discard. */
   unsavedChangesChange: CustomEvent<boolean>;
+  cardAction: CustomEvent<DashboardCardActionDetail>;
 }
 
 // ---------------------------------------------------------------------------
@@ -252,7 +300,7 @@ export declare class MfpWcDashboardElement extends HTMLElement {
   /** All cards currently placed in sections or the loose-card grid. */
   cards: CardConfig[];
 
-  /** Card templates the user may add via the Edit Cards dialog. */
+  /** Card catalogue: the cards the user may add via the Edit Cards dialog. Loose cards in `cards` are merged with the entry of the same id; loose cards without an entry are not rendered. */
   availableCards: CardConfig[];
 
   /** Extra action buttons rendered in the toolbar alongside the built-in ones. */

@@ -141,6 +141,23 @@ All interactive and identifiable elements across the webcomponents library carry
 
 ---
 
+### CardTemplate (`card-template-*`)
+
+| Element        | `data-testid`                 | Notes                               |
+| -------------- | ----------------------------- | ----------------------------------- |
+| Card frame     | `card-template`               | Carries `aria-label` = `name`       |
+| Title          | `card-template-title`         | Present when `header` is `true`     |
+| Badge          | `card-template-badge`         | Present when `badge.text` is set    |
+| Search field   | `card-template-search`        | Present when `search` is set        |
+| Actions button | `card-template-actions`       | Present when `actions` is not empty |
+| Actions menu   | `card-template-actions-menu`  |                                     |
+| Action         | `card-template-action-{key}`  | `key` = `action.key`                |
+| Message strip  | `card-template-message-strip` | Present until the user closes it    |
+
+Inside the dashboard, every card with `componentTemplate` renders these IDs — scope them by `dashboard-card-{id}`.
+
+---
+
 ### ResourceField (`resource-field-*`)
 
 `ResourceField` derives its test ID from `fieldDefinition.property` at runtime:

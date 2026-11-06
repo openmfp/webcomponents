@@ -1,6 +1,10 @@
 import { DashboardCard } from '../card/dashboard-card.component';
 import { DASHBOARD_I18N_KEYS, DashboardI18nService } from '../i18n';
-import { CardConfig, SectionConfig } from '../models';
+import {
+  CardConfig,
+  DashboardCardActionDetail,
+  SectionConfig,
+} from '../models';
 import {
   Component,
   ViewEncapsulation,
@@ -55,4 +59,5 @@ export class DashboardSection {
   protected readonly i18nKeys = DASHBOARD_I18N_KEYS;
   readonly removeSection = output<void>();
   readonly removeCard = output<string>();
+  readonly cardAction = output<DashboardCardActionDetail>();
 }

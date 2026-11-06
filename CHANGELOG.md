@@ -12,6 +12,7 @@ and [releases](https://github.com/openmfp/webcomponents/releases) for details.
 ## [1.13.1] - 2026-11-06
 
 ### Features
+
 - Add pop-in support for table (#362)
 
 ## [1.12.0] - 2026-10-27

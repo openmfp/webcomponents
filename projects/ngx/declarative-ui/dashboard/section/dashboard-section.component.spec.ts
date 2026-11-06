@@ -238,6 +238,24 @@ describe('DashboardSection', () => {
     expect(emitted).toEqual(['card-1']);
   });
 
+  it('emits the card id and key when a nested card reports an action', () => {
+    const { fixture, component } = setup();
+    const emitted: { cardId: string; key: string }[] = [];
+
+    component.cardAction.subscribe((event) => emitted.push(event));
+    fixture.componentRef.setInput('section', { id: 'section-1' });
+    fixture.componentRef.setInput('cards', [
+      { id: 'card-1', component: 'demo-widget' },
+    ]);
+    fixture.detectChanges();
+
+    const card = fixture.debugElement.query(By.directive(DashboardCard))
+      .componentInstance as DashboardCard;
+    card.cardAction.emit('export');
+
+    expect(emitted).toEqual([{ cardId: 'card-1', key: 'export' }]);
+  });
+
   describe('data-testid attributes', () => {
     it('sets data-testid on the root section element', () => {
       const { fixture } = setup();

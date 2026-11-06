@@ -46,12 +46,14 @@ function makeCleanup(): {
 
 function makeMockVcr(): {
   vcr: ViewContainerRef;
+  instance: object;
   setInput: ReturnType<typeof vi.fn>;
   clear: ReturnType<typeof vi.fn>;
 } {
   const setInput = vi.fn();
   const detectChanges = vi.fn();
   const componentRef = {
+    instance: { onCardAction: vi.fn() },
     setInput,
     changeDetectorRef: { detectChanges } as unknown as ChangeDetectorRef,
   };
@@ -66,7 +68,7 @@ function makeMockVcr(): {
     element: { nativeElement: host },
     clear,
   } as unknown as ViewContainerRef;
-  return { vcr, setInput, clear };
+  return { vcr, instance: componentRef.instance, setInput, clear };
 }
 
 function makeCfg(overrides: Partial<CardConfig> = {}): CardConfig {
@@ -127,6 +129,16 @@ describe('mountAngularCard', () => {
       expect.stringContaining('unknownProp'),
     );
     expect(setInput).not.toHaveBeenCalled();
+  });
+
+  it('reports the component instance through onMounted', () => {
+    const { vcr, instance } = makeMockVcr();
+    const { onCleanup } = makeCleanup();
+    const onMounted = vi.fn();
+
+    mountAngularCard(makeCfg(), vcr, onCleanup, onMounted);
+
+    expect(onMounted).toHaveBeenCalledWith(instance);
   });
 
   it('clears the host on cleanup', () => {

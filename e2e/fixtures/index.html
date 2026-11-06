@@ -112,11 +112,11 @@
               card('e2e-h', 's', 6), // w=4 at 12 cols
             ];
 
-        // AVAILABLE_CARDS copies strip zFlowOrder: available-only cards have no
+        // The dashboard takes everything but the layout (x, y, w, h, size) of a
+        // loose card from its catalogue entry, so every card on the board is
+        // listed here, zFlowOrder included. Available-only cards have no
         // predetermined order — zFlowOrder is assigned when they are added to front.
-        const AVAILABLE_CARDS = CARDS.map(({ zFlowOrder: _, ...rest }) => ({
-          ...rest,
-        }));
+        const AVAILABLE_CARDS = CARDS.map((card) => ({ ...card }));
         AVAILABLE_CARDS.push({
           id: 'e2e-f',
           type: 'wc',

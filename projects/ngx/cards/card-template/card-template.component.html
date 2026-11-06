@@ -1,0 +1,93 @@
+<section
+  class="mfp-card-template"
+  data-testid="card-template"
+  [attr.aria-label]="name()"
+  [class.mfp-card-template--frame-only]="!header()"
+  [class.mfp-card-template--transparent]="background() === 'transparent'"
+>
+  @if (header()) {
+    @if (badge()?.text) {
+      <ui5-tag
+        class="mfp-card-template__badge"
+        data-testid="card-template-badge"
+        wrappingType="None"
+        [attr.title]="badge()?.text"
+        [design]="badge()?.state ?? 'Critical'"
+        [hideStateIcon]="true"
+        >{{ badge()?.text }}</ui5-tag
+      >
+    }
+    <header class="mfp-card-template__header">
+      <ui5-title
+        class="mfp-card-template__title"
+        data-testid="card-template-title"
+        level="H4"
+        size="H5"
+        wrappingType="None"
+        >{{ name() }}</ui5-title
+      >
+      @if (search() || actions().length) {
+        <div class="mfp-card-template__toolbar">
+          @if (search(); as search) {
+            <ui5-input
+              #searchInput
+              class="mfp-card-template__search"
+              data-testid="card-template-search"
+              type="Search"
+              [accessibleName]="search.placeholder"
+              [placeholder]="search.placeholder"
+              [showClearIcon]="true"
+              [value]="searchValue()"
+              (ui5Input)="searchValue.set(searchInput.element.value)"
+            >
+              <ui5-icon name="search" slot="icon" />
+            </ui5-input>
+          }
+          @if (actions().length) {
+            <ui5-button
+              #actionsButton
+              data-testid="card-template-actions"
+              design="Transparent"
+              icon="overflow"
+              [accessibleName]="actionsLabel()"
+              [tooltip]="actionsLabel()"
+              (click)="actionsMenuOpen.set(!actionsMenuOpen())"
+            />
+            <ui5-menu
+              data-testid="card-template-actions-menu"
+              [open]="actionsMenuOpen()"
+              [opener]="actionsButton.element"
+              (ui5Close)="actionsMenuOpen.set(false)"
+              (ui5ItemClick)="onActionClick($event)"
+            >
+              @for (action of actions(); track action.key) {
+                <ui5-menu-item
+                  [attr.data-key]="action.key"
+                  [attr.data-testid]="'card-template-action-' + action.key"
+                  [text]="action.text"
+                />
+              }
+            </ui5-menu>
+          }
+        </div>
+      }
+    </header>
+    @if (messageStrip(); as strip) {
+      @if (!messageStripClosed()) {
+        <div class="mfp-card-template__message-strip">
+          <ui5-message-strip
+            data-testid="card-template-message-strip"
+            [design]="strip.type ?? 'Information'"
+            (ui5Close)="messageStripClosed.set(true)"
+            >{{ strip.text }}</ui5-message-strip
+          >
+        </div>
+      }
+    }
+  }
+  <div class="mfp-card-template__content">
+    <div class="mfp-card-template__scroll">
+      <ng-content />
+    </div>
+  </div>
+</section>

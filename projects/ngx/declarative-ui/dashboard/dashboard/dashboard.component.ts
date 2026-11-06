@@ -17,6 +17,7 @@ import {
 import {
   CardConfig,
   CardSize,
+  DashboardCardActionDetail,
   DashboardConfig,
   SectionConfig,
 } from '../models';
@@ -130,6 +131,7 @@ export class Dashboard implements OnInit, OnDestroy {
     action: ButtonSettings;
   }>();
   readonly unsavedChangesChange = output<boolean>();
+  readonly cardAction = output<DashboardCardActionDetail>();
 
   protected readonly i18nKeys = DASHBOARD_I18N_KEYS;
 
@@ -245,12 +247,22 @@ export class Dashboard implements OnInit, OnDestroy {
     ),
   }));
 
+  protected readonly resolvedCards = computed(() => {
+    const catalogue = new Map(
+      this.availableCards().map((card) => [card.id, card]),
+    );
+    return this.cards().flatMap((card) => {
+      if (card.sectionId) return [card];
+      const entry = catalogue.get(card.id);
+      return entry ? [this.mergeWithCatalogueEntry(card, entry)] : [];
+    });
+  });
   protected sectionCards = computed(() => {
-    const all = this.cards();
+    const all = this.resolvedCards();
     return (sectionId: string) => all.filter((c) => c.sectionId === sectionId);
   });
   protected looseCards = linkedSignal(() => {
-    const loose = this.cards().filter((c) => !c.sectionId);
+    const loose = this.resolvedCards().filter((c) => !c.sectionId);
     const zFlow = this.config().zFlow;
     if (!this.engineProfile().fixedCardHeight || !zFlow) return loose;
     const columns = this.zFlowColumns();
@@ -436,7 +448,7 @@ export class Dashboard implements OnInit, OnDestroy {
     const zFlow = this.config().zFlow;
     const fixedCardHeight = this.engineProfile().fixedCardHeight;
 
-    const savedCards = this.cards().map((c) => {
+    const savedCards = this.resolvedCards().map((c) => {
       const pos = this.cardsPosition.get(c.id);
       const isLooseZFlowCard = !c.sectionId && fixedCardHeight && !!zFlow;
       return {
@@ -766,6 +778,20 @@ export class Dashboard implements OnInit, OnDestroy {
       this.zFlowColumns.set(column);
     };
     this.zFlowColumns.set(engine.column);
+  }
+
+  private mergeWithCatalogueEntry(
+    card: CardConfig,
+    entry: CardConfig,
+  ): CardConfig {
+    const merged: CardConfig = { ...entry };
+    delete merged.sectionId;
+    if (card.x !== undefined) merged.x = card.x;
+    if (card.y !== undefined) merged.y = card.y;
+    if (card.w !== undefined) merged.w = card.w;
+    if (card.h !== undefined) merged.h = card.h;
+    if (card.size !== undefined) merged.size = card.size;
+    return merged;
   }
 
   private toZFlowCard(

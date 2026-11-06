@@ -1,6 +1,11 @@
 import { Favorites } from '../../cards/favorites/favorites.component';
 import { MockCard } from '../../cards/mock-card/mock-card.component';
 import { ServiceStatusCard } from '../../cards/service-status/service-status-card.component';
+import {
+  STORY_THEMES,
+  StoryTheme,
+  applyStoryTheme,
+} from '../../cards/stories/story-theme';
 import { VisitedServiceCard } from '../../cards/visited-service-card/visited-service-card.component';
 import { Dashboard } from '../dashboard/dashboard/dashboard.component';
 import { type DashboardTranslations, EN_DEFAULTS } from '../dashboard/i18n';
@@ -11,8 +16,15 @@ import {
   type SectionConfig,
 } from '../dashboard/models';
 import { ButtonSettings } from '../models/ui-definition';
+import {
+  CARD_TEMPLATE_AVAILABLE_CARDS,
+  CARD_TEMPLATE_CARDS,
+  CARD_TEMPLATE_SECTIONS,
+} from './dashboard.card-template';
 import { CARDS, RAS_CARDS, SECTIONS } from './dashboard.cards';
+import { loadOpenUi5 } from './openui5';
 import { TABLE_CARD_CONFIG, TABLE_RESOURCES } from './pods-table.config';
+import { StoryServiceListCard } from './story-service-list-card.component';
 import type { Meta, StoryObj } from '@storybook/angular';
 
 Dashboard.registerAngularComponents([
@@ -20,6 +32,7 @@ Dashboard.registerAngularComponents([
   ServiceStatusCard,
   VisitedServiceCard,
   MockCard,
+  StoryServiceListCard,
 ]);
 
 // ---------------------------------------------------------------------------
@@ -83,6 +96,10 @@ const AVAILABLE_CARDS: CardConfig[] = [
     type: 'angular',
     w: 6,
     h: 20,
+    minW: 3,
+    maxW: 6,
+    minH: 10,
+    maxH: 40,
     component: 'mfp-favorites',
   },
   {
@@ -272,6 +289,7 @@ const meta: Meta<Dashboard> = {
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',
+    webcomponentsBundle: true,
   },
   argTypes: {
     config: { control: 'object' },
@@ -284,6 +302,7 @@ const meta: Meta<Dashboard> = {
     loadingDelay: { control: 'number' },
     actionButtonClick: { action: 'actionButtonClick' },
     saved: { action: 'saved' },
+    cardAction: { action: 'cardAction' },
   },
   args: {
     config: SAMPLE_CONFIG,
@@ -547,6 +566,52 @@ export const SectionCardsHeight: Story = {
       description: {
         story:
           "`SectionConfig.cardsHeight` forces one row span on every card in the section. It wins over each card's own `h` and supplies a height to cards that declare none, so a section of mixed card types (Angular, custom element, no `h` at all) lines up on a single baseline. Only the height is touched — `w` still comes from each card, and the value is presentational: the cards keep their configured `h` in the `saved` payload. Set the same section's `cardsHeight` in the controls panel to retune the whole row at once.",
+      },
+    },
+  },
+};
+
+export const CardTemplate: StoryObj<Dashboard & { theme: StoryTheme }> = {
+  loaders: [
+    async () => {
+      await loadOpenUi5();
+      return {};
+    },
+  ],
+  argTypes: {
+    theme: { control: 'select', options: STORY_THEMES },
+  },
+  args: {
+    theme: 'sap_horizon',
+    config: { editable: true },
+    i18n: {
+      ...SAMPLE_I18N,
+      title: 'Card Template',
+      description:
+        'Cards with <code>componentTemplate</code> get the MFP card frame and header from the dashboard.',
+    },
+    sections: CARD_TEMPLATE_SECTIONS,
+    cards: CARD_TEMPLATE_CARDS,
+    availableCards: CARD_TEMPLATE_AVAILABLE_CARDS,
+    customActions: [],
+  },
+  render: (args) => {
+    applyStoryTheme(args.theme);
+    return {
+      props: args,
+      template: `
+        <div style="min-height:100vh;background:var(--sapBackgroundColor);font-family:var(--sapFontFamily)">
+          <mfp-dashboard [config]="config" [i18n]="i18n" [sections]="sections" [cards]="cards" [availableCards]="availableCards" [customActions]="customActions" (cardAction)="cardAction($event)" (saved)="saved($event)" />
+        </div>
+      `,
+    };
+  },
+  parameters: {
+    webcomponentsBundle: false,
+    docs: {
+      description: {
+        story:
+          'The first section holds one card of each type — a custom element (`wc`), a registered Angular component (`angular`) and an OpenUI5 Component (`sap-ui`) — all wrapped by the dashboard from `componentTemplate`. The title comes from `label`, and the search and actions reach each card through its `onCardSearch(query)` and `onCardAction(key)` methods; every action is also emitted as `cardAction` (see the Actions panel). The second section uses `header: false`, so the dashboard draws only the frame. The loose card comes from `availableCards`, which the dashboard merges loose cards with by id. Switch the theme with the `theme` control. The OpenUI5 card loads OpenUI5 1.142.0 from `sdk.openui5.org`, so it needs network access.',
       },
     },
   },
