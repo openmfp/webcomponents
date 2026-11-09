@@ -15,11 +15,7 @@ const config: StorybookConfig = {
     name: '@storybook/angular',
     options: {},
   },
-  staticDirs: [
-    '../projects/ngx/declarative-ui/stories',
-    '../public',
-    { from: '../projects/ui5', to: '/ui5' },
-  ],
+  staticDirs: ['../projects/ngx/declarative-ui/stories', '../public'],
   features: {
     angularFilterNonInputControls: true,
   },

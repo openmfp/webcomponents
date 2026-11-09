@@ -1,5 +1,5 @@
 import { CardConfig } from '../../models';
-import { mountSapCard } from './mount-sap-card';
+import { SapComponentCreatedEvent, mountSapCard } from './mount-sap-card';
 import { EffectCleanupRegisterFn, ViewContainerRef } from '@angular/core';
 
 function makeCleanup(): {
@@ -57,6 +57,13 @@ describe('mountSapCard', () => {
     };
   });
 
+  function createdHandler(): (event: SapComponentCreatedEvent) => void {
+    const [settings] = ComponentContainer.mock.calls[0] as [
+      { componentCreated: (event: SapComponentCreatedEvent) => void },
+    ];
+    return settings.componentCreated;
+  }
+
   afterEach(() => {
     delete (window as unknown as Record<string, unknown>)['sap'];
     vi.restoreAllMocks();
@@ -86,7 +93,30 @@ describe('mountSapCard', () => {
       async: true,
       height: '100%',
       settings: { env: 'prod' },
+      componentCreated: expect.any(Function),
     });
+  });
+
+  it('reports the created UI5 component through onMounted', () => {
+    const { onCleanup } = makeCleanup();
+    const onMounted = vi.fn();
+    const component = { onCardSearch: vi.fn() };
+    mountSapCard(makeCfg(), makeContainer().container, onCleanup, onMounted);
+
+    createdHandler()({ getParameter: () => component });
+
+    expect(onMounted).toHaveBeenCalledWith(component);
+  });
+
+  it('does not report a component that is created after cleanup', () => {
+    const { onCleanup, runCleanup } = makeCleanup();
+    const onMounted = vi.fn();
+    mountSapCard(makeCfg(), makeContainer().container, onCleanup, onMounted);
+
+    runCleanup();
+    createdHandler()({ getParameter: () => ({}) });
+
+    expect(onMounted).not.toHaveBeenCalled();
   });
 
   it('falls back to empty settings when componentInputs is omitted', () => {

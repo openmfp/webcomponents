@@ -1,4 +1,4 @@
-import { MountCfg } from '../../models';
+import { DashboardCardContent, MountCfg } from '../../models';
 import {
   getRegisteredDashboardCardComponent,
   warnForUnknownDashboardCardInput,
@@ -9,6 +9,7 @@ export function mountAngularCard(
   cfg: MountCfg,
   angularHost: ViewContainerRef,
   onCleanup: EffectCleanupRegisterFn,
+  onMounted?: (content: DashboardCardContent) => void,
 ): void {
   const registeredComponent = getRegisteredDashboardCardComponent(
     cfg.component,
@@ -51,6 +52,7 @@ export function mountAngularCard(
   }
 
   componentRef.changeDetectorRef.detectChanges();
+  onMounted?.(componentRef.instance as DashboardCardContent);
 
   onCleanup(() => {
     observer?.disconnect();

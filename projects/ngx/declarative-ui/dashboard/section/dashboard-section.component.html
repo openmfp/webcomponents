@@ -31,6 +31,7 @@
       <mfp-dashboard-card
         [card]="card"
         [editMode]="editMode() && section().editable !== false"
+        (cardAction)="cardAction.emit({ cardId: card.id, key: $event })"
         (removeCard)="removeCard.emit($any(card.id))"
       />
     }

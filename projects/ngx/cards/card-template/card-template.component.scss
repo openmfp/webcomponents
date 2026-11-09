@@ -1,0 +1,86 @@
+$inner-corner-radius: calc(
+  var(--sapTile_BorderCornerRadius) - var(--sapElement_BorderWidth)
+);
+
+:host {
+  display: block;
+  height: 100%;
+  min-width: 0;
+}
+
+.mfp-card-template {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  height: 100%;
+  min-width: 0;
+  border: var(--sapElement_BorderWidth) solid var(--sapTile_BorderColor);
+  border-radius: var(--sapTile_BorderCornerRadius);
+  background: var(--sapTile_Background);
+  box-shadow: var(--sapContent_Shadow0);
+  font-family: var(--sapFontFamily);
+
+  &--transparent {
+    background: transparent;
+    box-shadow: var(--mfp_cardEditFrameShadow, none);
+  }
+
+  &__badge {
+    position: absolute;
+    top: 0;
+    right: 1rem;
+    max-width: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+  }
+
+  &__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+
+  &__title {
+    flex: 1 1 7rem;
+    min-width: 0;
+  }
+
+  &__toolbar {
+    flex: 1 1 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+
+  &__search {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
+
+  &__message-strip {
+    padding: 0 1rem 0.5rem;
+  }
+
+  &__content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    border-end-start-radius: $inner-corner-radius;
+    border-end-end-radius: $inner-corner-radius;
+  }
+
+  &--frame-only &__content {
+    border-radius: $inner-corner-radius;
+  }
+
+  &__scroll {
+    height: 100%;
+    overflow: auto;
+    scrollbar-gutter: stable;
+  }
+}
