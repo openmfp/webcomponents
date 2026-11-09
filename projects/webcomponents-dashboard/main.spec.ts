@@ -4,6 +4,7 @@ const createApplication = vi.fn();
 const createCustomElement = vi.fn();
 const ignoreCustomElements = vi.fn();
 const setTheme = vi.fn();
+const setLanguage = vi.fn();
 
 vi.mock('@angular/platform-browser', () => ({ createApplication }));
 vi.mock('@angular/elements', () => ({ createCustomElement }));
@@ -11,6 +12,9 @@ vi.mock('@ui5/webcomponents-base/dist/IgnoreCustomElements.js', () => ({
   ignoreCustomElements,
 }));
 vi.mock('@ui5/webcomponents-base/dist/config/Theme.js', () => ({ setTheme }));
+vi.mock('@ui5/webcomponents-base/dist/config/Language.js', () => ({
+  setLanguage,
+}));
 vi.mock('@ui5/webcomponents-theming/dist/Assets.js', () => ({}));
 
 // The real declarative-ui barrel (which main.ts imports) pulls in the dashboard
@@ -78,6 +82,7 @@ describe('webcomponents-dashboard/main.ts', () => {
     createCustomElement.mockReset();
     ignoreCustomElements.mockReset();
     setTheme.mockReset();
+    setLanguage.mockReset();
     delete (globalThis as { sap?: unknown }).sap;
   });
 
@@ -130,8 +135,16 @@ describe('webcomponents-dashboard/main.ts', () => {
           appliedHandler = handler;
         }),
       };
-      const require = vi.fn((_deps: string[], cb: (m: unknown) => void) =>
-        cb(Theming),
+      const Localization = {
+        getLanguageTag: vi.fn(() => 'en'),
+        attachChange: vi.fn(),
+      };
+      const modules: Record<string, unknown> = {
+        'sap/ui/core/Theming': Theming,
+        'sap/base/i18n/Localization': Localization,
+      };
+      const require = vi.fn((deps: string[], cb: (m: unknown) => void) =>
+        cb(modules[deps[0]]),
       );
       (globalThis as { sap?: unknown }).sap = { ui: { require } };
 
