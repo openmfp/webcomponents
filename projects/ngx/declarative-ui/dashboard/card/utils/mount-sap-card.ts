@@ -1,5 +1,9 @@
-import { MountCfg } from '../../models';
+import { DashboardCardContent, MountCfg } from '../../models';
 import { EffectCleanupRegisterFn, ViewContainerRef } from '@angular/core';
+
+export interface SapComponentCreatedEvent {
+  getParameter(name: 'component'): DashboardCardContent;
+}
 
 export type SapUiRequire = (
   deps: string[],
@@ -10,6 +14,7 @@ export type SapUiRequire = (
       async: boolean;
       height: string;
       settings: Record<string, unknown>;
+      componentCreated: (event: SapComponentCreatedEvent) => void;
     }) => { placeAt(el: HTMLElement): void; destroy(): void },
   ) => void,
 ) => void;
@@ -18,6 +23,7 @@ export function mountSapCard(
   cfg: MountCfg,
   container: ViewContainerRef,
   onCleanup: EffectCleanupRegisterFn,
+  onMounted?: (content: DashboardCardContent) => void,
 ): void {
   const host = container.element.nativeElement;
 
@@ -37,6 +43,10 @@ export function mountSapCard(
         async: true,
         height: '100%',
         settings: cfg.componentInputs ?? {},
+        componentCreated: (event) => {
+          if (isDestroyed) return;
+          onMounted?.(event.getParameter('component'));
+        },
       });
 
       container.placeAt(host);

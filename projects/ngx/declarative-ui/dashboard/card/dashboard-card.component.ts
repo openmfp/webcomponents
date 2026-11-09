@@ -1,6 +1,7 @@
+import { CardTemplate } from '../../../cards/card-template/card-template.component';
 import { DASHBOARD_CARD_DRAG_ORIGIN_CLASS } from '../constants';
 import { DASHBOARD_I18N_KEYS, DashboardI18nService } from '../i18n';
-import { CARD_TYPES, CardConfig } from '../models';
+import { CARD_TYPES, CardConfig, DashboardCardContent } from '../models';
 import { mountAngularCard, mountSapCard, mountWcCard } from './utils';
 import {
   Component,
@@ -11,7 +12,10 @@ import {
   effect,
   inject,
   input,
+  isDevMode,
   output,
+  signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
@@ -20,7 +24,7 @@ import '@ui5/webcomponents-icons/dist/resize-corner.js';
 
 @Component({
   selector: 'mfp-dashboard-card',
-  imports: [Button, Icon],
+  imports: [Button, CardTemplate, Icon],
   templateUrl: './dashboard-card.component.html',
   styleUrl: './dashboard-card.component.scss',
   encapsulation: ViewEncapsulation.Emulated,
@@ -33,6 +37,7 @@ export class DashboardCard {
   card = input.required<CardConfig>();
   editMode = input<boolean>(false);
   readonly removeCard = output<void>();
+  readonly cardAction = output<string>();
   protected readonly i18n = inject(DashboardI18nService);
   protected readonly i18nKeys = DASHBOARD_I18N_KEYS;
   protected readonly componentHostClasses = `component-host ${DASHBOARD_CARD_DRAG_ORIGIN_CLASS}`;
@@ -45,7 +50,18 @@ export class DashboardCard {
     const height = this.card().h ?? 100;
     return this.createGridTrack(this.card().y, height);
   });
+  protected readonly searchQuery = signal('');
+  protected readonly templateSearch = computed(() => {
+    const search = this.card().componentTemplate?.search;
+    return search && typeof this.mountedContent()?.onCardSearch === 'function'
+      ? search
+      : undefined;
+  });
 
+  private readonly mountedContent = signal<DashboardCardContent | undefined>(
+    undefined,
+  );
+  private searchedContent: DashboardCardContent | undefined;
   private host = viewChild('elementHost', { read: ViewContainerRef });
   private renderer = inject(Renderer2);
 
@@ -74,20 +90,58 @@ export class DashboardCard {
 
       host.clear();
       host.element.nativeElement.innerHTML = '';
+      this.mountedContent.set(undefined);
+      const onMounted = (content: DashboardCardContent) => {
+        untracked(() => {
+          this.onContentMounted(content);
+        });
+      };
 
       switch (mountCfg.type) {
         case CARD_TYPES.SAP_UI:
-          mountSapCard(mountCfg, host, onCleanup);
+          mountSapCard(mountCfg, host, onCleanup, onMounted);
           break;
         case CARD_TYPES.ANGULAR:
-          mountAngularCard(mountCfg, host, onCleanup);
+          mountAngularCard(mountCfg, host, onCleanup, onMounted);
           break;
         case CARD_TYPES.WC:
         default:
-          mountWcCard(mountCfg, host, onCleanup, this.renderer);
+          mountWcCard(mountCfg, host, onCleanup, this.renderer, onMounted);
           break;
       }
     });
+
+    effect(() => {
+      const content = this.mountedContent();
+      const query = this.searchQuery();
+      if (!content?.onCardSearch) return;
+      const isSameContent = content === this.searchedContent;
+      this.searchedContent = content;
+      if (isSameContent || query) {
+        untracked(() => {
+          content.onCardSearch?.(query);
+        });
+      }
+    });
+  }
+
+  protected onTemplateAction(key: string): void {
+    this.mountedContent()?.onCardAction?.(key);
+    this.cardAction.emit(key);
+  }
+
+  private onContentMounted(content: DashboardCardContent): void {
+    this.mountedContent.set(content);
+    const card = this.card();
+    if (
+      isDevMode() &&
+      card.componentTemplate?.search &&
+      typeof content.onCardSearch !== 'function'
+    ) {
+      console.warn(
+        `[DashboardCard] Card "${card.id}" declares componentTemplate.search, but "${card.component}" has no onCardSearch(query) method. The search field is hidden.`,
+      );
+    }
   }
 
   private createGridTrack(start: number | undefined, span: number): string {

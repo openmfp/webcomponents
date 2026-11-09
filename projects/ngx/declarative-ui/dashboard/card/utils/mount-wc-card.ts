@@ -1,4 +1,4 @@
-import { MountCfg } from '../../models';
+import { DashboardCardContent, MountCfg } from '../../models';
 import {
   EffectCleanupRegisterFn,
   Renderer2,
@@ -10,6 +10,7 @@ export function mountWcCard(
   container: ViewContainerRef,
   onCleanup: EffectCleanupRegisterFn,
   renderer: Renderer2,
+  onMounted?: (content: DashboardCardContent) => void,
 ): void {
   const host = container.element.nativeElement;
   const element = renderer.createElement(cfg.component);
@@ -25,6 +26,7 @@ export function mountWcCard(
   });
   observer.observe(host);
   renderer.setProperty(element, 'contentHeight', host.clientHeight);
+  onMounted?.(element as DashboardCardContent);
 
   onCleanup(() => {
     observer.disconnect();

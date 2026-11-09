@@ -70,11 +70,7 @@ import type {
 } from '@openmfp/webcomponents/dashboard';
 ```
 
-### `ui5/mfp-card/` — OpenUI5 card template
-
-| OpenUI5 control                | Description                                                     | Documentation                                                                                                     |
-| ------------------------------ | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `mfp.ui5.card.MfpCardTemplate` | Dashboard card template for SAP UI5 apps (not a custom element) | [docs/mfp-ui5-card-template.md](https://github.com/openmfp/webcomponents/blob/main/docs/mfp-ui5-card-template.md) |
+Cards of every type (`wc`, `angular`, `sap-ui`) that set `componentTemplate` get the MFP card frame and header from the dashboard — see [Card template](https://github.com/openmfp/webcomponents/blob/main/docs/dashboard.md#card-template--componenttemplate).
 
 ### Declarative Form API
 

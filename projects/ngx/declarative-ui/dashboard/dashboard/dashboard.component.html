@@ -198,6 +198,7 @@
             [cards]="sectionCards()(section.id)"
             [editMode]="editMode()"
             [section]="section"
+            (cardAction)="cardAction.emit($event)"
             (removeCard)="removeCard($event)"
             (removeSection)="removeSection(section.id)"
           />
@@ -287,6 +288,7 @@
             <mfp-dashboard-card
               [card]="card"
               [editMode]="editMode()"
+              (cardAction)="cardAction.emit({ cardId: card.id, key: $event })"
               (removeCard)="removeCard($any(card.id))"
             />
           </gridstack-item>

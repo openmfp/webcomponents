@@ -85,14 +85,13 @@ Never skip hooks (`--no-verify`). Fix the underlying issue instead.
 webcomponents/
 ├── projects/
 │   ├── ngx/src/lib/
-│   │   ├── cards/                     # VisitedServiceCard, FavoritesComponent,
-│   │   │                              #   ServiceStatusCardComponent, WhatsNewComponent
+│   │   ├── cards/                     # CardTemplate (MFP card frame and header), VisitedServiceCard,
+│   │   │                              #   FavoritesComponent, ServiceStatusCardComponent, WhatsNewComponent
 │   │   └── declarative-ui/
 │   │       ├── dashboard/             # Dashboard, DashboardCard, DashboardSection, AddCardDialog
 │   │       ├── form/                  # DeclarativeForm (with submit() method)
 │   │       ├── table/                 # DeclarativeTable, ResourceField (boolean, link, secret, tag-list)
 │   │       └── table-card/            # DeclarativeTableCard (with dialog lifecycle methods)
-│   ├── ui5/mfp-card/                  # mfp.ui5.card.MfpCardTemplate OpenUI5 control (plain JS, copied to dist as-is)
 │   ├── webcomponents/
 │   │   └── main.ts                    # registers all custom elements
 │   └── webcomponents-dashboard/

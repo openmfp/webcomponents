@@ -1,3 +1,4 @@
+import { CardTemplateConfig } from '../../../cards/card-template/card-template.model';
 import { ButtonSettings } from '../../models/ui-definition';
 
 export const CARD_TYPES = {
@@ -54,9 +55,20 @@ export interface CardConfig {
   type?: CardsType;
   /** Key/value pairs passed to the rendered card. Behaviour depends on `type`. */
   componentInputs?: Record<string, unknown>;
-  /** Human-readable label shown in the "Edit Cards" dialog. */
+  /** Human-readable label shown in the "Edit Cards" dialog, and the card title and accessible name when `componentTemplate` is set. */
   label?: string;
   size?: CardSize;
+  componentTemplate?: CardTemplateConfig;
+}
+
+export interface DashboardCardContent {
+  onCardSearch?(query: string): void;
+  onCardAction?(key: string): void;
+}
+
+export interface DashboardCardActionDetail {
+  cardId: string;
+  key: string;
 }
 
 export type MountCfg = Pick<
