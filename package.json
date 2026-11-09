@@ -10,7 +10,7 @@
     "build": "npm run build:ngx && npm run build:wc",
     "build:watch": "node -e \"require('fs').mkdirSync('dist',{recursive:true})\" && nodemon --ignore dist --ignore public --ext js,yml,yaml,ts,html,css,scss,json,md --exec \"rimraf dist && npm run build && npm run yalc:publish\"",
     "yalc:publish": "yalc publish dist/ngx --push --sig && yalc publish dist/webcomponents --push --sig",
-    "test": "ng test ngx --watch=false",
+    "test": "ng test ngx --watch=false && ng test webcomponents --watch=false && ng test webcomponents-dashboard --watch=false",
     "test:watch": "ng test ngx",
     "test:cov": "ng test ngx --watch=false --coverage",
     "storybook": "ng run ngx:storybook",
