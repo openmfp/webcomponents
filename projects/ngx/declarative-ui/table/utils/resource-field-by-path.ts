@@ -22,18 +22,13 @@ export const getResourceValueByJsonPath = <T>(
   }
 
   const prefix = property.startsWith('$.') ? '' : '$.';
-  // jsonpath-plus's `JSONPath` is overloaded: by default `resultType: 'value'`
-  // returns an array of matched values, but the TS overload defaults to
-  // returning a `JSONPathClass` unless we pin `<T>` to the array shape.
-  // The `json` parameter is typed as a concrete JSON-shape union; the generic
-  // `T` of this function is unconstrained, so we cast at the boundary. The
-  // returned array is `any[]` (matching jsonpath's old typing) so the
-  // downstream `value[field.propertyField.key]` access keeps compiling.
+  const path = `${prefix}${property}`;
+  // jsonpath-plus types the result as `unknown`; with the default
+  // `resultType: 'value'` it is the array of matched values. The cast to
+  // `any[]` (matching jsonpath's old typing) keeps the downstream
+  // `value[field.propertyField.key]` access compiling.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const queryResult = JSONPath<any[]>({
-    path: `${prefix}${property}`,
-    json: resource as object,
-  });
+  const queryResult = JSONPath({ path, json: resource }) as any[];
   const value = queryResult.length ? queryResult[0] : undefined;
 
   if (value && field.propertyField) {
