@@ -48,7 +48,7 @@ npm run build:watch        # watches src, rebuilds ngx, and publishes dist/ngx v
 ## Test Commands
 
 ```bash
-npm run test               # run ngx tests once (Vitest, no watch)
+npm run test               # run ngx, webcomponents and webcomponents-dashboard tests once (Vitest, no watch)
 npm run test:watch         # run ngx tests in watch mode
 npm run test:cov           # run ngx tests with coverage
 ```
