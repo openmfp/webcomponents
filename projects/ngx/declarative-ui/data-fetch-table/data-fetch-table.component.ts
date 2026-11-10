@@ -5,7 +5,11 @@ import {
 import { GenericResource, TableErrorConfig } from '../models';
 import { DeclarativeTable, TableFieldDefinition } from '../table';
 import { getResourceValueByJsonPath } from '../table/utils/resource-field-by-path';
-import { BeforeRequest, DataFetchTableData } from './data-fetch-table.model';
+import {
+  BeforeRequest,
+  CardRequest,
+  DataFetchTableData,
+} from './data-fetch-table.model';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -60,27 +64,45 @@ export class DataFetchTable {
 
   private startLoad(onCleanup: EffectCleanupRegisterFn): void {
     const data = this.data();
-    const beforeRequest = this.beforeRequest();
-    const retryCount = this.retryCount();
 
     this.rows.set([]);
     this.error.set(null);
-    this.loading.set(data !== undefined);
-    if (data === undefined) return;
+    this.loading.set(false);
 
-    const load: DataFetchLoad = {
-      data,
-      beforeRequest,
-      retryCount,
-      controller: new AbortController(),
-    };
-    onCleanup(() => {
-      load.controller.abort();
-    });
+    try {
+      if (!data || typeof data !== 'object' || Array.isArray(data)) {
+        throw new TypeError('The table data must be a configuration object.');
+      }
 
-    untracked(() => {
-      void this.load(load);
-    });
+      const request = untracked(() => data.request);
+      if (request === undefined) {
+        untracked(() => {
+          const { resource, path } = data;
+          if (resource === undefined) {
+            throw new TypeError('The table data must specify a source.');
+          }
+          this.rows.set(this.readRows(resource, this.readPath(path)));
+        });
+        return;
+      }
+
+      this.loading.set(true);
+      const load: DataFetchLoad = {
+        data,
+        beforeRequest: this.beforeRequest(),
+        retryCount: this.retryCount(),
+        controller: new AbortController(),
+      };
+      onCleanup(() => {
+        load.controller.abort();
+      });
+
+      untracked(() => {
+        void this.load(load, request);
+      });
+    } catch {
+      this.showError(false);
+    }
   }
 
   private isCurrent(load: DataFetchLoad): boolean {
@@ -93,17 +115,10 @@ export class DataFetchTable {
     );
   }
 
-  private async load(load: DataFetchLoad): Promise<void> {
+  private async load(load: DataFetchLoad, request: CardRequest): Promise<void> {
     const { data, beforeRequest, controller } = load;
     try {
-      if (!data || typeof data !== 'object' || Array.isArray(data)) {
-        throw new TypeError('The table data must be a configuration object.');
-      }
-      const { path = '', request } = data;
-      if (typeof path !== 'string' || path.startsWith('/')) {
-        throw new TypeError('The response path must be a JSONPath expression.');
-      }
-
+      const path = this.readPath(data.path);
       const payload = await this.fetchService.fetchData(request, {
         signal: controller.signal,
         beforeRequest,
@@ -117,18 +132,25 @@ export class DataFetchTable {
       this.rows.set(rows);
       this.loading.set(false);
     } catch (error) {
-      if (this.isCurrent(load)) this.showError(error);
+      if (this.isCurrent(load)) this.showError(true, error);
     }
   }
 
-  private showError(error: unknown): void {
+  private showError(withRetryButton: boolean, error?: unknown): void {
     this.error.set({
       status: error instanceof DataFetchHttpError ? error.status : undefined,
       title: 'Unable to load data',
-      message: 'The table data could not be loaded. Try again.',
-      withRetryButton: true,
+      message: 'The table data could not be loaded.',
+      withRetryButton,
     });
     this.loading.set(false);
+  }
+
+  private readPath(path: unknown = ''): string {
+    if (typeof path !== 'string' || path.startsWith('/')) {
+      throw new TypeError('The table data path must be a JSONPath expression.');
+    }
+    return path;
   }
 
   private readRows(payload: unknown, path: string): GenericResource[] {
@@ -143,14 +165,21 @@ export class DataFetchTable {
         { eval: false },
       );
     }
-    if (
-      !Array.isArray(value) ||
-      !value.every(
-        (row: unknown): row is Record<string, unknown> =>
-          row !== null && typeof row === 'object' && !Array.isArray(row),
-      )
-    ) {
-      throw new TypeError('The response must contain an array of row objects.');
+    if (!Array.isArray(value)) {
+      throw new TypeError(
+        'The table data must contain an array of row objects.',
+      );
+    }
+    for (let index = 0; index < value.length; index++) {
+      const row: unknown = value[index];
+      if (
+        !Object.hasOwn(value, index) ||
+        row === null ||
+        typeof row !== 'object' ||
+        Array.isArray(row)
+      ) {
+        throw new TypeError('Each table row must be an object.');
+      }
     }
     return value;
   }

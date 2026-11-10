@@ -18,10 +18,10 @@ export interface CardRequest {
   mode?: 'cors' | 'same-origin';
 }
 
-export interface DataFetchTableData {
-  request: CardRequest;
-  path?: string;
-}
+export type DataFetchTableData = { path?: string } & (
+  | { request: CardRequest; resource?: object }
+  | { resource: object; request?: undefined }
+);
 
 export type BeforeRequest = (
   request: Request,
