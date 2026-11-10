@@ -60,6 +60,10 @@ ui5-table-header-row {
     min-height: 1.75rem;
   }
 
+  ui5-table-cell {
+    padding-block: 0.5rem;
+  }
+
   .flex,
   mfp-resource-field {
     min-width: 0;

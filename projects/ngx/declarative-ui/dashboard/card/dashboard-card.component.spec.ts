@@ -1,4 +1,5 @@
 import { CardTemplate } from '../../../cards/card-template/card-template.component';
+import type { BeforeRequest } from '../../data-fetch-table/data-fetch-table.model';
 import { DASHBOARD_CARD_DRAG_ORIGIN_CLASS } from '../constants';
 import { DashboardI18nService } from '../i18n';
 import { CardConfig } from '../models';
@@ -107,6 +108,43 @@ describe('DashboardCard', () => {
     expect(element).not.toBeNull();
     expect(element?.title).toBe('Pods');
     expect(element?.count).toBe(3);
+  });
+
+  it('forwards the latest request hook and card ID without remounting the web component', async () => {
+    class RequestAwareWidget extends HTMLElement {
+      beforeRequest?: BeforeRequest;
+      data?: object;
+    }
+    customElements.define('request-aware-widget', RequestAwareWidget);
+
+    const { fixture } = setup();
+    const data = { resource: [{ id: 'local' }] };
+    const request = new Request('https://example.test/rows');
+    const firstHook = vi.fn();
+    const secondHook = vi.fn(() => request);
+    fixture.componentRef.setInput('card', {
+      id: 'orders',
+      component: 'request-aware-widget',
+      componentInputs: { data },
+    });
+    fixture.componentRef.setInput('beforeCardRequest', firstHook);
+    await fixture.whenStable();
+
+    const widget = root(fixture).querySelector<RequestAwareWidget>(
+      'request-aware-widget',
+    );
+    expect(widget?.data).toBe(data);
+    expect(widget?.beforeRequest).toBeTypeOf('function');
+    widget?.beforeRequest?.(request);
+    expect(firstHook).toHaveBeenCalledWith(request, 'orders');
+
+    fixture.componentRef.setInput('beforeCardRequest', secondHook);
+    await fixture.whenStable();
+
+    expect(root(fixture).querySelector('request-aware-widget')).toBe(widget);
+    expect(secondHook).not.toHaveBeenCalled();
+    expect(widget?.beforeRequest?.(request)).toBe(request);
+    expect(secondHook).toHaveBeenCalledWith(request, 'orders');
   });
 
   it('replaces the rendered dynamic component when the card definition changes', () => {

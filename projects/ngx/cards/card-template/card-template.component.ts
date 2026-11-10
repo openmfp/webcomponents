@@ -25,9 +25,9 @@ import { MessageStrip } from '@fundamental-ngx/ui5-webcomponents/message-strip';
 import { Tag } from '@fundamental-ngx/ui5-webcomponents/tag';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 import type { UI5CustomEvent } from '@ui5/webcomponents-base';
-import '@ui5/webcomponents-icons/dist/message-warning.js';
 import '@ui5/webcomponents-icons/dist/overflow.js';
 import '@ui5/webcomponents-icons/dist/search.js';
+import '@ui5/webcomponents-icons/dist/status-critical.js';
 import type { default as Ui5Menu } from '@ui5/webcomponents/dist/Menu.js';
 
 @Component({

@@ -36,31 +36,41 @@ $inner-corner-radius: calc(
   }
 
   &__header {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem;
     padding: 1rem;
   }
 
   &__heading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &:has(.mfp-card-template__search) {
+      flex-wrap: wrap;
+    }
+  }
+
+  &__title {
     flex: 1 1 7rem;
     min-width: 0;
   }
 
   &__subtitle {
-    margin-block-start: 0.25rem;
+    margin-block-start: 1.25rem;
     font-size: var(--sapFontSize);
     color: var(--sapContent_LabelColor);
     overflow-wrap: anywhere;
   }
 
+  &__heading:has(> &__toolbar) + &__subtitle {
+    margin-block-start: 1rem;
+  }
+
   &__critical-status {
-    flex: 0 0 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.25rem;
+    margin-block-start: 0.5rem;
     padding-block: 1.25rem 1.5rem;
     font: 300 1.5rem / 1.75rem var(--sapFontFamily);
     color: var(--sapCriticalTextColor, #b44f00);
@@ -69,18 +79,23 @@ $inner-corner-radius: calc(
 
     ui5-icon {
       flex: none;
-      width: 1rem;
-      height: 1rem;
+      width: 1.5rem;
+      height: 1.5rem;
       color: inherit;
     }
   }
 
   &__toolbar {
-    flex: 1 1 0;
+    flex: none;
     display: flex;
     align-items: center;
     justify-content: flex-end;
     gap: 0.5rem;
+
+    &:has(> .mfp-card-template__search) {
+      flex: 1 1 0;
+      min-width: min(12rem, 100%);
+    }
   }
 
   &__search {

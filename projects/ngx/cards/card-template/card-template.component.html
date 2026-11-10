@@ -27,61 +27,61 @@
           wrappingType="None"
           >{{ name() }}</ui5-title
         >
-        @if (subtitle(); as subtitle) {
-          <div class="mfp-card-template__subtitle">{{ subtitle }}</div>
+        @if (search() || actions().length) {
+          <div class="mfp-card-template__toolbar">
+            @if (search(); as search) {
+              <ui5-input
+                #searchInput
+                class="mfp-card-template__search"
+                data-testid="card-template-search"
+                type="Search"
+                [accessibleName]="search.placeholder"
+                [placeholder]="search.placeholder"
+                [showClearIcon]="true"
+                [value]="searchValue()"
+                (ui5Input)="searchValue.set(searchInput.element.value)"
+              >
+                <ui5-icon name="search" slot="icon" />
+              </ui5-input>
+            }
+            @if (actions().length) {
+              <ui5-button
+                #actionsButton
+                data-testid="card-template-actions"
+                design="Transparent"
+                icon="overflow"
+                [accessibleName]="actionsLabel()"
+                [tooltip]="actionsLabel()"
+                (click)="actionsMenuOpen.set(!actionsMenuOpen())"
+              />
+              <ui5-menu
+                data-testid="card-template-actions-menu"
+                [open]="actionsMenuOpen()"
+                [opener]="actionsButton.element"
+                (ui5Close)="actionsMenuOpen.set(false)"
+                (ui5ItemClick)="onActionClick($event)"
+              >
+                @for (action of actions(); track action.key) {
+                  <ui5-menu-item
+                    [attr.data-key]="action.key"
+                    [attr.data-testid]="'card-template-action-' + action.key"
+                    [text]="action.text"
+                  />
+                }
+              </ui5-menu>
+            }
+          </div>
         }
       </div>
-      @if (search() || actions().length) {
-        <div class="mfp-card-template__toolbar">
-          @if (search(); as search) {
-            <ui5-input
-              #searchInput
-              class="mfp-card-template__search"
-              data-testid="card-template-search"
-              type="Search"
-              [accessibleName]="search.placeholder"
-              [placeholder]="search.placeholder"
-              [showClearIcon]="true"
-              [value]="searchValue()"
-              (ui5Input)="searchValue.set(searchInput.element.value)"
-            >
-              <ui5-icon name="search" slot="icon" />
-            </ui5-input>
-          }
-          @if (actions().length) {
-            <ui5-button
-              #actionsButton
-              data-testid="card-template-actions"
-              design="Transparent"
-              icon="overflow"
-              [accessibleName]="actionsLabel()"
-              [tooltip]="actionsLabel()"
-              (click)="actionsMenuOpen.set(!actionsMenuOpen())"
-            />
-            <ui5-menu
-              data-testid="card-template-actions-menu"
-              [open]="actionsMenuOpen()"
-              [opener]="actionsButton.element"
-              (ui5Close)="actionsMenuOpen.set(false)"
-              (ui5ItemClick)="onActionClick($event)"
-            >
-              @for (action of actions(); track action.key) {
-                <ui5-menu-item
-                  [attr.data-key]="action.key"
-                  [attr.data-testid]="'card-template-action-' + action.key"
-                  [text]="action.text"
-                />
-              }
-            </ui5-menu>
-          }
-        </div>
+      @if (subtitle(); as subtitle) {
+        <div class="mfp-card-template__subtitle">{{ subtitle }}</div>
       }
       @if (criticalStatus(); as criticalStatus) {
         <div class="mfp-card-template__critical-status">
           <ui5-icon
             aria-hidden="true"
             mode="Decorative"
-            name="message-warning"
+            name="status-critical"
           />
           <span>{{ criticalStatus }}</span>
         </div>
