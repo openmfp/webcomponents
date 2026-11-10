@@ -54,6 +54,7 @@ import '@ui5/webcomponents-icons/dist/open-command-field.js';
   encapsulation: ViewEncapsulation.ShadowDom,
 })
 export class DeclarativeTable<T extends GenericResource> {
+  appearance = input<'default' | 'card'>('default');
   columns = input<TableFieldDefinition[]>([]);
   overflowMode = input<'Scroll' | 'Popin'>('Scroll');
   resources = input<T[]>([]);
@@ -98,9 +99,12 @@ export class DeclarativeTable<T extends GenericResource> {
     getResourceValueByJsonPath(item, { property: this.trackByPath() }) ??
     _index;
   viewColumns = computed(() => processGroupFields(this.columns()));
+  protected readonly isCardAppearance = computed(
+    () => this.appearance() === 'card',
+  );
 
   onRowClick(item: T): void {
-    if (item.isAvailable !== false) {
+    if (!this.isCardAppearance() && item.isAvailable !== false) {
       this.tableRowClicked.emit(item);
     }
   }

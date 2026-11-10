@@ -29,6 +29,8 @@ export interface CardTemplateConfig {
   header?: boolean;
   background?: CardTemplateBackground;
   badge?: CardTemplateBadge;
+  subtitle?: string;
+  criticalStatus?: string;
   search?: CardTemplateSearch;
   actions?: CardTemplateAction[];
   messageStrip?: CardTemplateMessageStrip;

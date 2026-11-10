@@ -43,9 +43,36 @@ $inner-corner-radius: calc(
     padding: 1rem;
   }
 
-  &__title {
+  &__heading {
     flex: 1 1 7rem;
     min-width: 0;
+  }
+
+  &__subtitle {
+    margin-block-start: 0.25rem;
+    font-size: var(--sapFontSize);
+    color: var(--sapContent_LabelColor);
+    overflow-wrap: anywhere;
+  }
+
+  &__critical-status {
+    flex: 0 0 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding-block: 1.25rem 1.5rem;
+    font: 300 1.5rem / 1.75rem var(--sapFontFamily);
+    color: var(--sapCriticalTextColor, #b44f00);
+    text-align: center;
+    overflow-wrap: anywhere;
+
+    ui5-icon {
+      flex: none;
+      width: 1rem;
+      height: 1rem;
+      color: inherit;
+    }
   }
 
   &__toolbar {
@@ -82,5 +109,14 @@ $inner-corner-radius: calc(
     height: 100%;
     overflow: auto;
     scrollbar-gutter: stable;
+
+    &:has(
+      > mfp-data-fetch-table,
+      > mfp-wc-data-fetch-table,
+      > .element-host > mfp-wc-data-fetch-table
+    ) {
+      overflow: hidden;
+      scrollbar-gutter: auto;
+    }
   }
 }

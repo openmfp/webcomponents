@@ -3,7 +3,7 @@ import { createApplication } from '@angular/platform-browser';
 import {
   Dashboard,
   defineDashboardElementMethods,
-} from '@openmfp/webcomponents/declarative-ui';
+} from '@openmfp/webcomponents/declarative-ui/dashboard';
 import { ignoreCustomElements } from '@ui5/webcomponents-base/dist/IgnoreCustomElements.js';
 import { setLanguage } from '@ui5/webcomponents-base/dist/config/Language.js';
 import { setTheme } from '@ui5/webcomponents-base/dist/config/Theme.js';

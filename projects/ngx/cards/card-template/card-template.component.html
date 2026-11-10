@@ -18,14 +18,19 @@
       >
     }
     <header class="mfp-card-template__header">
-      <ui5-title
-        class="mfp-card-template__title"
-        data-testid="card-template-title"
-        level="H4"
-        size="H5"
-        wrappingType="None"
-        >{{ name() }}</ui5-title
-      >
+      <div class="mfp-card-template__heading">
+        <ui5-title
+          class="mfp-card-template__title"
+          data-testid="card-template-title"
+          level="H4"
+          size="H5"
+          wrappingType="None"
+          >{{ name() }}</ui5-title
+        >
+        @if (subtitle(); as subtitle) {
+          <div class="mfp-card-template__subtitle">{{ subtitle }}</div>
+        }
+      </div>
       @if (search() || actions().length) {
         <div class="mfp-card-template__toolbar">
           @if (search(); as search) {
@@ -69,6 +74,16 @@
               }
             </ui5-menu>
           }
+        </div>
+      }
+      @if (criticalStatus(); as criticalStatus) {
+        <div class="mfp-card-template__critical-status">
+          <ui5-icon
+            aria-hidden="true"
+            mode="Decorative"
+            name="message-warning"
+          />
+          <span>{{ criticalStatus }}</span>
         </div>
       }
     </header>

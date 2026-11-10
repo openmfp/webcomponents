@@ -1,3 +1,4 @@
+import { BeforeRequest } from '../../../data-fetch-table/data-fetch-table.model';
 import { DashboardCardContent, MountCfg } from '../../models';
 import {
   getRegisteredDashboardCardComponent,
@@ -10,6 +11,7 @@ export function mountAngularCard(
   angularHost: ViewContainerRef,
   onCleanup: EffectCleanupRegisterFn,
   onMounted?: (content: DashboardCardContent) => void,
+  beforeRequest?: BeforeRequest,
 ): void {
   const registeredComponent = getRegisteredDashboardCardComponent(
     cfg.component,
@@ -35,6 +37,11 @@ export function mountAngularCard(
     }
 
     componentRef.setInput(templateName, value);
+  }
+
+  const beforeRequestInput = registeredComponent.inputs.get('beforeRequest');
+  if (beforeRequestInput && beforeRequest) {
+    componentRef.setInput(beforeRequestInput, beforeRequest);
   }
 
   const contentHeightInput = registeredComponent.inputs.get('contentHeight');

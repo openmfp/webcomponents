@@ -1,10 +1,13 @@
 <ui5-table
   data-testid="generic-table"
+  [class.card-appearance]="isCardAppearance()"
   [loading]="loading() && !error()"
   [loadingDelay]="loadingDelay()"
   [overflowMode]="overflowMode()"
   [style.height]="height() ? height() + 'px' : null"
-  [style.overflow-y]="'auto'"
+  [style.overflow-y]="
+    isCardAppearance() && overflowMode() === 'Scroll' ? null : 'auto'
+  "
 >
   <ui5-table-header-row slot="headerRow" [sticky]="true">
     <!-- Reset to UI5's default minimum: an empty minWidth produces invalid grid tracks. -->
@@ -83,7 +86,7 @@
     <ui5-table-row
       [attr.data-testid]="'generic-table-row-' + i"
       [class.disabled]="item.isAvailable === false"
-      [interactive]="item.isAvailable !== false"
+      [interactive]="!isCardAppearance() && item.isAvailable !== false"
       (click)="onRowClick(item)"
     >
       @for (column of viewColumns(); track columnTrackBy(column, $index)) {
@@ -173,7 +176,13 @@
     }
   }
 
-  @if (!error() && !loading() && loadMode() !== 'pager' && hasMore()) {
+  @if (
+    !isCardAppearance() &&
+    !error() &&
+    !loading() &&
+    loadMode() !== 'pager' &&
+    hasMore()
+  ) {
     <ui5-table-growing
       data-testid="generic-table-growing"
       id="growing"
@@ -185,113 +194,117 @@
   }
 </ui5-table>
 
-<!-- Pagination Control -->
-<div
-  class="pagination-footer"
-  [hidden]="error() || (loading() && resources().length === 0)"
->
+@if (!isCardAppearance()) {
   <div
-    class="pagination-footer__side"
-    style="display: flex; align-items: center; gap: 0.5rem"
+    class="pagination-footer"
+    [hidden]="error() || (loading() && resources().length === 0)"
   >
-    <span
-      style="color: var(--sapTextColor); font-size: var(--sapFontSmallSize)"
+    <div
+      class="pagination-footer__side"
+      style="display: flex; align-items: center; gap: 0.5rem"
     >
-      {{ isPagerMode() ? itemsPerPageLabel() : 'Items per load:' }}
-    </span>
-    <ui5-select
-      data-testid="generic-table-pagination-select"
-      style="width: 5rem"
-      [accessibleName]="isPagerMode() ? 'Items per page' : 'Items per load'"
-      [disabled]="loading()"
-      [value]="paginationLimit().toString()"
-      (change)="paginationLimitChanged.emit(+$any($event)?.target?.value)"
-    >
-      <ui5-option value="5">5</ui5-option>
-      <ui5-option value="10">10</ui5-option>
-      <ui5-option value="20">20</ui5-option>
-      <ui5-option value="50">50</ui5-option>
-      <ui5-option value="100">100</ui5-option>
-    </ui5-select>
-  </div>
-
-  @if (isPagerMode()) {
-    <div class="pager" data-testid="generic-table-pager">
-      <ui5-button
-        accessibleName="First page"
-        class="pager__first-last"
-        data-testid="generic-table-pager-first"
-        design="Transparent"
-        icon="close-command-field"
-        [disabled]="loading() || !canPrev()"
-        (click)="firstPage()"
-      />
-      <ui5-button
-        accessibleName="Previous page"
-        data-testid="generic-table-pager-prev"
-        design="Transparent"
-        icon="navigation-left-arrow"
-        [disabled]="loading() || !canPrev()"
-        (click)="prevPage()"
-      />
-
-      @for (btn of pageButtons(); track $index) {
-        @if (btn === 'ellipsis') {
-          <span class="pager__ellipsis pager__pages-full">…</span>
-        } @else {
-          <button
-            class="pager__page"
-            [attr.data-testid]="'generic-table-pager-page-' + btn"
-            [class.pager__page--active]="btn === currentPage()"
-            [class.pager__pages-full]="btn !== currentPage()"
-            [disabled]="loading() || btn === currentPage()"
-            (click)="goToPage(btn)"
-          >
-            {{ btn }}
-          </button>
-        }
-      }
-
-      <ui5-button
-        accessibleName="Next page"
-        data-testid="generic-table-pager-next"
-        design="Transparent"
-        icon="navigation-right-arrow"
-        [disabled]="loading() || !canNext()"
-        (click)="nextPage()"
-      />
-      <ui5-button
-        accessibleName="Last page"
-        class="pager__first-last"
-        data-testid="generic-table-pager-last"
-        design="Transparent"
-        icon="open-command-field"
-        [disabled]="loading() || !canNext()"
-        (click)="lastPage()"
-      />
-    </div>
-    <div class="pagination-footer__side pagination-footer__side--end">
-      @if (knowsTotal()) {
-        <span
-          data-testid="generic-table-item-count"
-          style="color: var(--sapTextColor); font-size: var(--sapFontSmallSize)"
-        >
-          {{ totalItemsCount() }} {{ totalItemsLabel() }}
-        </span>
-      }
-    </div>
-  } @else {
-    <div class="pagination-footer__side pagination-footer__side--end">
       <span
         style="color: var(--sapTextColor); font-size: var(--sapFontSmallSize)"
       >
-        Items loaded:
-        <b style="font-size: var(--sapFontSize)">{{
-          totalItemsCount() !== undefined
-            ? resources().length + ' / ' + totalItemsCount()
-            : resources().length
-        }}</b>
+        {{ isPagerMode() ? itemsPerPageLabel() : 'Items per load:' }}
       </span>
+      <ui5-select
+        data-testid="generic-table-pagination-select"
+        style="width: 5rem"
+        [accessibleName]="isPagerMode() ? 'Items per page' : 'Items per load'"
+        [disabled]="loading()"
+        [value]="paginationLimit().toString()"
+        (change)="paginationLimitChanged.emit(+$any($event)?.target?.value)"
+      >
+        <ui5-option value="5">5</ui5-option>
+        <ui5-option value="10">10</ui5-option>
+        <ui5-option value="20">20</ui5-option>
+        <ui5-option value="50">50</ui5-option>
+        <ui5-option value="100">100</ui5-option>
+      </ui5-select>
     </div>
-  }
-</div>
+
+    @if (isPagerMode()) {
+      <div class="pager" data-testid="generic-table-pager">
+        <ui5-button
+          accessibleName="First page"
+          class="pager__first-last"
+          data-testid="generic-table-pager-first"
+          design="Transparent"
+          icon="close-command-field"
+          [disabled]="loading() || !canPrev()"
+          (click)="firstPage()"
+        />
+        <ui5-button
+          accessibleName="Previous page"
+          data-testid="generic-table-pager-prev"
+          design="Transparent"
+          icon="navigation-left-arrow"
+          [disabled]="loading() || !canPrev()"
+          (click)="prevPage()"
+        />
+
+        @for (btn of pageButtons(); track $index) {
+          @if (btn === 'ellipsis') {
+            <span class="pager__ellipsis pager__pages-full">…</span>
+          } @else {
+            <button
+              class="pager__page"
+              [attr.data-testid]="'generic-table-pager-page-' + btn"
+              [class.pager__page--active]="btn === currentPage()"
+              [class.pager__pages-full]="btn !== currentPage()"
+              [disabled]="loading() || btn === currentPage()"
+              (click)="goToPage(btn)"
+            >
+              {{ btn }}
+            </button>
+          }
+        }
+
+        <ui5-button
+          accessibleName="Next page"
+          data-testid="generic-table-pager-next"
+          design="Transparent"
+          icon="navigation-right-arrow"
+          [disabled]="loading() || !canNext()"
+          (click)="nextPage()"
+        />
+        <ui5-button
+          accessibleName="Last page"
+          class="pager__first-last"
+          data-testid="generic-table-pager-last"
+          design="Transparent"
+          icon="open-command-field"
+          [disabled]="loading() || !canNext()"
+          (click)="lastPage()"
+        />
+      </div>
+      <div class="pagination-footer__side pagination-footer__side--end">
+        @if (knowsTotal()) {
+          <span
+            data-testid="generic-table-item-count"
+            style="
+              color: var(--sapTextColor);
+              font-size: var(--sapFontSmallSize);
+            "
+          >
+            {{ totalItemsCount() }} {{ totalItemsLabel() }}
+          </span>
+        }
+      </div>
+    } @else {
+      <div class="pagination-footer__side pagination-footer__side--end">
+        <span
+          style="color: var(--sapTextColor); font-size: var(--sapFontSmallSize)"
+        >
+          Items loaded:
+          <b style="font-size: var(--sapFontSize)">{{
+            totalItemsCount() !== undefined
+              ? resources().length + ' / ' + totalItemsCount()
+              : resources().length
+          }}</b>
+        </span>
+      </div>
+    }
+  </div>
+}

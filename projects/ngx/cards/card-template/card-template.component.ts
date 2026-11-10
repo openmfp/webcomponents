@@ -25,6 +25,7 @@ import { MessageStrip } from '@fundamental-ngx/ui5-webcomponents/message-strip';
 import { Tag } from '@fundamental-ngx/ui5-webcomponents/tag';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 import type { UI5CustomEvent } from '@ui5/webcomponents-base';
+import '@ui5/webcomponents-icons/dist/message-warning.js';
 import '@ui5/webcomponents-icons/dist/overflow.js';
 import '@ui5/webcomponents-icons/dist/search.js';
 import type { default as Ui5Menu } from '@ui5/webcomponents/dist/Menu.js';
@@ -39,6 +40,8 @@ import type { default as Ui5Menu } from '@ui5/webcomponents/dist/Menu.js';
 })
 export class CardTemplate {
   readonly name = input.required<string>();
+  readonly subtitle = input<string>();
+  readonly criticalStatus = input<string>();
   readonly header = input(true, { transform: booleanAttribute });
   readonly background = input<CardTemplateBackground>('solid');
   readonly badge = input<CardTemplateBadge>();
