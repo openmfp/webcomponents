@@ -1,0 +1,15 @@
+:host {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  padding-inline: 1rem;
+}
+
+mfp-declarative-table {
+  --mfp_tableCardBackground: var(--sapList_Background);
+  --mfp_tableCardCellPaddingInline: 0.5rem;
+  --mfp_tableCardPrimaryLinkWeight: 700;
+}

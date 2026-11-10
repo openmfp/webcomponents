@@ -1,0 +1,10 @@
+<mfp-declarative-table
+  appearance="card"
+  [columns]="columns()"
+  [error]="error()"
+  [loading]="loading()"
+  [loadingDelay]="0"
+  [resources]="rows()"
+  [trackByPath]="trackByPath() ?? 'id'"
+  (retry)="retry()"
+/>

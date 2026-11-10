@@ -2,5 +2,7 @@ export { DataFetchTable } from './data-fetch-table.component';
 export type {
   BeforeCardRequest,
   BeforeRequest,
-  DataFetchHttpSource,
+  CardRequest,
+  DataFetchTableData,
+  JsonValue,
 } from './data-fetch-table.model';
