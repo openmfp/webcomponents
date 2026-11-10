@@ -560,6 +560,100 @@ describe('DeclarativeForm', () => {
     });
   });
 
+  describe('collection field without initial values', () => {
+    const collectionField: FormFieldDefinition = {
+      name: 'spec.artifacts',
+      label: 'Artifacts',
+      propertyCollection: [{ name: 'name', label: 'Name' }],
+    };
+
+    function collectionRoot(): ShadowRoot {
+      const shadowRoot = fixture.nativeElement.shadowRoot as ShadowRoot;
+      const collection = shadowRoot.querySelector(
+        'mfp-form-collection-field',
+      ) as HTMLElement;
+      return collection.shadowRoot as ShadowRoot;
+    }
+
+    function renderedEntries(): number {
+      return collectionRoot().querySelectorAll('.card').length;
+    }
+
+    async function clickAdd(): Promise<void> {
+      (
+        collectionRoot().querySelector(
+          '[data-testid="collection-add"]',
+        ) as HTMLElement
+      ).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+    }
+
+    function submittedEntries(): unknown {
+      const emitted: Record<string, unknown>[] = [];
+      component.formSubmit.subscribe((value) => emitted.push(value));
+      component.submit();
+      return emitted[0]?.['spec'];
+    }
+
+    it('keeps an entry added via the Add button', async () => {
+      fixture.componentRef.setInput('fields', [collectionField]);
+      fixture.detectChanges();
+      expect(renderedEntries()).toBe(0);
+
+      await clickAdd();
+
+      expect(renderedEntries()).toBe(1);
+      expect(submittedEntries()).toEqual({ artifacts: [{}] });
+    });
+
+    it('keeps added entries when the host pushes recomputed dependent field values', async () => {
+      const typeField: FormFieldDefinition = {
+        name: 'spec.type',
+        label: 'Type',
+        values: ['git', 'oci'],
+        validation: 'onChange',
+      };
+      const referenceField: FormFieldDefinition = {
+        name: 'spec.reference',
+        label: 'Reference',
+        values: ['branch'],
+      };
+      fixture.componentRef.setInput('fields', [
+        typeField,
+        referenceField,
+        collectionField,
+      ]);
+      fixture.componentRef.setInput('initialValues', {
+        'spec.type': 'git',
+      });
+      fixture.detectChanges();
+
+      await clickAdd();
+      expect(renderedEntries()).toBe(1);
+
+      // A dependent resolver recomputes the reference options after a type
+      // change and pushes a new fields array.
+      component.setFormControlValue(
+        { target: { value: 'oci' } } as unknown as Event,
+        typeField,
+      );
+      fixture.componentRef.setInput('fields', [
+        typeField,
+        { ...referenceField, values: ['tag'] },
+        collectionField,
+      ]);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(renderedEntries()).toBe(1);
+      expect(submittedEntries()).toMatchObject({
+        type: 'oci',
+        artifacts: [{}],
+      });
+    });
+  });
+
   describe('fieldChange output', () => {
     it('should emit on value change for validation: onChange field', () => {
       const emitted: FormFieldChangeEvent[] = [];

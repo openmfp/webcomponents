@@ -138,6 +138,51 @@ describe('ResourceFormDialog', () => {
     });
   });
 
+  describe('collection fields', () => {
+    it('keeps an entry added via the Add button and submits it', async () => {
+      const f = TestBed.createComponent(ResourceFormDialog);
+      f.componentRef.setInput('open', true);
+      f.componentRef.setInput('fields', [
+        { name: 'metadata.name', label: 'Name' },
+        {
+          name: 'spec.artifacts',
+          label: 'Artifacts',
+          propertyCollection: [{ name: 'name', label: 'Name' }],
+        },
+      ]);
+      f.detectChanges();
+
+      const submitted: Record<string, unknown>[] = [];
+      f.componentInstance.submitted.subscribe((value) => submitted.push(value));
+
+      const dialogRoot = f.nativeElement.shadowRoot as ShadowRoot;
+      const formRoot = (
+        dialogRoot.querySelector('mfp-declarative-form') as HTMLElement
+      ).shadowRoot as ShadowRoot;
+      const collectionRoot = (
+        formRoot.querySelector('mfp-form-collection-field') as HTMLElement
+      ).shadowRoot as ShadowRoot;
+
+      (
+        collectionRoot.querySelector(
+          '[data-testid="collection-add"]',
+        ) as HTMLElement
+      ).click();
+      f.detectChanges();
+      await f.whenStable();
+
+      expect(collectionRoot.querySelectorAll('.card').length).toBe(1);
+
+      (
+        dialogRoot.querySelector(
+          '[data-testid="generic-table-card-create-confirm"]',
+        ) as HTMLElement
+      ).click();
+
+      expect(submitted).toMatchObject([{ spec: { artifacts: [{}] } }]);
+    });
+  });
+
   describe('reset-on-close', () => {
     it('destroys the inner form on close and creates a clean form on reopen', async () => {
       const f = TestBed.createComponent(ResourceFormDialog);
