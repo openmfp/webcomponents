@@ -12,6 +12,7 @@ and [releases](https://github.com/openmfp/webcomponents/releases) for details.
 ## [2.0.0] - 2026-11-09
 
 ### Features
+
 - _(dashboard)_ [**breaking**] Draw the MFP card frame and header from componentTemplate (#365)
 
 ## [1.13.1] - 2026-11-06

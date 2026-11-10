@@ -32,6 +32,10 @@ import { Option } from '@fundamental-ngx/ui5-webcomponents/option';
 import { Select } from '@fundamental-ngx/ui5-webcomponents/select';
 import { Switch } from '@fundamental-ngx/ui5-webcomponents/switch';
 
+// Stable fallback for collections without a seed: a fresh `[]` on every
+// change detection would reset the collection field's entries.
+const NO_ENTRIES: Record<string, unknown>[] = [];
+
 @Component({
   selector: 'mfp-declarative-form',
   imports: [
@@ -291,7 +295,7 @@ export class DeclarativeForm<T extends GenericResource> {
   }
 
   collectionEntries(field: FormFieldDefinition): Record<string, unknown>[] {
-    return this.collectionSeeds()[field.name] ?? [];
+    return this.collectionSeeds()[field.name] ?? NO_ENTRIES;
   }
 
   private rebuildControls(fields: FormFieldDefinition[]): void {
