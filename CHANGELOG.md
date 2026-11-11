@@ -9,6 +9,11 @@ and [releases](https://github.com/openmfp/webcomponents/releases) for details.
 
 <!-- git-cliff:insert -->
 
+## [1.13.2] - 2026-11-11
+
+### Bug Fixes
+- _(ci)_ Support npm maintenance releases (#381)- _(declarative-form)_ Keep collection entries added in a form without initial values (#375)
+
 ## [1.13.1] - 2026-11-06
 
 ### Features
