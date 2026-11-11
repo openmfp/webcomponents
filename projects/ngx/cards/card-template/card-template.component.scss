@@ -41,7 +41,7 @@ $inner-corner-radius: calc(
 
   &__heading {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.5rem;
 
     &:has(.mfp-card-template__search) {
@@ -52,6 +52,7 @@ $inner-corner-radius: calc(
   &__title {
     flex: 1 1 7rem;
     min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   &__subtitle {
@@ -91,6 +92,11 @@ $inner-corner-radius: calc(
     align-items: center;
     justify-content: flex-end;
     gap: 0.5rem;
+
+    > ui5-button {
+      position: relative;
+      inset-block-start: -3px;
+    }
 
     &:has(> .mfp-card-template__search) {
       flex: 1 1 0;
