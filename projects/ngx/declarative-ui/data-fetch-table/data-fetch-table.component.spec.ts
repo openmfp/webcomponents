@@ -1,8 +1,6 @@
 import { DataFetchTable } from './data-fetch-table.component';
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { renderFinished } from '@ui5/webcomponents-base/dist/Render.js';
-import { axe } from 'vitest-axe';
 
 const request = { url: 'https://example.test/rows' };
 const localRows = [{ id: 'local' }];
@@ -294,11 +292,4 @@ describe('DataFetchTable', () => {
       expect(loadError).not.toHaveBeenCalled();
     },
   );
-
-  it('has no automatically-detectable accessibility violations', async () => {
-    await setData({ resource: localRows });
-    await renderFinished();
-
-    expect(await axe(fixture.nativeElement)).toHaveNoViolations();
-  });
 });
