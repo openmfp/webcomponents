@@ -27,6 +27,8 @@ class SearchableWidget extends HTMLElement {
   }
 }
 customElements.define('searchable-widget', SearchableWidget);
+customElements.define('demo-widget', class extends HTMLElement {});
+customElements.define('next-widget', class extends HTMLElement {});
 
 @Component({
   selector: 'mfp-searchable-angular-card',

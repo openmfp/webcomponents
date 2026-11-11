@@ -66,7 +66,7 @@ $inner-corner-radius: calc(
     margin-block-start: 1rem;
   }
 
-  &__critical-status {
+  &__status {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -74,9 +74,25 @@ $inner-corner-radius: calc(
     margin-block-start: 0.5rem;
     padding-block: 1.25rem 1.5rem;
     font: 300 1.5rem / 1.75rem var(--sapFontFamily);
-    color: var(--sapCriticalTextColor, #b44f00);
+    color: var(--sapNeutralTextColor, #131e29);
     text-align: center;
     overflow-wrap: anywhere;
+
+    &[data-state='Information'] {
+      color: var(--sapInformativeTextColor, #0064d9);
+    }
+
+    &[data-state='Positive'] {
+      color: var(--sapPositiveTextColor, #256f3a);
+    }
+
+    &[data-state='Negative'] {
+      color: var(--sapNegativeTextColor, #aa0808);
+    }
+
+    &[data-state='Critical'] {
+      color: var(--sapCriticalTextColor, #b44f00);
+    }
 
     ui5-icon {
       flex: none;
@@ -130,14 +146,10 @@ $inner-corner-radius: calc(
     height: 100%;
     overflow: auto;
     scrollbar-gutter: stable;
+  }
 
-    &:has(
-      > mfp-data-fetch-table,
-      > mfp-wc-data-fetch-table,
-      > .element-host > mfp-wc-data-fetch-table
-    ) {
-      overflow: hidden;
-      scrollbar-gutter: auto;
-    }
+  &--content-scrollable &__scroll {
+    overflow: hidden;
+    scrollbar-gutter: auto;
   }
 }

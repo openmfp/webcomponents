@@ -41,7 +41,7 @@ export class OrdersCard {
 }
 ```
 
-The card fills the height of its container. Give the host element a definite height (for example `block-size: 25rem`, or `height: 100%` inside a grid cell); the content below the header fills the rest and scrolls when it overflows. The space for the vertical scrollbar is always reserved, so the content keeps its width when a scrollbar appears.
+The card fills the height of its container. Give the host element a definite height (for example `block-size: 25rem`, or `height: 100%` inside a grid cell). By default, the frame scrolls overflowing content and reserves space for the vertical scrollbar. Set `contentScrollable` when the projected content provides its own scrolling area.
 
 ---
 
@@ -49,19 +49,22 @@ The card fills the height of its container. Give the host element a definite hei
 
 ### Inputs
 
-| Input          | Type                       | Default          | Description                                                                                                                                                                                                    |
-| -------------- | -------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `name`         | `string`                   | — (required)     | Card title, and the accessible name of the card.                                                                                                                                                               |
-| `header`       | `boolean`                  | `true`           | `false` draws only the frame: no title, badge, search, actions or message strip. The card keeps `name` as its accessible name.                                                                                 |
-| `background`   | `'solid' \| 'transparent'` | `'solid'`        | `solid` draws the tile background and shadow; `transparent` draws neither.                                                                                                                                     |
-| `badge`        | `CardTemplateBadge`        | —                | `{ text, state? }` shown on the top-right border as text, without a state icon. At most half the card's width; longer text ends with "…" and the full text is shown as a tooltip. Hidden when `text` is empty. |
-| `search`       | `CardTemplateSearch`       | —                | `{ placeholder }` shows a search field in the header. The placeholder is also the field's accessible name.                                                                                                     |
-| `actions`      | `CardTemplateAction[]`     | `[]`             | `{ key, text }[]` shown in an overflow menu. The "…" button is shown only when at least one action exists.                                                                                                     |
-| `actionsLabel` | `string`                   | `'More actions'` | Accessible name and tooltip of the "…" button. Pass a translated text.                                                                                                                                         |
-| `messageStrip` | `CardTemplateMessageStrip` | —                | `{ text, type? }` shown below the header. The user can close it; it is shown again when `messageStrip` changes.                                                                                                |
-| `searchValue`  | `string` (model)           | `''`             | The search text. Two-way bindable with `[(searchValue)]`; it changes on every keystroke and is `''` after the user clears the field.                                                                           |
+| Input               | Type                       | Default          | Description                                                                                                                                                                                                    |
+| ------------------- | -------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`              | `string`                   | — (required)     | Card title, and the accessible name of the card.                                                                                                                                                               |
+| `subtitle`          | `string`                   | —                | Text below the card title.                                                                                                                                                                                     |
+| `status`            | `CardTemplateStatus`       | —                | `{ text, state }` shown below the title or subtitle with an icon and color for its state.                                                                                                                      |
+| `contentScrollable` | `boolean`                  | `false`          | Lets the projected content handle scrolling.                                                                                                                                                                   |
+| `header`            | `boolean`                  | `true`           | `false` draws only the frame: no title, badge, search, actions or message strip. The card keeps `name` as its accessible name.                                                                                 |
+| `background`        | `'solid' \| 'transparent'` | `'solid'`        | `solid` draws the tile background and shadow; `transparent` draws neither.                                                                                                                                     |
+| `badge`             | `CardTemplateBadge`        | —                | `{ text, state? }` shown on the top-right border as text, without a state icon. At most half the card's width; longer text ends with "…" and the full text is shown as a tooltip. Hidden when `text` is empty. |
+| `search`            | `CardTemplateSearch`       | —                | `{ placeholder }` shows a search field in the header. The placeholder is also the field's accessible name.                                                                                                     |
+| `actions`           | `CardTemplateAction[]`     | `[]`             | `{ key, text }[]` shown in an overflow menu. The "…" button is shown only when at least one action exists.                                                                                                     |
+| `actionsLabel`      | `string`                   | `'More actions'` | Accessible name and tooltip of the "…" button. Pass a translated text.                                                                                                                                         |
+| `messageStrip`      | `CardTemplateMessageStrip` | —                | `{ text, type? }` shown below the header. The user can close it; it is shown again when `messageStrip` changes.                                                                                                |
+| `searchValue`       | `string` (model)           | `''`             | The search text. Two-way bindable with `[(searchValue)]`; it changes on every keystroke and is `''` after the user clears the field.                                                                           |
 
-`badge.state` is one of `Neutral`, `Information`, `Positive`, `Negative` or `Critical` (default `Critical`). `messageStrip.type` is one of `Information`, `Positive`, `Negative` or `Critical` (default `Information`). These are the names UI5 Web Components use for `ui5-tag` and `ui5-message-strip`.
+`badge.state` and `status.state` use `Neutral`, `Information`, `Positive`, `Negative` or `Critical`. Badge state defaults to `Critical`. `messageStrip.type` is one of `Information`, `Positive`, `Negative` or `Critical` (default `Information`).
 
 ### Outputs
 
@@ -95,6 +98,8 @@ The high-contrast themes get their `0.25rem` corners and contrast outline from t
 | -------------- | ----------------------------- | ----------------------------------- |
 | Card frame     | `card-template`               | Carries `aria-label` = `name`       |
 | Title          | `card-template-title`         | Present when `header` is `true`     |
+| Subtitle       | `card-template-subtitle`      | Present when `subtitle` is set      |
+| Status         | `card-template-status`        | Present when `status.text` is set   |
 | Badge          | `card-template-badge`         | Present when `badge.text` is set    |
 | Search field   | `card-template-search`        | Present when `search` is set        |
 | Actions button | `card-template-actions`       | Present when `actions` is not empty |

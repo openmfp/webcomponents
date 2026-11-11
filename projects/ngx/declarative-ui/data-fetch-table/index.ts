@@ -4,5 +4,6 @@ export type {
   BeforeRequest,
   CardRequest,
   DataFetchTableData,
+  DataFetchTableLoadError,
   JsonValue,
 } from './data-fetch-table.model';

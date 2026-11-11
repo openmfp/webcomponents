@@ -675,7 +675,11 @@ const DESTINATIONS_CARD = {
   component: 'mfp-data-fetch-table',
   componentTemplate: {
     subtitle: 'Last updated: 30 minutes ago',
-    criticalStatus: `${DESTINATION_OVERFLOW_ROWS.length} Destinations`,
+    status: {
+      text: `${DESTINATION_OVERFLOW_ROWS.length} Destinations`,
+      state: 'Critical',
+    },
+    contentScrollable: true,
     actions: [{ key: 'view-destinations', text: 'View destinations' }],
   },
   componentInputs: {

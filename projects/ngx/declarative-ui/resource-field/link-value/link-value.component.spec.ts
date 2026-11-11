@@ -97,18 +97,17 @@ describe('LinkValueComponent', () => {
     expect(mockEvent.stopPropagation).toHaveBeenCalled();
   });
 
-  it('should update when urlValue changes', () => {
+  it('sanitizes an unsafe href when urlValue changes and preserves a safe href', () => {
     const { fixture } = makeComponent('https://example.com');
-    const compiled = fixture.nativeElement;
-    let linkElement = compiled.querySelector('ui5-link');
+    const host: HTMLElement = fixture.nativeElement;
+    const link = host.querySelector('ui5-link');
 
-    expect(linkElement).toBeTruthy();
+    expect(link?.getAttribute('href')).toBe('https://example.com');
 
-    fixture.componentRef.setInput('urlValue', 'https://newurl.com');
+    fixture.componentRef.setInput('urlValue', 'javascript:void(0)');
     fixture.detectChanges();
 
-    linkElement = compiled.querySelector('ui5-link');
-    expect(linkElement).toBeTruthy();
+    expect(link?.getAttribute('href')).toBe('unsafe:javascript:void(0)');
   });
 
   it('should have required urlValue input', () => {

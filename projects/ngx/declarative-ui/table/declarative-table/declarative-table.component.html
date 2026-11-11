@@ -72,7 +72,7 @@
           data-testid="generic-table-retry"
           design="Emphasized"
           (click)="retry.emit()"
-          >Retry</ui5-button
+          >{{ error.retryButtonText ?? 'Retry' }}</ui5-button
         >
       }
     </ui5-illustrated-message>

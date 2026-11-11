@@ -12,6 +12,7 @@ import { Table } from '@fundamental-ngx/ui5-webcomponents/table';
 import type TableElement from '@ui5/webcomponents/dist/Table.js';
 import type TableHeaderCellElement from '@ui5/webcomponents/dist/TableHeaderCell.js';
 import type TableHeaderRowElement from '@ui5/webcomponents/dist/TableHeaderRow.js';
+import type TableRowElement from '@ui5/webcomponents/dist/TableRow.js';
 import { axe } from 'vitest-axe';
 
 type Fixture = ComponentFixture<DeclarativeTable<GenericResource>>;
@@ -584,6 +585,36 @@ describe('DeclarativeTable', () => {
       expect(emitted).toHaveLength(0);
     });
   });
+
+  it.each(['button', 'pager'] as const)(
+    'shows all card rows without interaction or %s controls',
+    (loadMode) => {
+      const { fixture, component } = setup({
+        columns: [{ property: 'name' }],
+        resources: [
+          { id: '1', name: 'Alice' },
+          { id: '2', name: 'Bob' },
+        ],
+        totalItemsCount: 10,
+        paginationLimit: 1,
+        hasMore: true,
+        loadMode,
+      });
+      fixture.componentRef.setInput('appearance', 'card');
+      fixture.detectChanges();
+
+      const onRowClick = vi.fn();
+      component.tableRowClicked.subscribe(onRowClick);
+      const firstRow = el(fixture, 'generic-table-row-0') as TableRowElement;
+      expect(firstRow.interactive).toBe(false);
+      firstRow.click();
+
+      expect(onRowClick).not.toHaveBeenCalled();
+      expect(el(fixture, 'generic-table-row-1')).not.toBeNull();
+      expect(root(fixture).querySelector('.pagination-footer')).toBeNull();
+      expect(el(fixture, 'generic-table-growing')).toBeNull();
+    },
+  );
 
   describe('buttonClick output', () => {
     it('bubbles buttonClick from resource-field', () => {

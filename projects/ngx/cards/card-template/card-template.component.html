@@ -2,6 +2,7 @@
   class="mfp-card-template"
   data-testid="card-template"
   [attr.aria-label]="name()"
+  [class.mfp-card-template--content-scrollable]="contentScrollable()"
   [class.mfp-card-template--frame-only]="!header()"
   [class.mfp-card-template--transparent]="background() === 'transparent'"
 >
@@ -74,16 +75,26 @@
         }
       </div>
       @if (subtitle(); as subtitle) {
-        <div class="mfp-card-template__subtitle">{{ subtitle }}</div>
+        <div
+          class="mfp-card-template__subtitle"
+          data-testid="card-template-subtitle"
+        >
+          {{ subtitle }}
+        </div>
       }
-      @if (criticalStatus(); as criticalStatus) {
-        <div class="mfp-card-template__critical-status">
+      @let cardStatus = status();
+      @if (cardStatus?.text) {
+        <div
+          class="mfp-card-template__status"
+          data-testid="card-template-status"
+          [attr.data-state]="cardStatus.state"
+        >
           <ui5-icon
             aria-hidden="true"
             mode="Decorative"
-            name="status-critical"
+            [name]="statusIcons[cardStatus.state]"
           />
-          <span>{{ criticalStatus }}</span>
+          <span>{{ cardStatus.text }}</span>
         </div>
       }
     </header>

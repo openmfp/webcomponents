@@ -1,13 +1,10 @@
-import {
-  BeforeRequest,
-  CardRequest,
-} from '../declarative-ui/data-fetch-table/data-fetch-table.model';
+import type { CardRequest, FetchAttempt } from './data-fetch.model';
 import { Injectable, untracked } from '@angular/core';
 
-interface FetchAttempt {
-  signal: AbortSignal;
-  beforeRequest?: BeforeRequest;
-  beforeSend?: () => void;
+export class DataFetchConfigurationError extends TypeError {
+  constructor(cause: unknown) {
+    super('The request configuration is invalid.', { cause });
+  }
 }
 
 export class DataFetchHttpError extends Error {
@@ -76,21 +73,25 @@ export class DataFetchService {
   }
 
   private createRequest(config: CardRequest, signal: AbortSignal): Request {
-    const { method, query, headers, body, credentials, mode } = config;
-    const url = new URL(config.url);
-    this.applyQueryParams(url, query);
+    try {
+      const { method, query, headers, body, credentials, mode } = config;
+      const url = new URL(config.url);
+      this.applyQueryParams(url, query);
 
-    const requestHeaders = new Headers(headers);
-    const requestBody = this.encodeBody(body, requestHeaders);
+      const requestHeaders = new Headers(headers);
+      const requestBody = this.encodeBody(body, requestHeaders);
 
-    return new Request(url, {
-      method,
-      headers: requestHeaders,
-      body: requestBody,
-      credentials,
-      mode,
-      signal,
-    });
+      return new Request(url, {
+        method,
+        headers: requestHeaders,
+        body: requestBody,
+        credentials,
+        mode,
+        signal,
+      });
+    } catch (error) {
+      throw new DataFetchConfigurationError(error);
+    }
   }
 
   private applyQueryParams(url: URL, query?: Record<string, unknown>): void {

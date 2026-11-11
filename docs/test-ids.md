@@ -147,6 +147,8 @@ All interactive and identifiable elements across the webcomponents library carry
 | -------------- | ----------------------------- | ----------------------------------- |
 | Card frame     | `card-template`               | Carries `aria-label` = `name`       |
 | Title          | `card-template-title`         | Present when `header` is `true`     |
+| Subtitle       | `card-template-subtitle`      | Present when `subtitle` is set      |
+| Status         | `card-template-status`        | Present when `status.text` is set   |
 | Badge          | `card-template-badge`         | Present when `badge.text` is set    |
 | Search field   | `card-template-search`        | Present when `search` is set        |
 | Actions button | `card-template-actions`       | Present when `actions` is not empty |

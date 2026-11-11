@@ -1,6 +1,8 @@
 import { DataFetchTable } from './data-fetch-table.component';
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { renderFinished } from '@ui5/webcomponents-base/dist/Render.js';
+import { axe } from 'vitest-axe';
 
 const request = { url: 'https://example.test/rows' };
 const localRows = [{ id: 'local' }];
@@ -59,6 +61,10 @@ describe('DataFetchTable', () => {
   });
 
   it('renders local root and nested first-match rows without running a request', async () => {
+    await fixture.whenStable();
+    expect(element('view-nodata')).not.toBeNull();
+    expect(element('view-error')).toBeNull();
+
     await setData({ resource: localRows });
     expect(rowText()).toContain('local');
 
@@ -71,14 +77,16 @@ describe('DataFetchTable', () => {
     await fixture.whenStable();
     expect(rowText()).toContain('local');
 
-    await setData({ resource: [] });
+    await setData(undefined);
+    expect(element('row-0')).toBeNull();
     expect(element('view-nodata')).not.toBeNull();
+    expect(element('view-error')).toBeNull();
     expect(hook).not.toHaveBeenCalled();
     expect(fetch).not.toHaveBeenCalled();
   });
 
   it.each([
-    ['absent data', undefined],
+    ['null data', null],
     ['missing source', {}],
     ['invalid resource', { resource: null }],
     ['missing match', { resource: nestedRows, path: 'missing' }],
@@ -127,6 +135,8 @@ describe('DataFetchTable', () => {
   it.each([429, 503])(
     'uses a fresh request only when Retry is clicked after %i',
     async (status) => {
+      const loadError = vi.fn();
+      fixture.componentInstance.loadError.subscribe(loadError);
       fetch
         .mockResolvedValueOnce(new Response(null, { status }))
         .mockResolvedValueOnce(Response.json([{ id: 'retried' }]));
@@ -139,6 +149,10 @@ describe('DataFetchTable', () => {
         'The table data could not be loaded.',
       );
       expect(element('row-0')).toBeNull();
+      expect(loadError).toHaveBeenCalledExactlyOnceWith({
+        status,
+        retryable: true,
+      });
       expect(hook).toHaveBeenCalledTimes(1);
       expect(fetch).toHaveBeenCalledTimes(1);
 
@@ -153,35 +167,42 @@ describe('DataFetchTable', () => {
   );
 
   it.each([
-    ['malformed request', null, '', 0],
-    ['invalid request path', request, '/groups', 0],
-    ['invalid response selection', request, 'missing', 1],
+    ['malformed request', null, '', 0, false],
+    ['invalid request path', request, '/groups', 0, false],
+    ['relative request URL', { url: '/rows' }, '', 0, false],
+    ['GET with a body', { ...request, body: 'invalid' }, '', 0, false],
+    ['invalid response selection', request, 'missing', 1, true],
   ] as const)(
     'does not fall back to local rows for %s',
-    async (_, source, path, calls) => {
+    async (_, source, path, calls, retryable) => {
       fetch.mockResolvedValueOnce(Response.json({ groups: [] }));
       await setData({ request: source, resource: localRows, path });
 
       await vi.waitFor(() => {
-        expect(element('retry')).not.toBeNull();
+        expect(element('view-error')).not.toBeNull();
       });
+      expect(Boolean(element('retry'))).toBe(retryable);
       expect(element('row-0')).toBeNull();
       expect(hook).toHaveBeenCalledTimes(calls);
       expect(fetch).toHaveBeenCalledTimes(calls);
     },
   );
 
-  it('does not repeat a POST when a signal read by the request getter changes', async () => {
+  it('does not repeat a POST when signals read by data getters change', async () => {
     const body = signal('initial');
+    const path = signal('items');
     const readRequest = vi.fn(() => ({
       ...request,
       method: 'POST' as const,
       body: body(),
     }));
-    fetch.mockImplementation(async () => Response.json([{ id: 'remote' }]));
+    fetch.mockResolvedValueOnce(Response.json({ items: [{ id: 'remote' }] }));
     await setData({
       get request() {
         return readRequest();
+      },
+      get path() {
+        return path();
       },
     });
     await vi.waitFor(() => {
@@ -189,10 +210,34 @@ describe('DataFetchTable', () => {
     });
 
     body.set('updated');
+    path.set('otherItems');
     await fixture.whenStable();
 
     expect(readRequest).toHaveBeenCalledTimes(1);
     expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('updates the error labels without repeating the failed request or event', async () => {
+    const loadError = vi.fn();
+    fixture.componentInstance.loadError.subscribe(loadError);
+    fetch.mockRejectedValueOnce(new TypeError('Network unavailable'));
+
+    await setData({ request });
+    await vi.waitFor(() => {
+      expect(element('retry')).not.toBeNull();
+    });
+    expect(loadError).toHaveBeenCalledWith({ retryable: true });
+
+    fixture.componentRef.setInput('errorTitle', 'Network issue');
+    fixture.componentRef.setInput('errorMessage', 'Please reconnect.');
+    fixture.componentRef.setInput('retryButtonText', 'Try again');
+    await fixture.whenStable();
+
+    expect(element('error-title')?.textContent?.trim()).toBe('Network issue');
+    expect(element('view-error')?.textContent).toContain('Please reconnect.');
+    expect(element('retry')?.textContent?.trim()).toBe('Try again');
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(loadError).toHaveBeenCalledTimes(1);
   });
 
   it('treats a bodyless response as empty even when a path is supplied', async () => {
@@ -219,25 +264,41 @@ describe('DataFetchTable', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it('aborts a pending request and keeps resource rows when its stale response settles', async () => {
-    const pending = deferred<Response>();
-    fetch.mockReturnValueOnce(pending.promise);
-    await setData({ request });
-    await vi.waitFor(() => {
-      expect(fetch).toHaveBeenCalledTimes(1);
-    });
-    const signal = fetch.mock.calls[0][1]?.signal;
+  it.each([
+    ['success', () => Response.json([{ id: 'stale' }])],
+    ['failure', () => new Response(null, { status: 503 })],
+  ] as const)(
+    'ignores a stale request %s after aborting it',
+    async (_, response) => {
+      const pending = deferred<Response>();
+      const loadError = vi.fn();
+      fixture.componentInstance.loadError.subscribe(loadError);
+      fetch.mockReturnValueOnce(pending.promise);
+      await setData({ request });
+      await vi.waitFor(() => {
+        expect(fetch).toHaveBeenCalledTimes(1);
+      });
+      const signal = fetch.mock.calls[0][1]?.signal;
 
+      await setData({ resource: localRows });
+      expect(signal?.aborted).toBe(true);
+      pending.resolve(response());
+      // Let the service and component promise continuations run before checking the view.
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 0);
+      });
+      await fixture.whenStable();
+
+      expect(rowText()).toContain('local');
+      expect(element('view-error')).toBeNull();
+      expect(loadError).not.toHaveBeenCalled();
+    },
+  );
+
+  it('has no automatically-detectable accessibility violations', async () => {
     await setData({ resource: localRows });
-    expect(signal?.aborted).toBe(true);
-    pending.resolve(Response.json([{ id: 'stale' }]));
-    // Let the service and component promise continuations run before checking the view.
-    await new Promise<void>((resolve) => {
-      setTimeout(resolve, 0);
-    });
-    await fixture.whenStable();
+    await renderFinished();
 
-    expect(rowText()).toContain('local');
-    expect(element('view-error')).toBeNull();
+    expect(await axe(fixture.nativeElement)).toHaveNoViolations();
   });
 });

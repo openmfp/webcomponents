@@ -2,7 +2,7 @@
 
 ## DataFetchTable
 
-DataFetchTable displays rows from a local resource or an HTTP response. In a Dashboard card, `componentTemplate` adds the frame, subtitle, and optional critical status with a warning icon.
+DataFetchTable displays rows from a local resource or an HTTP response. In a Dashboard card, `componentTemplate` adds the frame, subtitle, and optional status text with an icon.
 
 | Usage             | Tag                         |
 | ----------------- | --------------------------- |
@@ -13,7 +13,7 @@ DataFetchTable displays rows from a local resource or an HTTP response. In a Das
 
 ## Usage in Dashboard
 
-Load `mfp-webcomponents.js` for the table and `mfp-wc-dashboard.js` for the Dashboard. Pass the table inputs through `componentInputs`. The card's `label` becomes its title. Use `componentTemplate` for the subtitle and critical status.
+`mfp-wc-dashboard.js` registers the Dashboard, and `mfp-webcomponents.js` registers the table. Load both for this web-component setup. Each bundle is self-contained, so loading both includes overlapping Angular and UI5 runtime code. Pass table inputs through `componentInputs` and use `label` for the card title.
 
 ```js
 dashboard.cards = [
@@ -23,7 +23,8 @@ dashboard.cards = [
     component: 'mfp-wc-data-fetch-table',
     componentTemplate: {
       subtitle: 'Authentication overview',
-      criticalStatus: 'Review required',
+      status: { text: 'Review required', state: 'Critical' },
+      contentScrollable: true,
     },
     componentInputs: {
       columns: [{ label: 'Name', property: 'name' }],
@@ -68,7 +69,7 @@ In Angular, import `DataFetchTable` from `@openmfp/ngx` and bind the same values
 
 ## HTTP requests
 
-Use `data.request` to fetch a JSON response. The URL must be absolute and the default method is `GET`. This example sends a JSON body and selects rows from the response's `data.rows` property.
+Use `data.request` to fetch a JSON response. The URL must be absolute and the default method is `GET`. This example sends query parameters and an `Accept` header, then selects rows from the response's `data.rows` property.
 
 ```js
 table.data = {
@@ -92,7 +93,11 @@ table.data = {
 
 `data.path` works with either source and accepts JSONPath, such as `data.rows` or `$.data.rows`. The first match must be an array of row objects. Omit the path when the source is already an array. Script evaluation is disabled. When both sources are set, the request takes precedence.
 
-The table displays a loading state while a request is pending. A failed request shows **Retry**, which runs the request and its hook again. Invalid local data displays an error without Retry.
+The table stays empty until `data` is assigned. It displays a loading state while a request is pending. **Retry** runs a failed request and its hook again. Invalid local data or request configuration shows an error without Retry.
+
+Set `errorTitle`, `errorMessage`, and `retryButtonText` to localize the error state. The defaults are “Unable to load data”, “The table data could not be loaded.”, and “Retry”.
+
+The `loadError` output emits for each failed load with a `DataFetchTableLoadError` payload. It includes `retryable` and the HTTP `status` when available. On the web component, listen for the `loadError` event and read the payload from `event.detail`.
 
 ### Request hooks
 
