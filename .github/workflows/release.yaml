@@ -12,8 +12,11 @@ on:
         type: string
         required: false
       npm-tag:
-        description: 'npm distribution tag (e.g. latest or maintenance). Independent of the release version and Git tag.'
-        type: string
+        description: 'npm distribution tag. Independent of the release version and Git tag.'
+        type: choice
+        options:
+          - latest
+          - maintenance
         default: latest
         required: false
 
