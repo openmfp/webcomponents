@@ -11,6 +11,11 @@ export interface CardTemplateBadge {
   state?: CardTemplateBadgeState;
 }
 
+export interface CardTemplateStatus {
+  text: string;
+  state: CardTemplateBadgeState;
+}
+
 export interface CardTemplateSearch {
   placeholder: string;
 }
@@ -29,6 +34,9 @@ export interface CardTemplateConfig {
   header?: boolean;
   background?: CardTemplateBackground;
   badge?: CardTemplateBadge;
+  subtitle?: string;
+  status?: CardTemplateStatus;
+  contentScrollable?: boolean;
   search?: CardTemplateSearch;
   actions?: CardTemplateAction[];
   messageStrip?: CardTemplateMessageStrip;

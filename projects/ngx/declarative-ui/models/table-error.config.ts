@@ -3,4 +3,5 @@ export interface TableErrorConfig {
   message?: string;
   title?: string;
   withRetryButton?: boolean;
+  retryButtonText?: string;
 }

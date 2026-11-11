@@ -8,6 +8,7 @@ export const getResourceValueByJsonPath = <T>(
     property?: string | string[];
     propertyField?: PropertyField;
   },
+  options?: { eval: false },
 ) => {
   const property = field.jsonPathExpression || field.property;
   if (!property) {
@@ -28,7 +29,7 @@ export const getResourceValueByJsonPath = <T>(
   // `any[]` (matching jsonpath's old typing) keeps the downstream
   // `value[field.propertyField.key]` access compiling.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const queryResult = JSONPath({ path, json: resource }) as any[];
+  const queryResult = JSONPath({ path, json: resource, ...options }) as any[];
   const value = queryResult.length ? queryResult[0] : undefined;
 
   if (value && field.propertyField) {

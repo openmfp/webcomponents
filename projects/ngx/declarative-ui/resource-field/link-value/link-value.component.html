@@ -1,7 +1,7 @@
 <ui5-link
   target="_blank"
   [attr.data-testid]="testId()"
-  [href]="urlValue()"
+  [href]="sanitizedHref()"
   [tooltip]="urlValue()"
   (click)="stopPropagation($event)"
   >{{ displayValue() || urlValue() }}</ui5-link

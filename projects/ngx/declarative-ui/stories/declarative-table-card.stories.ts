@@ -7,99 +7,20 @@ import type {
   ResourceFormConfig,
   TableCardConfig,
   TableCardFormState,
-  TableConfig,
 } from '../table-card/models/configs';
 import type { TableFieldDefinition } from '../table/models';
+import {
+  BASIC_POD_COLUMNS as BASE_COLUMNS,
+  BASIC_POD_CARD_CONFIG as BASE_CONFIG,
+  BASIC_POD_TABLE_CONFIG as BASE_TABLE_CONFIG,
+  TABLE_RESOURCES as PODS,
+} from './pods-table.config';
 import { Component, Input } from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
 import '@ui5/webcomponents-icons/dist/detail-view.js';
 import '@ui5/webcomponents-icons/dist/inspect.js';
 import '@ui5/webcomponents-icons/dist/restart.js';
 import '@ui5/webcomponents-icons/dist/stop.js';
-
-// ---------------------------------------------------------------------------
-// Sample data
-// ---------------------------------------------------------------------------
-
-interface Pod extends GenericResource {
-  id: string;
-  metadata: { name: string; namespace: string; uid: string };
-  status: { phase: string; ready: boolean; restarts: number; message?: string };
-  spec: { nodeName: string; image: string };
-}
-
-const PODS: Pod[] = [
-  {
-    id: 'abc-001',
-    metadata: { name: 'api-server-7d9f', namespace: 'default', uid: 'abc-001' },
-    status: { phase: 'Running', ready: true, restarts: 0 },
-    spec: { nodeName: 'node-1', image: 'nginx:1.25' },
-    isAvailable: true,
-  },
-  {
-    id: 'abc-002',
-    metadata: { name: 'worker-5bc8', namespace: 'default', uid: 'abc-002' },
-    status: {
-      phase: 'Pending',
-      ready: false,
-      restarts: 3,
-      message: 'ImagePullBackOff',
-    },
-    spec: { nodeName: 'node-2', image: 'myapp:latest' },
-    isAvailable: false,
-    accessibleName: 'Pod unavailable: ImagePullBackOff',
-  },
-  {
-    id: 'abc-003',
-    metadata: {
-      name: 'cache-redis-0',
-      namespace: 'kube-system',
-      uid: 'abc-003',
-    },
-    status: { phase: 'Running', ready: true, restarts: 1 },
-    spec: { nodeName: 'node-1', image: 'redis:7' },
-    isAvailable: true,
-  },
-  {
-    id: 'abc-004',
-    metadata: {
-      name: 'db-postgres-0',
-      namespace: 'production',
-      uid: 'abc-004',
-    },
-    status: {
-      phase: 'Failed',
-      ready: false,
-      restarts: 5,
-      message: 'CrashLoopBackOff',
-    },
-    spec: { nodeName: 'node-3', image: 'postgres:16' },
-    isAvailable: false,
-    accessibleName: 'Pod unavailable: CrashLoopBackOff',
-  },
-  {
-    id: 'abc-005',
-    metadata: {
-      name: 'ingress-ctrl-xkp',
-      namespace: 'default',
-      uid: 'abc-005',
-    },
-    status: { phase: 'Running', ready: true, restarts: 0 },
-    spec: { nodeName: 'node-2', image: 'nginx-ingress:1.9' },
-    isAvailable: true,
-  },
-];
-
-// ---------------------------------------------------------------------------
-// Shared definitions
-// ---------------------------------------------------------------------------
-
-const BASE_COLUMNS: TableFieldDefinition[] = [
-  { label: 'Name', property: 'metadata.name' },
-  { label: 'Namespace', property: 'metadata.namespace' },
-  { label: 'Phase', property: 'status.phase' },
-  { label: 'Node', property: 'spec.nodeName' },
-];
 
 const POD_FORM_FIELDS: FormFieldDefinition[] = [
   { name: 'metadata.name', label: 'Name', required: true },
@@ -135,18 +56,6 @@ const POD_EDIT_FORM_FIELDS: FormFieldDefinition[] = [
     values: ['default', 'kube-system', 'production'],
   },
 ];
-
-const BASE_TABLE_CONFIG: TableConfig = {
-  fields: BASE_COLUMNS,
-  paginationLimit: 5,
-  hasMore: false,
-};
-
-const BASE_CONFIG: TableCardConfig = {
-  header: 'Pods',
-  searchConfig: {},
-  tableConfig: BASE_TABLE_CONFIG,
-};
 
 // ---------------------------------------------------------------------------
 // Wrapper component for stories that need host-owned state

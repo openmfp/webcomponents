@@ -15,7 +15,10 @@ import {
   type DashboardConfig,
   type SectionConfig,
 } from '../dashboard/models';
+import { DataFetchTable, type DataFetchTableData } from '../data-fetch-table';
 import { ButtonSettings } from '../models/ui-definition';
+import type { TableFieldDefinition } from '../table';
+import { DeclarativeTableCard } from '../table-card/declarative-table-card.component';
 import {
   CARD_TEMPLATE_AVAILABLE_CARDS,
   CARD_TEMPLATE_CARDS,
@@ -23,7 +26,11 @@ import {
 } from './dashboard.card-template';
 import { CARDS, RAS_CARDS, SECTIONS } from './dashboard.cards';
 import { loadOpenUi5 } from './openui5';
-import { TABLE_CARD_CONFIG, TABLE_RESOURCES } from './pods-table.config';
+import {
+  BASIC_POD_CARD_CONFIG,
+  TABLE_CARD_CONFIG,
+  TABLE_RESOURCES,
+} from './pods-table.config';
 import { StoryServiceListCard } from './story-service-list-card.component';
 import type { Meta, StoryObj } from '@storybook/angular';
 
@@ -33,6 +40,8 @@ Dashboard.registerAngularComponents([
   VisitedServiceCard,
   MockCard,
   StoryServiceListCard,
+  DataFetchTable,
+  DeclarativeTableCard,
 ]);
 
 // ---------------------------------------------------------------------------
@@ -615,4 +624,159 @@ export const CardTemplate: StoryObj<Dashboard & { theme: StoryTheme }> = {
       },
     },
   },
+};
+
+const DESTINATION_NAME_GROUP = {
+  name: 'destination',
+  label: 'Name',
+  multiline: true,
+};
+
+const DESTINATION_ROWS = [
+  {
+    id: 'C4C',
+    type: 'HTTP',
+    authentication: 'Basic Authentication',
+    description: 'SAP Cloud for Customer SAP Task Center destination',
+    subaccount: 'My Subaccount 3',
+    subaccountId: '3',
+  },
+  {
+    id: 'S4HANA',
+    type: 'OnPremise',
+    authentication: 'OAuth2Password',
+    description: 'API Gateway module: Deletion of APIRule v1beta1',
+    subaccount: 'My Subaccount 6',
+    subaccountId: '6',
+  },
+  {
+    id: 'S4HANAPE',
+    type: 'OnPremise',
+    authentication: 'Basic Authentication',
+    description:
+      'Multitarget Applications for Cloud Foundry: Deprecation of several module hooks',
+    subaccount: 'My Subaccount 6',
+    subaccountId: '6',
+  },
+];
+
+const DESTINATION_OVERFLOW_ROWS = [
+  ...DESTINATION_ROWS,
+  ...[2, 3].flatMap((copy) =>
+    DESTINATION_ROWS.map((row) => ({ ...row, id: `${row.id}-${copy}` })),
+  ),
+];
+
+const DESTINATIONS_CARD = {
+  id: 'destination-authentication',
+  label: 'Destinations with not recommended authentication methods',
+  size: 'm',
+  type: 'angular',
+  component: 'mfp-data-fetch-table',
+  componentTemplate: {
+    subtitle: 'Last updated: 30 minutes ago',
+    status: {
+      text: `${DESTINATION_OVERFLOW_ROWS.length} Destinations`,
+      state: 'Critical',
+    },
+    contentScrollable: true,
+    actions: [{ key: 'view-destinations', text: 'View destinations' }],
+  },
+  componentInputs: {
+    data: { resource: DESTINATION_OVERFLOW_ROWS } satisfies DataFetchTableData,
+    columns: [
+      {
+        property: 'id',
+        group: DESTINATION_NAME_GROUP,
+        columnSettings: { width: '41%' },
+        uiSettings: {
+          displayAs: 'link',
+          linkSettings: { link: 'https://example.com/destinations/{{id}}' },
+        },
+      },
+      { property: 'type', label: 'Type', group: DESTINATION_NAME_GROUP },
+      {
+        property: 'authentication',
+        label: 'Authentication',
+        group: DESTINATION_NAME_GROUP,
+      },
+      {
+        property: 'description',
+        label: 'Description',
+        columnSettings: { width: '34%' },
+      },
+      {
+        property: 'subaccount',
+        label: 'Subaccount',
+        columnSettings: { width: '25%' },
+        uiSettings: {
+          displayAs: 'link',
+          linkSettings: {
+            link: 'https://example.com/subaccounts/{{subaccountId}}',
+          },
+        },
+      },
+    ] satisfies TableFieldDefinition[],
+  },
+} satisfies CardConfig;
+
+const SHOWCASE_PODS = [
+  ...TABLE_RESOURCES,
+  ...TABLE_RESOURCES.map((pod) => ({
+    ...pod,
+    id: `${pod.id}-replica`,
+    metadata: {
+      ...pod.metadata,
+      name: `${pod.metadata.name}-replica`,
+      uid: `${pod.metadata.uid}-replica`,
+    },
+  })),
+];
+
+const SHOWCASE_CARDS: CardConfig[] = [
+  DESTINATIONS_CARD,
+  {
+    id: 'showcase-pods',
+    label: 'Pods',
+    size: 'xxl',
+    type: 'angular',
+    component: 'mfp-declarative-table-card',
+    componentInputs: {
+      config: {
+        ...BASIC_POD_CARD_CONFIG,
+        tableConfig: {
+          ...BASIC_POD_CARD_CONFIG.tableConfig,
+          paginationLimit: 10,
+          // The 384px card surface also contains two 60px bars and a 2px border.
+          height: 262,
+        },
+      },
+      resources: SHOWCASE_PODS,
+    },
+  },
+];
+
+export const MfpCardsShowcase: Story = {
+  args: {
+    config: { zFlow: { cardHeight: 40, defaultCardSize: 'xxl' } },
+    i18n: { ...EN_DEFAULTS, title: '', description: '' },
+    sections: [],
+    cards: SHOWCASE_CARDS,
+    availableCards: SHOWCASE_CARDS,
+    customActions: [],
+  },
+  parameters: { webcomponentsBundle: false },
+  render: (args) => ({
+    props: args,
+    template: `
+      <mfp-dashboard
+        [availableCards]="availableCards"
+        [cards]="cards"
+        [config]="config"
+        [i18n]="i18n"
+        [sections]="sections"
+        (cardAction)="cardAction($event)"
+      />
+    `,
+  }),
 };

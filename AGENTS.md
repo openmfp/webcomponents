@@ -112,6 +112,7 @@ New shared Angular components and services belong in `projects/ngx/`. New custom
 | `mfp-wc-declarative-table`      | `DeclarativeTable`     | `mfp-webcomponents.js`             |
 | `mfp-wc-declarative-form`       | `DeclarativeForm`      | `mfp-webcomponents.js`             |
 | `mfp-wc-declarative-table-card` | `DeclarativeTableCard` | `mfp-webcomponents.js`             |
+| `mfp-wc-data-fetch-table`       | `DataFetchTable`       | `mfp-webcomponents.js`             |
 | `mfp-wc-visited-service-card`   | `VisitedServiceCard`   | `mfp-webcomponents.js`             |
 | `mfp-wc-dashboard`              | `Dashboard`            | `mfp-wc-dashboard.js` (standalone) |
 

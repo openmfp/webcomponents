@@ -34,6 +34,52 @@ ui5-table-header-row {
   padding-block-end: var(--mfp_tableHeaderPaddingBlockEnd, 0);
 }
 
+.card-appearance {
+  --mfp_tableCardTextWrap: anywhere;
+  height: 100%;
+  min-height: 0;
+  background: var(--mfp_tableCardBackground, var(--sapList_Background));
+
+  ui5-table-header-row {
+    background: var(--mfp_tableCardBackground, var(--sapList_Background));
+    border-block-start: 0;
+    min-height: 1.875rem;
+  }
+
+  ui5-table-header-cell,
+  ui5-table-cell {
+    min-width: 0;
+    align-content: center;
+    overflow-wrap: var(--mfp_tableCardTextWrap);
+    padding-inline: var(--mfp_tableCardCellPaddingInline, 0.5rem);
+  }
+
+  ui5-table-header-cell {
+    font: var(--sapFontSize) var(--sapFontSemiboldDuplexFamily);
+    color: var(--sapList_HeaderTextColor);
+    min-height: 1.75rem;
+  }
+
+  ui5-table-cell {
+    padding-block: 0.5rem;
+  }
+
+  .flex,
+  mfp-resource-field {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .group-value {
+    display: block;
+    min-width: 0;
+  }
+
+  .group-value:first-child > mfp-resource-field {
+    --mfp_tableCardLinkWeight: var(--mfp_tableCardPrimaryLinkWeight, 700);
+  }
+}
+
 .pagination-footer {
   container-type: inline-size;
   display: flex;

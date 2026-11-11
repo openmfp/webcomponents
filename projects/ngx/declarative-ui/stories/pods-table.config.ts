@@ -68,6 +68,25 @@ export const TABLE_RESOURCES = [
   },
 ];
 
+export const BASIC_POD_COLUMNS: TableFieldDefinition[] = [
+  { label: 'Name', property: 'metadata.name' },
+  { label: 'Namespace', property: 'metadata.namespace' },
+  { label: 'Phase', property: 'status.phase' },
+  { label: 'Node', property: 'spec.nodeName' },
+];
+
+export const BASIC_POD_TABLE_CONFIG: TableConfig = {
+  fields: BASIC_POD_COLUMNS,
+  paginationLimit: 5,
+  hasMore: false,
+};
+
+export const BASIC_POD_CARD_CONFIG: TableCardConfig = {
+  header: 'Pods',
+  searchConfig: {},
+  tableConfig: BASIC_POD_TABLE_CONFIG,
+};
+
 export const TABLE_COLUMNS: TableFieldDefinition[] = [
   { label: 'Name', property: 'metadata.name' },
   { label: 'Namespace', property: 'metadata.namespace' },

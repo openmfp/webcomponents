@@ -37,10 +37,13 @@
           [actionsLabel]="i18n.getTranslation(i18nKeys.ACTIONS)"
           [background]="template.background ?? 'solid'"
           [badge]="template.badge"
+          [contentScrollable]="template.contentScrollable"
           [header]="template.header !== false"
           [messageStrip]="template.messageStrip"
           [name]="card().label ?? ''"
           [search]="templateSearch()"
+          [status]="template.status"
+          [subtitle]="template.subtitle"
           [(searchValue)]="searchQuery"
           (actionPress)="onTemplateAction($event)"
         >

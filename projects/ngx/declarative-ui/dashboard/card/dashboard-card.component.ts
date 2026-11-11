@@ -1,4 +1,8 @@
 import { CardTemplate } from '../../../cards/card-template/card-template.component';
+import {
+  BeforeCardRequest,
+  BeforeRequest,
+} from '../../data-fetch-table/data-fetch-table.model';
 import { DASHBOARD_CARD_DRAG_ORIGIN_CLASS } from '../constants';
 import { DASHBOARD_I18N_KEYS, DashboardI18nService } from '../i18n';
 import { CARD_TYPES, CardConfig, DashboardCardContent } from '../models';
@@ -35,6 +39,7 @@ import '@ui5/webcomponents-icons/dist/resize-corner.js';
 })
 export class DashboardCard {
   card = input.required<CardConfig>();
+  beforeCardRequest = input<BeforeCardRequest>();
   editMode = input<boolean>(false);
   readonly removeCard = output<void>();
   readonly cardAction = output<string>();
@@ -102,11 +107,24 @@ export class DashboardCard {
           mountSapCard(mountCfg, host, onCleanup, onMounted);
           break;
         case CARD_TYPES.ANGULAR:
-          mountAngularCard(mountCfg, host, onCleanup, onMounted);
+          mountAngularCard(
+            mountCfg,
+            host,
+            onCleanup,
+            onMounted,
+            this.createBeforeRequestAdapter(),
+          );
           break;
         case CARD_TYPES.WC:
         default:
-          mountWcCard(mountCfg, host, onCleanup, this.renderer, onMounted);
+          mountWcCard(
+            mountCfg,
+            host,
+            onCleanup,
+            this.renderer,
+            onMounted,
+            this.createBeforeRequestAdapter(),
+          );
           break;
       }
     });
@@ -128,6 +146,12 @@ export class DashboardCard {
   protected onTemplateAction(key: string): void {
     this.mountedContent()?.onCardAction?.(key);
     this.cardAction.emit(key);
+  }
+
+  private createBeforeRequestAdapter(): BeforeRequest {
+    const cardId = untracked(() => this.card().id);
+    return (request) =>
+      untracked(() => this.beforeCardRequest()?.(request, cardId));
   }
 
   private onContentMounted(content: DashboardCardContent): void {

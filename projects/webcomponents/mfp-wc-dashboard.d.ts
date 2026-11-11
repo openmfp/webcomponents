@@ -40,6 +40,11 @@ export interface CardTemplateBadge {
   state?: CardTemplateBadgeState;
 }
 
+export interface CardTemplateStatus {
+  text: string;
+  state: CardTemplateBadgeState;
+}
+
 export interface CardTemplateSearch {
   placeholder: string;
 }
@@ -58,6 +63,9 @@ export interface CardTemplateConfig {
   header?: boolean;
   background?: CardTemplateBackground;
   badge?: CardTemplateBadge;
+  subtitle?: string;
+  status?: CardTemplateStatus;
+  contentScrollable?: boolean;
   search?: CardTemplateSearch;
   actions?: CardTemplateAction[];
   messageStrip?: CardTemplateMessageStrip;
@@ -302,6 +310,11 @@ export declare class MfpWcDashboardElement extends HTMLElement {
 
   /** Card catalogue: the cards the user may add via the Edit Cards dialog. Loose cards in `cards` are merged with the entry of the same id; loose cards without an entry are not rendered. */
   availableCards: CardConfig[];
+
+  beforeCardRequest?: (
+    request: Request,
+    cardId: string,
+  ) => Request | void | Promise<Request | void>;
 
   /** Extra action buttons rendered in the toolbar alongside the built-in ones. */
   customActions: ButtonSettings[];

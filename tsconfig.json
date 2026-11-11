@@ -17,6 +17,9 @@
     "paths": {
       "@openmfp/webcomponents/declarative-ui": [
         "./projects/ngx/declarative-ui/public-api.ts"
+      ],
+      "@openmfp/webcomponents/declarative-ui/dashboard": [
+        "./projects/ngx/declarative-ui/dashboard/index.ts"
       ]
     }
   },

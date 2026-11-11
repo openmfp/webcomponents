@@ -94,6 +94,7 @@ export class MyComponent {
 | Input                | Type                              | Required | Default       | Description                                                                                                                                                                                                   |
 | -------------------- | --------------------------------- | -------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `overflowMode`       | `'Scroll' \| 'Popin'`             | no       | `'Scroll'`    | Horizontal overflow behavior                                                                                                                                                                                  |
+| `appearance`         | `'default' \| 'card'`             | no       | `'default'`   | `'card'` renders every supplied row as passive, suppresses row click events and hides the pager, page-size selector and load-more controls.                                                                   |
 | `columns`            | `TableFieldDefinition[]`          | yes      | —             | Column definitions                                                                                                                                                                                            |
 | `resources`          | `GenericResource[]`               | yes      | —             | Data rows                                                                                                                                                                                                     |
 | `trackByPath`        | `string`                          | no       | `'id'`        | JSONPath (dot-notation) into each resource used as the row identity key                                                                                                                                       |
@@ -437,6 +438,7 @@ interface TableErrorConfig {
   title?: string; // Heading text rendered above the error illustration
   message?: string; // Subtitle text with additional context
   withRetryButton?: boolean; // When true, a Retry button is shown; clicking it emits the `retry` output
+  retryButtonText?: string; // Button label, defaults to 'Retry'
 }
 ```
 
