@@ -55,6 +55,7 @@ The script registers the custom elements globally. After it loads, use the tags 
 | `<mfp-wc-declarative-table-card>` | Table with card wrapper and create/edit/delete dialogs | [docs/declarative-table-card.md](https://github.com/openmfp/webcomponents/blob/main/docs/declarative-table-card.md) |
 | `<mfp-wc-data-fetch-table>`       | Table populated from local data or an HTTP response    | [docs/mfp-cards.md](https://github.com/openmfp/webcomponents/blob/main/docs/mfp-cards.md)                           |
 | `<mfp-wc-visited-service-card>`   | Recently visited services card                         | —                                                                                                                   |
+| `<mfp-wc-error-view>`             | Error state with an illustration, texts and buttons    | [docs/error-view.md](https://github.com/openmfp/webcomponents/blob/main/docs/error-view.md)                         |
 
 ### `mfp-wc-dashboard.js` — dashboard-only bundle
 

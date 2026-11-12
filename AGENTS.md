@@ -89,6 +89,7 @@ webcomponents/
 │   │   │                              #   FavoritesComponent, ServiceStatusCardComponent, WhatsNewComponent
 │   │   └── declarative-ui/
 │   │       ├── dashboard/             # Dashboard, DashboardCard, DashboardSection, AddCardDialog
+│   │       ├── error-view/            # ErrorView (illustration, texts and buttons from one config)
 │   │       ├── form/                  # DeclarativeForm (with submit() method)
 │   │       ├── table/                 # DeclarativeTable, ResourceField (boolean, link, secret, tag-list)
 │   │       └── table-card/            # DeclarativeTableCard (with dialog lifecycle methods)
@@ -114,6 +115,7 @@ New shared Angular components and services belong in `projects/ngx/`. New custom
 | `mfp-wc-declarative-table-card` | `DeclarativeTableCard` | `mfp-webcomponents.js`             |
 | `mfp-wc-data-fetch-table`       | `DataFetchTable`       | `mfp-webcomponents.js`             |
 | `mfp-wc-visited-service-card`   | `VisitedServiceCard`   | `mfp-webcomponents.js`             |
+| `mfp-wc-error-view`             | `ErrorView`            | `mfp-webcomponents.js`             |
 | `mfp-wc-dashboard`              | `Dashboard`            | `mfp-wc-dashboard.js` (standalone) |
 
 ## Code Conventions
