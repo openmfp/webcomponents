@@ -164,17 +164,11 @@ Inside the dashboard, every card with `componentTemplate` renders these IDs — 
 
 | Element             | `data-testid`             | Notes                                 |
 | ------------------- | ------------------------- | ------------------------------------- |
-| Root                | `error-view`              | Present when `illustration` is set    |
+| Root                | `error-view`              | Present when `config` is set          |
 | Illustrated message | `error-view-illustration` | The `ui5-illustrated-message` element |
 | Title               | `error-view-title`        |                                       |
 | Subtitle            | `error-view-subtitle`     |                                       |
 | Button              | `error-view-button-{key}` | `key` = `button.key`                  |
-
-------------------- | ------------------------- | ------------------------------------------ |
-| Root | `error-view` | Present when `illustration` is set |
-| Illustrated message | `error-view-illustration` | The `ui5-illustrated-message` element |
-| Title | `error-view-title` | |
-| Button | `error-view-button-{i}` | `i` = 0-based index in the `buttons` input |
 
 ---
 

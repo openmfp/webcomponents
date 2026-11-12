@@ -22,4 +22,10 @@ export class ErrorView<T extends ErrorViewButton = ErrorViewButton> {
   config = input<ErrorViewConfig<T>>();
 
   readonly buttonClick = output<T>();
+
+  protected onButtonClick(button: T): void {
+    if (!button.disabled) {
+      this.buttonClick.emit(button);
+    }
+  }
 }

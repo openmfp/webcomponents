@@ -143,7 +143,7 @@ Content placed inside the element is shown below the texts and above the buttons
 </mfp-error-view>
 ```
 
-The content is moved into the shadow root of `ErrorView`. Styles of a parent component that itself uses `ViewEncapsulation.ShadowDom` do not reach it there; styles of components with the default emulated encapsulation do.
+The content stays a child of the element and is shown through a slot, so the styles of the surrounding page or component still apply to it. Content that is added or removed later is picked up, also on `<mfp-wc-error-view>`.
 
 ---
 

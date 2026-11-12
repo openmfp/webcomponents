@@ -155,19 +155,50 @@ describe('ErrorView', () => {
     expect(emitted[0]).toBe(retry);
   });
 
-  it('projects content above the buttons', () => {
+  it('shows slotted content above the buttons', () => {
     const host = TestBed.createComponent(ProjectionHost);
     host.detectChanges();
     const errorView = host.nativeElement.querySelector(
       'mfp-error-view',
     ) as HTMLElement;
-    const actions = errorView.shadowRoot?.querySelector('.error-view-actions');
+    const slot = errorView.shadowRoot?.querySelector('.error-view-actions')
+      ?.firstElementChild as HTMLSlotElement;
+
+    expect(slot.localName).toBe('slot');
+    expect(
+      slot.assignedElements().map((el) => el.getAttribute('data-testid')),
+    ).toEqual(['projected']);
+    expect(slot.nextElementSibling?.className).toBe('error-view-buttons');
+  });
+
+  it('shows content that is added after the first render', () => {
+    const host = TestBed.createComponent(ProjectionHost);
+    host.detectChanges();
+    const errorView = host.nativeElement.querySelector(
+      'mfp-error-view',
+    ) as HTMLElement;
+    const late = document.createElement('span');
+    late.setAttribute('data-testid', 'late');
+
+    errorView.appendChild(late);
 
     expect(
-      [...(actions?.children ?? [])].map(
-        (child) => child.getAttribute('data-testid') ?? child.className,
-      ),
-    ).toEqual(['projected', 'error-view-buttons']);
+      errorView.shadowRoot
+        ?.querySelector('slot')
+        ?.assignedElements()
+        .map((el) => el.getAttribute('data-testid')),
+    ).toEqual(['projected', 'late']);
+  });
+
+  it('does not emit for a disabled button', () => {
+    const emitted: RouteButton[] = [];
+    component.buttonClick.subscribe((button) => emitted.push(button));
+    render({ illustration: 'NoEntries', buttons: [home] });
+
+    byTestId('error-view-button-home')?.dispatchEvent(new Event('click'));
+    byTestId('error-view-button-home')?.click();
+
+    expect(emitted).toEqual([]);
   });
 
   it('has no automatically-detectable accessibility violations', async () => {

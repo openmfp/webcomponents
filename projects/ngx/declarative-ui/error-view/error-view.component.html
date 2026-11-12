@@ -12,7 +12,7 @@
         <span data-testid="error-view-subtitle">{{ config.subtitle }}</span>
       </div>
       <div class="error-view-actions">
-        <ng-content />
+        <slot></slot>
         @if (config.buttons?.length) {
           <div class="error-view-buttons">
             @for (button of config.buttons; track button.key) {
@@ -21,7 +21,7 @@
                 [design]="button.design ?? 'Transparent'"
                 [disabled]="button.disabled ?? false"
                 [icon]="button.icon"
-                (click)="buttonClick.emit(button)"
+                (click)="onButtonClick(button)"
                 >{{ button.label }}</ui5-button
               >
             }
