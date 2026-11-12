@@ -87,6 +87,7 @@ describe('DataFetchTable', () => {
     ['null data', null],
     ['missing source', {}],
     ['invalid resource', { resource: null }],
+    ['path on a null resource', { resource: null, path: 'rows' }],
     ['missing match', { resource: nestedRows, path: 'missing' }],
     ['JSON Pointer', { resource: nestedRows, path: '/groups' }],
     [
@@ -94,6 +95,7 @@ describe('DataFetchTable', () => {
       { resource: nestedRows, path: 'groups[?(@.rows)].rows' },
     ],
     ['invalid row', { resource: [[]] }],
+    ['null row', { resource: [null] }],
     ['sparse rows', { resource: new Array(1) }],
     ['iterator-masked sparse rows', { resource: iteratorMaskedRows }],
   ])('clears rows and shows an error without Retry for %s', async (_, data) => {

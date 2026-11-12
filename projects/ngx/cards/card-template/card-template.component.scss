@@ -8,6 +8,13 @@ $inner-corner-radius: calc(
   min-width: 0;
 }
 
+:host(:has(mfp-data-fetch-list, mfp-wc-data-fetch-list))
+  > .mfp-card-template
+  > .mfp-card-template__header
+  > .mfp-card-template__status {
+  padding-block-end: 0.25rem;
+}
+
 .mfp-card-template {
   position: relative;
   display: flex;

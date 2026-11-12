@@ -1,0 +1,9 @@
+{
+  "subaccounts": [
+    { "id": "subaccount-a", "name": "Subaccount A" },
+    { "id": "subaccount-b", "name": "Subaccount B" },
+    { "id": "subaccount-c", "name": "Subaccount C" }
+  ],
+  "empty": [],
+  "invalid": ["Subaccount A"]
+}
