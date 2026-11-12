@@ -6,6 +6,7 @@ import {
   DeclarativeForm,
   DeclarativeTable,
   DeclarativeTableCard,
+  ErrorView,
   GenericResource,
   ResourceFormPatch,
 } from '@openmfp/webcomponents/declarative-ui';
@@ -105,4 +106,9 @@ ignoreCustomElements('mfp');
     'mfp-wc-visited-service-card',
     VisitedServiceCardElement,
   );
+
+  const ErrorViewElement = createCustomElement(ErrorView, {
+    injector: app.injector,
+  });
+  customElements.define('mfp-wc-error-view', ErrorViewElement);
 })();

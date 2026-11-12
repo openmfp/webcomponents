@@ -160,6 +160,18 @@ Inside the dashboard, every card with `componentTemplate` renders these IDs — 
 
 ---
 
+### ErrorView (`error-view-*`)
+
+| Element             | `data-testid`             | Notes                                 |
+| ------------------- | ------------------------- | ------------------------------------- |
+| Root                | `error-view`              | Present when `config` is set          |
+| Illustrated message | `error-view-illustration` | The `ui5-illustrated-message` element |
+| Title               | `error-view-title`        |                                       |
+| Subtitle            | `error-view-subtitle`     |                                       |
+| Button              | `error-view-button-{key}` | `key` = `button.key`                  |
+
+---
+
 ### ResourceField (`resource-field-*`)
 
 `ResourceField` derives its test ID from `fieldDefinition.property` at runtime:

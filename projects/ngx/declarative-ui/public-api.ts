@@ -1,6 +1,7 @@
 export * from './dashboard';
 export * from './data-fetch-table';
 export * from './dialogs';
+export * from './error-view';
 export * from './form';
 export * from './models';
 export * from './pipes';

@@ -1,0 +1,33 @@
+@if (config(); as config) {
+  <div class="error-view" data-testid="error-view">
+    <ui5-illustrated-message
+      data-testid="error-view-illustration"
+      role="status"
+      [name]="config.illustration"
+    >
+      <ui5-title data-testid="error-view-title" level="H1" slot="title">{{
+        config.title
+      }}</ui5-title>
+      <div slot="subtitle">
+        <span data-testid="error-view-subtitle">{{ config.subtitle }}</span>
+      </div>
+      <div class="error-view-actions">
+        <slot></slot>
+        @if (config.buttons?.length) {
+          <div class="error-view-buttons">
+            @for (button of config.buttons; track button.key) {
+              <ui5-button
+                [attr.data-testid]="'error-view-button-' + button.key"
+                [design]="button.design ?? 'Transparent'"
+                [disabled]="button.disabled ?? false"
+                [icon]="button.icon"
+                (click)="onButtonClick(button)"
+                >{{ button.label }}</ui5-button
+              >
+            }
+          </div>
+        }
+      </div>
+    </ui5-illustrated-message>
+  </div>
+}

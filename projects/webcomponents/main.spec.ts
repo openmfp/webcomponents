@@ -99,7 +99,7 @@ describe('webcomponents/main.ts', () => {
       expect(ignoreCustomElements).toHaveBeenCalledWith('mfp');
     });
 
-    it('registers all five web-component elements under their mfp-wc-* tags', async () => {
+    it('registers all six web-component elements under their mfp-wc-* tags', async () => {
       const defined = await importMain();
 
       expect([...defined.keys()].sort()).toEqual([
@@ -107,6 +107,7 @@ describe('webcomponents/main.ts', () => {
         'mfp-wc-declarative-form',
         'mfp-wc-declarative-table',
         'mfp-wc-declarative-table-card',
+        'mfp-wc-error-view',
         'mfp-wc-visited-service-card',
       ]);
     });
@@ -115,7 +116,7 @@ describe('webcomponents/main.ts', () => {
       await importMain();
 
       expect(createApplication).toHaveBeenCalledTimes(1);
-      expect(createCustomElement).toHaveBeenCalledTimes(5);
+      expect(createCustomElement).toHaveBeenCalledTimes(6);
       for (const call of createCustomElement.mock.calls) {
         expect(call[1]).toEqual({ injector: {} });
       }
