@@ -7,7 +7,7 @@
     "url": "git+https://github.com/openmfp/webcomponents.git"
   },
   "dependencies": {
-    "gridstack": "^14.0.0",
+    "gridstack": "^14.1.0",
     "tslib": "2.9.1"
   },
   "peerDependencies": {
