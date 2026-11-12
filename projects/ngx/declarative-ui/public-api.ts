@@ -1,4 +1,5 @@
 export * from './dashboard';
+export * from './data-fetch-list';
 export * from './data-fetch-table';
 export * from './dialogs';
 export * from './form';

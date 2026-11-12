@@ -1,0 +1,43 @@
+@if (descriptionText(); as text) {
+  <p class="description">{{ text }}</p>
+}
+
+@let loadFailure = failure();
+@let items = rows();
+
+<div role="status">
+  @if (loading()) {
+    <div class="loading">
+      <ui5-busy-indicator active size="S" [delay]="0" />
+      <span>Loading list items…</span>
+    </div>
+  } @else if (data() !== undefined && !loadFailure && !items.length) {
+    <p>No items to display.</p>
+  }
+</div>
+
+<div role="alert">
+  @if (loadFailure) {
+    <p class="error-title">{{ errorTitle() }}</p>
+    <p>{{ errorMessage() }}</p>
+  }
+</div>
+
+@if (loadFailure?.retryable) {
+  <ui5-button design="Emphasized" (click)="retry()">
+    {{ retryButtonText() }}
+  </ui5-button>
+}
+
+@if (items.length) {
+  <ul role="list">
+    @for (item of items; track $index) {
+      <li>
+        <mfp-resource-field
+          [fieldDefinition]="fieldDefinition()"
+          [resource]="item"
+        />
+      </li>
+    }
+  </ul>
+}

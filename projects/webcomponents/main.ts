@@ -2,6 +2,7 @@ import { VisitedServiceCard } from '../ngx/cards/visited-service-card/visited-se
 import { createCustomElement } from '@angular/elements';
 import { createApplication } from '@angular/platform-browser';
 import {
+  DataFetchList,
   DataFetchTable,
   DeclarativeForm,
   DeclarativeTable,
@@ -25,6 +26,11 @@ ignoreCustomElements('mfp');
     injector: app.injector,
   });
   customElements.define('mfp-wc-data-fetch-table', DataFetchTableElement);
+
+  const DataFetchListElement = createCustomElement(DataFetchList, {
+    injector: app.injector,
+  });
+  customElements.define('mfp-wc-data-fetch-list', DataFetchListElement);
 
   const DeclarativeFormElementBase = createCustomElement(DeclarativeForm, {
     injector: app.injector,
