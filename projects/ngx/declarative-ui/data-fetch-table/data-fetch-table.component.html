@@ -1,16 +1,26 @@
-<mfp-data-fetch-metadata
-  [lastUpdated]="lastUpdated()"
-  [snapshot]="snapshot()"
-  [status]="status()"
-/>
+@if (loading()) {
+  <div class="loading">
+    <ui5-busy-indicator active size="M" [delay]="0" />
+  </div>
+} @else if (errorConfig(); as config) {
+  <div class="state">
+    <mfp-error-view [config]="config" (buttonClick)="retry($event.key)" />
+  </div>
+} @else if (!rows().length) {
+  <div class="state">
+    <mfp-error-view [config]="emptyConfig()" />
+  </div>
+} @else {
+  <mfp-data-fetch-metadata
+    [lastUpdated]="lastUpdated()"
+    [snapshot]="snapshot()"
+    [status]="status()"
+  />
 
-<mfp-declarative-table
-  appearance="card"
-  [columns]="columns()"
-  [error]="error()"
-  [loading]="loading()"
-  [loadingDelay]="0"
-  [resources]="rows()"
-  [trackByPath]="trackByPath() ?? 'id'"
-  (retry)="retry()"
-/>
+  <mfp-declarative-table
+    appearance="card"
+    [columns]="columns()"
+    [resources]="rows()"
+    [trackByPath]="trackByPath() ?? 'id'"
+  />
+}

@@ -14,3 +14,27 @@ mfp-declarative-table {
   --mfp_tableCardPrimaryLinkWeight: 700;
   grid-row: 2;
 }
+
+.loading,
+.state {
+  grid-row: 1 / -1;
+  min-block-size: 0;
+}
+
+.loading {
+  display: grid;
+  place-items: center;
+}
+
+.state {
+  overflow: auto;
+  overflow-wrap: anywhere;
+}
+
+.state > mfp-error-view {
+  display: grid;
+  align-content: center;
+  block-size: auto;
+  min-block-size: 100%;
+  min-inline-size: 0;
+}

@@ -10,6 +10,13 @@
   overflow-wrap: anywhere;
 }
 
+:host(.showing-state) {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  block-size: 100%;
+  min-block-size: 0;
+}
+
 p,
 ul {
   margin: 0;
@@ -40,15 +47,19 @@ mfp-resource-field {
 }
 
 .loading {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  display: grid;
+  place-items: center;
 }
 
-.error-title {
-  font-weight: 700;
+.state {
+  overflow: auto;
+  overflow-wrap: anywhere;
 }
 
-ui5-button {
-  margin-block-start: 0.5rem;
+.state > mfp-error-view {
+  display: grid;
+  align-content: center;
+  block-size: auto;
+  min-block-size: 100%;
+  min-inline-size: 0;
 }
