@@ -100,7 +100,7 @@ describe('webcomponents/main.ts', () => {
       expect(ignoreCustomElements).toHaveBeenCalledWith('mfp');
     });
 
-    it('registers all six web-component elements under their mfp-wc-* tags', async () => {
+    it('registers the web components under their mfp-wc-* tags', async () => {
       const defined = await importMain();
 
       expect([...defined.keys()].sort()).toEqual([
@@ -129,12 +129,12 @@ describe('webcomponents/main.ts', () => {
     });
 
     it('creates every element from the shared application injector', async () => {
-      await importMain();
+      const defined = await importMain();
 
       expect(createApplication).toHaveBeenCalledTimes(1);
-      expect(createCustomElement).toHaveBeenCalledTimes(6);
+      expect(createCustomElement).toHaveBeenCalledTimes(defined.size);
       for (const call of createCustomElement.mock.calls) {
-        expect(call[1]).toEqual({ injector: {} });
+        expect(call[1].injector).toBe(applicationInjector);
       }
     });
   });

@@ -1,5 +1,5 @@
 import { CardTemplate } from '../../../cards/card-template/card-template.component';
-import type { BeforeRequest } from '../../data-fetch-table/data-fetch-table.model';
+import type { AfterRequestHook, BeforeRequest } from '../../data-fetch-table';
 import { DASHBOARD_CARD_DRAG_ORIGIN_CLASS } from '../constants';
 import { DashboardI18nService } from '../i18n';
 import { CardConfig } from '../models';
@@ -112,9 +112,10 @@ describe('DashboardCard', () => {
     expect(element?.count).toBe(3);
   });
 
-  it('forwards the latest request hook and card ID without remounting the web component', async () => {
+  it('forwards the latest request hooks and card ID without remounting the web component', async () => {
     class RequestAwareWidget extends HTMLElement {
       beforeRequest?: BeforeRequest;
+      afterRequestHook?: AfterRequestHook;
       data?: object;
     }
     customElements.define('request-aware-widget', RequestAwareWidget);
@@ -124,12 +125,16 @@ describe('DashboardCard', () => {
     const request = new Request('https://example.test/rows');
     const firstHook = vi.fn();
     const secondHook = vi.fn(() => request);
+    const response = { items: [] };
+    const firstAfterHook = vi.fn();
+    const secondAfterHook = vi.fn(async () => ({ items: [{ id: 'mapped' }] }));
     fixture.componentRef.setInput('card', {
       id: 'orders',
       component: 'request-aware-widget',
       componentInputs: { data },
     });
     fixture.componentRef.setInput('beforeCardRequest', firstHook);
+    fixture.componentRef.setInput('afterCardRequest', firstAfterHook);
     await fixture.whenStable();
 
     const widget = root(fixture).querySelector<RequestAwareWidget>(
@@ -139,14 +144,25 @@ describe('DashboardCard', () => {
     expect(widget?.beforeRequest).toBeTypeOf('function');
     widget?.beforeRequest?.(request);
     expect(firstHook).toHaveBeenCalledWith(request, 'orders');
+    const afterRequestHook = widget?.afterRequestHook;
+    expect(afterRequestHook).toBeTypeOf('function');
+    afterRequestHook?.(response);
+    expect(firstAfterHook).toHaveBeenCalledExactlyOnceWith(response, 'orders');
 
     fixture.componentRef.setInput('beforeCardRequest', secondHook);
+    fixture.componentRef.setInput('afterCardRequest', secondAfterHook);
     await fixture.whenStable();
 
     expect(root(fixture).querySelector('request-aware-widget')).toBe(widget);
     expect(secondHook).not.toHaveBeenCalled();
     expect(widget?.beforeRequest?.(request)).toBe(request);
     expect(secondHook).toHaveBeenCalledWith(request, 'orders');
+    expect(widget?.afterRequestHook).toBe(afterRequestHook);
+    expect(secondAfterHook).not.toHaveBeenCalled();
+    await expect(afterRequestHook?.(response)).resolves.toEqual({
+      items: [{ id: 'mapped' }],
+    });
+    expect(secondAfterHook).toHaveBeenCalledExactlyOnceWith(response, 'orders');
   });
 
   it('replaces the rendered dynamic component when the card definition changes', () => {

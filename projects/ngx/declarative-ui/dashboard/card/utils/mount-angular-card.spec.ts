@@ -1,3 +1,4 @@
+import type { AfterRequestHook } from '../../../data-fetch-table';
 import { CardConfig } from '../../models';
 import {
   addComponentToRegistry,
@@ -20,6 +21,7 @@ import {
 class TestAngularCard {
   title = input<string>();
   count = input<number>();
+  afterRequestHook = input<AfterRequestHook>();
 }
 
 @Component({
@@ -104,14 +106,29 @@ describe('mountAngularCard', () => {
   it('calls setInput for each provided componentInput', () => {
     const { vcr, setInput } = makeMockVcr();
     const { onCleanup } = makeCleanup();
+    const cardHook = vi.fn<AfterRequestHook>();
+    const dashboardHook = vi.fn<AfterRequestHook>();
     mountAngularCard(
-      makeCfg({ componentInputs: { title: 'Pods', count: 3 } }),
+      makeCfg({
+        componentInputs: {
+          title: 'Pods',
+          count: 3,
+          afterRequestHook: cardHook,
+        },
+      }),
       vcr,
       onCleanup,
+      undefined,
+      undefined,
+      dashboardHook,
     );
 
     expect(setInput).toHaveBeenCalledWith('title', 'Pods');
     expect(setInput).toHaveBeenCalledWith('count', 3);
+    expect(setInput).toHaveBeenLastCalledWith(
+      'afterRequestHook',
+      dashboardHook,
+    );
   });
 
   it('warns and skips unknown inputs in dev mode', () => {
@@ -129,6 +146,25 @@ describe('mountAngularCard', () => {
       expect.stringContaining('unknownProp'),
     );
     expect(setInput).not.toHaveBeenCalled();
+  });
+
+  it('skips the response hook for an Angular component without the input', () => {
+    addComponentToRegistry([TestSizingCard]);
+    const { vcr, setInput } = makeMockVcr();
+    const { onCleanup, runCleanup } = makeCleanup();
+    mountAngularCard(
+      makeCfg({ component: 'mfp-test-sizing-card' }),
+      vcr,
+      onCleanup,
+      undefined,
+      undefined,
+      vi.fn(),
+    );
+    expect(setInput).not.toHaveBeenCalledWith(
+      'afterRequestHook',
+      expect.anything(),
+    );
+    runCleanup();
   });
 
   it('reports the component instance through onMounted', () => {

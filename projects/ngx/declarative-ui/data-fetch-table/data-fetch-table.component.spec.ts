@@ -40,6 +40,13 @@ describe('DataFetchTable', () => {
       ?.textContent;
   }
 
+  function metadataText(testId: 'subtitle' | 'status'): string | undefined {
+    const host: HTMLElement = fixture.nativeElement;
+    return host.shadowRoot
+      ?.querySelector(`[data-testid="card-template-${testId}"]`)
+      ?.textContent?.trim();
+  }
+
   async function setData(data: unknown): Promise<void> {
     fixture.componentRef.setInput('data', data);
     await fixture.whenStable();
@@ -59,12 +66,25 @@ describe('DataFetchTable', () => {
   });
 
   it('renders local root and nested first-match rows without running a request', async () => {
+    const afterRequestHook = vi.fn();
+    fixture.componentRef.setInput('afterRequestHook', afterRequestHook);
+    fixture.componentRef.setInput('lastUpdated', {
+      label: 'Last updated:',
+      text: '30 minutes ago',
+    });
+    fixture.componentRef.setInput('status', {
+      text: '{{$length}} destinations',
+      state: 'Critical',
+    });
     await fixture.whenStable();
     expect(element('view-nodata')).not.toBeNull();
     expect(element('view-error')).toBeNull();
+    expect(metadataText('subtitle')).toBe('Last updated: 30 minutes ago');
+    expect(metadataText('status')).toBeUndefined();
 
     await setData({ resource: localRows });
     expect(rowText()).toContain('local');
+    expect(metadataText('status')).toBe('1 destinations');
 
     for (const path of ['groups[*].rows', '$.groups[0].rows']) {
       await setData({ request: undefined, resource: nestedRows, path });
@@ -80,6 +100,7 @@ describe('DataFetchTable', () => {
     expect(element('view-nodata')).not.toBeNull();
     expect(element('view-error')).toBeNull();
     expect(hook).not.toHaveBeenCalled();
+    expect(afterRequestHook).not.toHaveBeenCalled();
     expect(fetch).not.toHaveBeenCalled();
   });
 
@@ -113,6 +134,15 @@ describe('DataFetchTable', () => {
     const pending = deferred<Response>();
     fetch.mockReturnValueOnce(pending.promise);
     const readResource = vi.fn(() => nestedRows);
+    const afterRequestHook = vi.fn(async () => ({
+      groups: [{ rows: [{ id: 'mapped' }] }],
+      total: 42,
+    }));
+    fixture.componentRef.setInput('afterRequestHook', afterRequestHook);
+    fixture.componentRef.setInput('status', {
+      text: '{{$length}} destinations',
+      state: 'Neutral',
+    });
 
     await setData({
       request,
@@ -122,10 +152,30 @@ describe('DataFetchTable', () => {
       path: 'groups[0].rows',
     });
     expect(element('view-loading')).not.toBeNull();
+    expect(metadataText('status')).toBeUndefined();
 
     pending.resolve(Response.json({ groups: [{ rows: [{ id: 'remote' }] }] }));
     await vi.waitFor(() => {
-      expect(rowText()).toContain('remote');
+      expect(rowText()).toContain('mapped');
+    });
+    expect(metadataText('status')).toBe('1 destinations');
+
+    fixture.componentRef.setInput('status', {
+      text: '{{response.total}} destinations',
+      state: 'Neutral',
+    });
+    await fixture.whenStable();
+    expect(metadataText('status')).toBe('42 destinations');
+
+    fixture.componentRef.setInput('lastUpdated', {
+      label: 'Last updated:',
+      text: 'yesterday',
+    });
+    await fixture.whenStable();
+    expect(metadataText('subtitle')).toBe('Last updated: yesterday');
+    expect(metadataText('status')).toBe('42 destinations');
+    expect(afterRequestHook).toHaveBeenCalledExactlyOnceWith({
+      groups: [{ rows: [{ id: 'remote' }] }],
     });
     expect(readResource).not.toHaveBeenCalled();
     expect(hook).toHaveBeenCalledTimes(1);

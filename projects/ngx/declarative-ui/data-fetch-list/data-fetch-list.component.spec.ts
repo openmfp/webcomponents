@@ -1,3 +1,4 @@
+import type { JsonValue } from '../../services/data-fetch.model';
 import { DataFetchList } from './data-fetch-list.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
@@ -35,6 +36,7 @@ describe('DataFetchList', () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('renders full rows as ordered links and updates their presentation without fetching again', async () => {
@@ -166,6 +168,61 @@ describe('DataFetchList', () => {
     expect(loadError).toHaveBeenCalledTimes(1);
   });
 
+  it('renders mapped rows and response metadata and updates presentation without fetching again', async () => {
+    vi.spyOn(Date, 'now').mockReturnValue(Date.parse('2026-11-13T13:29:00Z'));
+    const payload = { total: 42, rows: [{ label: 'Subaccount A' }] };
+    const afterRequestHook = vi.fn(async (response: JsonValue) => ({
+      result: response,
+      updates: [{ at: '2026-11-13T12:59:00Z' }],
+    }));
+    fetch.mockResolvedValueOnce(Response.json(payload));
+    fixture.componentRef.setInput('afterRequestHook', afterRequestHook);
+    fixture.componentRef.setInput('data', { request, path: '$.result.rows' });
+    fixture.componentRef.setInput('lastUpdated', {
+      label: 'Actualizado:',
+      path: '$.updates[0].at',
+      locale: 'es',
+    });
+    fixture.componentRef.setInput('status', {
+      text: '{{response.result.total}} affected ({{$length}} shown)',
+      state: 'Critical',
+    });
+
+    const root = shadowRoot(fixture);
+    const subtitle = () =>
+      root.querySelector('[data-testid="card-template-subtitle"]');
+    const status = () =>
+      root.querySelector('[data-testid="card-template-status"]');
+    await vi.waitFor(() => {
+      expect(rowFields(root)[0]?.shadowRoot?.textContent).toContain(
+        'Subaccount A',
+      );
+    });
+    expect(afterRequestHook).toHaveBeenCalledExactlyOnceWith(payload);
+    expect(subtitle()?.textContent?.trim()).toBe(
+      'Actualizado: hace 30 minutos',
+    );
+    expect(status()?.textContent?.trim()).toBe('42 affected (1 shown)');
+
+    fixture.componentRef.setInput('lastUpdated', {
+      label: 'Updated:',
+      text: 'just now',
+    });
+    await fixture.whenStable();
+    expect(subtitle()?.textContent?.trim()).toBe('Updated: just now');
+    expect(status()?.textContent?.trim()).toBe('42 affected (1 shown)');
+
+    fixture.componentRef.setInput('status', {
+      text: '{{$length}} subaccount',
+      state: 'Neutral',
+    });
+    await fixture.whenStable();
+    expect(status()?.textContent?.trim()).toBe('1 subaccount');
+    expect(subtitle()?.textContent?.trim()).toBe('Updated: just now');
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(afterRequestHook).toHaveBeenCalledTimes(1);
+  });
+
   it.each([
     ['an empty array', () => Response.json([]), undefined],
     [
@@ -174,9 +231,16 @@ describe('DataFetchList', () => {
       'subaccounts',
     ],
   ] as const)('shows the empty state for %s', async (_, response, path) => {
+    fixture.componentRef.setInput('status', {
+      text: '{{$length}} subaccounts',
+      state: 'Neutral',
+    });
     await fixture.whenStable();
     const root = shadowRoot(fixture);
+    const status = () =>
+      root.querySelector('[data-testid="card-template-status"]');
     expect(root.querySelector('[role="status"]')?.textContent?.trim()).toBe('');
+    expect(status()).toBeNull();
 
     fetch.mockResolvedValueOnce(response());
     fixture.componentRef.setInput('data', { request, path });
@@ -187,6 +251,7 @@ describe('DataFetchList', () => {
     });
     expect(root.querySelector('[role="alert"]')?.textContent?.trim()).toBe('');
     expect(root.querySelector('ul')).toBeNull();
+    expect(status()?.textContent?.trim()).toBe('0 subaccounts');
   });
 
   it('rejects a fetched string array with a retryable load error', async () => {

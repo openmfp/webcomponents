@@ -1,5 +1,10 @@
 import { DataFetchRowsService } from './data-fetch-rows.service';
-import type { BeforeRequest, CardRequest } from './data-fetch.model';
+import type {
+  AfterRequestHook,
+  BeforeRequest,
+  CardRequest,
+  JsonValue,
+} from './data-fetch.model';
 import { DataFetchHttpError, DataFetchService } from './data-fetch.service';
 import { type WritableSignal, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -10,6 +15,7 @@ const rows = [{ label: 'Current row' }];
 describe('DataFetchRowsService', () => {
   let service: DataFetchRowsService;
   let data: WritableSignal<{ request: CardRequest } | undefined>;
+  let mapper: WritableSignal<AfterRequestHook | undefined>;
   const fetchData = vi.fn<DataFetchService['fetchData']>();
   const onFailure = vi.fn();
 
@@ -17,6 +23,7 @@ describe('DataFetchRowsService', () => {
     fetchData.mockReset();
     onFailure.mockReset();
     data = signal(undefined);
+    mapper = signal(undefined);
     TestBed.configureTestingModule({
       providers: [
         DataFetchRowsService,
@@ -29,6 +36,7 @@ describe('DataFetchRowsService', () => {
         data,
         signal<BeforeRequest | undefined>(undefined),
         onFailure,
+        { afterRequestHook: mapper },
       );
     });
   });
@@ -88,6 +96,73 @@ describe('DataFetchRowsService', () => {
     expect(service.rows()).toEqual(rows);
     expect(service.failure()).toBeNull();
     expect(service.loading()).toBe(false);
+    expect(onFailure).not.toHaveBeenCalled();
+  });
+
+  it('publishes the mapped snapshot on retry after a mapper error', async () => {
+    const raw = [{ label: 'Unmapped row' }];
+    const afterRequestHook = vi
+      .fn<AfterRequestHook>()
+      .mockRejectedValueOnce(new Error('Mapper failed'))
+      .mockResolvedValueOnce(rows);
+    mapper.set(afterRequestHook);
+    fetchData.mockImplementation(async (_request, attempt) =>
+      attempt.afterRequestHook?.(raw),
+    );
+    data.set({ request });
+    TestBed.tick();
+
+    await vi.waitFor(() => {
+      expect(onFailure).toHaveBeenCalledExactlyOnceWith({
+        status: undefined,
+        retryable: true,
+      });
+    });
+    expect(service.snapshot()).toBeUndefined();
+
+    service.retry();
+    TestBed.tick();
+    await vi.waitFor(() => {
+      expect(service.snapshot()).toEqual({ rows, response: rows });
+    });
+    expect(afterRequestHook).toHaveBeenNthCalledWith(1, raw);
+    expect(afterRequestHook).toHaveBeenNthCalledWith(2, raw);
+    expect(service.failure()).toBeNull();
+  });
+
+  it('skips a mapper if its input changes before cleanup and ignores its stale completion', async () => {
+    const raw = [{ label: 'Unmapped row' }];
+    let resolveMapping: (result: JsonValue) => void = () => {
+      throw new Error('Deferred promise was not initialized.');
+    };
+    const pending = new Promise<JsonValue>((resolve) => {
+      resolveMapping = resolve;
+    });
+    const firstHook = vi.fn<AfterRequestHook>(() => pending);
+    const nextHook = vi.fn<AfterRequestHook>(() => rows);
+    mapper.set(firstHook);
+    fetchData.mockImplementation(async (_request, attempt) =>
+      attempt.afterRequestHook?.(raw),
+    );
+    data.set({ request });
+    TestBed.tick();
+    expect(firstHook).toHaveBeenCalledExactlyOnceWith(raw);
+
+    mapper.set(nextHook);
+    const obsoleteAttempt = fetchData.mock.calls[0][1];
+    expect(obsoleteAttempt.afterRequestHook?.(raw)).toBeUndefined();
+    TestBed.tick();
+    await vi.waitFor(() => {
+      expect(service.snapshot()).toEqual({ rows, response: rows });
+    });
+    expect(obsoleteAttempt.signal.aborted).toBe(true);
+
+    resolveMapping([{ label: 'Stale row' }]);
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+    expect(firstHook).toHaveBeenCalledTimes(1);
+    expect(nextHook).toHaveBeenCalledExactlyOnceWith(raw);
+    expect(service.snapshot()).toEqual({ rows, response: rows });
     expect(onFailure).not.toHaveBeenCalled();
   });
 });
