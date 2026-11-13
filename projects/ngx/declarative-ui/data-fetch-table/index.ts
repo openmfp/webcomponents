@@ -1,9 +1,17 @@
+export type {
+  CardStatus,
+  CardStatusState,
+} from '../../models/card-status.model';
+export type { DataFetchLastUpdated } from '../data-fetch-metadata/data-fetch-metadata.model';
 export { DataFetchTable } from './data-fetch-table.component';
 export type {
+  AfterCardRequest,
+  AfterRequestHook,
   BeforeCardRequest,
   BeforeRequest,
   CardRequest,
-  DataFetchTableData,
-  DataFetchTableLoadError,
+  DataFetchLoadError,
+  DataFetchLoadError as DataFetchTableLoadError,
   JsonValue,
-} from './data-fetch-table.model';
+} from '../../services/data-fetch.model';
+export type { DataFetchTableData } from './data-fetch-table.model';

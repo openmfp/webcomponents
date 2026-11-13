@@ -1,4 +1,7 @@
-import { BeforeCardRequest } from '../../data-fetch-table/data-fetch-table.model';
+import type {
+  AfterCardRequest,
+  BeforeCardRequest,
+} from '../../../services/data-fetch.model';
 import { ButtonSettings } from '../../models';
 import { DashboardCard } from '../card/dashboard-card.component';
 import { addComponentToRegistry } from '../card/utils';
@@ -122,6 +125,7 @@ export class Dashboard implements OnInit, OnDestroy {
   cards = model<CardConfig[]>([]);
   availableCards = input<CardConfig[]>([]);
   beforeCardRequest = input<BeforeCardRequest>();
+  afterCardRequest = input<AfterCardRequest>();
   customActions = input<ButtonSettings[]>([]);
   i18n = input<DashboardTranslations | null | undefined>(EN_DEFAULTS);
   loading = input(false, { transform: booleanAttribute });

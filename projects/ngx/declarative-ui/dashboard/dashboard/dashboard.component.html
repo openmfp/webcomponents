@@ -195,6 +195,7 @@
       <div class="mfp-sections-container">
         @for (section of sections(); track section.id) {
           <mfp-dashboard-section
+            [afterCardRequest]="afterCardRequest()"
             [beforeCardRequest]="beforeCardRequest()"
             [cards]="sectionCards()(section.id)"
             [editMode]="editMode()"
@@ -287,6 +288,7 @@
             (keydown)="onCardKeydown($event, card.id)"
           >
             <mfp-dashboard-card
+              [afterCardRequest]="afterCardRequest()"
               [beforeCardRequest]="beforeCardRequest()"
               [card]="card"
               [editMode]="editMode()"

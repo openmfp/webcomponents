@@ -1,5 +1,5 @@
 export { DataFetchList } from './data-fetch-list.component';
 export type {
-  DataFetchListData,
-  DataFetchListLoadError,
-} from './data-fetch-list.model';
+  DataFetchLoadError as DataFetchListLoadError,
+  DataFetchRequestData as DataFetchListData,
+} from '../../services/data-fetch.model';

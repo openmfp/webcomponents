@@ -1,7 +1,8 @@
+import type { CardStatusState } from '../../models/card-status.model';
+
 export type CardTemplateBackground = 'solid' | 'transparent';
 
-export type CardTemplateBadgeState =
-  'Neutral' | 'Information' | 'Positive' | 'Negative' | 'Critical';
+export type CardTemplateBadgeState = CardStatusState;
 
 export type CardTemplateMessageStripType =
   'Information' | 'Positive' | 'Negative' | 'Critical';
@@ -9,11 +10,6 @@ export type CardTemplateMessageStripType =
 export interface CardTemplateBadge {
   text: string;
   state?: CardTemplateBadgeState;
-}
-
-export interface CardTemplateStatus {
-  text: string;
-  state: CardTemplateBadgeState;
 }
 
 export interface CardTemplateSearch {
@@ -34,8 +30,6 @@ export interface CardTemplateConfig {
   header?: boolean;
   background?: CardTemplateBackground;
   badge?: CardTemplateBadge;
-  subtitle?: string;
-  status?: CardTemplateStatus;
   contentScrollable?: boolean;
   search?: CardTemplateSearch;
   actions?: CardTemplateAction[];

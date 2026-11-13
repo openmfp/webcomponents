@@ -40,11 +40,6 @@ export interface CardTemplateBadge {
   state?: CardTemplateBadgeState;
 }
 
-export interface CardTemplateStatus {
-  text: string;
-  state: CardTemplateBadgeState;
-}
-
 export interface CardTemplateSearch {
   placeholder: string;
 }
@@ -63,8 +58,6 @@ export interface CardTemplateConfig {
   header?: boolean;
   background?: CardTemplateBackground;
   badge?: CardTemplateBadge;
-  subtitle?: string;
-  status?: CardTemplateStatus;
   contentScrollable?: boolean;
   search?: CardTemplateSearch;
   actions?: CardTemplateAction[];
@@ -289,6 +282,19 @@ export interface MfpWcDashboardEventMap {
 // Element class declaration
 // ---------------------------------------------------------------------------
 
+export type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | readonly JsonValue[]
+  | { readonly [key: string]: JsonValue };
+
+export type AfterCardRequest = (
+  response: JsonValue,
+  cardId: string,
+) => JsonValue | void | Promise<JsonValue | void>;
+
 /**
  * The `<mfp-wc-dashboard>` custom element.
  *
@@ -315,6 +321,8 @@ export declare class MfpWcDashboardElement extends HTMLElement {
     request: Request,
     cardId: string,
   ) => Request | void | Promise<Request | void>;
+
+  afterCardRequest?: AfterCardRequest;
 
   /** Extra action buttons rendered in the toolbar alongside the built-in ones. */
   customActions: ButtonSettings[];
