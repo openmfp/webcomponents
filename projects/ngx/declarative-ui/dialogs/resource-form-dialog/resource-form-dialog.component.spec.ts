@@ -1,5 +1,6 @@
 import { ResourceFormDialog } from './resource-form-dialog.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { renderFinished } from '@ui5/webcomponents-base/dist/Render.js';
 import { axe } from 'vitest-axe';
 
 describe('ResourceFormDialog', () => {
@@ -27,6 +28,8 @@ describe('ResourceFormDialog', () => {
   });
 
   it('has no automatically-detectable accessibility violations', async () => {
+    await renderFinished();
+
     expect(await axe(fixture.nativeElement)).toHaveNoViolations();
   });
 

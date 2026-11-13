@@ -118,7 +118,7 @@ describe('DeclarativeTable', () => {
           'ui5-table-header-cell',
         ),
       );
-      table.headerRow.push(headerRow);
+      Object.defineProperty(table, 'headerRow', { value: [headerRow] });
       const configuredTracks = table._gridTemplateColumns;
       // Compare with native UI5's omitted-minWidth behavior. This also avoids
       // relying on jsdom's different validation of CSS auto column widths.

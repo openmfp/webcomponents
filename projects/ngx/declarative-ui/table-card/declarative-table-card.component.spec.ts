@@ -1661,7 +1661,13 @@ describe('DeclarativeTableCard', () => {
     });
 
     it('derives a table height from the space the container offers', () => {
-      const { fixture } = setup({ contentHeight: 300 });
+      const { fixture, component } = setup({ contentHeight: 300 });
+      const withChrome = component as unknown as {
+        chromeHeight: { set: (value: number) => void };
+      };
+
+      withChrome.chromeHeight.set(0);
+      fixture.detectChanges();
 
       expect(tableOf(fixture).height()).toBe(300);
     });
