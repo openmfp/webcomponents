@@ -1,20 +1,36 @@
+import { Dashboard } from '../dashboard/dashboard/dashboard.component';
+import { EN_DEFAULTS } from '../dashboard/i18n';
+import type { CardConfig, DashboardConfig } from '../dashboard/models';
 import { DataFetchList, type DataFetchListData } from '../data-fetch-list';
-import type { BeforeRequest } from '../data-fetch-table';
+import type { BeforeCardRequest } from '../data-fetch-table';
 import type { FieldDefinition } from '../models';
 import { SUBACCOUNTS_LIST_INPUTS } from './subaccounts-list.config';
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+} from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
+
+Dashboard.registerAngularComponents([DataFetchList]);
+
+const dashboardConfig: DashboardConfig = {
+  zFlow: { cardHeight: 40, defaultCardSize: 'xxl' },
+};
+const dashboardI18n = { ...EN_DEFAULTS, title: '', description: '' };
 
 @Component({
   selector: 'mfp-data-fetch-list-story',
-  imports: [DataFetchList],
+  imports: [Dashboard],
   standalone: true,
   template: `
-    <mfp-data-fetch-list
-      [beforeRequest]="beforeRequest"
-      [data]="data()"
-      [description]="description()"
-      [fieldDefinition]="fieldDefinition()"
+    <mfp-dashboard
+      [availableCards]="cards()"
+      [beforeCardRequest]="beforeRequest"
+      [cards]="cards()"
+      [config]="dashboardConfig"
+      [i18n]="dashboardI18n"
     />
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,9 +45,41 @@ class DataFetchListStory {
     'normal',
   );
 
+  protected readonly dashboardConfig = dashboardConfig;
+  protected readonly dashboardI18n = dashboardI18n;
+  protected readonly cards = computed<CardConfig[]>(() => [
+    {
+      id: 'affected-subaccounts',
+      label: 'Affected Subaccounts',
+      type: 'angular',
+      component: 'mfp-data-fetch-list',
+      size: 's',
+      componentTemplate: {
+        badge: { text: 'Action Needed', state: 'Critical' },
+        actions: [{ key: 'view-subaccounts', text: 'View subaccounts' }],
+      },
+      componentInputs: {
+        data: this.data(),
+        description: this.description(),
+        fieldDefinition: this.fieldDefinition(),
+        lastUpdated: { label: 'Last updated:', text: '30 minutes ago' },
+        status: { text: '{{$length}} Subaccounts', state: 'Critical' },
+        emptyState: {
+          title: 'No subaccounts found',
+          subtitle: 'There are currently no subaccounts to show.',
+        },
+        errorState: {
+          title: 'Unable to load subaccounts',
+          subtitle: 'Retry to request the subaccounts again.',
+          buttons: [{ key: 'retry', label: 'Retry', design: 'Emphasized' }],
+        },
+      },
+    },
+  ]);
+
   private hasFailed = false;
 
-  protected readonly beforeRequest: BeforeRequest = ({ signal }) => {
+  protected readonly beforeRequest: BeforeCardRequest = ({ signal }) => {
     if (this.requestBehavior() === 'loading') {
       return new Promise<never>((_, reject) => {
         signal.throwIfAborted();
@@ -54,7 +102,7 @@ class DataFetchListStory {
   };
 }
 
-const meta: Meta<DataFetchListStory> = {
+const meta = {
   title: 'Declarative UI / DataFetchList',
   component: DataFetchListStory,
   tags: ['autodocs'],
@@ -62,7 +110,7 @@ const meta: Meta<DataFetchListStory> = {
   argTypes: {
     requestBehavior: { table: { disable: true } },
   },
-};
+} satisfies Meta<DataFetchListStory>;
 
 export default meta;
 

@@ -1,10 +1,18 @@
+import { Dashboard } from '../dashboard/dashboard/dashboard.component';
+import { EN_DEFAULTS } from '../dashboard/i18n';
+import type { CardConfig, DashboardConfig } from '../dashboard/models';
 import {
-  type BeforeRequest,
+  type BeforeCardRequest,
   DataFetchTable,
   type DataFetchTableData,
 } from '../data-fetch-table';
 import type { TableFieldDefinition } from '../table';
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+} from '@angular/core';
 import type { Meta, StoryObj } from '@storybook/angular';
 
 const localRows = [
@@ -27,15 +35,24 @@ const request = {
     ),
 };
 
+Dashboard.registerAngularComponents([DataFetchTable]);
+
+const dashboardConfig: DashboardConfig = {
+  zFlow: { cardHeight: 40, defaultCardSize: 'xxl' },
+};
+const dashboardI18n = { ...EN_DEFAULTS, title: '', description: '' };
+
 @Component({
   selector: 'mfp-data-fetch-table-story',
-  imports: [DataFetchTable],
+  imports: [Dashboard],
   standalone: true,
   template: `
-    <mfp-data-fetch-table
-      [beforeRequest]="beforeRequest"
-      [columns]="columns()"
-      [data]="data()"
+    <mfp-dashboard
+      [availableCards]="cards()"
+      [beforeCardRequest]="beforeRequest"
+      [cards]="cards()"
+      [config]="dashboardConfig"
+      [i18n]="dashboardI18n"
     />
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -47,11 +64,43 @@ class DataFetchTableStory {
     'normal',
   );
 
+  protected readonly dashboardConfig = dashboardConfig;
+  protected readonly dashboardI18n = dashboardI18n;
+  protected readonly cards = computed<CardConfig[]>(() => [
+    {
+      id: 'destination-authentication',
+      label: 'Destinations',
+      type: 'angular',
+      component: 'mfp-data-fetch-table',
+      size: 'm',
+      componentTemplate: {
+        contentScrollable: true,
+        actions: [{ key: 'view-destinations', text: 'View destinations' }],
+      },
+      componentInputs: {
+        data: this.data(),
+        columns: this.columns(),
+        lastUpdated: { label: 'Last updated:', text: '30 minutes ago' },
+        status: { text: '{{$length}} Destinations', state: 'Critical' },
+        emptyState: {
+          title: 'No destinations found',
+          subtitle: 'There are currently no destinations to show.',
+        },
+        errorState: {
+          title: 'Unable to load destinations',
+          subtitle: 'Retry to request the destinations again.',
+          buttons: [{ key: 'retry', label: 'Retry', design: 'Emphasized' }],
+        },
+      },
+    },
+  ]);
+
   private hasFailed = false;
 
-  protected readonly beforeRequest: BeforeRequest = (prepared) => {
+  protected readonly beforeRequest: BeforeCardRequest = (prepared) => {
     if (this.requestBehavior() === 'loading') {
-      return new Promise<void>((_, reject) => {
+      return new Promise<never>((_, reject) => {
+        prepared.signal.throwIfAborted();
         prepared.signal.addEventListener(
           'abort',
           () => {
@@ -71,7 +120,7 @@ class DataFetchTableStory {
   };
 }
 
-const meta: Meta<DataFetchTableStory> = {
+const meta = {
   title: 'Declarative UI / DataFetchTable',
   component: DataFetchTableStory,
   tags: ['autodocs'],
@@ -84,7 +133,7 @@ const meta: Meta<DataFetchTableStory> = {
   argTypes: {
     requestBehavior: { table: { disable: true } },
   },
-};
+} satisfies Meta<DataFetchTableStory>;
 
 export default meta;
 

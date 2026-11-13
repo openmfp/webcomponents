@@ -25,24 +25,31 @@ describe('DataFetchTable', () => {
   const fetch = vi.fn<typeof globalThis.fetch>();
   const hook = vi.fn<(request: Request) => void>();
 
-  function element(testId: string): HTMLElement | null {
+  function root(): ShadowRoot | null {
     const host: HTMLElement = fixture.nativeElement;
-    const table = host.shadowRoot?.querySelector('mfp-declarative-table');
-    return (
-      table?.shadowRoot?.querySelector<HTMLElement>(
-        `[data-testid="generic-table-${testId}"]`,
-      ) ?? null
-    );
+    return host.shadowRoot;
+  }
+
+  function table(): Element | null | undefined {
+    return root()?.querySelector('mfp-declarative-table');
+  }
+
+  function stateElement<T extends HTMLElement = HTMLElement>(
+    part: string,
+  ): T | null | undefined {
+    return root()
+      ?.querySelector('mfp-error-view')
+      ?.shadowRoot?.querySelector<T>(`[data-testid="error-view-${part}"]`);
   }
 
   function rowText(): string | null | undefined {
-    return element('row-0')?.querySelector('mfp-resource-field')?.shadowRoot
-      ?.textContent;
+    return table()?.shadowRoot?.querySelector(
+      '[data-testid="generic-table-row-0"] mfp-resource-field',
+    )?.shadowRoot?.textContent;
   }
 
   function metadataText(testId: 'subtitle' | 'status'): string | undefined {
-    const host: HTMLElement = fixture.nativeElement;
-    return host.shadowRoot
+    return root()
       ?.querySelector(`[data-testid="card-template-${testId}"]`)
       ?.textContent?.trim();
   }
@@ -77,13 +84,20 @@ describe('DataFetchTable', () => {
       state: 'Critical',
     });
     await fixture.whenStable();
-    expect(element('view-nodata')).not.toBeNull();
-    expect(element('view-error')).toBeNull();
-    expect(metadataText('subtitle')).toBe('Last updated: 30 minutes ago');
-    expect(metadataText('status')).toBeUndefined();
+    expect(stateElement('illustration')).toMatchObject({ name: 'NoData' });
+    expect(stateElement('title')?.textContent?.trim()).toBe('No Resources');
+    expect(stateElement('subtitle')?.textContent?.trim()).toBe(
+      'There are currently no items to show.',
+    );
+    expect(
+      root()?.querySelector(
+        'mfp-declarative-table, mfp-data-fetch-metadata, ui5-busy-indicator',
+      ),
+    ).toBeNull();
 
     await setData({ resource: localRows });
     expect(rowText()).toContain('local');
+    expect(metadataText('subtitle')).toBe('Last updated: 30 minutes ago');
     expect(metadataText('status')).toBe('1 destinations');
 
     for (const path of ['groups[*].rows', '$.groups[0].rows']) {
@@ -96,9 +110,8 @@ describe('DataFetchTable', () => {
     expect(rowText()).toContain('local');
 
     await setData(undefined);
-    expect(element('row-0')).toBeNull();
-    expect(element('view-nodata')).not.toBeNull();
-    expect(element('view-error')).toBeNull();
+    expect(table()).toBeNull();
+    expect(stateElement('illustration')).toMatchObject({ name: 'NoData' });
     expect(hook).not.toHaveBeenCalled();
     expect(afterRequestHook).not.toHaveBeenCalled();
     expect(fetch).not.toHaveBeenCalled();
@@ -123,9 +136,13 @@ describe('DataFetchTable', () => {
     await setData({ resource: localRows });
     await setData(data);
 
-    expect(element('row-0')).toBeNull();
-    expect(element('view-error')).not.toBeNull();
-    expect(element('retry')).toBeNull();
+    expect(table()).toBeNull();
+    expect(stateElement('illustration')).toMatchObject({
+      name: 'UnableToLoad',
+    });
+    expect(
+      stateElement('illustration')?.querySelector('ui5-button'),
+    ).toBeNull();
     expect(hook).not.toHaveBeenCalled();
     expect(fetch).not.toHaveBeenCalled();
   });
@@ -140,8 +157,12 @@ describe('DataFetchTable', () => {
     }));
     fixture.componentRef.setInput('afterRequestHook', afterRequestHook);
     fixture.componentRef.setInput('status', {
-      text: '{{$length}} destinations',
+      text: 'Active',
       state: 'Neutral',
+    });
+    fixture.componentRef.setInput('lastUpdated', {
+      label: 'Last updated:',
+      text: 'just now',
     });
 
     await setData({
@@ -151,14 +172,23 @@ describe('DataFetchTable', () => {
       },
       path: 'groups[0].rows',
     });
-    expect(element('view-loading')).not.toBeNull();
-    expect(metadataText('status')).toBeUndefined();
+    const busy = root()?.querySelector<
+      HTMLElement & { active: boolean; delay: number; text?: string }
+    >('ui5-busy-indicator');
+    expect(busy).toMatchObject({ active: true, delay: 0 });
+    expect(busy?.text ?? '').toBe('');
+    expect(busy?.textContent?.trim()).toBe('');
+    expect(
+      root()?.querySelector(
+        'mfp-declarative-table, mfp-data-fetch-metadata, mfp-error-view',
+      ),
+    ).toBeNull();
 
     pending.resolve(Response.json({ groups: [{ rows: [{ id: 'remote' }] }] }));
     await vi.waitFor(() => {
       expect(rowText()).toContain('mapped');
     });
-    expect(metadataText('status')).toBe('1 destinations');
+    expect(metadataText('status')).toBe('Active');
 
     fixture.componentRef.setInput('status', {
       text: '{{response.total}} destinations',
@@ -182,23 +212,50 @@ describe('DataFetchTable', () => {
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
-  it.each([429, 503])(
+  it.each([
+    [429, 'UnableToLoad'],
+    [503, 'UnableToLoad'],
+    [403, 'tnt/UnsuccessfulAuth'],
+  ] as const)(
     'uses a fresh request only when Retry is clicked after %i',
-    async (status) => {
+    async (status, illustration) => {
       const loadError = vi.fn();
       fixture.componentInstance.loadError.subscribe(loadError);
+      fixture.componentRef.setInput('status', {
+        text: 'Active',
+        state: 'Positive',
+      });
+      fixture.componentRef.setInput('lastUpdated', {
+        label: 'Last updated:',
+        text: 'yesterday',
+      });
       fetch
         .mockResolvedValueOnce(new Response(null, { status }))
         .mockResolvedValueOnce(Response.json([{ id: 'retried' }]));
       await setData({ request, resource: localRows });
 
       await vi.waitFor(() => {
-        expect(element('retry')).not.toBeNull();
+        expect(stateElement('illustration')).toMatchObject({
+          name: illustration,
+        });
       });
-      expect(element('view-error')?.textContent).toContain(
+      expect(stateElement('illustration')?.getAttribute('role')).toBe('status');
+      expect(stateElement('title')?.textContent?.trim()).toBe(
+        'Unable to load data',
+      );
+      expect(stateElement('subtitle')?.textContent?.trim()).toBe(
         'The table data could not be loaded.',
       );
-      expect(element('row-0')).toBeNull();
+      const retry = stateElement<HTMLElement & { design: string }>(
+        'button-retry',
+      );
+      expect(retry?.textContent?.trim()).toBe('Retry');
+      expect(retry?.design).toBe('Emphasized');
+      expect(
+        root()?.querySelector(
+          'mfp-declarative-table, mfp-data-fetch-metadata, ui5-busy-indicator',
+        ),
+      ).toBeNull();
       expect(loadError).toHaveBeenCalledExactlyOnceWith({
         status,
         retryable: true,
@@ -206,13 +263,18 @@ describe('DataFetchTable', () => {
       expect(hook).toHaveBeenCalledTimes(1);
       expect(fetch).toHaveBeenCalledTimes(1);
 
-      element('retry')?.click();
+      retry?.click();
       await vi.waitFor(() => {
         expect(rowText()).toContain('retried');
       });
       expect(hook).toHaveBeenCalledTimes(2);
       expect(fetch).toHaveBeenCalledTimes(2);
       expect(fetch.mock.calls[0][0]).not.toBe(fetch.mock.calls[1][0]);
+      expect(loadError).toHaveBeenCalledTimes(1);
+      expect(
+        root()?.querySelector('mfp-error-view, ui5-busy-indicator'),
+      ).toBeNull();
+      expect(metadataText('status')).toBe('Active');
     },
   );
 
@@ -225,14 +287,25 @@ describe('DataFetchTable', () => {
   ] as const)(
     'does not fall back to local rows for %s',
     async (_, source, path, calls, retryable) => {
+      const loadError = vi.fn();
+      fixture.componentInstance.loadError.subscribe(loadError);
       fetch.mockResolvedValueOnce(Response.json({ groups: [] }));
+      fixture.componentRef.setInput('errorState', {
+        buttons: [{ key: 'retry', label: 'Try again' }],
+      });
       await setData({ request: source, resource: localRows, path });
 
       await vi.waitFor(() => {
-        expect(element('view-error')).not.toBeNull();
+        expect(stateElement('illustration')).toMatchObject({
+          name: 'UnableToLoad',
+        });
       });
-      expect(Boolean(element('retry'))).toBe(retryable);
-      expect(element('row-0')).toBeNull();
+      expect(Boolean(stateElement('button-retry'))).toBe(retryable);
+      expect(table()).toBeNull();
+      expect(loadError).toHaveBeenCalledExactlyOnceWith({
+        status: undefined,
+        retryable,
+      });
       expect(hook).toHaveBeenCalledTimes(calls);
       expect(fetch).toHaveBeenCalledTimes(calls);
     },
@@ -267,38 +340,115 @@ describe('DataFetchTable', () => {
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
-  it('updates the error labels without repeating the failed request or event', async () => {
+  it('updates error copy and Retry without repeating the failed request or event', async () => {
     const loadError = vi.fn();
     fixture.componentInstance.loadError.subscribe(loadError);
     fetch.mockRejectedValueOnce(new TypeError('Network unavailable'));
 
     await setData({ request });
     await vi.waitFor(() => {
-      expect(element('retry')).not.toBeNull();
+      expect(stateElement('button-retry')).toBeTruthy();
     });
     expect(loadError).toHaveBeenCalledWith({ retryable: true });
 
-    fixture.componentRef.setInput('errorTitle', 'Network issue');
-    fixture.componentRef.setInput('errorMessage', 'Please reconnect.');
-    fixture.componentRef.setInput('retryButtonText', 'Try again');
+    for (const buttons of [[], [{ key: 'details', label: 'Details' }]]) {
+      fixture.componentRef.setInput('errorState', { buttons });
+      await fixture.whenStable();
+      expect(
+        stateElement('illustration')?.querySelector('ui5-button'),
+      ).toBeNull();
+    }
+
+    fixture.componentRef.setInput('errorState', {
+      illustration: 'NoData',
+      title: 'Network <b>issue</b>',
+      subtitle: '',
+      buttons: [
+        { key: 'details', label: 'Details' },
+        { key: 'retry', label: 'Try again', icon: 'refresh', disabled: true },
+        { key: 'retry', label: 'Later action' },
+      ],
+    });
     await fixture.whenStable();
 
-    expect(element('error-title')?.textContent?.trim()).toBe('Network issue');
-    expect(element('view-error')?.textContent).toContain('Please reconnect.');
-    expect(element('retry')?.textContent?.trim()).toBe('Try again');
+    expect(stateElement('illustration')).toMatchObject({
+      name: 'UnableToLoad',
+    });
+    expect(stateElement('title')?.textContent?.trim()).toBe(
+      'Network <b>issue</b>',
+    );
+    expect(stateElement('title')?.querySelector('b')).toBeNull();
+    expect(stateElement('subtitle')?.textContent?.trim()).toBe('');
+    expect(
+      stateElement('illustration')?.querySelectorAll('ui5-button'),
+    ).toHaveLength(1);
+    const retry = stateElement<
+      HTMLElement & { design: string; icon: string; disabled: boolean }
+    >('button-retry');
+    expect(retry?.textContent?.trim()).toBe('Try again');
+    expect(retry).toMatchObject({
+      design: 'Transparent',
+      icon: 'refresh',
+      disabled: true,
+    });
+    retry?.dispatchEvent(new Event('click'));
+    await fixture.whenStable();
+    expect(hook).toHaveBeenCalledTimes(1);
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(loadError).toHaveBeenCalledTimes(1);
   });
 
-  it('treats a bodyless response as empty even when a path is supplied', async () => {
-    fetch.mockResolvedValueOnce(new Response(null, { status: 204 }));
-    await setData({ request, path: 'items' });
+  it.each([
+    ['a local empty resource', { resource: [] }, 0],
+    ['a bodyless response', { request, path: 'items' }, 1],
+  ] as const)(
+    'shows and updates the empty state for %s',
+    async (_, data, calls) => {
+      fetch.mockResolvedValueOnce(new Response(null, { status: 204 }));
+      fixture.componentRef.setInput('status', {
+        text: 'Active',
+        state: 'Positive',
+      });
+      fixture.componentRef.setInput('lastUpdated', {
+        label: 'Last updated:',
+        text: 'yesterday',
+      });
+      await setData(data);
 
-    await vi.waitFor(() => {
-      expect(element('view-nodata')).not.toBeNull();
-    });
-    expect(element('view-error')).toBeNull();
-  });
+      await vi.waitFor(() => {
+        expect(stateElement('illustration')).toMatchObject({ name: 'NoData' });
+      });
+      expect(
+        root()?.querySelector(
+          'mfp-declarative-table, mfp-data-fetch-metadata, ui5-busy-indicator',
+        ),
+      ).toBeNull();
+      expect(
+        stateElement('illustration')?.querySelector('ui5-button'),
+      ).toBeNull();
+
+      fixture.componentRef.setInput('emptyState', {
+        subtitle: 'Select another destination.',
+        illustration: 'UnableToLoad',
+        buttons: [{ key: 'retry', label: 'Try again' }],
+      });
+      await fixture.whenStable();
+      expect(stateElement('illustration')).toMatchObject({ name: 'NoData' });
+      expect(stateElement('title')?.textContent?.trim()).toBe('No Resources');
+      expect(stateElement('subtitle')?.textContent?.trim()).toBe(
+        'Select another destination.',
+      );
+      expect(
+        stateElement('illustration')?.querySelector('ui5-button'),
+      ).toBeNull();
+
+      fixture.componentRef.setInput('emptyState', { title: '', subtitle: '' });
+      await fixture.whenStable();
+      expect(stateElement('title')?.textContent?.trim()).toBe('');
+      expect(stateElement('subtitle')?.textContent?.trim()).toBe('');
+      expect(fetch).toHaveBeenCalledTimes(calls);
+    },
+  );
 
   it('skips an obsolete send when resource replaces a request with a pending hook', async () => {
     const pending = deferred<void>();
@@ -306,6 +456,13 @@ describe('DataFetchTable', () => {
     fixture.componentRef.setInput('beforeRequest', beforeRequest);
     await setData({ request });
     expect(beforeRequest).toHaveBeenCalledTimes(1);
+    expect(root()?.querySelector('ui5-busy-indicator')).toMatchObject({
+      active: true,
+      delay: 0,
+    });
+    expect(
+      root()?.querySelector('mfp-declarative-table, mfp-error-view'),
+    ).toBeNull();
 
     pending.resolve();
     await setData({ resource: localRows });
@@ -340,7 +497,7 @@ describe('DataFetchTable', () => {
       await fixture.whenStable();
 
       expect(rowText()).toContain('local');
-      expect(element('view-error')).toBeNull();
+      expect(root()?.querySelector('mfp-error-view')).toBeNull();
       expect(loadError).not.toHaveBeenCalled();
     },
   );

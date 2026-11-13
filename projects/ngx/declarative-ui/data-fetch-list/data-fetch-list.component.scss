@@ -63,3 +63,11 @@ mfp-resource-field {
   min-block-size: 100%;
   min-inline-size: 0;
 }
+
+.state--error > mfp-error-view {
+  box-sizing: border-box;
+  inline-size: 100%;
+  max-inline-size: 22rem;
+  margin-inline: auto;
+  padding-block-end: 1.5rem;
+}

@@ -3,7 +3,7 @@
     <ui5-busy-indicator active size="M" [delay]="0" />
   </div>
 } @else if (errorConfig(); as config) {
-  <div class="state">
+  <div class="state state--error">
     <mfp-error-view [config]="config" (buttonClick)="retry($event.key)" />
   </div>
 } @else if (!rows().length) {

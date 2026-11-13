@@ -22,6 +22,7 @@ import type {
   DataFetchTable,
   DataFetchTableData,
   DataFetchTableLoadError,
+  ErrorViewConfig,
   JsonValue,
   ModalSettings,
   MountCfg,
@@ -146,6 +147,34 @@ describe('mfp-wc-dashboard.d.ts', () => {
     expectTypeOf<DataFetchTable['loadError']>().toEqualTypeOf<
       DataFetchList['loadError']
     >();
+  });
+
+  it('types both data-fetch card state inputs without illustration or legacy inputs', () => {
+    type State = Omit<ErrorViewConfig, 'illustration'> | undefined;
+    type ListEmpty = ReturnType<DataFetchList['emptyState']>;
+    type ListError = ReturnType<DataFetchList['errorState']>;
+    type TableEmpty = ReturnType<DataFetchTable['emptyState']>;
+    type TableError = ReturnType<DataFetchTable['errorState']>;
+
+    expectTypeOf<ListEmpty>().toEqualTypeOf<State>();
+    expectTypeOf<ListError>().toEqualTypeOf<State>();
+    expectTypeOf<TableEmpty>().toEqualTypeOf<State>();
+    expectTypeOf<TableError>().toEqualTypeOf<State>();
+    expectTypeOf<
+      Extract<
+        | keyof NonNullable<ListEmpty>
+        | keyof NonNullable<ListError>
+        | keyof NonNullable<TableEmpty>
+        | keyof NonNullable<TableError>,
+        'illustration'
+      >
+    >().toBeNever();
+    expectTypeOf<
+      Extract<
+        keyof DataFetchList | keyof DataFetchTable,
+        'errorTitle' | 'errorMessage' | 'retryButtonText'
+      >
+    >().toBeNever();
   });
 
   it('types the events like the dashboard outputs', () => {
