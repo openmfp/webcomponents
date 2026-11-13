@@ -1,4 +1,3 @@
-import type { CardStatus } from '../../models/card-status.model';
 import { DataFetchRowsService } from '../../services/data-fetch-rows.service';
 import type {
   AfterRequestHook,
@@ -7,7 +6,10 @@ import type {
 } from '../../services/data-fetch.model';
 import { DataFetchService } from '../../services/data-fetch.service';
 import { DataFetchMetadata } from '../data-fetch-metadata/data-fetch-metadata.component';
-import type { DataFetchLastUpdated } from '../data-fetch-metadata/data-fetch-metadata.model';
+import type {
+  CardStatus,
+  DataFetchLastUpdated,
+} from '../data-fetch-metadata/data-fetch-metadata.model';
 import {
   ErrorView,
   type ErrorViewButton,

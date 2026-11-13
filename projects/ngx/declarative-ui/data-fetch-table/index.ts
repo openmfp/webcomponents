@@ -1,8 +1,8 @@
 export type {
   CardStatus,
   CardStatusState,
-} from '../../models/card-status.model';
-export type { DataFetchLastUpdated } from '../data-fetch-metadata/data-fetch-metadata.model';
+  DataFetchLastUpdated,
+} from '../data-fetch-metadata/data-fetch-metadata.model';
 export { DataFetchTable } from './data-fetch-table.component';
 export type {
   AfterCardRequest,

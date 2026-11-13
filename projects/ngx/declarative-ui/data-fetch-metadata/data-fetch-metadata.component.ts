@@ -1,10 +1,10 @@
+import type { DataFetchRowsSnapshot } from '../../services/data-fetch-rows.service';
+import { getResourceValueByJsonPath } from '../table/utils/resource-field-by-path';
 import type {
   CardStatus,
   CardStatusState,
-} from '../../models/card-status.model';
-import type { DataFetchRowsSnapshot } from '../../services/data-fetch-rows.service';
-import { getResourceValueByJsonPath } from '../table/utils/resource-field-by-path';
-import type { DataFetchLastUpdated } from './data-fetch-metadata.model';
+  DataFetchLastUpdated,
+} from './data-fetch-metadata.model';
 import {
   ChangeDetectionStrategy,
   Component,

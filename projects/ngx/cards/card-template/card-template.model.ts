@@ -1,8 +1,7 @@
-import type { CardStatusState } from '../../models/card-status.model';
-
 export type CardTemplateBackground = 'solid' | 'transparent';
 
-export type CardTemplateBadgeState = CardStatusState;
+export type CardTemplateBadgeState =
+  'Neutral' | 'Information' | 'Positive' | 'Negative' | 'Critical';
 
 export type CardTemplateMessageStripType =
   'Information' | 'Positive' | 'Negative' | 'Critical';
