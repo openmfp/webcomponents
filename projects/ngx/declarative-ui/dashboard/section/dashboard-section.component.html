@@ -29,6 +29,7 @@
   <div class="section__grid" [style.--cols]="columns() ?? null">
     @for (card of resolvedCards(); track card.id) {
       <mfp-dashboard-card
+        [afterCardRequest]="afterCardRequest()"
         [beforeCardRequest]="beforeCardRequest()"
         [card]="card"
         [editMode]="editMode() && section().editable !== false"

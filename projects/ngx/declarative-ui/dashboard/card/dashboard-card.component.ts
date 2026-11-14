@@ -1,8 +1,10 @@
 import { CardTemplate } from '../../../cards/card-template/card-template.component';
-import {
+import type {
+  AfterCardRequest,
+  AfterRequestHook,
   BeforeCardRequest,
   BeforeRequest,
-} from '../../data-fetch-table/data-fetch-table.model';
+} from '../../../services/data-fetch.model';
 import { DASHBOARD_CARD_DRAG_ORIGIN_CLASS } from '../constants';
 import { DASHBOARD_I18N_KEYS, DashboardI18nService } from '../i18n';
 import { CARD_TYPES, CardConfig, DashboardCardContent } from '../models';
@@ -40,6 +42,7 @@ import '@ui5/webcomponents-icons/dist/resize-corner.js';
 export class DashboardCard {
   card = input.required<CardConfig>();
   beforeCardRequest = input<BeforeCardRequest>();
+  afterCardRequest = input<AfterCardRequest>();
   editMode = input<boolean>(false);
   readonly removeCard = output<void>();
   readonly cardAction = output<string>();
@@ -113,6 +116,7 @@ export class DashboardCard {
             onCleanup,
             onMounted,
             this.createBeforeRequestAdapter(),
+            this.createAfterRequestAdapter(),
           );
           break;
         case CARD_TYPES.WC:
@@ -124,6 +128,7 @@ export class DashboardCard {
             this.renderer,
             onMounted,
             this.createBeforeRequestAdapter(),
+            this.createAfterRequestAdapter(),
           );
           break;
       }
@@ -152,6 +157,12 @@ export class DashboardCard {
     const cardId = untracked(() => this.card().id);
     return (request) =>
       untracked(() => this.beforeCardRequest()?.(request, cardId));
+  }
+
+  private createAfterRequestAdapter(): AfterRequestHook {
+    const cardId = untracked(() => this.card().id);
+    return (response) =>
+      untracked(() => this.afterCardRequest()?.(response, cardId));
   }
 
   private onContentMounted(content: DashboardCardContent): void {

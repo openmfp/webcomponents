@@ -1,3 +1,8 @@
+import { DataFetchList } from '../../data-fetch-list';
+import { DataFetchTable } from '../../data-fetch-table';
+import { MfpCardsShowcase } from '../../stories/dashboard.stories';
+import subaccounts from '../../stories/data-fetch-list.fixture.json';
+import { DeclarativeTableCard } from '../../table-card/declarative-table-card.component';
 import { DashboardCard } from '../card/dashboard-card.component';
 import { resetDashboardCardRegistry } from '../card/utils/dashboard-card-registry';
 import { DASHBOARD_CARD_DRAG_ORIGIN_CLASS } from '../constants';
@@ -20,8 +25,7 @@ import { axe } from 'vitest-axe';
 vi.mock('gridstack', () => ({}));
 
 vi.mock('gridstack/dist/angular', async () => {
-  const { Component, EventEmitter, Input, Output } =
-    await import('@angular/core');
+  const { Component, input, output } = await import('@angular/core');
 
   @Component({
     selector: 'mfp-gridstack',
@@ -29,8 +33,8 @@ vi.mock('gridstack/dist/angular', async () => {
     template: '<ng-content />',
   })
   class GridstackComponent {
-    @Input() options?: unknown;
-    @Output() readonly changeCB = new EventEmitter<unknown>();
+    readonly options = input<unknown>();
+    readonly changeCB = output<unknown>();
 
     gridstackItems = {
       toArray: () => [],
@@ -43,7 +47,7 @@ vi.mock('gridstack/dist/angular', async () => {
     template: '<ng-content />',
   })
   class GridstackItemComponent {
-    @Input() options?: unknown;
+    readonly options = input<unknown>();
   }
 
   return {
@@ -114,8 +118,10 @@ describe('Dashboard', () => {
 
   it('renders dashboard metadata, sections and loose cards from the provided inputs', () => {
     const { fixture, component } = setup();
+    const afterCardRequest = vi.fn();
 
     fixture.componentRef.setInput('config', {});
+    fixture.componentRef.setInput('afterCardRequest', afterCardRequest);
     fixture.componentRef.setInput('i18n', {
       ...EN_DEFAULTS,
       title: 'Operations',
@@ -134,9 +140,65 @@ describe('Dashboard', () => {
       root(fixture).querySelectorAll('mfp-dashboard-section'),
     ).toHaveLength(1);
     expect(root(fixture).querySelectorAll('gridstack-item')).toHaveLength(1);
+    const cardHooks = fixture.debugElement
+      .queryAll(By.directive(DashboardCard))
+      .map((element) => {
+        const card: DashboardCard = element.componentInstance;
+        return [card.card().id, card.afterCardRequest()];
+      });
+    expect(cardHooks).toHaveLength(2);
+    expect(cardHooks).toEqual(
+      expect.arrayContaining([
+        ['card-1', afterCardRequest],
+        ['card-2', afterCardRequest],
+      ]),
+    );
     expect(
       root(fixture).querySelector('.mfp-dashboard__toolbar ui5-button'),
     ).toBeNull();
+  });
+
+  it('renders metadata for the dashboard showcase table and list', async () => {
+    const fetch = vi
+      .fn<typeof globalThis.fetch>()
+      .mockResolvedValue(Response.json(subaccounts));
+    vi.stubGlobal('fetch', fetch);
+
+    try {
+      const { fixture } = setup();
+      Dashboard.registerAngularComponents([
+        DataFetchList,
+        DataFetchTable,
+        DeclarativeTableCard,
+      ]);
+      for (const [input, value] of Object.entries(
+        MfpCardsShowcase.args ?? {},
+      )) {
+        fixture.componentRef.setInput(input, value);
+      }
+      fixture.detectChanges();
+
+      const metadata = (selector: string, testId: 'subtitle' | 'status') =>
+        root(fixture)
+          .querySelector(selector)
+          ?.shadowRoot?.querySelector(`[data-testid="card-template-${testId}"]`)
+          ?.textContent?.trim();
+      await vi.waitFor(() => {
+        expect(metadata('mfp-data-fetch-table', 'status')).toBe(
+          '9 Destinations',
+        );
+        expect(metadata('mfp-data-fetch-list', 'status')).toBe('3 Subaccounts');
+      });
+      expect(metadata('mfp-data-fetch-table', 'subtitle')).toBe(
+        'Last updated: 30 minutes ago',
+      );
+      expect(metadata('mfp-data-fetch-list', 'subtitle')).toBe(
+        'Last updated: 30 minutes ago',
+      );
+      expect(fetch).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it('switches the template into edit mode and opens the add-card dialog from the toolbar', () => {

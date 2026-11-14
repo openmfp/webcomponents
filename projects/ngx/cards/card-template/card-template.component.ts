@@ -4,7 +4,6 @@ import {
   CardTemplateBadge,
   CardTemplateMessageStrip,
   CardTemplateSearch,
-  CardTemplateStatus,
 } from './card-template.model';
 import {
   ChangeDetectionStrategy,
@@ -26,22 +25,9 @@ import { MessageStrip } from '@fundamental-ngx/ui5-webcomponents/message-strip';
 import { Tag } from '@fundamental-ngx/ui5-webcomponents/tag';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
 import type { UI5CustomEvent } from '@ui5/webcomponents-base';
-import '@ui5/webcomponents-icons/dist/message-information.js';
 import '@ui5/webcomponents-icons/dist/overflow.js';
 import '@ui5/webcomponents-icons/dist/search.js';
-import '@ui5/webcomponents-icons/dist/status-critical.js';
-import '@ui5/webcomponents-icons/dist/status-inactive.js';
-import '@ui5/webcomponents-icons/dist/status-negative.js';
-import '@ui5/webcomponents-icons/dist/status-positive.js';
 import type { default as Ui5Menu } from '@ui5/webcomponents/dist/Menu.js';
-
-const STATUS_ICONS: Record<CardTemplateStatus['state'], string> = {
-  Neutral: 'status-inactive',
-  Information: 'message-information',
-  Positive: 'status-positive',
-  Negative: 'status-negative',
-  Critical: 'status-critical',
-};
 
 @Component({
   selector: 'mfp-card-template',
@@ -53,8 +39,6 @@ const STATUS_ICONS: Record<CardTemplateStatus['state'], string> = {
 })
 export class CardTemplate {
   readonly name = input.required<string>();
-  readonly subtitle = input<string>();
-  readonly status = input<CardTemplateStatus>();
   readonly contentScrollable = input(false, { transform: booleanAttribute });
   readonly header = input(true, { transform: booleanAttribute });
   readonly background = input<CardTemplateBackground>('solid');
@@ -67,7 +51,6 @@ export class CardTemplate {
 
   readonly actionPress = output<string>();
 
-  protected readonly statusIcons = STATUS_ICONS;
   protected readonly actionsMenuOpen = signal(false);
   protected readonly messageStripClosed = linkedSignal({
     source: this.messageStrip,

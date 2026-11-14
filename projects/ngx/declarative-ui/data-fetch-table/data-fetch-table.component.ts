@@ -1,47 +1,43 @@
+import { DataFetchRowsService } from '../../services/data-fetch-rows.service';
 import type {
+  AfterRequestHook,
   BeforeRequest,
-  CardRequest,
+  DataFetchLoadError,
 } from '../../services/data-fetch.model';
-import {
-  DataFetchConfigurationError,
-  DataFetchHttpError,
-  DataFetchService,
-} from '../../services/data-fetch.service';
-import { GenericResource, TableErrorConfig } from '../models';
-import { DeclarativeTable, TableFieldDefinition } from '../table';
-import { getResourceValueByJsonPath } from '../table/utils/resource-field-by-path';
+import { DataFetchService } from '../../services/data-fetch.service';
+import { DataFetchMetadata } from '../data-fetch-metadata/data-fetch-metadata.component';
 import type {
-  DataFetchTableData,
-  DataFetchTableLoadError,
-} from './data-fetch-table.model';
+  CardStatus,
+  DataFetchLastUpdated,
+} from '../data-fetch-metadata/data-fetch-metadata.model';
+import {
+  ErrorView,
+  type ErrorViewButton,
+  type ErrorViewConfig,
+} from '../error-view';
+import { DeclarativeTable, TableFieldDefinition } from '../table';
+import type { DataFetchTableData } from './data-fetch-table.model';
 import {
   ChangeDetectionStrategy,
   Component,
-  EffectCleanupRegisterFn,
   ViewEncapsulation,
   computed,
-  effect,
   inject,
   input,
   output,
-  signal,
-  untracked,
 } from '@angular/core';
-
-interface DataFetchLoad {
-  data: DataFetchTableData;
-  beforeRequest: BeforeRequest | undefined;
-  retryCount: number;
-  controller: AbortController;
-}
+import { BusyIndicator } from '@fundamental-ngx/ui5-webcomponents/busy-indicator';
+import '@ui5/webcomponents-fiori/dist/illustrations/NoData.js';
+import '@ui5/webcomponents-fiori/dist/illustrations/UnableToLoad.js';
+import '@ui5/webcomponents-fiori/dist/illustrations/tnt/UnsuccessfulAuth.js';
 
 @Component({
   selector: 'mfp-data-fetch-table',
-  imports: [DeclarativeTable],
+  imports: [BusyIndicator, DataFetchMetadata, DeclarativeTable, ErrorView],
   standalone: true,
   templateUrl: './data-fetch-table.component.html',
   styleUrl: './data-fetch-table.component.scss',
-  providers: [DataFetchService],
+  providers: [DataFetchRowsService, DataFetchService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.ShadowDom,
 })
@@ -50,168 +46,65 @@ export class DataFetchTable {
   readonly columns = input<TableFieldDefinition[]>([]);
   readonly trackByPath = input<string>();
   readonly beforeRequest = input<BeforeRequest>();
-  readonly errorTitle = input('Unable to load data');
-  readonly errorMessage = input('The table data could not be loaded.');
-  readonly retryButtonText = input('Retry');
+  readonly afterRequestHook = input<AfterRequestHook>();
+  readonly lastUpdated = input<DataFetchLastUpdated>();
+  readonly status = input<CardStatus>();
+  readonly emptyState = input<Omit<ErrorViewConfig, 'illustration'>>();
+  readonly errorState = input<Omit<ErrorViewConfig, 'illustration'>>();
 
-  readonly loadError = output<DataFetchTableLoadError>();
+  readonly loadError = output<DataFetchLoadError>();
 
-  protected readonly rows = signal<GenericResource[]>([]);
-  protected readonly loading = signal(false);
-  protected readonly error = computed<TableErrorConfig | null>(() => {
-    const failure = this.failure();
-    if (failure === null) return null;
+  private readonly rowLoader = inject(DataFetchRowsService);
+
+  protected readonly rows = this.rowLoader.rows;
+  protected readonly loading = this.rowLoader.loading;
+  protected readonly snapshot = this.rowLoader.snapshot;
+  protected readonly emptyConfig = computed<ErrorViewConfig>(() => {
+    const state = this.emptyState();
+    return {
+      illustration: 'NoData',
+      title: state?.title ?? 'No Resources',
+      subtitle: state?.subtitle ?? 'There are currently no items to show.',
+    };
+  });
+  protected readonly errorConfig = computed<ErrorViewConfig | undefined>(() => {
+    const failure = this.rowLoader.failure();
+    if (!failure) return undefined;
+
+    const state = this.errorState();
+    const buttons: ErrorViewButton[] = state?.buttons ?? [
+      { key: 'retry', label: 'Retry', design: 'Emphasized' },
+    ];
+    const retryButton = failure.retryable
+      ? buttons.find((button) => button.key === 'retry')
+      : undefined;
 
     return {
-      status: failure.status,
-      title: this.errorTitle(),
-      message: this.errorMessage(),
-      withRetryButton: failure.retryable,
-      retryButtonText: this.retryButtonText(),
+      illustration:
+        failure.status === 403 ? 'tnt/UnsuccessfulAuth' : 'UnableToLoad',
+      title: state?.title ?? 'Unable to load data',
+      subtitle: state?.subtitle ?? 'The table data could not be loaded.',
+      buttons: retryButton ? [retryButton] : undefined,
     };
   });
 
-  private readonly failure = signal<DataFetchTableLoadError | null>(null);
-  private readonly retryCount = signal(0);
-  private readonly fetchService = inject(DataFetchService);
-
   constructor() {
-    effect((onCleanup) => {
-      this.startLoad(onCleanup);
-    });
-  }
-
-  protected retry(): void {
-    this.retryCount.update((count) => count + 1);
-  }
-
-  private startLoad(onCleanup: EffectCleanupRegisterFn): void {
-    const data = this.data();
-
-    this.rows.set([]);
-    this.failure.set(null);
-    this.loading.set(false);
-
-    if (data === undefined) return;
-
-    try {
-      if (!data || typeof data !== 'object' || Array.isArray(data)) {
-        throw new TypeError('The table data must be a configuration object.');
-      }
-
-      const request = untracked(() => data.request);
-      if (request === undefined) {
-        untracked(() => {
-          const { resource, path } = data;
-          if (resource === undefined) {
-            throw new TypeError('The table data must specify a source.');
-          }
-          this.rows.set(this.readRows(resource, this.readPath(path)));
-        });
-        return;
-      }
-
-      const path = untracked(() => this.readPath(data.path));
-      this.loading.set(true);
-      const load: DataFetchLoad = {
-        data,
-        beforeRequest: this.beforeRequest(),
-        retryCount: this.retryCount(),
-        controller: new AbortController(),
-      };
-      onCleanup(() => {
-        load.controller.abort();
-      });
-
-      untracked(() => {
-        void this.load(load, request, path);
-      });
-    } catch {
-      this.showError(false);
-    }
-  }
-
-  private isCurrent(load: DataFetchLoad): boolean {
-    return untracked(
-      () =>
-        !load.controller.signal.aborted &&
-        this.data() === load.data &&
-        this.beforeRequest() === load.beforeRequest &&
-        this.retryCount() === load.retryCount,
+    this.rowLoader.initialize(
+      this.data,
+      this.beforeRequest,
+      (failure) => {
+        this.loadError.emit(failure);
+      },
+      {
+        afterRequestHook: this.afterRequestHook,
+        readResource: (data) => data.resource,
+      },
     );
   }
 
-  private async load(
-    load: DataFetchLoad,
-    request: CardRequest,
-    path: string,
-  ): Promise<void> {
-    const { beforeRequest, controller } = load;
-    try {
-      const payload = await this.fetchService.fetchData(request, {
-        signal: controller.signal,
-        beforeRequest,
-        beforeSend: () => {
-          if (!this.isCurrent(load)) controller.abort();
-        },
-      });
-
-      const rows = payload === undefined ? [] : this.readRows(payload, path);
-      if (!this.isCurrent(load)) return;
-      this.rows.set(rows);
-      this.loading.set(false);
-    } catch (error) {
-      if (this.isCurrent(load)) {
-        this.showError(!(error instanceof DataFetchConfigurationError), error);
-      }
+  protected retry(key: string): void {
+    if (key === 'retry') {
+      this.rowLoader.retry();
     }
-  }
-
-  private showError(retryable: boolean, error?: unknown): void {
-    const failure: DataFetchTableLoadError = {
-      status: error instanceof DataFetchHttpError ? error.status : undefined,
-      retryable,
-    };
-    this.loading.set(false);
-    this.failure.set(failure);
-    this.loadError.emit({ ...failure });
-  }
-
-  private readPath(path: unknown = ''): string {
-    if (typeof path !== 'string' || path.startsWith('/')) {
-      throw new TypeError('The table data path must be a JSONPath expression.');
-    }
-    return path;
-  }
-
-  private readRows(payload: unknown, path: string): GenericResource[] {
-    let value = payload;
-    if (path !== '') {
-      if (payload === null || typeof payload !== 'object') {
-        throw new TypeError('The response path does not exist.');
-      }
-      value = getResourceValueByJsonPath(
-        payload,
-        { property: path },
-        { eval: false },
-      );
-    }
-    if (!Array.isArray(value)) {
-      throw new TypeError(
-        'The table data must contain an array of row objects.',
-      );
-    }
-    for (let index = 0; index < value.length; index++) {
-      const row: unknown = value[index];
-      if (
-        !Object.hasOwn(value, index) ||
-        row === null ||
-        typeof row !== 'object' ||
-        Array.isArray(row)
-      ) {
-        throw new TypeError('Each table row must be an object.');
-      }
-    }
-    return value;
   }
 }

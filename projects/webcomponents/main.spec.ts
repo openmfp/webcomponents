@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const createApplication = vi.fn();
 const createCustomElement = vi.fn();
 const ignoreCustomElements = vi.fn();
+const applicationInjector = {};
 
 vi.mock('@angular/platform-browser', () => ({
   createApplication,
@@ -65,7 +66,7 @@ async function importMain(): Promise<Map<string, CustomElementConstructor>> {
     },
   );
 
-  createApplication.mockResolvedValue({ injector: {} });
+  createApplication.mockResolvedValue({ injector: applicationInjector });
   // Each createCustomElement call returns a fresh HTMLElement subclass so the
   // `class X extends Base` proxy declarations in main.ts are constructable.
   createCustomElement.mockImplementation(() => makeBaseElement());
@@ -99,10 +100,11 @@ describe('webcomponents/main.ts', () => {
       expect(ignoreCustomElements).toHaveBeenCalledWith('mfp');
     });
 
-    it('registers all six web-component elements under their mfp-wc-* tags', async () => {
+    it('registers the web components under their mfp-wc-* tags', async () => {
       const defined = await importMain();
 
       expect([...defined.keys()].sort()).toEqual([
+        'mfp-wc-data-fetch-list',
         'mfp-wc-data-fetch-table',
         'mfp-wc-declarative-form',
         'mfp-wc-declarative-table',
@@ -112,13 +114,27 @@ describe('webcomponents/main.ts', () => {
       ]);
     });
 
+    it('registers DataFetchList as mfp-wc-data-fetch-list', async () => {
+      const defined = await importMain();
+      const { DataFetchList } =
+        await import('@openmfp/webcomponents/declarative-ui');
+      const callIndex = createCustomElement.mock.calls.findIndex(
+        ([component]) => component === DataFetchList,
+      );
+
+      expect(callIndex).toBeGreaterThanOrEqual(0);
+      expect(defined.get('mfp-wc-data-fetch-list')).toBe(
+        createCustomElement.mock.results[callIndex].value,
+      );
+    });
+
     it('creates every element from the shared application injector', async () => {
-      await importMain();
+      const defined = await importMain();
 
       expect(createApplication).toHaveBeenCalledTimes(1);
-      expect(createCustomElement).toHaveBeenCalledTimes(6);
+      expect(createCustomElement).toHaveBeenCalledTimes(defined.size);
       for (const call of createCustomElement.mock.calls) {
-        expect(call[1]).toEqual({ injector: {} });
+        expect(call[1].injector).toBe(applicationInjector);
       }
     });
   });

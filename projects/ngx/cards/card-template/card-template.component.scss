@@ -55,53 +55,6 @@ $inner-corner-radius: calc(
     overflow-wrap: anywhere;
   }
 
-  &__subtitle {
-    margin-block-start: 1.25rem;
-    font-size: var(--sapFontSize);
-    color: var(--sapContent_LabelColor);
-    overflow-wrap: anywhere;
-  }
-
-  &__heading:has(> &__toolbar) + &__subtitle {
-    margin-block-start: 1rem;
-  }
-
-  &__status {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.25rem;
-    margin-block-start: 0.5rem;
-    padding-block: 1.25rem 1.5rem;
-    font: 300 1.5rem / 1.75rem var(--sapFontFamily);
-    color: var(--sapNeutralTextColor, #131e29);
-    text-align: center;
-    overflow-wrap: anywhere;
-
-    &[data-state='Information'] {
-      color: var(--sapInformativeTextColor, #0064d9);
-    }
-
-    &[data-state='Positive'] {
-      color: var(--sapPositiveTextColor, #256f3a);
-    }
-
-    &[data-state='Negative'] {
-      color: var(--sapNegativeTextColor, #aa0808);
-    }
-
-    &[data-state='Critical'] {
-      color: var(--sapCriticalTextColor, #b44f00);
-    }
-
-    ui5-icon {
-      flex: none;
-      width: 1.5rem;
-      height: 1.5rem;
-      color: inherit;
-    }
-  }
-
   &__toolbar {
     flex: none;
     display: flex;

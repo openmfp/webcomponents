@@ -1,0 +1,22 @@
+@if (metadata(); as info) {
+  @if (info.updatedText) {
+    <div class="subtitle" data-testid="card-template-subtitle">
+      {{ info.updatedText }}
+    </div>
+  }
+
+  @if (info.status; as cardStatus) {
+    <div
+      class="status"
+      data-testid="card-template-status"
+      [attr.data-state]="cardStatus.state"
+    >
+      <ui5-icon
+        aria-hidden="true"
+        mode="Decorative"
+        [name]="statusIcons[cardStatus.state]"
+      />
+      <span>{{ cardStatus.text }}</span>
+    </div>
+  }
+}

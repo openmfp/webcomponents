@@ -1,4 +1,4 @@
-import type { CardRequest, FetchAttempt } from './data-fetch.model';
+import type { CardRequest, FetchAttempt, JsonValue } from './data-fetch.model';
 import { Injectable, untracked } from '@angular/core';
 
 export class DataFetchConfigurationError extends TypeError {
@@ -17,8 +17,9 @@ export class DataFetchHttpError extends Error {
 export class DataFetchService {
   async fetchData(
     config: CardRequest,
-    { signal, beforeRequest, beforeSend }: FetchAttempt,
+    attempt: FetchAttempt,
   ): Promise<unknown> {
+    const { signal, beforeRequest } = attempt;
     signal.throwIfAborted();
 
     const request = this.createRequest(config, signal);
@@ -29,13 +30,12 @@ export class DataFetchService {
       throw new TypeError('The request hook must supply a Request.');
     }
 
-    return this.sendRequest(effectiveRequest, signal, beforeSend);
+    return this.sendRequest(effectiveRequest, attempt);
   }
 
   private async sendRequest(
     request: Request,
-    signal: AbortSignal,
-    beforeSend?: () => void,
+    { signal, beforeSend, afterRequestHook }: FetchAttempt,
   ): Promise<unknown> {
     const transport = new AbortController();
     const combinedSignal = AbortSignal.any([
@@ -67,9 +67,36 @@ export class DataFetchService {
       return undefined;
     }
 
-    const payload: unknown = await response.json();
+    const payload: JsonValue = await response.json();
     combinedSignal.throwIfAborted();
-    return payload;
+    if (!afterRequestHook) return payload;
+
+    const mapping = (async () => untracked(() => afterRequestHook(payload)))();
+    const mappedPayload = await this.waitForMapping(mapping, combinedSignal);
+    combinedSignal.throwIfAborted();
+    return mappedPayload === undefined ? payload : mappedPayload;
+  }
+
+  private waitForMapping(
+    mapping: Promise<JsonValue | void>,
+    signal: AbortSignal,
+  ): Promise<JsonValue | void> {
+    return new Promise((resolve, reject) => {
+      const onAbort = () => {
+        reject(signal.reason);
+      };
+      if (signal.aborted) {
+        onAbort();
+      } else {
+        signal.addEventListener('abort', onAbort, { once: true });
+      }
+
+      void mapping
+        .finally(() => {
+          signal.removeEventListener('abort', onAbort);
+        })
+        .then(resolve, reject);
+    });
   }
 
   private createRequest(config: CardRequest, signal: AbortSignal): Request {

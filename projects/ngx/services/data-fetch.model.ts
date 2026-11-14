@@ -18,13 +18,38 @@ export interface CardRequest {
   mode?: 'cors' | 'same-origin';
 }
 
+export interface DataFetchRequestData {
+  request: CardRequest;
+  path?: string;
+}
+
 export type BeforeRequest = (
   request: Request,
   cardId?: string,
 ) => Request | void | Promise<Request | void>;
 
+export type AfterRequestHook = (
+  response: JsonValue,
+) => JsonValue | void | Promise<JsonValue | void>;
+
+export type BeforeCardRequest = (
+  request: Request,
+  cardId: string,
+) => ReturnType<BeforeRequest>;
+
+export type AfterCardRequest = (
+  response: JsonValue,
+  cardId: string,
+) => ReturnType<AfterRequestHook>;
+
+export interface DataFetchLoadError {
+  status?: number;
+  retryable: boolean;
+}
+
 export interface FetchAttempt {
   signal: AbortSignal;
   beforeRequest?: BeforeRequest;
+  afterRequestHook?: AfterRequestHook;
   beforeSend?: () => void;
 }

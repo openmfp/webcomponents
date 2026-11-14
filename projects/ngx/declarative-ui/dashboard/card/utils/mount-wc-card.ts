@@ -1,4 +1,7 @@
-import type { BeforeRequest } from '../../../../services/data-fetch.model';
+import type {
+  AfterRequestHook,
+  BeforeRequest,
+} from '../../../../services/data-fetch.model';
 import { DashboardCardContent, MountCfg } from '../../models';
 import {
   EffectCleanupRegisterFn,
@@ -14,6 +17,7 @@ export function mountWcCard(
   renderer: Renderer2,
   onMounted?: (content: DashboardCardContent) => void,
   beforeRequest?: BeforeRequest,
+  afterRequestHook?: AfterRequestHook,
 ): void {
   const host: HTMLElement = container.element.nativeElement;
   const element: HTMLElement = renderer.createElement(cfg.component);
@@ -37,8 +41,14 @@ export function mountWcCard(
     if (acceptsBeforeRequest) {
       renderer.setProperty(element, 'beforeRequest', beforeRequest);
     }
+    const acceptsAfterRequest =
+      afterRequestHook && 'afterRequestHook' in element;
+    if (acceptsAfterRequest) {
+      renderer.setProperty(element, 'afterRequestHook', afterRequestHook);
+    }
     for (const [key, value] of Object.entries(cfg.componentInputs ?? {})) {
       if (acceptsBeforeRequest && key === 'beforeRequest') continue;
+      if (acceptsAfterRequest && key === 'afterRequestHook') continue;
       renderer.setProperty(element, key, value);
     }
 
@@ -56,7 +66,12 @@ export function mountWcCard(
   };
 
   const name = element.localName;
-  if (beforeRequest && name.includes('-') && registry && !registry.get(name)) {
+  if (
+    (beforeRequest || afterRequestHook) &&
+    name.includes('-') &&
+    registry &&
+    !registry.get(name)
+  ) {
     const cancelled = new Promise<void>((resolve) => {
       cancel = resolve;
     });

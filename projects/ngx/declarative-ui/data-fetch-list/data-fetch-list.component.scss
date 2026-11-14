@@ -1,0 +1,73 @@
+:host {
+  display: block;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 0 1rem 1rem;
+  font-family: var(--sapFontFamily, sans-serif);
+  font-size: var(--sapFontSize, 0.875rem);
+  line-height: 1.4;
+  color: var(--sapTextColor, #32363a);
+  overflow-wrap: anywhere;
+}
+
+:host(.showing-state) {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  block-size: 100%;
+  min-block-size: 0;
+}
+
+p,
+ul {
+  margin: 0;
+}
+
+mfp-data-fetch-metadata {
+  --mfp_dataFetchStatusPaddingBlockEnd: 1.25rem;
+  padding-block-start: 0.25rem;
+}
+
+.description {
+  margin-block-end: 1.875rem;
+}
+
+ul {
+  padding: 0;
+  list-style: none;
+}
+
+li {
+  padding-block: 0.375rem;
+  border-block-end: 1px solid var(--sapList_BorderColor, #e5e5e5);
+}
+
+mfp-resource-field {
+  --mfp_tableCardTextWrap: anywhere;
+  max-inline-size: 100%;
+}
+
+.loading {
+  display: grid;
+  place-items: center;
+}
+
+.state {
+  overflow: auto;
+  overflow-wrap: anywhere;
+}
+
+.state > mfp-error-view {
+  display: grid;
+  align-content: center;
+  block-size: auto;
+  min-block-size: 100%;
+  min-inline-size: 0;
+}
+
+.state--error > mfp-error-view {
+  box-sizing: border-box;
+  inline-size: 100%;
+  max-inline-size: 22rem;
+  margin-inline: auto;
+  padding-block-end: 1.5rem;
+}

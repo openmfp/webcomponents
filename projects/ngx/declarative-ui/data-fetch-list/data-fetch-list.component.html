@@ -1,0 +1,37 @@
+@if (loading()) {
+  <div class="loading">
+    <ui5-busy-indicator active size="M" [delay]="0" />
+  </div>
+} @else if (errorConfig(); as config) {
+  <div class="state state--error">
+    <mfp-error-view [config]="config" (buttonClick)="retry($event.key)" />
+  </div>
+} @else if (isEmpty()) {
+  <div class="state">
+    <mfp-error-view [config]="emptyConfig()" />
+  </div>
+} @else {
+  <mfp-data-fetch-metadata
+    [lastUpdated]="lastUpdated()"
+    [snapshot]="snapshot()"
+    [status]="status()"
+  />
+
+  @if (descriptionText(); as text) {
+    <p class="description">{{ text }}</p>
+  }
+
+  @let items = rows();
+  @if (items.length) {
+    <ul role="list">
+      @for (item of items; track $index) {
+        <li>
+          <mfp-resource-field
+            [fieldDefinition]="fieldDefinition()"
+            [resource]="item"
+          />
+        </li>
+      }
+    </ul>
+  }
+}
