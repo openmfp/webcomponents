@@ -9,6 +9,12 @@ and [releases](https://github.com/openmfp/webcomponents/releases) for details.
 
 <!-- git-cliff:insert -->
 
+## [2.1.2] - 2026-11-16
+
+### Bug Fixes
+
+- _(ci)_ Format CHANGELOG.md with prettier in the release workflow (#408)
+
 ## [2.1.1] - 2026-11-16
 
 ### Bug Fixes
