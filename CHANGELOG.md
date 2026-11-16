@@ -9,6 +9,16 @@ and [releases](https://github.com/openmfp/webcomponents/releases) for details.
 
 <!-- git-cliff:insert -->
 
+## [2.2.0] - 2026-11-16
+
+### Features
+
+- Handle componentTemplate actions in the data fetch cards with an actionsHook input (#411)
+
+### Bug Fixes
+
+- Report actionsHook errors and always call the latest actionsHook (#412)
+
 ## [2.1.2] - 2026-11-16
 
 ### Bug Fixes
