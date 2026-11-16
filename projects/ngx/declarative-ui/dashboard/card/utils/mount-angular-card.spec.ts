@@ -1,4 +1,4 @@
-import type { AfterRequestHook } from '../../../data-fetch-table';
+import type { AfterRequest } from '../../../data-fetch-table';
 import { CardConfig } from '../../models';
 import {
   addComponentToRegistry,
@@ -21,7 +21,7 @@ import {
 class TestAngularCard {
   title = input<string>();
   count = input<number>();
-  afterRequestHook = input<AfterRequestHook>();
+  afterRequest = input<AfterRequest>();
 }
 
 @Component({
@@ -103,31 +103,31 @@ describe('mountAngularCard', () => {
     ).toHaveBeenCalledWith(TestAngularCard);
   });
 
-  it('calls setInput for each provided componentInput', () => {
+  it('applies component inputs and installs the supplied response adapter', () => {
     const { vcr, setInput } = makeMockVcr();
     const { onCleanup } = makeCleanup();
-    const cardHook = vi.fn<AfterRequestHook>();
-    const dashboardHook = vi.fn<AfterRequestHook>();
+    const cardHook = vi.fn<AfterRequest>();
+    const afterRequestAdapter = vi.fn<AfterRequest>();
     mountAngularCard(
       makeCfg({
         componentInputs: {
           title: 'Pods',
           count: 3,
-          afterRequestHook: cardHook,
+          afterRequest: cardHook,
         },
       }),
       vcr,
       onCleanup,
       undefined,
       undefined,
-      dashboardHook,
+      afterRequestAdapter,
     );
 
     expect(setInput).toHaveBeenCalledWith('title', 'Pods');
     expect(setInput).toHaveBeenCalledWith('count', 3);
     expect(setInput).toHaveBeenLastCalledWith(
-      'afterRequestHook',
-      dashboardHook,
+      'afterRequest',
+      afterRequestAdapter,
     );
   });
 
@@ -161,7 +161,7 @@ describe('mountAngularCard', () => {
       vi.fn(),
     );
     expect(setInput).not.toHaveBeenCalledWith(
-      'afterRequestHook',
+      'afterRequest',
       expect.anything(),
     );
     runCleanup();

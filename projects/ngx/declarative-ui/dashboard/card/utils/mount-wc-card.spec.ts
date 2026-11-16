@@ -1,5 +1,5 @@
 import {
-  type AfterRequestHook,
+  type AfterRequest,
   type BeforeRequest,
   DataFetchTable,
 } from '../../../data-fetch-table';
@@ -151,7 +151,7 @@ describe('mountWcCard', () => {
     const tag = 'mfp-late-angular-card';
     const onMounted = vi.fn();
     const payload = { rawRows: [{ id: 'remote' }] };
-    const afterRequestHook = vi.fn<AfterRequestHook>(() => [{ id: 'mapped' }]);
+    const afterRequestAdapter = vi.fn<AfterRequest>(() => [{ id: 'mapped' }]);
     const fetch = vi
       .fn<typeof globalThis.fetch>()
       .mockResolvedValue(Response.json(payload));
@@ -173,7 +173,7 @@ describe('mountWcCard', () => {
         (request) => {
           request.headers.set('Authorization', 'Bearer test');
         },
-        afterRequestHook,
+        afterRequestAdapter,
       );
 
       expect(el.childElementCount).toBe(0);
@@ -186,7 +186,7 @@ describe('mountWcCard', () => {
       );
       await vi.waitFor(() => {
         expect(fetch).toHaveBeenCalledTimes(1);
-        expect(afterRequestHook).toHaveBeenCalledExactlyOnceWith(payload);
+        expect(afterRequestAdapter).toHaveBeenCalledExactlyOnceWith(payload);
       });
       const request = fetch.mock.calls[0][0];
       expect(request).toBeInstanceOf(Request);
@@ -205,21 +205,21 @@ describe('mountWcCard', () => {
     const tag = 'mfp-late-native-card';
     const { container, el } = makeContainer();
     const { onCleanup, runCleanup } = makeCleanup();
-    const beforeRequest = vi.fn<BeforeRequest>();
+    const beforeRequestAdapter = vi.fn<BeforeRequest>();
     const cardHook = vi.fn<BeforeRequest>();
-    const afterRequestHook = vi.fn<AfterRequestHook>();
-    const cardAfterHook = vi.fn<AfterRequestHook>();
+    const afterRequestAdapter = vi.fn<AfterRequest>();
+    const cardAfterHook = vi.fn<AfterRequest>();
     const request = new Request('https://example.test/rows');
 
     class LateNativeCard extends HTMLElement {
       private requestHook?: BeforeRequest;
-      private responseHook?: AfterRequestHook;
+      private responseHook?: AfterRequest;
 
       set beforeRequest(hook: BeforeRequest) {
         this.requestHook = hook;
       }
 
-      set afterRequestHook(hook: AfterRequestHook) {
+      set afterRequest(hook: AfterRequest) {
         this.responseHook = hook;
       }
 
@@ -235,24 +235,24 @@ describe('mountWcCard', () => {
         componentInputs: {
           data: request,
           beforeRequest: cardHook,
-          afterRequestHook: cardAfterHook,
+          afterRequest: cardAfterHook,
         },
       }),
       container,
       onCleanup,
       makeRenderer(),
       undefined,
-      beforeRequest,
-      afterRequestHook,
+      beforeRequestAdapter,
+      afterRequestAdapter,
     );
 
     customElements.define(tag, LateNativeCard);
     await vi.waitFor(() => {
-      expect(beforeRequest).toHaveBeenCalledExactlyOnceWith(request);
+      expect(beforeRequestAdapter).toHaveBeenCalledExactlyOnceWith(request);
     });
 
     expect(cardHook).not.toHaveBeenCalled();
-    expect(afterRequestHook).toHaveBeenCalledExactlyOnceWith([]);
+    expect(afterRequestAdapter).toHaveBeenCalledExactlyOnceWith([]);
     expect(cardAfterHook).not.toHaveBeenCalled();
     expect(el.firstElementChild).toBeInstanceOf(LateNativeCard);
     expect(Object.hasOwn(el.firstElementChild ?? {}, 'beforeRequest')).toBe(
@@ -285,7 +285,7 @@ describe('mountWcCard', () => {
     const mounted = el.querySelector(tag);
     expect(mounted).not.toBeNull();
     expect(Object.hasOwn(mounted ?? {}, 'beforeRequest')).toBe(false);
-    expect(Object.hasOwn(mounted ?? {}, 'afterRequestHook')).toBe(false);
+    expect(Object.hasOwn(mounted ?? {}, 'afterRequest')).toBe(false);
     expect(onMounted).toHaveBeenCalledExactlyOnceWith(mounted);
     runCleanup();
     el.remove();

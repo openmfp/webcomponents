@@ -1,15 +1,15 @@
 import { CardTemplate } from '../../../cards/card-template/card-template.component';
-import type { AfterRequestHook, BeforeRequest } from '../../data-fetch-table';
+import type { AfterRequest, BeforeRequest } from '../../data-fetch-table';
 import { DASHBOARD_CARD_DRAG_ORIGIN_CLASS } from '../constants';
 import { DashboardI18nService } from '../i18n';
-import { CardConfig } from '../models';
+import { CARD_TYPES, CardConfig } from '../models';
 import { DashboardCard } from './dashboard-card.component';
 import {
   addComponentToRegistry,
   resetDashboardCardRegistry,
 } from './utils/dashboard-card-registry';
 import { SapComponentCreatedEvent } from './utils/mount-sap-card';
-import { Component } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { axe } from 'vitest-axe';
@@ -40,6 +40,25 @@ class SearchableAngularCard {
   onCardSearch(query: string): void {
     this.searches.push(query);
   }
+}
+
+class RequestAwareWidget extends HTMLElement {
+  beforeRequest?: BeforeRequest;
+  afterRequest?: AfterRequest;
+  data?: object;
+}
+customElements.define('mfp-request-aware-widget', RequestAwareWidget);
+
+@Component({
+  selector: 'mfp-request-aware-angular-card',
+  template: '',
+})
+class RequestAwareAngularCard {
+  readonly beforeRequest = input<BeforeRequest>();
+  readonly afterRequest = input<AfterRequest>(undefined, {
+    alias: 'mfp-request-aware-angular-cardAfterRequest',
+  });
+  readonly data = input<object>();
 }
 
 type Fixture = ComponentFixture<DashboardCard>;
@@ -113,13 +132,6 @@ describe('DashboardCard', () => {
   });
 
   it('forwards the latest request hooks and card ID without remounting the web component', async () => {
-    class RequestAwareWidget extends HTMLElement {
-      beforeRequest?: BeforeRequest;
-      afterRequestHook?: AfterRequestHook;
-      data?: object;
-    }
-    customElements.define('request-aware-widget', RequestAwareWidget);
-
     const { fixture } = setup();
     const data = { resource: [{ id: 'local' }] };
     const request = new Request('https://example.test/rows');
@@ -130,7 +142,7 @@ describe('DashboardCard', () => {
     const secondAfterHook = vi.fn(async () => ({ items: [{ id: 'mapped' }] }));
     fixture.componentRef.setInput('card', {
       id: 'orders',
-      component: 'request-aware-widget',
+      component: 'mfp-request-aware-widget',
       componentInputs: { data },
     });
     fixture.componentRef.setInput('beforeCardRequest', firstHook);
@@ -138,32 +150,200 @@ describe('DashboardCard', () => {
     await fixture.whenStable();
 
     const widget = root(fixture).querySelector<RequestAwareWidget>(
-      'request-aware-widget',
+      'mfp-request-aware-widget',
     );
     expect(widget?.data).toBe(data);
     expect(widget?.beforeRequest).toBeTypeOf('function');
     widget?.beforeRequest?.(request);
     expect(firstHook).toHaveBeenCalledWith(request, 'orders');
-    const afterRequestHook = widget?.afterRequestHook;
-    expect(afterRequestHook).toBeTypeOf('function');
-    afterRequestHook?.(response);
+    const afterRequest = widget?.afterRequest;
+    expect(afterRequest).toBeTypeOf('function');
+    afterRequest?.(response);
     expect(firstAfterHook).toHaveBeenCalledExactlyOnceWith(response, 'orders');
 
     fixture.componentRef.setInput('beforeCardRequest', secondHook);
     fixture.componentRef.setInput('afterCardRequest', secondAfterHook);
     await fixture.whenStable();
 
-    expect(root(fixture).querySelector('request-aware-widget')).toBe(widget);
+    expect(root(fixture).querySelector('mfp-request-aware-widget')).toBe(
+      widget,
+    );
     expect(secondHook).not.toHaveBeenCalled();
     expect(widget?.beforeRequest?.(request)).toBe(request);
     expect(secondHook).toHaveBeenCalledWith(request, 'orders');
-    expect(widget?.afterRequestHook).toBe(afterRequestHook);
+    expect(widget?.afterRequest).toBe(afterRequest);
     expect(secondAfterHook).not.toHaveBeenCalled();
-    await expect(afterRequestHook?.(response)).resolves.toEqual({
+    await expect(afterRequest?.(response)).resolves.toEqual({
       items: [{ id: 'mapped' }],
     });
     expect(secondAfterHook).toHaveBeenCalledExactlyOnceWith(response, 'orders');
   });
+
+  describe.each([CARD_TYPES.ANGULAR, CARD_TYPES.WC])(
+    '%s request adapters',
+    (type) => {
+      const selector =
+        type === CARD_TYPES.ANGULAR
+          ? 'mfp-request-aware-angular-card'
+          : 'mfp-request-aware-widget';
+
+      beforeEach(() => {
+        addComponentToRegistry([RequestAwareAngularCard]);
+      });
+
+      afterEach(() => {
+        resetDashboardCardRegistry();
+      });
+
+      function mountedCard(fixture: Fixture) {
+        if (type === CARD_TYPES.ANGULAR) {
+          const instance: RequestAwareAngularCard = fixture.debugElement.query(
+            By.directive(RequestAwareAngularCard),
+          ).componentInstance;
+          return {
+            instance,
+            beforeRequest: instance.beforeRequest(),
+            afterRequest: instance.afterRequest(),
+          };
+        }
+
+        const instance =
+          root(fixture).querySelector<RequestAwareWidget>(selector);
+        return {
+          instance,
+          beforeRequest: instance?.beforeRequest,
+          afterRequest: instance?.afterRequest,
+        };
+      }
+
+      it('selects each live local hook independently and ignores hooks from a replaced mount', () => {
+        const { fixture } = setup();
+        const request = new Request('https://example.test/rows');
+        const response = { items: [] };
+        const dashboardBefore = vi.fn(() => request);
+        const dashboardAfter = vi.fn(() => response);
+        const localBefore = vi.fn();
+        const localAfter = vi.fn(() => null);
+        const nextBefore = vi.fn(() => request);
+        const nextAfter = vi.fn();
+        const ignoredHook = vi.fn();
+        const responseBinding =
+          type === CARD_TYPES.ANGULAR
+            ? 'mfp-request-aware-angular-cardAfterRequest'
+            : 'afterRequest';
+        const card: CardConfig = { id: 'orders', type, component: selector };
+        const setHooks = (componentInputs: CardConfig['componentInputs']) => {
+          fixture.componentRef.setInput('card', { ...card, componentInputs });
+          fixture.detectChanges();
+        };
+        fixture.componentRef.setInput('beforeCardRequest', dashboardBefore);
+        fixture.componentRef.setInput('afterCardRequest', dashboardAfter);
+        setHooks({
+          ...(type === CARD_TYPES.ANGULAR ? { afterRequest: ignoredHook } : {}),
+          beforeRequest: localBefore,
+          [responseBinding]: localAfter,
+        });
+
+        const mounted = mountedCard(fixture);
+        const { beforeRequest, afterRequest } = mounted;
+        expect(mounted.instance).toBeTruthy();
+        expect(beforeRequest?.(request)).toBeUndefined();
+        expect(afterRequest?.(response)).toBeNull();
+        expect(localBefore).toHaveBeenCalledExactlyOnceWith(request);
+        expect(localAfter).toHaveBeenCalledExactlyOnceWith(response);
+        expect(ignoredHook).not.toHaveBeenCalled();
+        expect(dashboardBefore).not.toHaveBeenCalled();
+        expect(dashboardAfter).not.toHaveBeenCalled();
+
+        setHooks({ [responseBinding]: nextAfter });
+        expect(mountedCard(fixture)).toEqual(mounted);
+        expect(beforeRequest?.(request)).toBe(request);
+        expect(afterRequest?.(response)).toBeUndefined();
+        expect(dashboardBefore).toHaveBeenCalledExactlyOnceWith(
+          request,
+          'orders',
+        );
+        expect(nextAfter).toHaveBeenCalledExactlyOnceWith(response);
+        expect(dashboardAfter).not.toHaveBeenCalled();
+
+        setHooks({ beforeRequest: nextBefore });
+        const updated = mountedCard(fixture);
+        expect(updated.instance).toBe(mounted.instance);
+        expect(updated.beforeRequest).toBe(beforeRequest);
+        expect(updated.afterRequest).toBe(afterRequest);
+        expect(beforeRequest?.(request)).toBe(request);
+        expect(afterRequest?.(response)).toBe(response);
+        expect(nextBefore).toHaveBeenCalledExactlyOnceWith(request);
+        expect(dashboardAfter).toHaveBeenCalledExactlyOnceWith(
+          response,
+          'orders',
+        );
+
+        const replacementHook = vi.fn();
+        fixture.componentRef.setInput('card', {
+          ...card,
+          id: 'replacement-orders',
+          componentInputs: {
+            data: {},
+            beforeRequest: replacementHook,
+            [responseBinding]: replacementHook,
+          },
+        });
+        expect(beforeRequest?.(request)).toBeUndefined();
+        expect(afterRequest?.(response)).toBeUndefined();
+        expect(replacementHook).not.toHaveBeenCalled();
+        expect(localBefore).toHaveBeenCalledTimes(1);
+        expect(localAfter).toHaveBeenCalledTimes(1);
+        expect(nextBefore).toHaveBeenCalledTimes(1);
+        expect(nextAfter).toHaveBeenCalledTimes(1);
+        expect(dashboardBefore).toHaveBeenCalledTimes(1);
+        expect(dashboardAfter).toHaveBeenCalledTimes(1);
+      });
+
+      it('invalidates adapters when the template replaces their host or the card is destroyed', () => {
+        const { fixture } = setup();
+        const request = new Request('https://example.test/rows');
+        const response = { items: [] };
+        const dashboardBefore = vi.fn(() => request);
+        const dashboardAfter = vi.fn(() => response);
+        const card: CardConfig = { id: 'orders', type, component: selector };
+        fixture.componentRef.setInput('beforeCardRequest', dashboardBefore);
+        fixture.componentRef.setInput('afterCardRequest', dashboardAfter);
+        fixture.componentRef.setInput('card', card);
+        fixture.detectChanges();
+
+        const original = mountedCard(fixture);
+        expect(original.beforeRequest).toBeTypeOf('function');
+        expect(original.afterRequest).toBeTypeOf('function');
+        fixture.componentRef.setInput('card', {
+          ...card,
+          componentTemplate: { header: false },
+        });
+        fixture.detectChanges();
+
+        const replacement = mountedCard(fixture);
+        expect(replacement.instance).not.toBe(original.instance);
+        expect(original.beforeRequest?.(request)).toBeUndefined();
+        expect(original.afterRequest?.(response)).toBeUndefined();
+        expect(replacement.beforeRequest?.(request)).toBe(request);
+        expect(replacement.afterRequest?.(response)).toBe(response);
+        expect(dashboardBefore).toHaveBeenCalledExactlyOnceWith(
+          request,
+          'orders',
+        );
+        expect(dashboardAfter).toHaveBeenCalledExactlyOnceWith(
+          response,
+          'orders',
+        );
+
+        fixture.destroy();
+        expect(replacement.beforeRequest?.(request)).toBeUndefined();
+        expect(replacement.afterRequest?.(response)).toBeUndefined();
+        expect(dashboardBefore).toHaveBeenCalledTimes(1);
+        expect(dashboardAfter).toHaveBeenCalledTimes(1);
+      });
+    },
+  );
 
   it('replaces the rendered dynamic component when the card definition changes', () => {
     const { fixture } = setup();

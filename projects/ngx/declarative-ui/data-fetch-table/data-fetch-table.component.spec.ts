@@ -48,9 +48,9 @@ describe('DataFetchTable', () => {
     )?.shadowRoot?.textContent;
   }
 
-  function metadataText(testId: 'subtitle' | 'status'): string | undefined {
+  function metadataText(testId: 'last-updated' | 'status'): string | undefined {
     return root()
-      ?.querySelector(`[data-testid="card-template-${testId}"]`)
+      ?.querySelector(`[data-testid="data-fetch-metadata-${testId}"]`)
       ?.textContent?.trim();
   }
 
@@ -73,8 +73,8 @@ describe('DataFetchTable', () => {
   });
 
   it('renders local root and nested first-match rows without running a request', async () => {
-    const afterRequestHook = vi.fn();
-    fixture.componentRef.setInput('afterRequestHook', afterRequestHook);
+    const afterRequest = vi.fn();
+    fixture.componentRef.setInput('afterRequest', afterRequest);
     fixture.componentRef.setInput('lastUpdated', {
       label: 'Last updated:',
       text: '30 minutes ago',
@@ -97,7 +97,7 @@ describe('DataFetchTable', () => {
 
     await setData({ resource: localRows });
     expect(rowText()).toContain('local');
-    expect(metadataText('subtitle')).toBe('Last updated: 30 minutes ago');
+    expect(metadataText('last-updated')).toBe('Last updated: 30 minutes ago');
     expect(metadataText('status')).toBe('1 destinations');
 
     for (const path of ['groups[*].rows', '$.groups[0].rows']) {
@@ -113,7 +113,7 @@ describe('DataFetchTable', () => {
     expect(table()).toBeNull();
     expect(stateElement('illustration')).toMatchObject({ name: 'NoData' });
     expect(hook).not.toHaveBeenCalled();
-    expect(afterRequestHook).not.toHaveBeenCalled();
+    expect(afterRequest).not.toHaveBeenCalled();
     expect(fetch).not.toHaveBeenCalled();
   });
 
@@ -151,11 +151,11 @@ describe('DataFetchTable', () => {
     const pending = deferred<Response>();
     fetch.mockReturnValueOnce(pending.promise);
     const readResource = vi.fn(() => nestedRows);
-    const afterRequestHook = vi.fn(async () => ({
+    const afterRequest = vi.fn(async () => ({
       groups: [{ rows: [{ id: 'mapped' }] }],
       total: 42,
     }));
-    fixture.componentRef.setInput('afterRequestHook', afterRequestHook);
+    fixture.componentRef.setInput('afterRequest', afterRequest);
     fixture.componentRef.setInput('status', {
       text: 'Active',
       state: 'Neutral',
@@ -202,9 +202,9 @@ describe('DataFetchTable', () => {
       text: 'yesterday',
     });
     await fixture.whenStable();
-    expect(metadataText('subtitle')).toBe('Last updated: yesterday');
+    expect(metadataText('last-updated')).toBe('Last updated: yesterday');
     expect(metadataText('status')).toBe('42 destinations');
-    expect(afterRequestHook).toHaveBeenCalledExactlyOnceWith({
+    expect(afterRequest).toHaveBeenCalledExactlyOnceWith({
       groups: [{ rows: [{ id: 'remote' }] }],
     });
     expect(readResource).not.toHaveBeenCalled();

@@ -118,9 +118,11 @@ describe('Dashboard', () => {
 
   it('renders dashboard metadata, sections and loose cards from the provided inputs', () => {
     const { fixture, component } = setup();
+    const beforeCardRequest = vi.fn();
     const afterCardRequest = vi.fn();
 
     fixture.componentRef.setInput('config', {});
+    fixture.componentRef.setInput('beforeCardRequest', beforeCardRequest);
     fixture.componentRef.setInput('afterCardRequest', afterCardRequest);
     fixture.componentRef.setInput('i18n', {
       ...EN_DEFAULTS,
@@ -144,13 +146,17 @@ describe('Dashboard', () => {
       .queryAll(By.directive(DashboardCard))
       .map((element) => {
         const card: DashboardCard = element.componentInstance;
-        return [card.card().id, card.afterCardRequest()];
+        return [
+          card.card().id,
+          card.beforeCardRequest(),
+          card.afterCardRequest(),
+        ];
       });
     expect(cardHooks).toHaveLength(2);
     expect(cardHooks).toEqual(
       expect.arrayContaining([
-        ['card-1', afterCardRequest],
-        ['card-2', afterCardRequest],
+        ['card-1', beforeCardRequest, afterCardRequest],
+        ['card-2', beforeCardRequest, afterCardRequest],
       ]),
     );
     expect(
@@ -178,10 +184,12 @@ describe('Dashboard', () => {
       }
       fixture.detectChanges();
 
-      const metadata = (selector: string, testId: 'subtitle' | 'status') =>
+      const metadata = (selector: string, testId: 'last-updated' | 'status') =>
         root(fixture)
           .querySelector(selector)
-          ?.shadowRoot?.querySelector(`[data-testid="card-template-${testId}"]`)
+          ?.shadowRoot?.querySelector(
+            `[data-testid="data-fetch-metadata-${testId}"]`,
+          )
           ?.textContent?.trim();
       await vi.waitFor(() => {
         expect(metadata('mfp-data-fetch-table', 'status')).toBe(
@@ -189,10 +197,10 @@ describe('Dashboard', () => {
         );
         expect(metadata('mfp-data-fetch-list', 'status')).toBe('3 Subaccounts');
       });
-      expect(metadata('mfp-data-fetch-table', 'subtitle')).toBe(
+      expect(metadata('mfp-data-fetch-table', 'last-updated')).toBe(
         'Last updated: 30 minutes ago',
       );
-      expect(metadata('mfp-data-fetch-list', 'subtitle')).toBe(
+      expect(metadata('mfp-data-fetch-list', 'last-updated')).toBe(
         'Last updated: 30 minutes ago',
       );
       expect(fetch).toHaveBeenCalledTimes(1);

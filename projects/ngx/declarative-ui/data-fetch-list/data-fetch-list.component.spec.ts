@@ -247,7 +247,7 @@ describe('DataFetchList', () => {
       );
       expect(
         root
-          .querySelector('[data-testid="card-template-status"]')
+          .querySelector('[data-testid="data-fetch-metadata-status"]')
           ?.textContent?.trim(),
       ).toBe('Active');
       expect(beforeRequest).toHaveBeenCalledTimes(2);
@@ -260,12 +260,12 @@ describe('DataFetchList', () => {
   it('renders mapped rows and response metadata and updates presentation without fetching again', async () => {
     vi.spyOn(Date, 'now').mockReturnValue(Date.parse('2026-11-13T13:29:00Z'));
     const payload = { total: 42, rows: [{ label: 'Subaccount A' }] };
-    const afterRequestHook = vi.fn(async (response: JsonValue) => ({
+    const afterRequest = vi.fn(async (response: JsonValue) => ({
       result: response,
       updates: [{ at: '2026-11-13T12:59:00Z' }],
     }));
     fetch.mockResolvedValueOnce(Response.json(payload));
-    fixture.componentRef.setInput('afterRequestHook', afterRequestHook);
+    fixture.componentRef.setInput('afterRequest', afterRequest);
     fixture.componentRef.setInput('data', { request, path: '$.result.rows' });
     fixture.componentRef.setInput('lastUpdated', {
       label: 'Actualizado:',
@@ -278,17 +278,17 @@ describe('DataFetchList', () => {
     });
 
     const root = shadowRoot(fixture);
-    const subtitle = () =>
-      root.querySelector('[data-testid="card-template-subtitle"]');
+    const lastUpdated = () =>
+      root.querySelector('[data-testid="data-fetch-metadata-last-updated"]');
     const status = () =>
-      root.querySelector('[data-testid="card-template-status"]');
+      root.querySelector('[data-testid="data-fetch-metadata-status"]');
     await vi.waitFor(() => {
       expect(rowFields(root)[0]?.shadowRoot?.textContent).toContain(
         'Subaccount A',
       );
     });
-    expect(afterRequestHook).toHaveBeenCalledExactlyOnceWith(payload);
-    expect(subtitle()?.textContent?.trim()).toBe(
+    expect(afterRequest).toHaveBeenCalledExactlyOnceWith(payload);
+    expect(lastUpdated()?.textContent?.trim()).toBe(
       'Actualizado: hace 30 minutos',
     );
     expect(status()?.textContent?.trim()).toBe('42 affected (1 shown)');
@@ -298,7 +298,7 @@ describe('DataFetchList', () => {
       text: 'just now',
     });
     await fixture.whenStable();
-    expect(subtitle()?.textContent?.trim()).toBe('Updated: just now');
+    expect(lastUpdated()?.textContent?.trim()).toBe('Updated: just now');
     expect(status()?.textContent?.trim()).toBe('42 affected (1 shown)');
 
     fixture.componentRef.setInput('status', {
@@ -307,9 +307,18 @@ describe('DataFetchList', () => {
     });
     await fixture.whenStable();
     expect(status()?.textContent?.trim()).toBe('1 subaccount');
-    expect(subtitle()?.textContent?.trim()).toBe('Updated: just now');
+    expect(lastUpdated()?.textContent?.trim()).toBe('Updated: just now');
     expect(fetch).toHaveBeenCalledTimes(1);
-    expect(afterRequestHook).toHaveBeenCalledTimes(1);
+    expect(afterRequest).toHaveBeenCalledTimes(1);
+
+    fixture.componentRef.setInput('data', undefined);
+    await fixture.whenStable();
+
+    expect(stateElement(root, 'illustration')).toMatchObject({
+      name: 'NoData',
+    });
+    expect(root.querySelector('mfp-data-fetch-metadata, ul')).toBeNull();
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 
   it.each([
@@ -331,26 +340,19 @@ describe('DataFetchList', () => {
     fixture.componentRef.setInput('description', 'Affected subaccounts');
     await fixture.whenStable();
     const root = shadowRoot(fixture);
+    expect(stateElement(root, 'illustration')).toMatchObject({
+      name: 'NoData',
+    });
     expect(
-      root.querySelector('mfp-error-view, ui5-busy-indicator, ul'),
+      root.querySelector(
+        'mfp-data-fetch-metadata, .description, ul, ui5-busy-indicator',
+      ),
     ).toBeNull();
-    expect(
-      root
-        .querySelector('[data-testid="card-template-subtitle"]')
-        ?.textContent?.trim(),
-    ).toBe('Last updated: yesterday');
-    expect(
-      root
-        .querySelector('[data-testid="card-template-status"]')
-        ?.textContent?.trim(),
-    ).toBe('No affected subaccounts');
-    expect(root.querySelector('.description')?.textContent?.trim()).toBe(
-      'Affected subaccounts',
-    );
 
     fetch.mockResolvedValueOnce(response());
     fixture.componentRef.setInput('data', { request, path });
     await vi.waitFor(() => {
+      expect(fetch).toHaveBeenCalledTimes(1);
       expect(stateElement(root, 'illustration')).toMatchObject({
         name: 'NoData',
       });

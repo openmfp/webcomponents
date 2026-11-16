@@ -2,7 +2,7 @@ import type * as Wc from './mfp-wc-dashboard';
 import type { OutputEmitterRef } from '@angular/core';
 import type {
   AfterCardRequest,
-  AfterRequestHook,
+  AfterRequest,
   ButtonSettings,
   CardConfig,
   CardSize,
@@ -88,6 +88,12 @@ describe('mfp-wc-dashboard.d.ts', () => {
       ReturnType<Dashboard['afterCardRequest']>
     >();
     expectTypeOf<Wc.AfterCardRequest>().toEqualTypeOf<AfterCardRequest>();
+    expectTypeOf<AfterCardRequest>().parameters.toEqualTypeOf<
+      [response: JsonValue, cardId: string]
+    >();
+    expectTypeOf<AfterCardRequest>().returns.toEqualTypeOf<
+      ReturnType<AfterRequest>
+    >();
   });
 
   it('shares the public metadata and request types across data-fetch cards', () => {
@@ -130,15 +136,21 @@ describe('mfp-wc-dashboard.d.ts', () => {
     expectTypeOf<DataFetchTable['lastUpdated']>().toEqualTypeOf<
       DataFetchList['lastUpdated']
     >();
-    expectTypeOf<ReturnType<DataFetchList['afterRequestHook']>>().toEqualTypeOf<
-      AfterRequestHook | undefined
+    expectTypeOf<ReturnType<DataFetchList['afterRequest']>>().toEqualTypeOf<
+      AfterRequest | undefined
     >();
-    expectTypeOf<DataFetchTable['afterRequestHook']>().toEqualTypeOf<
-      DataFetchList['afterRequestHook']
+    expectTypeOf<DataFetchTable['afterRequest']>().toEqualTypeOf<
+      DataFetchList['afterRequest']
     >();
-    expectTypeOf<AfterRequestHook>().parameters.toEqualTypeOf<
+    expectTypeOf<AfterRequest>().parameters.toEqualTypeOf<
       [response: JsonValue]
     >();
+    expectTypeOf<AfterRequest>().returns.toEqualTypeOf<
+      JsonValue | void | Promise<JsonValue | void>
+    >();
+    expectTypeOf<
+      Extract<keyof DataFetchList | keyof DataFetchTable, 'afterRequestHook'>
+    >().toBeNever();
     expectTypeOf<DataFetchListLoadError>().toEqualTypeOf<DataFetchLoadError>();
     expectTypeOf<DataFetchTableLoadError>().toEqualTypeOf<DataFetchLoadError>();
     expectTypeOf<

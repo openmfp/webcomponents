@@ -1,6 +1,6 @@
 import { DataFetchRowsService } from './data-fetch-rows.service';
 import type {
-  AfterRequestHook,
+  AfterRequest,
   BeforeRequest,
   CardRequest,
   JsonValue,
@@ -15,7 +15,7 @@ const rows = [{ label: 'Current row' }];
 describe('DataFetchRowsService', () => {
   let service: DataFetchRowsService;
   let data: WritableSignal<{ request: CardRequest } | undefined>;
-  let mapper: WritableSignal<AfterRequestHook | undefined>;
+  let mapper: WritableSignal<AfterRequest | undefined>;
   const fetchData = vi.fn<DataFetchService['fetchData']>();
   const onFailure = vi.fn();
 
@@ -32,13 +32,35 @@ describe('DataFetchRowsService', () => {
     });
     service = TestBed.inject(DataFetchRowsService);
     TestBed.runInInjectionContext(() => {
-      service.initialize(
+      service.initialize({
         data,
-        signal<BeforeRequest | undefined>(undefined),
+        beforeRequest: signal<BeforeRequest | undefined>(undefined),
+        afterRequest: mapper,
         onFailure,
-        { afterRequestHook: mapper },
-      );
+      });
     });
+  });
+
+  it('loads only once when initialized again', async () => {
+    fetchData.mockResolvedValue(rows);
+    data.set({ request });
+    TestBed.tick();
+    await vi.waitFor(() => {
+      expect(service.rows()).toEqual(rows);
+    });
+
+    TestBed.runInInjectionContext(() => {
+      service.initialize({
+        data,
+        beforeRequest: signal(undefined),
+        afterRequest: mapper,
+        onFailure,
+      });
+    });
+    TestBed.tick();
+
+    expect(fetchData).toHaveBeenCalledTimes(1);
+    expect(service.rows()).toEqual(rows);
   });
 
   it('clears failure and loads rows on a fresh retry attempt', async () => {
@@ -101,13 +123,13 @@ describe('DataFetchRowsService', () => {
 
   it('publishes the mapped snapshot on retry after a mapper error', async () => {
     const raw = [{ label: 'Unmapped row' }];
-    const afterRequestHook = vi
-      .fn<AfterRequestHook>()
+    const afterRequest = vi
+      .fn<AfterRequest>()
       .mockRejectedValueOnce(new Error('Mapper failed'))
       .mockResolvedValueOnce(rows);
-    mapper.set(afterRequestHook);
+    mapper.set(afterRequest);
     fetchData.mockImplementation(async (_request, attempt) =>
-      attempt.afterRequestHook?.(raw),
+      attempt.afterRequest?.(raw),
     );
     data.set({ request });
     TestBed.tick();
@@ -125,8 +147,8 @@ describe('DataFetchRowsService', () => {
     await vi.waitFor(() => {
       expect(service.snapshot()).toEqual({ rows, response: rows });
     });
-    expect(afterRequestHook).toHaveBeenNthCalledWith(1, raw);
-    expect(afterRequestHook).toHaveBeenNthCalledWith(2, raw);
+    expect(afterRequest).toHaveBeenNthCalledWith(1, raw);
+    expect(afterRequest).toHaveBeenNthCalledWith(2, raw);
     expect(service.failure()).toBeNull();
   });
 
@@ -138,11 +160,11 @@ describe('DataFetchRowsService', () => {
     const pending = new Promise<JsonValue>((resolve) => {
       resolveMapping = resolve;
     });
-    const firstHook = vi.fn<AfterRequestHook>(() => pending);
-    const nextHook = vi.fn<AfterRequestHook>(() => rows);
+    const firstHook = vi.fn<AfterRequest>(() => pending);
+    const nextHook = vi.fn<AfterRequest>(() => rows);
     mapper.set(firstHook);
     fetchData.mockImplementation(async (_request, attempt) =>
-      attempt.afterRequestHook?.(raw),
+      attempt.afterRequest?.(raw),
     );
     data.set({ request });
     TestBed.tick();
@@ -150,7 +172,7 @@ describe('DataFetchRowsService', () => {
 
     mapper.set(nextHook);
     const obsoleteAttempt = fetchData.mock.calls[0][1];
-    expect(obsoleteAttempt.afterRequestHook?.(raw)).toBeUndefined();
+    expect(obsoleteAttempt.afterRequest?.(raw)).toBeUndefined();
     TestBed.tick();
     await vi.waitFor(() => {
       expect(service.snapshot()).toEqual({ rows, response: rows });
