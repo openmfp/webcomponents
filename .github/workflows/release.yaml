@@ -64,6 +64,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref_name }}
+          fromTag: ${{ steps.baseline.outputs.last_tag }}
           prefix: ''
           minorList: feat
           patchList: fix, perf
