@@ -4,10 +4,10 @@
 
 DataFetchTable displays rows from a local resource or an HTTP response. In a Dashboard card, `componentTemplate` adds the frame; metadata is configured on the table.
 
-| Usage             | Tag                         |
-| ----------------- | --------------------------- |
-| Angular component | `<mfp-data-fetch-table>`    |
-| Web component     | `<mfp-wc-data-fetch-table>` |
+| Usage             | Tag                              |
+| ----------------- | -------------------------------- |
+| Angular component | `<mfp-data-fetch-table>`         |
+| Web component     | `<mfp-wc-data-fetch-table-card>` |
 
 ---
 
@@ -20,7 +20,7 @@ dashboard.cards = [
   {
     id: 'destinations',
     label: 'Destinations',
-    component: 'mfp-wc-data-fetch-table',
+    component: 'mfp-wc-data-fetch-table-card',
     componentTemplate: {
       contentScrollable: true,
     },
@@ -46,10 +46,12 @@ Set `data.resource` when the host already has the rows. This standalone web comp
 
 ```html
 <script type="module" src="/mfp-webcomponents.js"></script>
-<mfp-wc-data-fetch-table id="destinations-table"></mfp-wc-data-fetch-table>
+<mfp-wc-data-fetch-table-card
+  id="destinations-table"
+></mfp-wc-data-fetch-table-card>
 
 <script type="module">
-  await customElements.whenDefined('mfp-wc-data-fetch-table');
+  await customElements.whenDefined('mfp-wc-data-fetch-table-card');
   const table = document.getElementById('destinations-table');
   table.columns = [
     { label: 'Name', property: 'name' },
@@ -78,10 +80,10 @@ Set `trackByPath` to a stable row identifier such as `metadata.uid`. The default
 
 DataFetchList fetches a JSON response and displays an array of objects as a list. Each item is rendered with the same `FieldDefinition` using [ResourceField](./resource-field.md).
 
-| Usage             | Tag                        |
-| ----------------- | -------------------------- |
-| Angular component | `<mfp-data-fetch-list>`    |
-| Web component     | `<mfp-wc-data-fetch-list>` |
+| Usage             | Tag                             |
+| ----------------- | ------------------------------- |
+| Angular component | `<mfp-data-fetch-list>`         |
+| Web component     | `<mfp-wc-data-fetch-list-card>` |
 
 ---
 
@@ -91,10 +93,10 @@ Load the web components bundle and assign properties after the element is regist
 
 ```html
 <script type="module" src="/mfp-webcomponents.js"></script>
-<mfp-wc-data-fetch-list id="subaccounts"></mfp-wc-data-fetch-list>
+<mfp-wc-data-fetch-list-card id="subaccounts"></mfp-wc-data-fetch-list-card>
 
 <script type="module">
-  await customElements.whenDefined('mfp-wc-data-fetch-list');
+  await customElements.whenDefined('mfp-wc-data-fetch-list-card');
   const list = document.getElementById('subaccounts');
   list.data = {
     request: { url: 'https://api.example.com/subaccounts' },
@@ -147,7 +149,7 @@ dashboard.cards = [
   {
     id: 'subaccounts',
     label: 'Affected Subaccounts',
-    component: 'mfp-wc-data-fetch-list',
+    component: 'mfp-wc-data-fetch-list-card',
     componentTemplate: {},
     componentInputs: {
       data: {

@@ -104,8 +104,8 @@ describe('webcomponents/main.ts', () => {
       const defined = await importMain();
 
       expect([...defined.keys()].sort()).toEqual([
-        'mfp-wc-data-fetch-list',
-        'mfp-wc-data-fetch-table',
+        'mfp-wc-data-fetch-list-card',
+        'mfp-wc-data-fetch-table-card',
         'mfp-wc-declarative-form',
         'mfp-wc-declarative-table',
         'mfp-wc-declarative-table-card',
@@ -114,7 +114,7 @@ describe('webcomponents/main.ts', () => {
       ]);
     });
 
-    it('registers DataFetchList as mfp-wc-data-fetch-list', async () => {
+    it('registers DataFetchList as mfp-wc-data-fetch-list-card', async () => {
       const defined = await importMain();
       const { DataFetchList } =
         await import('@openmfp/webcomponents/declarative-ui');
@@ -123,7 +123,7 @@ describe('webcomponents/main.ts', () => {
       );
 
       expect(callIndex).toBeGreaterThanOrEqual(0);
-      expect(defined.get('mfp-wc-data-fetch-list')).toBe(
+      expect(defined.get('mfp-wc-data-fetch-list-card')).toBe(
         createCustomElement.mock.results[callIndex].value,
       );
     });

@@ -26,12 +26,12 @@ ignoreCustomElements('mfp');
   const DataFetchTableElement = createCustomElement(DataFetchTable, {
     injector: app.injector,
   });
-  customElements.define('mfp-wc-data-fetch-table', DataFetchTableElement);
+  customElements.define('mfp-wc-data-fetch-table-card', DataFetchTableElement);
 
   const DataFetchListElement = createCustomElement(DataFetchList, {
     injector: app.injector,
   });
-  customElements.define('mfp-wc-data-fetch-list', DataFetchListElement);
+  customElements.define('mfp-wc-data-fetch-list-card', DataFetchListElement);
 
   const DeclarativeFormElementBase = createCustomElement(DeclarativeForm, {
     injector: app.injector,
