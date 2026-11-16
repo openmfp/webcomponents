@@ -28,7 +28,7 @@ export type BeforeRequest = (
   cardId?: string,
 ) => Request | void | Promise<Request | void>;
 
-export type AfterRequestHook = (
+export type AfterRequest = (
   response: JsonValue,
 ) => JsonValue | void | Promise<JsonValue | void>;
 
@@ -40,7 +40,7 @@ export type BeforeCardRequest = (
 export type AfterCardRequest = (
   response: JsonValue,
   cardId: string,
-) => ReturnType<AfterRequestHook>;
+) => ReturnType<AfterRequest>;
 
 export interface DataFetchLoadError {
   status?: number;
@@ -50,6 +50,6 @@ export interface DataFetchLoadError {
 export interface FetchAttempt {
   signal: AbortSignal;
   beforeRequest?: BeforeRequest;
-  afterRequestHook?: AfterRequestHook;
+  afterRequest?: AfterRequest;
   beforeSend?: () => void;
 }

@@ -8,8 +8,12 @@ import type {
 import {
   ChangeDetectionStrategy,
   Component,
+  NgZone,
   computed,
+  effect,
+  inject,
   input,
+  signal,
 } from '@angular/core';
 import { Icon } from '@fundamental-ngx/ui5-webcomponents/icon';
 import { getLanguage } from '@ui5/webcomponents-base/dist/config/Language.js';
@@ -27,6 +31,7 @@ const STATUS_ICONS: Record<CardStatusState, string> = {
   Critical: 'status-critical',
 };
 
+const MINUTE_MS = 60_000;
 const MINUTES_PER_DAY = 24 * 60;
 const ELAPSED_UNITS = [
   { unit: 'year', minutes: 365 * MINUTES_PER_DAY },
@@ -53,35 +58,66 @@ export class DataFetchMetadata {
 
   protected readonly statusIcons = STATUS_ICONS;
 
+  private readonly relativeTimestamp = computed(() => {
+    const config = this.lastUpdated();
+    if (typeof config?.label !== 'string' || typeof config.text === 'string') {
+      return undefined;
+    }
+
+    const value = this.readResponsePath(this.snapshot()?.response, config.path);
+    if (typeof value !== 'string') return undefined;
+
+    const timestampMs = Date.parse(value);
+    return Number.isNaN(timestampMs) ? undefined : timestampMs;
+  });
+  private readonly hasRelativeTimestamp = computed(
+    () => this.relativeTimestamp() !== undefined,
+  );
+  private readonly clockTick = signal(0);
+  private formatterCache?: {
+    locales: readonly (string | undefined)[];
+    formatter: Intl.RelativeTimeFormat;
+  };
+
+  private readonly updatedText = computed(() => {
+    const config = this.lastUpdated();
+    if (typeof config?.label !== 'string') return undefined;
+
+    const text =
+      typeof config.text === 'string'
+        ? config.text.trim()
+        : this.formatElapsedTime(config.locale);
+    if (!text) return undefined;
+
+    const label = config.label.trim();
+    return label ? `${label} ${text}` : text;
+  });
+  private readonly resolvedStatus = computed(() =>
+    this.resolveStatus(this.status(), this.snapshot()),
+  );
+
   protected readonly metadata = computed(() => {
-    const snapshot = this.snapshot();
-    const updatedText = this.resolveLastUpdated(
-      this.lastUpdated(),
-      snapshot?.response,
-    );
-    const status = this.resolveStatus(this.status(), snapshot);
+    const updatedText = this.updatedText();
+    const status = this.resolvedStatus();
     if (!updatedText && !status) return undefined;
 
     return { updatedText, status };
   });
 
-  private resolveLastUpdated(
-    lastUpdated: DataFetchLastUpdated | undefined,
-    response: unknown,
-  ): string | undefined {
-    if (typeof lastUpdated?.label !== 'string') return undefined;
+  constructor() {
+    const zone = inject(NgZone);
+    effect((onCleanup) => {
+      if (!this.hasRelativeTimestamp()) return;
 
-    const value =
-      typeof lastUpdated.text === 'string'
-        ? lastUpdated.text.trim()
-        : this.formatElapsedTime(
-            this.readResponsePath(response, lastUpdated.path),
-            lastUpdated.locale,
-          );
-    if (!value) return undefined;
-
-    const label = lastUpdated.label.trim();
-    return label ? `${label} ${value}` : value;
+      const timer = zone.runOutsideAngular(() =>
+        setInterval(() => {
+          this.clockTick.update((tick) => tick + 1);
+        }, MINUTE_MS),
+      );
+      onCleanup(() => {
+        clearInterval(timer);
+      });
+    });
   }
 
   private resolveStatus(
@@ -143,19 +179,16 @@ export class DataFetchMetadata {
     }
   }
 
-  private formatElapsedTime(
-    value: unknown,
-    locale: string | undefined,
-  ): string | undefined {
-    if (typeof value !== 'string') return undefined;
-    const timestampMs = Date.parse(value);
-    if (Number.isNaN(timestampMs)) return undefined;
+  private formatElapsedTime(locale: string | undefined): string | undefined {
+    const timestampMs = this.relativeTimestamp();
+    if (timestampMs === undefined) return undefined;
 
-    const elapsedMinutes = (Date.now() - timestampMs) / 60_000;
+    this.clockTick();
+    const elapsedMinutes = (Date.now() - timestampMs) / MINUTE_MS;
     const duration = ELAPSED_UNITS.find(
       ({ minutes }) => elapsedMinutes >= minutes,
     );
-    const formatter = this.createRelativeTimeFormatter(locale);
+    const formatter = this.getRelativeTimeFormatter(locale);
     return duration
       ? formatter.format(
           -Math.floor(elapsedMinutes / duration.minutes),
@@ -164,24 +197,33 @@ export class DataFetchMetadata {
       : formatter.format(0, 'second');
   }
 
-  private createRelativeTimeFormatter(
+  private getRelativeTimeFormatter(
     locale: string | undefined,
   ): Intl.RelativeTimeFormat {
-    for (const language of [
-      locale,
-      getLanguage(),
-      globalThis.navigator?.language,
-    ]) {
-      if (!language) continue;
+    const locales = [locale, getLanguage(), globalThis.navigator?.language];
+    const cached = this.formatterCache;
+    if (
+      cached &&
+      locales.every((candidate, index) => candidate === cached.locales[index])
+    ) {
+      return cached.formatter;
+    }
+
+    let supportedLocale: string | undefined;
+    for (const candidate of locales) {
+      if (!candidate) continue;
       try {
-        const [supported] =
-          Intl.RelativeTimeFormat.supportedLocalesOf(language);
-        if (supported)
-          return new Intl.RelativeTimeFormat(supported, { numeric: 'auto' });
+        supportedLocale =
+          Intl.RelativeTimeFormat.supportedLocalesOf(candidate)[0];
+        if (supportedLocale) break;
       } catch {
         continue;
       }
     }
-    return new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' });
+    const formatter = new Intl.RelativeTimeFormat(supportedLocale, {
+      numeric: 'auto',
+    });
+    this.formatterCache = { locales, formatter };
+    return formatter;
   }
 }

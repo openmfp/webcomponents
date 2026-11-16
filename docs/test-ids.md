@@ -160,7 +160,7 @@ Inside the dashboard, every card with `componentTemplate` renders these IDs — 
 
 ### Data fetch metadata
 
-DataFetchList and DataFetchTable use `card-template-subtitle` for last-updated text and `card-template-status` for status text when those values are displayed.
+DataFetchList and DataFetchTable use `data-fetch-metadata-last-updated` for last-updated text and `data-fetch-metadata-status` for status text when those values are displayed.
 
 ---
 

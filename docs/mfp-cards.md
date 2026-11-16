@@ -169,17 +169,17 @@ For Angular cards, import `Dashboard` and `DataFetchList` from `@openmfp/ngx`, c
 
 #### Inputs
 
-| Input              | Type                                    | Default                 | Description                                                                   |
-| ------------------ | --------------------------------------- | ----------------------- | ----------------------------------------------------------------------------- |
-| `data`             | `DataFetchListData`                     | —                       | `{ request: CardRequest, path?: string }`. The list supports HTTP data only.  |
-| `fieldDefinition`  | `FieldDefinition`                       | `{ property: 'label' }` | Defines how each item is displayed. See [ResourceField](./resource-field.md). |
-| `description`      | `string`                                | —                       | Text shown above the list.                                                    |
-| `beforeRequest`    | `BeforeRequest`                         | —                       | Changes or replaces the request before it is sent.                            |
-| `afterRequestHook` | `AfterRequestHook`                      | —                       | Transforms parsed JSON before the path is selected.                           |
-| `lastUpdated`      | `DataFetchLastUpdated`                  | —                       | Text or response timestamp displayed above the list.                          |
-| `status`           | `CardStatus`                            | —                       | Status text and state displayed above the list.                               |
-| `emptyState`       | `Omit<ErrorViewConfig, 'illustration'>` | —                       | Custom empty-state title and subtitle.                                        |
-| `errorState`       | `Omit<ErrorViewConfig, 'illustration'>` | —                       | Custom error title, subtitle and retry button.                                |
+| Input             | Type                                    | Default                 | Description                                                                   |
+| ----------------- | --------------------------------------- | ----------------------- | ----------------------------------------------------------------------------- |
+| `data`            | `DataFetchListData`                     | —                       | `{ request: CardRequest, path?: string }`. The list supports HTTP data only.  |
+| `fieldDefinition` | `FieldDefinition`                       | `{ property: 'label' }` | Defines how each item is displayed. See [ResourceField](./resource-field.md). |
+| `description`     | `string`                                | —                       | Text shown above the list.                                                    |
+| `beforeRequest`   | `BeforeRequest`                         | —                       | Changes or replaces the request before it is sent.                            |
+| `afterRequest`    | `AfterRequest`                          | —                       | Transforms parsed JSON before the path is selected.                           |
+| `lastUpdated`     | `DataFetchLastUpdated`                  | —                       | Text or response timestamp displayed above the list.                          |
+| `status`          | `CardStatus`                            | —                       | Status text and state displayed above the list.                               |
+| `emptyState`      | `Omit<ErrorViewConfig, 'illustration'>` | —                       | Custom empty-state title and subtitle.                                        |
+| `errorState`      | `Omit<ErrorViewConfig, 'illustration'>` | —                       | Custom error title, subtitle and retry button.                                |
 
 #### Outputs / Events
 
@@ -226,11 +226,13 @@ dashboard.beforeCardRequest = async (request, cardId) => {
 };
 ```
 
-`afterCardRequest(response, cardId)` on Dashboard and `afterRequestHook(response)` on standalone components can transform parsed JSON before `data.path` is applied. They may return a replacement JSON value or `void` to keep the original, synchronously or asynchronously. The hook runs for HTTP JSON responses, not local resources or empty HTTP responses.
+`afterCardRequest(response, cardId)` on Dashboard and `afterRequest(response)` on list and table components can transform parsed JSON before `data.path` is applied. They may return a replacement JSON value synchronously or asynchronously. Returning `null` or `undefined` preserves the original JSON. The response hook runs only for HTTP responses with a JSON body.
+
+For each hook, a callable value in the card's `componentInputs` takes precedence over its Dashboard counterpart. Only the selected hook runs.
 
 ## Empty and error states
 
-Both cards display a loading indicator during requests, an empty state for an empty array, and an error state for failed loads. Before `data` is assigned, the table displays its empty state; the list does not. The default texts are:
+Both cards display a loading indicator during requests and an error state for failed loads. They display an empty state when `data` is unset or the source returns no rows.
 
 | Card  | State | Title                  | Subtitle                                |
 | ----- | ----- | ---------------------- | --------------------------------------- |
@@ -285,8 +287,8 @@ list.lastUpdated = {
 
 The path must resolve to a date string accepted by JavaScript `Date.parse`. Use an ISO 8601 timestamp with a timezone, such as `2026-11-13T13:00:00Z`, to avoid ambiguity. Numeric timestamps, missing paths, invalid dates, and empty static text are not displayed. `label` and static `text` are trimmed; an empty label displays only the value.
 
-The component selects the largest elapsed unit: minutes, hours, days, weeks, months (30 days), or years (365 days), rounding down. Times less than one minute ago and future timestamps display the locale's equivalent of “now”. Formatting uses `Intl.RelativeTimeFormat` with `numeric: 'auto'`, so wording depends on the locale. It tries the supplied `locale`, the UI5 language, the browser language, and finally the runtime default. The value is recalculated when the relevant inputs or response change; it does not update on a timer.
+The component selects the largest elapsed unit: minutes, hours, days, weeks, months (30 days), or years (365 days), rounding down. Times less than one minute ago and future timestamps display the locale's equivalent of “now”. Formatting uses `Intl.RelativeTimeFormat` with `numeric: 'auto'`, so wording depends on the locale. It tries the supplied `locale`, the UI5 language, the browser language, and finally the runtime default. Displayed relative time refreshes every minute and when the relevant inputs or response change.
 
 ### Status
 
-`status.state` is `Neutral`, `Information`, `Positive`, `Negative`, or `Critical`. Status text supports `{{$length}}` for the selected row count and `{{response.path}}` for a value in the response. A status with an unresolved placeholder is hidden. Metadata paths refer to the response after `afterRequestHook` runs; response paths are unavailable for local table resources.
+`status.state` is `Neutral`, `Information`, `Positive`, `Negative`, or `Critical`. Status text supports `{{$length}}` for the selected row count and `{{response.path}}` for a value in the response. A status with an unresolved placeholder is hidden. Metadata paths refer to the response after `afterRequest` runs. Response paths are available for HTTP data.

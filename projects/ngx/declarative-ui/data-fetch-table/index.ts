@@ -6,7 +6,7 @@ export type {
 export { DataFetchTable } from './data-fetch-table.component';
 export type {
   AfterCardRequest,
-  AfterRequestHook,
+  AfterRequest,
   BeforeCardRequest,
   BeforeRequest,
   CardRequest,

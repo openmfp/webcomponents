@@ -1,5 +1,5 @@
 import type {
-  AfterRequestHook,
+  AfterRequest,
   BeforeRequest,
 } from '../../../../services/data-fetch.model';
 import { DashboardCardContent, MountCfg } from '../../models';
@@ -14,8 +14,8 @@ export function mountAngularCard(
   angularHost: ViewContainerRef,
   onCleanup: EffectCleanupRegisterFn,
   onMounted?: (content: DashboardCardContent) => void,
-  beforeRequest?: BeforeRequest,
-  afterRequestHook?: AfterRequestHook,
+  beforeRequestAdapter?: BeforeRequest,
+  afterRequestAdapter?: AfterRequest,
 ): void {
   const registeredComponent = getRegisteredDashboardCardComponent(
     cfg.component,
@@ -44,13 +44,13 @@ export function mountAngularCard(
   }
 
   const beforeRequestInput = registeredComponent.inputs.get('beforeRequest');
-  if (beforeRequestInput && beforeRequest) {
-    componentRef.setInput(beforeRequestInput, beforeRequest);
+  if (beforeRequestInput && beforeRequestAdapter) {
+    componentRef.setInput(beforeRequestInput, beforeRequestAdapter);
   }
 
-  const afterRequestInput = registeredComponent.inputs.get('afterRequestHook');
-  if (afterRequestInput && afterRequestHook) {
-    componentRef.setInput(afterRequestInput, afterRequestHook);
+  const afterRequestInput = registeredComponent.inputs.get('afterRequest');
+  if (afterRequestInput && afterRequestAdapter) {
+    componentRef.setInput(afterRequestInput, afterRequestAdapter);
   }
 
   const contentHeightInput = registeredComponent.inputs.get('contentHeight');

@@ -1,7 +1,7 @@
 import type { GenericResource } from '../declarative-ui/models/resource';
 import { getResourceValueByJsonPath } from '../declarative-ui/table/utils/resource-field-by-path';
 import type {
-  AfterRequestHook,
+  AfterRequest,
   BeforeRequest,
   CardRequest,
   DataFetchLoadError,
@@ -25,10 +25,18 @@ import {
 
 type DataFetchRowsConfig = Partial<DataFetchRequestData>;
 
+interface DataFetchRowsOptions<T extends DataFetchRowsConfig> {
+  data: Signal<T | undefined>;
+  beforeRequest: Signal<BeforeRequest | undefined>;
+  afterRequest: Signal<AfterRequest | undefined>;
+  onFailure: (failure: DataFetchLoadError) => void;
+  readResource?: (config: T) => object | undefined;
+}
+
 interface DataFetchLoad {
   data: DataFetchRowsConfig;
   beforeRequest: BeforeRequest | undefined;
-  afterRequestHook: AfterRequestHook | undefined;
+  afterRequest: AfterRequest | undefined;
   retryCount: number;
   controller: AbortController;
 }
@@ -47,37 +55,27 @@ export class DataFetchRowsService {
   private readonly loadingState = signal(false);
   private readonly failureState = signal<DataFetchLoadError | null>(null);
   private readonly retryCount = signal(0);
-
-  private data: Signal<DataFetchRowsConfig | undefined>;
-  private beforeRequest: Signal<BeforeRequest | undefined>;
-  private afterRequestHook?: Signal<AfterRequestHook | undefined>;
-  private onFailure: (failure: DataFetchLoadError) => void;
+  private isInitialized = false;
 
   readonly snapshot = this.snapshotState.asReadonly();
   readonly rows = computed(() => this.snapshot()?.rows ?? []);
   readonly loading = this.loadingState.asReadonly();
   readonly failure = this.failureState.asReadonly();
+  readonly state = computed(() => {
+    if (this.loading()) return 'loading';
+    if (this.failure()) return 'error';
+    return this.rows().length ? 'ready' : 'empty';
+  });
 
   initialize<T extends DataFetchRowsConfig>(
-    data: Signal<T | undefined>,
-    beforeRequest: Signal<BeforeRequest | undefined>,
-    onFailure: (failure: DataFetchLoadError) => void,
-    {
-      afterRequestHook,
-      readResource,
-    }: {
-      afterRequestHook?: Signal<AfterRequestHook | undefined>;
-      readResource?: (config: T) => object | undefined;
-    } = {},
+    options: DataFetchRowsOptions<T>,
   ): void {
-    this.data = data;
-    this.beforeRequest = beforeRequest;
-    this.afterRequestHook = afterRequestHook;
-    this.onFailure = onFailure;
+    if (this.isInitialized) return;
 
     effect((onCleanup) => {
-      this.refreshRows(data(), onCleanup, readResource);
+      this.refreshRows(options, onCleanup);
     });
+    this.isInitialized = true;
   }
 
   retry(): void {
@@ -85,10 +83,10 @@ export class DataFetchRowsService {
   }
 
   private refreshRows<T extends DataFetchRowsConfig>(
-    config: T | undefined,
+    options: DataFetchRowsOptions<T>,
     onCleanup: EffectCleanupRegisterFn,
-    readResource?: (config: T) => object | undefined,
   ): void {
+    const config = options.data();
     this.snapshotState.set(undefined);
     this.failureState.set(null);
     this.loadingState.set(false);
@@ -103,7 +101,7 @@ export class DataFetchRowsService {
       const request = untracked(() => config.request);
       if (request === undefined) {
         untracked(() => {
-          const resource = readResource?.(config);
+          const resource = options.readResource?.(config);
           const { path } = config;
           if (resource === undefined) {
             throw new TypeError('The data must specify a source.');
@@ -120,8 +118,8 @@ export class DataFetchRowsService {
       this.loadingState.set(true);
       const load: DataFetchLoad = {
         data: config,
-        beforeRequest: this.beforeRequest(),
-        afterRequestHook: this.afterRequestHook?.(),
+        beforeRequest: options.beforeRequest(),
+        afterRequest: options.afterRequest(),
         retryCount: this.retryCount(),
         controller: new AbortController(),
       };
@@ -130,58 +128,72 @@ export class DataFetchRowsService {
       });
 
       untracked(() => {
-        void this.loadRows(load, request, path);
+        void this.loadRows(options, load, request, path);
       });
     } catch {
-      this.showError(false);
+      this.showError(options, false);
     }
   }
 
-  private async loadRows(
+  private async loadRows<T extends DataFetchRowsConfig>(
+    options: DataFetchRowsOptions<T>,
     load: DataFetchLoad,
     request: CardRequest,
     path: string,
   ): Promise<void> {
-    const { beforeRequest, afterRequestHook, controller } = load;
+    const { beforeRequest, afterRequest, controller } = load;
     try {
       const response = await this.fetchService.fetchData(request, {
         signal: controller.signal,
         beforeRequest,
-        afterRequestHook: afterRequestHook
+        afterRequest: afterRequest
           ? (response) =>
               untracked(() =>
-                this.isCurrent(load) ? afterRequestHook(response) : undefined,
+                this.isCurrent(options, load)
+                  ? afterRequest(response)
+                  : undefined,
               )
           : undefined,
         beforeSend: () => {
-          if (!this.isCurrent(load)) controller.abort();
+          if (!this.isCurrent(options, load)) controller.abort();
         },
       });
 
-      if (!this.isCurrent(load)) return;
+      if (!this.isCurrent(options, load)) return;
       const rows = response === undefined ? [] : this.readRows(response, path);
-      if (!this.isCurrent(load)) return;
+      if (!this.isCurrent(options, load)) return;
       this.snapshotState.set({ rows, response });
       this.loadingState.set(false);
     } catch (error) {
-      if (this.isCurrent(load)) {
-        this.showError(!(error instanceof DataFetchConfigurationError), error);
+      if (this.isCurrent(options, load)) {
+        this.showError(
+          options,
+          !(error instanceof DataFetchConfigurationError),
+          error,
+        );
       }
     }
   }
 
-  private isCurrent(load: DataFetchLoad): boolean {
+  private isCurrent<T extends DataFetchRowsConfig>(
+    options: DataFetchRowsOptions<T>,
+    load: DataFetchLoad,
+  ): boolean {
     return untracked(
       () =>
         !load.controller.signal.aborted &&
-        this.data() === load.data &&
-        this.beforeRequest() === load.beforeRequest &&
-        this.afterRequestHook?.() === load.afterRequestHook &&
+        options.data() === load.data &&
+        options.beforeRequest() === load.beforeRequest &&
+        options.afterRequest() === load.afterRequest &&
         this.retryCount() === load.retryCount,
     );
   }
 
-  private showError(retryable: boolean, error?: unknown): void {
+  private showError<T extends DataFetchRowsConfig>(
+    { onFailure }: DataFetchRowsOptions<T>,
+    retryable: boolean,
+    error?: unknown,
+  ): void {
     const loadError: DataFetchLoadError = {
       status: error instanceof DataFetchHttpError ? error.status : undefined,
       retryable,
@@ -189,7 +201,7 @@ export class DataFetchRowsService {
     this.loadingState.set(false);
     this.failureState.set(loadError);
     untracked(() => {
-      this.onFailure({ ...loadError });
+      onFailure({ ...loadError });
     });
   }
 

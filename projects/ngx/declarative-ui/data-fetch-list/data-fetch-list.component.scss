@@ -45,29 +45,3 @@ mfp-resource-field {
   --mfp_tableCardTextWrap: anywhere;
   max-inline-size: 100%;
 }
-
-.loading {
-  display: grid;
-  place-items: center;
-}
-
-.state {
-  overflow: auto;
-  overflow-wrap: anywhere;
-}
-
-.state > mfp-error-view {
-  display: grid;
-  align-content: center;
-  block-size: auto;
-  min-block-size: 100%;
-  min-inline-size: 0;
-}
-
-.state--error > mfp-error-view {
-  box-sizing: border-box;
-  inline-size: 100%;
-  max-inline-size: 22rem;
-  margin-inline: auto;
-  padding-block-end: 1.5rem;
-}

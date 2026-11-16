@@ -1,16 +1,4 @@
-@if (loading()) {
-  <div class="loading">
-    <ui5-busy-indicator active size="M" [delay]="0" />
-  </div>
-} @else if (errorConfig(); as config) {
-  <div class="state state--error">
-    <mfp-error-view [config]="config" (buttonClick)="retry($event.key)" />
-  </div>
-} @else if (!rows().length) {
-  <div class="state">
-    <mfp-error-view [config]="emptyConfig()" />
-  </div>
-} @else {
+@if (state() === 'ready') {
   <mfp-data-fetch-metadata
     [lastUpdated]="lastUpdated()"
     [snapshot]="snapshot()"
@@ -22,5 +10,11 @@
     [columns]="columns()"
     [resources]="rows()"
     [trackByPath]="trackByPath() ?? 'id'"
+  />
+} @else {
+  <mfp-data-fetch-state
+    kind="table"
+    [emptyState]="emptyState()"
+    [errorState]="errorState()"
   />
 }

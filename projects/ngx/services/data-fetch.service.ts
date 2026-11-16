@@ -35,7 +35,7 @@ export class DataFetchService {
 
   private async sendRequest(
     request: Request,
-    { signal, beforeSend, afterRequestHook }: FetchAttempt,
+    { signal, beforeSend, afterRequest }: FetchAttempt,
   ): Promise<unknown> {
     const transport = new AbortController();
     const combinedSignal = AbortSignal.any([
@@ -69,12 +69,12 @@ export class DataFetchService {
 
     const payload: JsonValue = await response.json();
     combinedSignal.throwIfAborted();
-    if (!afterRequestHook) return payload;
+    if (!afterRequest) return payload;
 
-    const mapping = (async () => untracked(() => afterRequestHook(payload)))();
+    const mapping = (async () => untracked(() => afterRequest(payload)))();
     const mappedPayload = await this.waitForMapping(mapping, combinedSignal);
     combinedSignal.throwIfAborted();
-    return mappedPayload === undefined ? payload : mappedPayload;
+    return mappedPayload ?? payload;
   }
 
   private waitForMapping(

@@ -1,5 +1,5 @@
 import type {
-  AfterRequestHook,
+  AfterRequest,
   BeforeRequest,
 } from '../../../../services/data-fetch.model';
 import { DashboardCardContent, MountCfg } from '../../models';
@@ -16,8 +16,8 @@ export function mountWcCard(
   onCleanup: EffectCleanupRegisterFn,
   renderer: Renderer2,
   onMounted?: (content: DashboardCardContent) => void,
-  beforeRequest?: BeforeRequest,
-  afterRequestHook?: AfterRequestHook,
+  beforeRequestAdapter?: BeforeRequest,
+  afterRequestAdapter?: AfterRequest,
 ): void {
   const host: HTMLElement = container.element.nativeElement;
   const element: HTMLElement = renderer.createElement(cfg.component);
@@ -37,18 +37,19 @@ export function mountWcCard(
     if (disposed) return;
     definedRegistry?.upgrade(element);
 
-    const acceptsBeforeRequest = beforeRequest && 'beforeRequest' in element;
+    const acceptsBeforeRequest =
+      beforeRequestAdapter && 'beforeRequest' in element;
     if (acceptsBeforeRequest) {
-      renderer.setProperty(element, 'beforeRequest', beforeRequest);
+      renderer.setProperty(element, 'beforeRequest', beforeRequestAdapter);
     }
     const acceptsAfterRequest =
-      afterRequestHook && 'afterRequestHook' in element;
+      afterRequestAdapter && 'afterRequest' in element;
     if (acceptsAfterRequest) {
-      renderer.setProperty(element, 'afterRequestHook', afterRequestHook);
+      renderer.setProperty(element, 'afterRequest', afterRequestAdapter);
     }
     for (const [key, value] of Object.entries(cfg.componentInputs ?? {})) {
       if (acceptsBeforeRequest && key === 'beforeRequest') continue;
-      if (acceptsAfterRequest && key === 'afterRequestHook') continue;
+      if (acceptsAfterRequest && key === 'afterRequest') continue;
       renderer.setProperty(element, key, value);
     }
 
@@ -67,7 +68,7 @@ export function mountWcCard(
 
   const name = element.localName;
   if (
-    (beforeRequest || afterRequestHook) &&
+    (beforeRequestAdapter || afterRequestAdapter) &&
     name.includes('-') &&
     registry &&
     !registry.get(name)

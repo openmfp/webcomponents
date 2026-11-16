@@ -1,6 +1,6 @@
 @if (metadata(); as info) {
   @if (info.updatedText) {
-    <div class="subtitle" data-testid="card-template-subtitle">
+    <div class="subtitle" data-testid="data-fetch-metadata-last-updated">
       {{ info.updatedText }}
     </div>
   }
@@ -8,7 +8,7 @@
   @if (info.status; as cardStatus) {
     <div
       class="status"
-      data-testid="card-template-status"
+      data-testid="data-fetch-metadata-status"
       [attr.data-state]="cardStatus.state"
     >
       <ui5-icon
