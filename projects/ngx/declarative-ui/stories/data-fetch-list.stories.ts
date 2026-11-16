@@ -52,7 +52,7 @@ class DataFetchListStory {
       id: 'affected-subaccounts',
       label: 'Affected Subaccounts',
       type: 'angular',
-      component: 'mfp-data-fetch-list',
+      component: 'mfp-data-fetch-list-card',
       size: 's',
       componentTemplate: {
         badge: { text: 'Action Needed', state: 'Critical' },

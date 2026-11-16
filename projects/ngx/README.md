@@ -43,7 +43,7 @@ export class MyComponent {}
 | `<mfp-declarative-table>`      | Data table driven by a JSON schema                                  | [docs/declarative-table.md](https://github.com/openmfp/webcomponents/blob/main/docs/declarative-table.md)           |
 | `<mfp-declarative-form>`       | Form driven by a JSON schema                                        | [docs/declarative-form.md](https://github.com/openmfp/webcomponents/blob/main/docs/declarative-form.md)             |
 | `<mfp-declarative-table-card>` | Table with card wrapper and create/edit/delete dialogs              | [docs/declarative-table-card.md](https://github.com/openmfp/webcomponents/blob/main/docs/declarative-table-card.md) |
-| `<mfp-data-fetch-table>`       | Table populated from local data or an HTTP response                 | [docs/mfp-cards.md](https://github.com/openmfp/webcomponents/blob/main/docs/mfp-cards.md)                           |
+| `<mfp-data-fetch-table-card>`  | Table populated from local data or an HTTP response                 | [docs/mfp-cards.md](https://github.com/openmfp/webcomponents/blob/main/docs/mfp-cards.md)                           |
 | `<mfp-dashboard>`              | Drag-and-drop dashboard layout                                      | [docs/dashboard.md](https://github.com/openmfp/webcomponents/blob/main/docs/dashboard.md)                           |
 | `<mfp-error-view>`             | Error state with an illustration, texts and buttons from one config | [docs/error-view.md](https://github.com/openmfp/webcomponents/blob/main/docs/error-view.md)                         |
 

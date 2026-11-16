@@ -71,7 +71,7 @@ class DataFetchTableStory {
       id: 'destination-authentication',
       label: 'Destinations',
       type: 'angular',
-      component: 'mfp-data-fetch-table',
+      component: 'mfp-data-fetch-table-card',
       size: 'm',
       componentTemplate: {
         contentScrollable: true,

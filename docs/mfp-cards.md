@@ -6,7 +6,7 @@ DataFetchTable displays rows from a local resource or an HTTP response. In a Das
 
 | Usage             | Tag                              |
 | ----------------- | -------------------------------- |
-| Angular component | `<mfp-data-fetch-table>`         |
+| Angular component | `<mfp-data-fetch-table-card>`    |
 | Web component     | `<mfp-wc-data-fetch-table-card>` |
 
 ---
@@ -36,7 +36,7 @@ dashboard.cards = [
 ];
 ```
 
-In Angular, import `Dashboard` and `DataFetchTable` from `@openmfp/ngx` and call `Dashboard.registerAngularComponents([DataFetchTable])`. Set `type: 'angular'` and `component: 'mfp-data-fetch-table'` in the card configuration.
+In Angular, import `Dashboard` and `DataFetchTable` from `@openmfp/ngx` and call `Dashboard.registerAngularComponents([DataFetchTable])`. Set `type: 'angular'` and `component: 'mfp-data-fetch-table-card'` in the card configuration.
 
 ---
 
@@ -82,7 +82,7 @@ DataFetchList fetches a JSON response and displays an array of objects as a list
 
 | Usage             | Tag                             |
 | ----------------- | ------------------------------- |
-| Angular component | `<mfp-data-fetch-list>`         |
+| Angular component | `<mfp-data-fetch-list-card>`    |
 | Web component     | `<mfp-wc-data-fetch-list-card>` |
 
 ---
@@ -120,7 +120,7 @@ import { DataFetchList } from '@openmfp/ngx';
 @Component({
   imports: [DataFetchList],
   template: `
-    <mfp-data-fetch-list
+    <mfp-data-fetch-list-card
       [data]="data"
       [fieldDefinition]="fieldDefinition"
       (loadError)="onLoadError($event)"
@@ -163,7 +163,7 @@ dashboard.cards = [
 ];
 ```
 
-For Angular cards, import `Dashboard` and `DataFetchList` from `@openmfp/ngx`, call `Dashboard.registerAngularComponents([DataFetchList])`, and set `type: 'angular'` and `component: 'mfp-data-fetch-list'`.
+For Angular cards, import `Dashboard` and `DataFetchList` from `@openmfp/ngx`, call `Dashboard.registerAngularComponents([DataFetchList])`, and set `type: 'angular'` and `component: 'mfp-data-fetch-list-card'`.
 
 ---
 

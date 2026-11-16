@@ -192,15 +192,17 @@ describe('Dashboard', () => {
           )
           ?.textContent?.trim();
       await vi.waitFor(() => {
-        expect(metadata('mfp-data-fetch-table', 'status')).toBe(
+        expect(metadata('mfp-data-fetch-table-card', 'status')).toBe(
           '9 Destinations',
         );
-        expect(metadata('mfp-data-fetch-list', 'status')).toBe('3 Subaccounts');
+        expect(metadata('mfp-data-fetch-list-card', 'status')).toBe(
+          '3 Subaccounts',
+        );
       });
-      expect(metadata('mfp-data-fetch-table', 'last-updated')).toBe(
+      expect(metadata('mfp-data-fetch-table-card', 'last-updated')).toBe(
         'Last updated: 30 minutes ago',
       );
-      expect(metadata('mfp-data-fetch-list', 'last-updated')).toBe(
+      expect(metadata('mfp-data-fetch-list-card', 'last-updated')).toBe(
         'Last updated: 30 minutes ago',
       );
       expect(fetch).toHaveBeenCalledTimes(1);
