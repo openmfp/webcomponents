@@ -1,5 +1,6 @@
 import { CardTemplate } from '../../../cards/card-template/card-template.component';
 import type {
+  ActionsHook,
   AfterCardRequest,
   AfterRequest,
   BeforeCardRequest,
@@ -22,6 +23,7 @@ import {
 import {
   Component,
   type EffectCleanupRegisterFn,
+  ErrorHandler,
   Renderer2,
   ViewContainerRef,
   ViewEncapsulation,
@@ -83,6 +85,7 @@ export class DashboardCard {
   private searchedContent: DashboardCardContent | undefined;
   private host = viewChild('elementHost', { read: ViewContainerRef });
   private renderer = inject(Renderer2);
+  private errorHandler = inject(ErrorHandler);
 
   private readonly mountCfg = computed(
     () => {
@@ -138,6 +141,10 @@ export class DashboardCard {
         mountCfg,
         isCurrentMount,
       );
+      const actionsHook = this.createActionsHookAdapter(
+        mountCfg,
+        isCurrentMount,
+      );
 
       if (mountCfg.type === CARD_TYPES.ANGULAR) {
         mountAngularCard(
@@ -147,6 +154,7 @@ export class DashboardCard {
           onMounted,
           beforeRequest,
           afterRequest,
+          actionsHook,
         );
       } else {
         mountWcCard(
@@ -157,6 +165,7 @@ export class DashboardCard {
           onMounted,
           beforeRequest,
           afterRequest,
+          actionsHook,
         );
       }
     });
@@ -176,8 +185,27 @@ export class DashboardCard {
   }
 
   protected onTemplateAction(key: string): void {
-    this.mountedContent()?.onCardAction?.(key);
+    try {
+      this.mountedContent()?.onCardAction?.(key);
+    } catch (error) {
+      this.errorHandler.handleError(error);
+    }
     this.cardAction.emit(key);
+  }
+
+  private createActionsHookAdapter(
+    mountCfg: MountCfg,
+    isCurrentMount: () => boolean,
+  ): ActionsHook {
+    return (key) =>
+      untracked(() => {
+        if (!isCurrentMount()) return undefined;
+
+        const localHook = this.readLocalHook(mountCfg, 'actionsHook');
+        return typeof localHook === 'function'
+          ? (localHook as ActionsHook)(key)
+          : undefined;
+      });
   }
 
   private createBeforeRequestAdapter(
@@ -214,7 +242,7 @@ export class DashboardCard {
 
   private readLocalHook(
     mountCfg: MountCfg,
-    name: 'beforeRequest' | 'afterRequest',
+    name: 'beforeRequest' | 'afterRequest' | 'actionsHook',
   ): unknown {
     const componentInputs = this.card().componentInputs;
     if (!componentInputs) return undefined;

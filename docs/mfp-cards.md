@@ -265,7 +265,7 @@ dashboard.cards = [
 ];
 ```
 
-Without `actionsHook`, the card ignores actions. The Dashboard emits every action as `cardAction` with `{ cardId, key }` either way, so the host can also handle actions there. The `mfp-wc-data-fetch-table-card` and `mfp-wc-data-fetch-list-card` elements expose `onCardAction(key)`, and so do the Angular components.
+Without `actionsHook`, the card ignores actions. The Dashboard emits every action as `cardAction` with `{ cardId, key }` either way, so the host can also handle actions there. An error thrown by the hook, or a rejected promise it returns, is reported to Angular's `ErrorHandler` and does not stop the `cardAction` event. When the card's `componentInputs` gets a new `actionsHook`, the Dashboard calls the new hook without remounting the card. The `mfp-wc-data-fetch-table-card` and `mfp-wc-data-fetch-list-card` elements expose `onCardAction(key)`, and so do the Angular components.
 
 ## Empty and error states
 

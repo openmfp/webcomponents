@@ -1,4 +1,5 @@
 import type {
+  ActionsHook,
   AfterRequest,
   BeforeRequest,
 } from '../../../../services/data-fetch.model';
@@ -18,6 +19,7 @@ export function mountWcCard(
   onMounted?: (content: DashboardCardContent) => void,
   beforeRequestAdapter?: BeforeRequest,
   afterRequestAdapter?: AfterRequest,
+  actionsHookAdapter?: ActionsHook,
 ): void {
   const host: HTMLElement = container.element.nativeElement;
   const element: HTMLElement = renderer.createElement(cfg.component);
@@ -47,9 +49,14 @@ export function mountWcCard(
     if (acceptsAfterRequest) {
       renderer.setProperty(element, 'afterRequest', afterRequestAdapter);
     }
+    const acceptsActionsHook = actionsHookAdapter && 'actionsHook' in element;
+    if (acceptsActionsHook) {
+      renderer.setProperty(element, 'actionsHook', actionsHookAdapter);
+    }
     for (const [key, value] of Object.entries(cfg.componentInputs ?? {})) {
       if (acceptsBeforeRequest && key === 'beforeRequest') continue;
       if (acceptsAfterRequest && key === 'afterRequest') continue;
+      if (acceptsActionsHook && key === 'actionsHook') continue;
       renderer.setProperty(element, key, value);
     }
 
@@ -68,7 +75,7 @@ export function mountWcCard(
 
   const name = element.localName;
   if (
-    (beforeRequestAdapter || afterRequestAdapter) &&
+    (beforeRequestAdapter || afterRequestAdapter || actionsHookAdapter) &&
     name.includes('-') &&
     registry &&
     !registry.get(name)

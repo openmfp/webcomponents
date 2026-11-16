@@ -1,5 +1,5 @@
 import { DataFetchTable } from './data-fetch-table.component';
-import { signal } from '@angular/core';
+import { ErrorHandler, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 const request = { url: 'https://example.test/rows' };
@@ -81,6 +81,35 @@ describe('DataFetchTable', () => {
 
     expect(actionsHook.mock.calls).toEqual([['refresh'], ['export']]);
     expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('reports a throwing actionsHook to the ErrorHandler', () => {
+    const error = new Error('export failed');
+    const handleError = vi
+      .spyOn(TestBed.inject(ErrorHandler), 'handleError')
+      .mockImplementation(vi.fn());
+    fixture.componentRef.setInput('actionsHook', () => {
+      throw error;
+    });
+
+    expect(() => {
+      fixture.componentInstance.onCardAction('export');
+    }).not.toThrow();
+    expect(handleError).toHaveBeenCalledExactlyOnceWith(error);
+  });
+
+  it('reports a rejected actionsHook promise to the ErrorHandler', async () => {
+    const error = new Error('export failed');
+    const handleError = vi
+      .spyOn(TestBed.inject(ErrorHandler), 'handleError')
+      .mockImplementation(vi.fn());
+    fixture.componentRef.setInput('actionsHook', () => Promise.reject(error));
+
+    fixture.componentInstance.onCardAction('export');
+
+    await vi.waitFor(() => {
+      expect(handleError).toHaveBeenCalledExactlyOnceWith(error);
+    });
   });
 
   it('ignores card actions without an actionsHook', () => {

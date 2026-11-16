@@ -7,6 +7,7 @@ import type {
   DataFetchRequestData,
 } from '../../services/data-fetch.model';
 import { DataFetchService } from '../../services/data-fetch.service';
+import { runActionsHook } from '../../services/run-actions-hook';
 import { DataFetchMetadata } from '../data-fetch-metadata/data-fetch-metadata.component';
 import type {
   CardStatus,
@@ -19,6 +20,7 @@ import { ResourceField } from '../resource-field';
 import {
   ChangeDetectionStrategy,
   Component,
+  ErrorHandler,
   ViewEncapsulation,
   computed,
   inject,
@@ -54,6 +56,7 @@ export class DataFetchList {
   readonly loadError = output<DataFetchLoadError>();
 
   private readonly rowLoader = inject(DataFetchRowsService);
+  private readonly errorHandler = inject(ErrorHandler);
 
   protected readonly rows = this.rowLoader.rows;
   protected readonly state = this.rowLoader.state;
@@ -74,6 +77,6 @@ export class DataFetchList {
   }
 
   onCardAction(key: string): void {
-    void this.actionsHook()?.(key);
+    runActionsHook(this.actionsHook(), key, this.errorHandler);
   }
 }

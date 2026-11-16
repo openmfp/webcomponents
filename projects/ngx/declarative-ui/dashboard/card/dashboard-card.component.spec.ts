@@ -10,7 +10,7 @@ import {
   resetDashboardCardRegistry,
 } from './utils/dashboard-card-registry';
 import { SapComponentCreatedEvent } from './utils/mount-sap-card';
-import { Component, input } from '@angular/core';
+import { Component, ErrorHandler, input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { axe } from 'vitest-axe';
@@ -42,6 +42,22 @@ class SearchableAngularCard {
     this.searches.push(query);
   }
 }
+
+class ThrowingActionWidget extends HTMLElement {
+  onCardAction(): void {
+    throw new Error('action failed');
+  }
+}
+customElements.define('throwing-action-widget', ThrowingActionWidget);
+
+class ActionsAwareWidget extends HTMLElement {
+  actionsHook?: (key: string) => void;
+
+  onCardAction(key: string): void {
+    this.actionsHook?.(key);
+  }
+}
+customElements.define('actions-aware-widget', ActionsAwareWidget);
 
 class RequestAwareWidget extends HTMLElement {
   beforeRequest?: BeforeRequest;
@@ -678,6 +694,94 @@ describe('DashboardCard', () => {
       expect(actionsHook).toHaveBeenCalledWith('export');
       expect(emitted).toEqual(['export']);
       warn.mockRestore();
+    });
+
+    it('emits cardAction and reports the error when onCardAction throws', () => {
+      const handleError = vi
+        .spyOn(TestBed.inject(ErrorHandler), 'handleError')
+        .mockImplementation(vi.fn());
+      const { fixture, component } = setup();
+      const emitted: string[] = [];
+      component.cardAction.subscribe((key) => emitted.push(key));
+
+      fixture.componentRef.setInput('card', {
+        ...templatedCard,
+        componentTemplate: {
+          actions: templatedCard.componentTemplate?.actions,
+        },
+        component: 'throwing-action-widget',
+      });
+      fixture.detectChanges();
+      cardTemplate(fixture).actionPress.emit('export');
+
+      expect(handleError).toHaveBeenCalledExactlyOnceWith(
+        new Error('action failed'),
+      );
+      expect(emitted).toEqual(['export']);
+    });
+
+    it('calls the latest actionsHook of an Angular data fetch card without remounting it', () => {
+      addComponentToRegistry([DataFetchList]);
+      const firstHook = vi.fn<(key: string) => void>();
+      const secondHook = vi.fn<(key: string) => void>();
+      const { fixture } = setup();
+      const card: CardConfig = {
+        ...templatedCard,
+        componentTemplate: {
+          actions: templatedCard.componentTemplate?.actions,
+        },
+        type: 'angular',
+        component: 'mfp-data-fetch-list-card',
+      };
+
+      fixture.componentRef.setInput('card', {
+        ...card,
+        componentInputs: { actionsHook: firstHook },
+      });
+      fixture.detectChanges();
+      const mounted = fixture.debugElement.query(By.directive(DataFetchList));
+      fixture.componentRef.setInput('card', {
+        ...card,
+        componentInputs: { actionsHook: secondHook },
+      });
+      fixture.detectChanges();
+      cardTemplate(fixture).actionPress.emit('export');
+
+      expect(fixture.debugElement.query(By.directive(DataFetchList))).toBe(
+        mounted,
+      );
+      expect(firstHook).not.toHaveBeenCalled();
+      expect(secondHook).toHaveBeenCalledExactlyOnceWith('export');
+    });
+
+    it('calls the latest actionsHook of a web component card without remounting it', () => {
+      const firstHook = vi.fn<(key: string) => void>();
+      const secondHook = vi.fn<(key: string) => void>();
+      const { fixture } = setup();
+      const card: CardConfig = {
+        ...templatedCard,
+        componentTemplate: {
+          actions: templatedCard.componentTemplate?.actions,
+        },
+        component: 'actions-aware-widget',
+      };
+
+      fixture.componentRef.setInput('card', {
+        ...card,
+        componentInputs: { actionsHook: firstHook },
+      });
+      fixture.detectChanges();
+      const widget = root(fixture).querySelector('actions-aware-widget');
+      fixture.componentRef.setInput('card', {
+        ...card,
+        componentInputs: { actionsHook: secondHook },
+      });
+      fixture.detectChanges();
+      cardTemplate(fixture).actionPress.emit('export');
+
+      expect(root(fixture).querySelector('actions-aware-widget')).toBe(widget);
+      expect(firstHook).not.toHaveBeenCalled();
+      expect(secondHook).toHaveBeenCalledExactlyOnceWith('export');
     });
 
     it('emits cardAction for a card without onCardAction', () => {
