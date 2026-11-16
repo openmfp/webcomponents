@@ -150,6 +150,7 @@ jobs:
         run: |
           node scripts/update-changelog.mjs RELEASE_NOTES.md
           rm -f RELEASE_NOTES.md
+          npx prettier --write CHANGELOG.md
 
       - name: Dry-run summary
         if: ${{ steps.version.outputs.version != '' && inputs.dry-run }}
