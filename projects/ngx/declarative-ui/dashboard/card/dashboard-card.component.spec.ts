@@ -1,4 +1,5 @@
 import { CardTemplate } from '../../../cards/card-template/card-template.component';
+import { DataFetchList } from '../../data-fetch-list';
 import type { AfterRequest, BeforeRequest } from '../../data-fetch-table';
 import { DASHBOARD_CARD_DRAG_ORIGIN_CLASS } from '../constants';
 import { DashboardI18nService } from '../i18n';
@@ -655,6 +656,28 @@ describe('DashboardCard', () => {
 
       expect(mountedWidget(fixture).actions).toEqual(['export']);
       expect(emitted).toEqual(['export']);
+    });
+
+    it('passes a chosen action to the actionsHook of a data fetch card', () => {
+      addComponentToRegistry([DataFetchList]);
+      const warn = vi.spyOn(console, 'warn').mockImplementation(vi.fn());
+      const actionsHook = vi.fn<(key: string) => void>();
+      const { fixture, component } = setup();
+      const emitted: string[] = [];
+      component.cardAction.subscribe((key) => emitted.push(key));
+
+      fixture.componentRef.setInput('card', {
+        ...templatedCard,
+        type: 'angular',
+        component: 'mfp-data-fetch-list-card',
+        componentInputs: { actionsHook },
+      });
+      fixture.detectChanges();
+      cardTemplate(fixture).actionPress.emit('export');
+
+      expect(actionsHook).toHaveBeenCalledWith('export');
+      expect(emitted).toEqual(['export']);
+      warn.mockRestore();
     });
 
     it('emits cardAction for a card without onCardAction', () => {

@@ -72,6 +72,23 @@ describe('DataFetchTable', () => {
     vi.unstubAllGlobals();
   });
 
+  it('passes each chosen card action to actionsHook', () => {
+    const actionsHook = vi.fn<(key: string) => void>();
+    fixture.componentRef.setInput('actionsHook', actionsHook);
+
+    fixture.componentInstance.onCardAction('refresh');
+    fixture.componentInstance.onCardAction('export');
+
+    expect(actionsHook.mock.calls).toEqual([['refresh'], ['export']]);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('ignores card actions without an actionsHook', () => {
+    expect(() => {
+      fixture.componentInstance.onCardAction('export');
+    }).not.toThrow();
+  });
+
   it('renders local root and nested first-match rows without running a request', async () => {
     const afterRequest = vi.fn();
     fixture.componentRef.setInput('afterRequest', afterRequest);

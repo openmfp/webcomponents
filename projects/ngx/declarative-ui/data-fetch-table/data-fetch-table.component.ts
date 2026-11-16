@@ -1,5 +1,6 @@
 import { DataFetchRowsService } from '../../services/data-fetch-rows.service';
 import type {
+  ActionsHook,
   AfterRequest,
   BeforeRequest,
   DataFetchLoadError,
@@ -39,6 +40,7 @@ export class DataFetchTable {
   readonly trackByPath = input<string>();
   readonly beforeRequest = input<BeforeRequest>();
   readonly afterRequest = input<AfterRequest>();
+  readonly actionsHook = input<ActionsHook>();
   readonly lastUpdated = input<DataFetchLastUpdated>();
   readonly status = input<CardStatus>();
   readonly emptyState = input<Omit<ErrorViewConfig, 'illustration'>>();
@@ -62,5 +64,9 @@ export class DataFetchTable {
       },
       readResource: (data) => data.resource,
     });
+  }
+
+  onCardAction(key: string): void {
+    void this.actionsHook()?.(key);
   }
 }
