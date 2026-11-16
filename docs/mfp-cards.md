@@ -178,6 +178,7 @@ For Angular cards, import `Dashboard` and `DataFetchList` from `@openmfp/ngx`, c
 | `description`     | `string`                                | —                       | Text shown above the list.                                                    |
 | `beforeRequest`   | `BeforeRequest`                         | —                       | Changes or replaces the request before it is sent.                            |
 | `afterRequest`    | `AfterRequest`                          | —                       | Transforms parsed JSON before the path is selected.                           |
+| `actionsHook`     | `ActionsHook`                           | —                       | Handles the card's header actions. See [Card actions](#card-actions).         |
 | `lastUpdated`     | `DataFetchLastUpdated`                  | —                       | Text or response timestamp displayed above the list.                          |
 | `status`          | `CardStatus`                            | —                       | Status text and state displayed above the list.                               |
 | `emptyState`      | `Omit<ErrorViewConfig, 'illustration'>` | —                       | Custom empty-state title and subtitle.                                        |
@@ -231,6 +232,40 @@ dashboard.beforeCardRequest = async (request, cardId) => {
 `afterCardRequest(response, cardId)` on Dashboard and `afterRequest(response)` on list and table components can transform parsed JSON before `data.path` is applied. They may return a replacement JSON value synchronously or asynchronously. Returning `null` or `undefined` preserves the original JSON. The response hook runs only for HTTP responses with a JSON body.
 
 For each hook, a callable value in the card's `componentInputs` takes precedence over its Dashboard counterpart. Only the selected hook runs.
+
+## Card actions
+
+In a Dashboard card, `componentTemplate.actions` adds an overflow menu to the card header. When the user chooses an action, the Dashboard calls `onCardAction(key)` on the card. Both cards pass the key to their `actionsHook` input, `(key: string) => void | Promise<void>`:
+
+```js
+dashboard.cards = [
+  {
+    id: 'subaccounts',
+    label: 'Subaccounts',
+    component: 'mfp-wc-data-fetch-list-card',
+    componentTemplate: {
+      actions: [
+        { key: 'export', text: 'Export to CSV' },
+        { key: 'open', text: 'Open in Cockpit' },
+      ],
+    },
+    componentInputs: {
+      data: {
+        request: { url: 'https://api.example.com/subaccounts' },
+        path: 'data.items',
+      },
+      fieldDefinition: { property: 'name' },
+      actionsHook: (key) => {
+        if (key === 'export') exportSubaccounts();
+        if (key === 'open')
+          window.open('https://cockpit.example.com/subaccounts');
+      },
+    },
+  },
+];
+```
+
+Without `actionsHook`, the card ignores actions. The Dashboard emits every action as `cardAction` with `{ cardId, key }` either way, so the host can also handle actions there. The `mfp-wc-data-fetch-table-card` and `mfp-wc-data-fetch-list-card` elements expose `onCardAction(key)`, and so do the Angular components.
 
 ## Empty and error states
 

@@ -123,9 +123,9 @@ describe('webcomponents/main.ts', () => {
       );
 
       expect(callIndex).toBeGreaterThanOrEqual(0);
-      expect(defined.get('mfp-wc-data-fetch-list-card')).toBe(
-        createCustomElement.mock.results[callIndex].value,
-      );
+      expect(
+        Object.getPrototypeOf(defined.get('mfp-wc-data-fetch-list-card')),
+      ).toBe(createCustomElement.mock.results[callIndex].value);
     });
 
     it('creates every element from the shared application injector', async () => {
@@ -187,6 +187,44 @@ describe('webcomponents/main.ts', () => {
       expect(() => el['submit']()).not.toThrow();
       expect(() => el['clear']()).not.toThrow();
     });
+  });
+
+  describe('data fetch card method proxies', () => {
+    const DATA_FETCH_CARD_TAGS = [
+      'mfp-wc-data-fetch-list-card',
+      'mfp-wc-data-fetch-table-card',
+    ] as const;
+
+    async function dataFetchCardElement(tag: string) {
+      const defined = await importMain();
+      const Ctor = defined.get(tag)!;
+      return new Ctor() as HTMLElement &
+        StrategyHost &
+        Record<string, (key: string) => void>;
+    }
+
+    it.each(DATA_FETCH_CARD_TAGS)(
+      'forwards onCardAction(key) of %s to the backing component instance',
+      async (tag) => {
+        const el = await dataFetchCardElement(tag);
+        const instance = { onCardAction: vi.fn() };
+        el.ngElementStrategy = { componentRef: { instance } };
+
+        el['onCardAction']('export');
+
+        expect(instance.onCardAction).toHaveBeenCalledWith('export');
+      },
+    );
+
+    it.each(DATA_FETCH_CARD_TAGS)(
+      'no-ops onCardAction(key) of %s when the strategy exists but componentRef is missing',
+      async (tag) => {
+        const el = await dataFetchCardElement(tag);
+        el.ngElementStrategy = {};
+
+        expect(() => el['onCardAction']('export')).not.toThrow();
+      },
+    );
   });
 
   describe('DeclarativeTableCard method proxies', () => {

@@ -23,14 +23,38 @@ ignoreCustomElements('mfp');
   });
   customElements.define('mfp-wc-declarative-table', DeclarativeTableElement);
 
-  const DataFetchTableElement = createCustomElement(DataFetchTable, {
+  const DataFetchTableElementBase = createCustomElement(DataFetchTable, {
     injector: app.injector,
-  });
+  }) as CustomElementConstructor;
+  class DataFetchTableElement extends DataFetchTableElementBase {
+    onCardAction(key: string): void {
+      const strategy = (
+        this as unknown as {
+          ngElementStrategy: {
+            componentRef?: { instance: DataFetchTable };
+          };
+        }
+      ).ngElementStrategy;
+      strategy.componentRef?.instance.onCardAction(key);
+    }
+  }
   customElements.define('mfp-wc-data-fetch-table-card', DataFetchTableElement);
 
-  const DataFetchListElement = createCustomElement(DataFetchList, {
+  const DataFetchListElementBase = createCustomElement(DataFetchList, {
     injector: app.injector,
-  });
+  }) as CustomElementConstructor;
+  class DataFetchListElement extends DataFetchListElementBase {
+    onCardAction(key: string): void {
+      const strategy = (
+        this as unknown as {
+          ngElementStrategy: {
+            componentRef?: { instance: DataFetchList };
+          };
+        }
+      ).ngElementStrategy;
+      strategy.componentRef?.instance.onCardAction(key);
+    }
+  }
   customElements.define('mfp-wc-data-fetch-list-card', DataFetchListElement);
 
   const DeclarativeFormElementBase = createCustomElement(DeclarativeForm, {

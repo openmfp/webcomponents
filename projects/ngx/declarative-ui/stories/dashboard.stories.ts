@@ -39,6 +39,7 @@ import {
 import { StoryServiceListCard } from './story-service-list-card.component';
 import { SUBACCOUNTS_LIST_INPUTS } from './subaccounts-list.config';
 import type { Meta, StoryObj } from '@storybook/angular';
+import { action } from 'storybook/actions';
 
 Dashboard.registerAngularComponents([
   Favorites,
@@ -685,6 +686,7 @@ const DESTINATIONS_CARD = {
     actions: [{ key: 'view-destinations', text: 'View destinations' }],
   },
   componentInputs: {
+    actionsHook: action('actionsHook'),
     lastUpdated: { label: 'Last updated:', text: '30 minutes ago' },
     status: {
       text: '{{$length}} Destinations',

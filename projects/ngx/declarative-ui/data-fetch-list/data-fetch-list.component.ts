@@ -1,5 +1,6 @@
 import { DataFetchRowsService } from '../../services/data-fetch-rows.service';
 import type {
+  ActionsHook,
   AfterRequest,
   BeforeRequest,
   DataFetchLoadError,
@@ -42,6 +43,7 @@ export class DataFetchList {
   readonly data = input<DataFetchRequestData>();
   readonly beforeRequest = input<BeforeRequest>();
   readonly afterRequest = input<AfterRequest>();
+  readonly actionsHook = input<ActionsHook>();
   readonly lastUpdated = input<DataFetchLastUpdated>();
   readonly status = input<CardStatus>();
   readonly description = input<string>();
@@ -69,5 +71,9 @@ export class DataFetchList {
         this.loadError.emit(failure);
       },
     });
+  }
+
+  onCardAction(key: string): void {
+    void this.actionsHook()?.(key);
   }
 }

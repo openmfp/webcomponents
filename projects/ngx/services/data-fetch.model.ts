@@ -32,6 +32,8 @@ export type AfterRequest = (
   response: JsonValue,
 ) => JsonValue | void | Promise<JsonValue | void>;
 
+export type ActionsHook = (key: string) => void | Promise<void>;
+
 export type BeforeCardRequest = (
   request: Request,
   cardId: string,

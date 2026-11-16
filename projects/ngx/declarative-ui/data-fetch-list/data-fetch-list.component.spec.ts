@@ -48,6 +48,23 @@ describe('DataFetchList', () => {
     vi.restoreAllMocks();
   });
 
+  it('passes each chosen card action to actionsHook', () => {
+    const actionsHook = vi.fn<(key: string) => void>();
+    fixture.componentRef.setInput('actionsHook', actionsHook);
+
+    fixture.componentInstance.onCardAction('refresh');
+    fixture.componentInstance.onCardAction('export');
+
+    expect(actionsHook.mock.calls).toEqual([['refresh'], ['export']]);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('ignores card actions without an actionsHook', () => {
+    expect(() => {
+      fixture.componentInstance.onCardAction('export');
+    }).not.toThrow();
+  });
+
   it('renders full rows as ordered links and updates their presentation without fetching again', async () => {
     const rows = [
       { id: 'b', name: 'Subaccount B' },
