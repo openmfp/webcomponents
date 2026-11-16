@@ -1,6 +1,10 @@
 import { Component, ViewEncapsulation } from '@angular/core';
 import { Icon } from '@fundamental-ngx/ui5-webcomponents/icon';
 import { Title } from '@fundamental-ngx/ui5-webcomponents/title';
+import '@ui5/webcomponents-icons/dist/status-critical.js';
+import '@ui5/webcomponents-icons/dist/status-inactive.js';
+import '@ui5/webcomponents-icons/dist/status-negative.js';
+import '@ui5/webcomponents-icons/dist/status-positive.js';
 
 /** Possible health states for a service. */
 export type ServiceStatusValue =

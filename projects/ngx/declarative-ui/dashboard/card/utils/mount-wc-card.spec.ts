@@ -1,4 +1,8 @@
-import { type BeforeRequest, DataFetchTable } from '../../../data-fetch-table';
+import {
+  type AfterRequest,
+  type BeforeRequest,
+  DataFetchTable,
+} from '../../../data-fetch-table';
 import { CardConfig } from '../../models';
 import { mountWcCard } from './mount-wc-card';
 import {
@@ -139,16 +143,18 @@ describe('mountWcCard', () => {
     expect(onMounted).toHaveBeenCalledWith(el.querySelector('demo-widget'));
   });
 
-  it('applies the hook to the first request of a late-defined Angular element', async () => {
+  it('applies both hooks to the first request of a late-defined Angular element', async () => {
     TestBed.configureTestingModule({ imports: [DataFetchTable] });
     const injector = TestBed.inject(Injector);
     const { container, el } = makeContainer();
     const { onCleanup, runCleanup } = makeCleanup();
     const tag = 'mfp-late-angular-card';
     const onMounted = vi.fn();
+    const payload = { rawRows: [{ id: 'remote' }] };
+    const afterRequestAdapter = vi.fn<AfterRequest>(() => [{ id: 'mapped' }]);
     const fetch = vi
       .fn<typeof globalThis.fetch>()
-      .mockResolvedValue(Response.json([]));
+      .mockResolvedValue(Response.json(payload));
     vi.stubGlobal('fetch', fetch);
 
     try {
@@ -167,6 +173,7 @@ describe('mountWcCard', () => {
         (request) => {
           request.headers.set('Authorization', 'Bearer test');
         },
+        afterRequestAdapter,
       );
 
       expect(el.childElementCount).toBe(0);
@@ -179,6 +186,7 @@ describe('mountWcCard', () => {
       );
       await vi.waitFor(() => {
         expect(fetch).toHaveBeenCalledTimes(1);
+        expect(afterRequestAdapter).toHaveBeenCalledExactlyOnceWith(payload);
       });
       const request = fetch.mock.calls[0][0];
       expect(request).toBeInstanceOf(Request);
@@ -197,40 +205,55 @@ describe('mountWcCard', () => {
     const tag = 'mfp-late-native-card';
     const { container, el } = makeContainer();
     const { onCleanup, runCleanup } = makeCleanup();
-    const beforeRequest = vi.fn<BeforeRequest>();
+    const beforeRequestAdapter = vi.fn<BeforeRequest>();
     const cardHook = vi.fn<BeforeRequest>();
+    const afterRequestAdapter = vi.fn<AfterRequest>();
+    const cardAfterHook = vi.fn<AfterRequest>();
     const request = new Request('https://example.test/rows');
 
     class LateNativeCard extends HTMLElement {
       private requestHook?: BeforeRequest;
+      private responseHook?: AfterRequest;
 
       set beforeRequest(hook: BeforeRequest) {
         this.requestHook = hook;
       }
 
+      set afterRequest(hook: AfterRequest) {
+        this.responseHook = hook;
+      }
+
       set data(value: Request) {
         void this.requestHook?.(value);
+        void this.responseHook?.([]);
       }
     }
 
     mountWcCard(
       makeCfg({
         component: tag,
-        componentInputs: { data: request, beforeRequest: cardHook },
+        componentInputs: {
+          data: request,
+          beforeRequest: cardHook,
+          afterRequest: cardAfterHook,
+        },
       }),
       container,
       onCleanup,
       makeRenderer(),
       undefined,
-      beforeRequest,
+      beforeRequestAdapter,
+      afterRequestAdapter,
     );
 
     customElements.define(tag, LateNativeCard);
     await vi.waitFor(() => {
-      expect(beforeRequest).toHaveBeenCalledExactlyOnceWith(request);
+      expect(beforeRequestAdapter).toHaveBeenCalledExactlyOnceWith(request);
     });
 
     expect(cardHook).not.toHaveBeenCalled();
+    expect(afterRequestAdapter).toHaveBeenCalledExactlyOnceWith([]);
+    expect(cardAfterHook).not.toHaveBeenCalled();
     expect(el.firstElementChild).toBeInstanceOf(LateNativeCard);
     expect(Object.hasOwn(el.firstElementChild ?? {}, 'beforeRequest')).toBe(
       false,
@@ -251,6 +274,7 @@ describe('mountWcCard', () => {
       onCleanup,
       makeRenderer(),
       onMounted,
+      undefined,
       vi.fn(),
     );
     customElements.define(tag, class extends HTMLElement {});
@@ -261,6 +285,7 @@ describe('mountWcCard', () => {
     const mounted = el.querySelector(tag);
     expect(mounted).not.toBeNull();
     expect(Object.hasOwn(mounted ?? {}, 'beforeRequest')).toBe(false);
+    expect(Object.hasOwn(mounted ?? {}, 'afterRequest')).toBe(false);
     expect(onMounted).toHaveBeenCalledExactlyOnceWith(mounted);
     runCleanup();
     el.remove();

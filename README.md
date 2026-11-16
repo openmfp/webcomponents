@@ -97,6 +97,7 @@ Components can be exported as native web components using Angular Elements, maki
 | `<mfp-declarative-form>`       | `<mfp-wc-declarative-form>`       | [docs/declarative-form.md](docs/declarative-form.md)             |
 | `<mfp-declarative-table-card>` | `<mfp-wc-declarative-table-card>` | [docs/declarative-table-card.md](docs/declarative-table-card.md) |
 | `<mfp-data-fetch-table>`       | `<mfp-wc-data-fetch-table>`       | [docs/mfp-cards.md](docs/mfp-cards.md)                           |
+| `<mfp-data-fetch-list>`        | `<mfp-wc-data-fetch-list>`        | [docs/mfp-cards.md](docs/mfp-cards.md#datafetchlist)             |
 | `<mfp-dashboard>`              | `<mfp-wc-dashboard>`              | [docs/dashboard.md](docs/dashboard.md)                           |
 | `<mfp-error-view>`             | `<mfp-wc-error-view>`             | [docs/error-view.md](docs/error-view.md)                         |
 

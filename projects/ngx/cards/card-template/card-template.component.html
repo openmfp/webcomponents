@@ -74,29 +74,6 @@
           </div>
         }
       </div>
-      @if (subtitle(); as subtitle) {
-        <div
-          class="mfp-card-template__subtitle"
-          data-testid="card-template-subtitle"
-        >
-          {{ subtitle }}
-        </div>
-      }
-      @let cardStatus = status();
-      @if (cardStatus?.text) {
-        <div
-          class="mfp-card-template__status"
-          data-testid="card-template-status"
-          [attr.data-state]="cardStatus.state"
-        >
-          <ui5-icon
-            aria-hidden="true"
-            mode="Decorative"
-            [name]="statusIcons[cardStatus.state]"
-          />
-          <span>{{ cardStatus.text }}</span>
-        </div>
-      }
     </header>
     @if (messageStrip(); as strip) {
       @if (!messageStripClosed()) {

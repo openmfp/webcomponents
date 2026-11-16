@@ -52,8 +52,6 @@ The card fills the height of its container. Give the host element a definite hei
 | Input               | Type                       | Default          | Description                                                                                                                                                                                                    |
 | ------------------- | -------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `name`              | `string`                   | — (required)     | Card title, and the accessible name of the card.                                                                                                                                                               |
-| `subtitle`          | `string`                   | —                | Text below the card title.                                                                                                                                                                                     |
-| `status`            | `CardTemplateStatus`       | —                | `{ text, state }` shown below the title or subtitle with an icon and color for its state.                                                                                                                      |
 | `contentScrollable` | `boolean`                  | `false`          | Lets the projected content handle scrolling.                                                                                                                                                                   |
 | `header`            | `boolean`                  | `true`           | `false` draws only the frame: no title, badge, search, actions or message strip. The card keeps `name` as its accessible name.                                                                                 |
 | `background`        | `'solid' \| 'transparent'` | `'solid'`        | `solid` draws the tile background and shadow; `transparent` draws neither.                                                                                                                                     |
@@ -64,7 +62,7 @@ The card fills the height of its container. Give the host element a definite hei
 | `messageStrip`      | `CardTemplateMessageStrip` | —                | `{ text, type? }` shown below the header. The user can close it; it is shown again when `messageStrip` changes.                                                                                                |
 | `searchValue`       | `string` (model)           | `''`             | The search text. Two-way bindable with `[(searchValue)]`; it changes on every keystroke and is `''` after the user clears the field.                                                                           |
 
-`badge.state` and `status.state` use `Neutral`, `Information`, `Positive`, `Negative` or `Critical`. Badge state defaults to `Critical`. `messageStrip.type` is one of `Information`, `Positive`, `Negative` or `Critical` (default `Information`).
+`badge.state` uses `Neutral`, `Information`, `Positive`, `Negative` or `Critical`. Badge state defaults to `Critical`. `messageStrip.type` is one of `Information`, `Positive`, `Negative` or `Critical` (default `Information`).
 
 ### Outputs
 
@@ -98,8 +96,6 @@ The high-contrast themes get their `0.25rem` corners and contrast outline from t
 | -------------- | ----------------------------- | ----------------------------------- |
 | Card frame     | `card-template`               | Carries `aria-label` = `name`       |
 | Title          | `card-template-title`         | Present when `header` is `true`     |
-| Subtitle       | `card-template-subtitle`      | Present when `subtitle` is set      |
-| Status         | `card-template-status`        | Present when `status.text` is set   |
 | Badge          | `card-template-badge`         | Present when `badge.text` is set    |
 | Search field   | `card-template-search`        | Present when `search` is set        |
 | Actions button | `card-template-actions`       | Present when `actions` is not empty |

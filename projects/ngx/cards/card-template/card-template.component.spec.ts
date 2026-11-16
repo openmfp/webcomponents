@@ -1,7 +1,6 @@
 import { CardTemplate } from './card-template.component';
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import type IconElement from '@ui5/webcomponents/dist/Icon.js';
 import { axe } from 'vitest-axe';
 
 @Component({
@@ -55,29 +54,6 @@ describe('CardTemplate', () => {
     expect(query(fixture, 'card-template')?.getAttribute('aria-label')).toBe(
       'Recent Orders',
     );
-    expect(query(fixture, 'card-template-subtitle')).toBeNull();
-    expect(query(fixture, 'card-template-status')).toBeNull();
-  });
-
-  it('renders a subtitle and a status with a decorative state icon', () => {
-    const { fixture } = setup({
-      subtitle: 'Last 30 days',
-      status: { text: 'Up to date', state: 'Positive' },
-    });
-
-    expect(query(fixture, 'card-template-subtitle')?.textContent).toContain(
-      'Last 30 days',
-    );
-    const status = query(fixture, 'card-template-status');
-    expect(status?.textContent).toContain('Up to date');
-    const icon = status?.querySelector<IconElement>('ui5-icon');
-    expect(icon?.name).toBe('status-positive');
-    expect(icon?.getAttribute('aria-hidden')).toBe('true');
-
-    fixture.componentRef.setInput('status', { text: '', state: 'Positive' });
-    fixture.detectChanges();
-
-    expect(query(fixture, 'card-template-status')).toBeNull();
   });
 
   it('projects the card content into the card body', () => {
@@ -307,8 +283,6 @@ describe('CardTemplate', () => {
 
   it('has no automatically-detectable accessibility violations', async () => {
     const { fixture } = setup({
-      subtitle: 'Last 30 days',
-      status: { text: 'Up to date', state: 'Positive' },
       badge: { text: 'Action Needed' },
       search: { placeholder: 'Search orders' },
       actions: [{ key: 'export', text: 'Export' }],

@@ -1,0 +1,9 @@
+@if (state() === 'loading') {
+  <div class="loading">
+    <ui5-busy-indicator active size="M" [delay]="0" />
+  </div>
+} @else if (config(); as config) {
+  <div class="state" [class.state--error]="state() === 'error'">
+    <mfp-error-view [config]="config" (buttonClick)="retry($event.key)" />
+  </div>
+}

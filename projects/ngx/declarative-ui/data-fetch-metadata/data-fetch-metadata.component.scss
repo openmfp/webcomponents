@@ -1,0 +1,57 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+:host([hidden]) {
+  display: none;
+}
+
+.subtitle {
+  font: var(--sapFontSize, 0.875rem) var(--sapFontFamily, sans-serif);
+  color: var(--sapContent_LabelColor);
+  overflow-wrap: anywhere;
+
+  &:last-child {
+    padding-block-end: 1rem;
+  }
+}
+
+.subtitle + .status {
+  margin-block-start: 0.5rem;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding-block: 1.25rem var(--mfp_dataFetchStatusPaddingBlockEnd, 2.5rem);
+  font: 300 1.5rem / 1.75rem var(--sapFontFamily, sans-serif);
+  color: var(--sapNeutralTextColor, #131e29);
+  text-align: center;
+  overflow-wrap: anywhere;
+
+  &[data-state='Information'] {
+    color: var(--sapInformativeTextColor, #0064d9);
+  }
+
+  &[data-state='Positive'] {
+    color: var(--sapPositiveTextColor, #256f3a);
+  }
+
+  &[data-state='Negative'] {
+    color: var(--sapNegativeTextColor, #aa0808);
+  }
+
+  &[data-state='Critical'] {
+    color: var(--sapCriticalTextColor, #b44f00);
+  }
+
+  ui5-icon {
+    flex: none;
+    width: 1.5rem;
+    height: 1.5rem;
+    color: inherit;
+  }
+}

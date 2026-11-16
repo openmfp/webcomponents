@@ -1,4 +1,7 @@
-import { BeforeCardRequest } from '../../data-fetch-table/data-fetch-table.model';
+import type {
+  AfterCardRequest,
+  BeforeCardRequest,
+} from '../../../services/data-fetch.model';
 import { DashboardCard } from '../card/dashboard-card.component';
 import { DASHBOARD_I18N_KEYS, DashboardI18nService } from '../i18n';
 import {
@@ -41,6 +44,7 @@ export class DashboardSection {
   section = input.required<SectionConfig>();
   cards = input<CardConfig[]>([]);
   beforeCardRequest = input<BeforeCardRequest>();
+  afterCardRequest = input<AfterCardRequest>();
   /**
    * Optional override for the section's inner grid column count. Leave unset
    * (the default) to inherit the responsive defaults from CSS — the section

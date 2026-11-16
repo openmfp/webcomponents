@@ -1,15 +1,29 @@
 import type * as Wc from './mfp-wc-dashboard';
 import type { OutputEmitterRef } from '@angular/core';
 import type {
+  AfterCardRequest,
+  AfterRequest,
   ButtonSettings,
   CardConfig,
   CardSize,
+  CardStatus,
+  CardStatusState,
   CardsType,
   Dashboard,
   DashboardButtonsSettings,
   DashboardConfig,
   DashboardI18nKey,
   DashboardTranslations,
+  DataFetchLastUpdated,
+  DataFetchList,
+  DataFetchListData,
+  DataFetchListLoadError,
+  DataFetchLoadError,
+  DataFetchTable,
+  DataFetchTableData,
+  DataFetchTableLoadError,
+  ErrorViewConfig,
+  JsonValue,
   ModalSettings,
   MountCfg,
   SectionConfig,
@@ -24,6 +38,12 @@ describe('mfp-wc-dashboard.d.ts', () => {
     expectTypeOf<Wc.CardConfig>().toEqualTypeOf<CardConfig>();
     expectTypeOf<Wc.MountCfg>().toEqualTypeOf<MountCfg>();
     expectTypeOf<Wc.SectionConfig>().toEqualTypeOf<SectionConfig>();
+    expectTypeOf<
+      Extract<
+        keyof NonNullable<CardConfig['componentTemplate']>,
+        'status' | 'subtitle'
+      >
+    >().toBeNever();
   });
 
   it('declares the configuration types of the library', () => {
@@ -64,6 +84,109 @@ describe('mfp-wc-dashboard.d.ts', () => {
     expectTypeOf<Element['loadingDelay']>().toEqualTypeOf<
       ReturnType<Dashboard['loadingDelay']>
     >();
+    expectTypeOf<Element['afterCardRequest']>().toEqualTypeOf<
+      ReturnType<Dashboard['afterCardRequest']>
+    >();
+    expectTypeOf<Wc.AfterCardRequest>().toEqualTypeOf<AfterCardRequest>();
+    expectTypeOf<AfterCardRequest>().parameters.toEqualTypeOf<
+      [response: JsonValue, cardId: string]
+    >();
+    expectTypeOf<AfterCardRequest>().returns.toEqualTypeOf<
+      ReturnType<AfterRequest>
+    >();
+  });
+
+  it('shares the public metadata and request types across data-fetch cards', () => {
+    expectTypeOf<CardStatus>().toEqualTypeOf<{
+      text: string;
+      state: CardStatusState;
+    }>();
+    expectTypeOf<CardStatusState>().toEqualTypeOf<
+      'Neutral' | 'Information' | 'Positive' | 'Negative' | 'Critical'
+    >();
+    expectTypeOf<{
+      label: string;
+      text: string;
+    }>().toExtend<DataFetchLastUpdated>();
+    expectTypeOf<{
+      label: string;
+      path: string;
+      locale: string;
+    }>().toExtend<DataFetchLastUpdated>();
+    expectTypeOf<{
+      label: string;
+      path: string;
+      text: string;
+    }>().not.toExtend<DataFetchLastUpdated>();
+    expectTypeOf<ReturnType<DataFetchList['data']>>().toEqualTypeOf<
+      DataFetchListData | undefined
+    >();
+    expectTypeOf<ReturnType<DataFetchTable['data']>>().toEqualTypeOf<
+      DataFetchTableData | undefined
+    >();
+    expectTypeOf<ReturnType<DataFetchList['status']>>().toEqualTypeOf<
+      CardStatus | undefined
+    >();
+    expectTypeOf<DataFetchTable['status']>().toEqualTypeOf<
+      DataFetchList['status']
+    >();
+    expectTypeOf<ReturnType<DataFetchList['lastUpdated']>>().toEqualTypeOf<
+      DataFetchLastUpdated | undefined
+    >();
+    expectTypeOf<DataFetchTable['lastUpdated']>().toEqualTypeOf<
+      DataFetchList['lastUpdated']
+    >();
+    expectTypeOf<ReturnType<DataFetchList['afterRequest']>>().toEqualTypeOf<
+      AfterRequest | undefined
+    >();
+    expectTypeOf<DataFetchTable['afterRequest']>().toEqualTypeOf<
+      DataFetchList['afterRequest']
+    >();
+    expectTypeOf<AfterRequest>().parameters.toEqualTypeOf<
+      [response: JsonValue]
+    >();
+    expectTypeOf<AfterRequest>().returns.toEqualTypeOf<
+      JsonValue | void | Promise<JsonValue | void>
+    >();
+    expectTypeOf<
+      Extract<keyof DataFetchList | keyof DataFetchTable, 'afterRequestHook'>
+    >().toBeNever();
+    expectTypeOf<DataFetchListLoadError>().toEqualTypeOf<DataFetchLoadError>();
+    expectTypeOf<DataFetchTableLoadError>().toEqualTypeOf<DataFetchLoadError>();
+    expectTypeOf<
+      OutputPayload<DataFetchList['loadError']>
+    >().toEqualTypeOf<DataFetchLoadError>();
+    expectTypeOf<DataFetchTable['loadError']>().toEqualTypeOf<
+      DataFetchList['loadError']
+    >();
+  });
+
+  it('types both data-fetch card state inputs without illustration or legacy inputs', () => {
+    type State = Omit<ErrorViewConfig, 'illustration'> | undefined;
+    type ListEmpty = ReturnType<DataFetchList['emptyState']>;
+    type ListError = ReturnType<DataFetchList['errorState']>;
+    type TableEmpty = ReturnType<DataFetchTable['emptyState']>;
+    type TableError = ReturnType<DataFetchTable['errorState']>;
+
+    expectTypeOf<ListEmpty>().toEqualTypeOf<State>();
+    expectTypeOf<ListError>().toEqualTypeOf<State>();
+    expectTypeOf<TableEmpty>().toEqualTypeOf<State>();
+    expectTypeOf<TableError>().toEqualTypeOf<State>();
+    expectTypeOf<
+      Extract<
+        | keyof NonNullable<ListEmpty>
+        | keyof NonNullable<ListError>
+        | keyof NonNullable<TableEmpty>
+        | keyof NonNullable<TableError>,
+        'illustration'
+      >
+    >().toBeNever();
+    expectTypeOf<
+      Extract<
+        keyof DataFetchList | keyof DataFetchTable,
+        'errorTitle' | 'errorMessage' | 'retryButtonText'
+      >
+    >().toBeNever();
   });
 
   it('types the events like the dashboard outputs', () => {

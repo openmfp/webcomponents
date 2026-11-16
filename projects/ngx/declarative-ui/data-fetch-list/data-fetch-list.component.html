@@ -1,0 +1,28 @@
+@if (state() === 'ready') {
+  <mfp-data-fetch-metadata
+    [lastUpdated]="lastUpdated()"
+    [snapshot]="snapshot()"
+    [status]="status()"
+  />
+
+  @if (descriptionText(); as text) {
+    <p class="description">{{ text }}</p>
+  }
+
+  <ul role="list">
+    @for (item of rows(); track $index) {
+      <li>
+        <mfp-resource-field
+          [fieldDefinition]="fieldDefinition()"
+          [resource]="item"
+        />
+      </li>
+    }
+  </ul>
+} @else {
+  <mfp-data-fetch-state
+    kind="list"
+    [emptyState]="emptyState()"
+    [errorState]="errorState()"
+  />
+}

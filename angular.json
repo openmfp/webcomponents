@@ -45,6 +45,7 @@
           "options": {
             "runnerConfig": "vitest.config.ts",
             "tsConfig": "./tsconfig.spec.json",
+            "isolate": true,
             "setupFiles": ["projects/ngx/test-setup-a11y.ts"]
           }
         },

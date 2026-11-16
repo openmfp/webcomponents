@@ -1,25 +1,7 @@
-import type {
-  BeforeRequest,
-  CardRequest,
-} from '../../services/data-fetch.model';
+import type { DataFetchRequestData } from '../../services/data-fetch.model';
 
-export type {
-  BeforeRequest,
-  CardRequest,
-  JsonValue,
-} from '../../services/data-fetch.model';
+export type { BeforeRequest } from '../../services/data-fetch.model';
 
-export type DataFetchTableData = { path?: string } & (
-  | { request: CardRequest; resource?: object }
-  | { resource: object; request?: undefined }
-);
-
-export type BeforeCardRequest = (
-  request: Request,
-  cardId: string,
-) => ReturnType<BeforeRequest>;
-
-export interface DataFetchTableLoadError {
-  status?: number;
-  retryable: boolean;
-}
+export type DataFetchTableData =
+  | (DataFetchRequestData & { resource?: object })
+  | { resource: object; path?: string; request?: undefined };

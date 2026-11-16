@@ -1,3 +1,4 @@
+import type { AfterRequest } from '../../../data-fetch-table';
 import { CardConfig } from '../../models';
 import {
   addComponentToRegistry,
@@ -20,6 +21,7 @@ import {
 class TestAngularCard {
   title = input<string>();
   count = input<number>();
+  afterRequest = input<AfterRequest>();
 }
 
 @Component({
@@ -101,17 +103,32 @@ describe('mountAngularCard', () => {
     ).toHaveBeenCalledWith(TestAngularCard);
   });
 
-  it('calls setInput for each provided componentInput', () => {
+  it('applies component inputs and installs the supplied response adapter', () => {
     const { vcr, setInput } = makeMockVcr();
     const { onCleanup } = makeCleanup();
+    const cardHook = vi.fn<AfterRequest>();
+    const afterRequestAdapter = vi.fn<AfterRequest>();
     mountAngularCard(
-      makeCfg({ componentInputs: { title: 'Pods', count: 3 } }),
+      makeCfg({
+        componentInputs: {
+          title: 'Pods',
+          count: 3,
+          afterRequest: cardHook,
+        },
+      }),
       vcr,
       onCleanup,
+      undefined,
+      undefined,
+      afterRequestAdapter,
     );
 
     expect(setInput).toHaveBeenCalledWith('title', 'Pods');
     expect(setInput).toHaveBeenCalledWith('count', 3);
+    expect(setInput).toHaveBeenLastCalledWith(
+      'afterRequest',
+      afterRequestAdapter,
+    );
   });
 
   it('warns and skips unknown inputs in dev mode', () => {
@@ -129,6 +146,25 @@ describe('mountAngularCard', () => {
       expect.stringContaining('unknownProp'),
     );
     expect(setInput).not.toHaveBeenCalled();
+  });
+
+  it('skips the response hook for an Angular component without the input', () => {
+    addComponentToRegistry([TestSizingCard]);
+    const { vcr, setInput } = makeMockVcr();
+    const { onCleanup, runCleanup } = makeCleanup();
+    mountAngularCard(
+      makeCfg({ component: 'mfp-test-sizing-card' }),
+      vcr,
+      onCleanup,
+      undefined,
+      undefined,
+      vi.fn(),
+    );
+    expect(setInput).not.toHaveBeenCalledWith(
+      'afterRequest',
+      expect.anything(),
+    );
+    runCleanup();
   });
 
   it('reports the component instance through onMounted', () => {

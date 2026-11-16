@@ -15,7 +15,12 @@ import {
   type DashboardConfig,
   type SectionConfig,
 } from '../dashboard/models';
-import { DataFetchTable, type DataFetchTableData } from '../data-fetch-table';
+import { DataFetchList } from '../data-fetch-list';
+import {
+  type CardStatus,
+  DataFetchTable,
+  type DataFetchTableData,
+} from '../data-fetch-table';
 import { ButtonSettings } from '../models/ui-definition';
 import type { TableFieldDefinition } from '../table';
 import { DeclarativeTableCard } from '../table-card/declarative-table-card.component';
@@ -32,6 +37,7 @@ import {
   TABLE_RESOURCES,
 } from './pods-table.config';
 import { StoryServiceListCard } from './story-service-list-card.component';
+import { SUBACCOUNTS_LIST_INPUTS } from './subaccounts-list.config';
 import type { Meta, StoryObj } from '@storybook/angular';
 
 Dashboard.registerAngularComponents([
@@ -40,6 +46,7 @@ Dashboard.registerAngularComponents([
   VisitedServiceCard,
   MockCard,
   StoryServiceListCard,
+  DataFetchList,
   DataFetchTable,
   DeclarativeTableCard,
 ]);
@@ -674,15 +681,15 @@ const DESTINATIONS_CARD = {
   type: 'angular',
   component: 'mfp-data-fetch-table',
   componentTemplate: {
-    subtitle: 'Last updated: 30 minutes ago',
-    status: {
-      text: `${DESTINATION_OVERFLOW_ROWS.length} Destinations`,
-      state: 'Critical',
-    },
     contentScrollable: true,
     actions: [{ key: 'view-destinations', text: 'View destinations' }],
   },
   componentInputs: {
+    lastUpdated: { label: 'Last updated:', text: '30 minutes ago' },
+    status: {
+      text: '{{$length}} Destinations',
+      state: 'Critical',
+    } satisfies CardStatus,
     data: { resource: DESTINATION_OVERFLOW_ROWS } satisfies DataFetchTableData,
     columns: [
       {
@@ -735,6 +742,24 @@ const SHOWCASE_PODS = [
 
 const SHOWCASE_CARDS: CardConfig[] = [
   DESTINATIONS_CARD,
+  {
+    id: 'affected-subaccounts',
+    label: 'Affected Subaccounts',
+    size: 's',
+    type: 'angular',
+    component: 'mfp-data-fetch-list',
+    componentTemplate: {
+      badge: { text: 'Action Needed', state: 'Critical' },
+    },
+    componentInputs: {
+      ...SUBACCOUNTS_LIST_INPUTS,
+      lastUpdated: { label: 'Last updated:', text: '30 minutes ago' },
+      status: {
+        text: '{{$length}} Subaccounts',
+        state: 'Critical',
+      } satisfies CardStatus,
+    },
+  },
   {
     id: 'showcase-pods',
     label: 'Pods',

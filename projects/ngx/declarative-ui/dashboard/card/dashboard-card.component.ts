@@ -1,14 +1,27 @@
 import { CardTemplate } from '../../../cards/card-template/card-template.component';
-import {
+import type {
+  AfterCardRequest,
+  AfterRequest,
   BeforeCardRequest,
   BeforeRequest,
-} from '../../data-fetch-table/data-fetch-table.model';
+} from '../../../services/data-fetch.model';
 import { DASHBOARD_CARD_DRAG_ORIGIN_CLASS } from '../constants';
 import { DASHBOARD_I18N_KEYS, DashboardI18nService } from '../i18n';
-import { CARD_TYPES, CardConfig, DashboardCardContent } from '../models';
-import { mountAngularCard, mountSapCard, mountWcCard } from './utils';
+import {
+  CARD_TYPES,
+  CardConfig,
+  DashboardCardContent,
+  type MountCfg,
+} from '../models';
+import {
+  getRegisteredDashboardCardComponent,
+  mountAngularCard,
+  mountSapCard,
+  mountWcCard,
+} from './utils';
 import {
   Component,
+  type EffectCleanupRegisterFn,
   Renderer2,
   ViewContainerRef,
   ViewEncapsulation,
@@ -40,6 +53,7 @@ import '@ui5/webcomponents-icons/dist/resize-corner.js';
 export class DashboardCard {
   card = input.required<CardConfig>();
   beforeCardRequest = input<BeforeCardRequest>();
+  afterCardRequest = input<AfterCardRequest>();
   editMode = input<boolean>(false);
   readonly removeCard = output<void>();
   readonly cardAction = output<string>();
@@ -102,30 +116,48 @@ export class DashboardCard {
         });
       };
 
-      switch (mountCfg.type) {
-        case CARD_TYPES.SAP_UI:
-          mountSapCard(mountCfg, host, onCleanup, onMounted);
-          break;
-        case CARD_TYPES.ANGULAR:
-          mountAngularCard(
-            mountCfg,
-            host,
-            onCleanup,
-            onMounted,
-            this.createBeforeRequestAdapter(),
-          );
-          break;
-        case CARD_TYPES.WC:
-        default:
-          mountWcCard(
-            mountCfg,
-            host,
-            onCleanup,
-            this.renderer,
-            onMounted,
-            this.createBeforeRequestAdapter(),
-          );
-          break;
+      if (mountCfg.type === CARD_TYPES.SAP_UI) {
+        mountSapCard(mountCfg, host, onCleanup, onMounted);
+        return;
+      }
+
+      let isActive = true;
+      const isCurrentMount = () =>
+        isActive && this.mountCfg() === mountCfg && this.host() === host;
+      const registerMountCleanup: EffectCleanupRegisterFn = (cleanup) => {
+        onCleanup(() => {
+          isActive = false;
+          cleanup();
+        });
+      };
+      const beforeRequest = this.createBeforeRequestAdapter(
+        mountCfg,
+        isCurrentMount,
+      );
+      const afterRequest = this.createAfterRequestAdapter(
+        mountCfg,
+        isCurrentMount,
+      );
+
+      if (mountCfg.type === CARD_TYPES.ANGULAR) {
+        mountAngularCard(
+          mountCfg,
+          host,
+          registerMountCleanup,
+          onMounted,
+          beforeRequest,
+          afterRequest,
+        );
+      } else {
+        mountWcCard(
+          mountCfg,
+          host,
+          registerMountCleanup,
+          this.renderer,
+          onMounted,
+          beforeRequest,
+          afterRequest,
+        );
       }
     });
 
@@ -148,10 +180,59 @@ export class DashboardCard {
     this.cardAction.emit(key);
   }
 
-  private createBeforeRequestAdapter(): BeforeRequest {
+  private createBeforeRequestAdapter(
+    mountCfg: MountCfg,
+    isCurrentMount: () => boolean,
+  ): BeforeRequest {
     const cardId = untracked(() => this.card().id);
     return (request) =>
-      untracked(() => this.beforeCardRequest()?.(request, cardId));
+      untracked(() => {
+        if (!isCurrentMount()) return undefined;
+
+        const localHook = this.readLocalHook(mountCfg, 'beforeRequest');
+        return typeof localHook === 'function'
+          ? (localHook as BeforeRequest)(request)
+          : this.beforeCardRequest()?.(request, cardId);
+      });
+  }
+
+  private createAfterRequestAdapter(
+    mountCfg: MountCfg,
+    isCurrentMount: () => boolean,
+  ): AfterRequest {
+    const cardId = untracked(() => this.card().id);
+    return (response) =>
+      untracked(() => {
+        if (!isCurrentMount()) return undefined;
+
+        const localHook = this.readLocalHook(mountCfg, 'afterRequest');
+        return typeof localHook === 'function'
+          ? (localHook as AfterRequest)(response)
+          : this.afterCardRequest()?.(response, cardId);
+      });
+  }
+
+  private readLocalHook(
+    mountCfg: MountCfg,
+    name: 'beforeRequest' | 'afterRequest',
+  ): unknown {
+    const componentInputs = this.card().componentInputs;
+    if (!componentInputs) return undefined;
+    if (mountCfg.type !== CARD_TYPES.ANGULAR) return componentInputs[name];
+
+    const inputNames = getRegisteredDashboardCardComponent(
+      mountCfg.component,
+    )?.inputs;
+    if (!inputNames) return undefined;
+
+    const templateName = inputNames.get(name);
+    if (!templateName) return undefined;
+
+    let value: unknown;
+    for (const [key, candidate] of Object.entries(componentInputs)) {
+      if (inputNames.get(key) === templateName) value = candidate;
+    }
+    return value;
   }
 
   private onContentMounted(content: DashboardCardContent): void {
