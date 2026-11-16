@@ -12,10 +12,18 @@ and [releases](https://github.com/openmfp/webcomponents/releases) for details.
 ## [2.1.0] - 2026-11-16
 
 ### Features
-- Mfp data fetch list (#393)- _(error-view)_ Add a reusable error view component (#386)- Mfp data fetch table (#382)
+
+- Mfp data fetch list (#393)
+- _(error-view)_ Add a reusable error view component (#386)
+- Mfp data fetch table (#382)
 
 ### Bug Fixes
-- _(ci)_ Compute the release version from the last tag on the released branch (#406)- _(deps)_ Update dependency gridstack to v14.1.0 (#384)- _(ci)_ Support npm maintenance releases (#381)- _(deps)_ Update dependency tslib to v2.9.1 (#378)- _(declarative-form)_ Keep collection entries added in a form without initial values (#375)
+
+- _(ci)_ Compute the release version from the last tag on the released branch (#406)
+- _(deps)_ Update dependency gridstack to v14.1.0 (#384)
+- _(ci)_ Support npm maintenance releases (#381)
+- _(deps)_ Update dependency tslib to v2.9.1 (#378)
+- _(declarative-form)_ Keep collection entries added in a form without initial values (#375)
 
 ## [2.0.0] - 2026-11-09
 

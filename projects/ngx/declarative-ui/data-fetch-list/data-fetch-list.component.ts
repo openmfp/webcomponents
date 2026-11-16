@@ -26,7 +26,7 @@ import {
 } from '@angular/core';
 
 @Component({
-  selector: 'mfp-data-fetch-list',
+  selector: 'mfp-data-fetch-list-card',
   imports: [DataFetchMetadata, DataFetchState, ResourceField],
   standalone: true,
   templateUrl: './data-fetch-list.component.html',

@@ -24,7 +24,7 @@ import {
 } from '@angular/core';
 
 @Component({
-  selector: 'mfp-data-fetch-table',
+  selector: 'mfp-data-fetch-table-card',
   imports: [DataFetchMetadata, DataFetchState, DeclarativeTable],
   standalone: true,
   templateUrl: './data-fetch-table.component.html',

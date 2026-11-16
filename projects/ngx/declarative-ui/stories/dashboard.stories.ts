@@ -679,7 +679,7 @@ const DESTINATIONS_CARD = {
   label: 'Destinations with not recommended authentication methods',
   size: 'm',
   type: 'angular',
-  component: 'mfp-data-fetch-table',
+  component: 'mfp-data-fetch-table-card',
   componentTemplate: {
     contentScrollable: true,
     actions: [{ key: 'view-destinations', text: 'View destinations' }],
@@ -747,7 +747,7 @@ const SHOWCASE_CARDS: CardConfig[] = [
     label: 'Affected Subaccounts',
     size: 's',
     type: 'angular',
-    component: 'mfp-data-fetch-list',
+    component: 'mfp-data-fetch-list-card',
     componentTemplate: {
       badge: { text: 'Action Needed', state: 'Critical' },
     },
