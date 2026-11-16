@@ -9,6 +9,12 @@ and [releases](https://github.com/openmfp/webcomponents/releases) for details.
 
 <!-- git-cliff:insert -->
 
+## [2.1.1] - 2026-11-16
+
+### Bug Fixes
+
+- Rename the data fetch cards to mfp-*-data-fetch-table-card and mfp-*-data-fetch-list-card (#407)
+
 ## [2.1.0] - 2026-11-16
 
 ### Features
