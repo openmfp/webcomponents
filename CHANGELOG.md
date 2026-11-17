@@ -9,6 +9,12 @@ and [releases](https://github.com/openmfp/webcomponents/releases) for details.
 
 <!-- git-cliff:insert -->
 
+## [2.2.1] - 2026-11-17
+
+### Features
+
+- Add resource func to list (#413)
+
 ## [2.2.0] - 2026-11-16
 
 ### Features
