@@ -23,6 +23,10 @@ export interface DataFetchRequestData {
   path?: string;
 }
 
+export type DataFetchData =
+  | (DataFetchRequestData & { resource?: object })
+  | { resource: object; path?: string; request?: undefined };
+
 export type BeforeRequest = (
   request: Request,
   cardId?: string,

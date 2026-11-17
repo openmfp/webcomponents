@@ -3,8 +3,8 @@ import type {
   ActionsHook,
   AfterRequest,
   BeforeRequest,
+  DataFetchData,
   DataFetchLoadError,
-  DataFetchRequestData,
 } from '../../services/data-fetch.model';
 import { DataFetchService } from '../../services/data-fetch.service';
 import { runActionsHook } from '../../services/run-actions-hook';
@@ -42,7 +42,7 @@ import {
   },
 })
 export class DataFetchList {
-  readonly data = input<DataFetchRequestData>();
+  readonly data = input<DataFetchData>();
   readonly beforeRequest = input<BeforeRequest>();
   readonly afterRequest = input<AfterRequest>();
   readonly actionsHook = input<ActionsHook>();

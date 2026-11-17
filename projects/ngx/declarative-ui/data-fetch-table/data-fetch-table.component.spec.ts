@@ -146,9 +146,27 @@ describe('DataFetchTable', () => {
     expect(metadataText('last-updated')).toBe('Last updated: 30 minutes ago');
     expect(metadataText('status')).toBe('1 destinations');
 
+    const resource = {
+      ...nestedRows,
+      total: 42,
+      metadata: {
+        updatedAt: new Date(Date.now() - 30 * 60_000).toISOString(),
+      },
+    };
+    fixture.componentRef.setInput('lastUpdated', {
+      label: 'Last updated:',
+      path: 'metadata.updatedAt',
+      locale: 'en',
+    });
+    fixture.componentRef.setInput('status', {
+      text: '{{$length}} of {{response.total}} destinations',
+      state: 'Critical',
+    });
     for (const path of ['groups[*].rows', '$.groups[0].rows']) {
-      await setData({ request: undefined, resource: nestedRows, path });
+      await setData({ request: undefined, resource, path });
       expect(rowText()).toContain('local');
+      expect(metadataText('last-updated')).toBe('Last updated: 30 minutes ago');
+      expect(metadataText('status')).toBe('1 of 42 destinations');
     }
 
     fixture.componentRef.setInput('beforeRequest', vi.fn());

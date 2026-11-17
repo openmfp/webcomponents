@@ -95,16 +95,18 @@ describe('DataFetchList', () => {
     }).not.toThrow();
   });
 
-  it('renders full rows as ordered links and updates their presentation without fetching again', async () => {
+  it('renders HTTP and local rows as ordered links without refetching for presentation changes', async () => {
     const rows = [
       { id: 'b', name: 'Subaccount B' },
       { id: 'a', name: 'Subaccount A' },
     ];
     const beforeRequest = vi.fn<(request: Request) => void>();
+    const afterRequest = vi.fn();
     fetch.mockResolvedValueOnce(
       Response.json({ result: { subaccounts: rows } }),
     );
     fixture.componentRef.setInput('beforeRequest', beforeRequest);
+    fixture.componentRef.setInput('afterRequest', afterRequest);
     fixture.componentRef.setInput('data', {
       request,
       path: 'result.subaccounts',
@@ -166,7 +168,27 @@ describe('DataFetchList', () => {
         (field) => !field.shadowRoot?.querySelector('ui5-link'),
       ),
     ).toBe(true);
+
+    for (const data of [
+      { resource: rows },
+      {
+        resource: { result: { subaccounts: rows } },
+        path: 'result.subaccounts',
+      },
+    ]) {
+      fixture.componentRef.setInput('data', data);
+      await fixture.whenStable();
+
+      expect(
+        rowFields(root).map((field) =>
+          field.shadowRoot
+            ?.querySelector('[data-testid="resource-field-name"]')
+            ?.textContent?.trim(),
+        ),
+      ).toEqual(['Subaccount B', 'Subaccount A']);
+    }
     expect(beforeRequest).toHaveBeenCalledTimes(1);
+    expect(afterRequest).toHaveBeenCalledTimes(1);
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
@@ -304,7 +326,7 @@ describe('DataFetchList', () => {
     },
   );
 
-  it('renders mapped rows and response metadata and updates presentation without fetching again', async () => {
+  it('renders mapped and local rows with source metadata without refetching for presentation changes', async () => {
     vi.spyOn(Date, 'now').mockReturnValue(Date.parse('2026-11-13T13:29:00Z'));
     const payload = { total: 42, rows: [{ label: 'Subaccount A' }] };
     const afterRequest = vi.fn(async (response: JsonValue) => ({
@@ -365,6 +387,34 @@ describe('DataFetchList', () => {
       name: 'NoData',
     });
     expect(root.querySelector('mfp-data-fetch-metadata, ul')).toBeNull();
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    fixture.componentRef.setInput('data', {
+      resource: {
+        result: payload,
+        updates: [{ at: '2026-11-13T12:59:00Z' }],
+      },
+      path: '$.result.rows',
+    });
+    fixture.componentRef.setInput('lastUpdated', {
+      label: 'Actualizado:',
+      path: '$.updates[0].at',
+      locale: 'es',
+    });
+    fixture.componentRef.setInput('status', {
+      text: '{{response.result.total}} affected ({{$length}} shown)',
+      state: 'Critical',
+    });
+    await fixture.whenStable();
+
+    expect(rowFields(root)[0]?.shadowRoot?.textContent).toContain(
+      'Subaccount A',
+    );
+    expect(lastUpdated()?.textContent?.trim()).toBe(
+      'Actualizado: hace 30 minutos',
+    );
+    expect(status()?.textContent?.trim()).toBe('42 affected (1 shown)');
+    expect(afterRequest).toHaveBeenCalledTimes(1);
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
