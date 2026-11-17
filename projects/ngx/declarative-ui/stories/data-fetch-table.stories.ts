@@ -3,8 +3,10 @@ import { EN_DEFAULTS } from '../dashboard/i18n';
 import type { CardConfig, DashboardConfig } from '../dashboard/models';
 import {
   type BeforeCardRequest,
+  type CardStatus,
+  type DataFetchData,
+  type DataFetchLastUpdated,
   DataFetchTable,
-  type DataFetchTableData,
 } from '../data-fetch-table';
 import type { TableFieldDefinition } from '../table';
 import {
@@ -58,7 +60,15 @@ const dashboardI18n = { ...EN_DEFAULTS, title: '', description: '' };
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 class DataFetchTableStory {
-  readonly data = input<DataFetchTableData>();
+  readonly data = input<DataFetchData>();
+  readonly lastUpdated = input<DataFetchLastUpdated>({
+    label: 'Last updated:',
+    text: '30 minutes ago',
+  });
+  readonly status = input<CardStatus>({
+    text: '{{$length}} Destinations',
+    state: 'Critical',
+  });
   readonly columns = input<TableFieldDefinition[]>([]);
   readonly requestBehavior = input<'normal' | 'loading' | 'fail-once'>(
     'normal',
@@ -80,8 +90,8 @@ class DataFetchTableStory {
       componentInputs: {
         data: this.data(),
         columns: this.columns(),
-        lastUpdated: { label: 'Last updated:', text: '30 minutes ago' },
-        status: { text: '{{$length}} Destinations', state: 'Critical' },
+        lastUpdated: this.lastUpdated(),
+        status: this.status(),
         emptyState: {
           title: 'No destinations found',
           subtitle: 'There are currently no destinations to show.',
@@ -141,6 +151,30 @@ type Story = StoryObj<DataFetchTableStory>;
 
 export const LocalRows: Story = {
   args: { data: { resource: localRows } },
+};
+
+export const MetadataFromResource: Story = {
+  args: {
+    data: {
+      resource: {
+        result: { rows: localRows },
+        totalCount: 8,
+        metadata: {
+          updatedAt: new Date(Date.now() - 30 * 60_000).toISOString(),
+        },
+      },
+      path: 'result.rows',
+    },
+    lastUpdated: {
+      label: 'Last updated:',
+      path: 'metadata.updatedAt',
+      locale: 'en',
+    },
+    status: {
+      text: '{{$length}} of {{response.totalCount}} destinations',
+      state: 'Critical',
+    },
+  },
 };
 
 export const FetchedRows: Story = {

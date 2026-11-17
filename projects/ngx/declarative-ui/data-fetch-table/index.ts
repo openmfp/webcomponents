@@ -11,6 +11,7 @@ export type {
   BeforeCardRequest,
   BeforeRequest,
   CardRequest,
+  DataFetchData,
   DataFetchLoadError,
   DataFetchLoadError as DataFetchTableLoadError,
   JsonValue,

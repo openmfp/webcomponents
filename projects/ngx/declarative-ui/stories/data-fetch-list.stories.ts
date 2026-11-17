@@ -1,9 +1,14 @@
 import { Dashboard } from '../dashboard/dashboard/dashboard.component';
 import { EN_DEFAULTS } from '../dashboard/i18n';
 import type { CardConfig, DashboardConfig } from '../dashboard/models';
-import { DataFetchList, type DataFetchListData } from '../data-fetch-list';
-import type { BeforeCardRequest } from '../data-fetch-table';
+import { type DataFetchData, DataFetchList } from '../data-fetch-list';
+import type {
+  BeforeCardRequest,
+  CardStatus,
+  DataFetchLastUpdated,
+} from '../data-fetch-table';
 import type { FieldDefinition } from '../models';
+import localResource from './data-fetch-list.fixture.json';
 import { SUBACCOUNTS_LIST_INPUTS } from './subaccounts-list.config';
 import {
   ChangeDetectionStrategy,
@@ -36,7 +41,15 @@ const dashboardI18n = { ...EN_DEFAULTS, title: '', description: '' };
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 class DataFetchListStory {
-  readonly data = input<DataFetchListData>();
+  readonly data = input<DataFetchData>();
+  readonly lastUpdated = input<DataFetchLastUpdated>({
+    label: 'Last updated:',
+    text: '30 minutes ago',
+  });
+  readonly status = input<CardStatus>({
+    text: '{{$length}} Subaccounts',
+    state: 'Critical',
+  });
   readonly description = input<string>();
   readonly fieldDefinition = input<FieldDefinition>(
     SUBACCOUNTS_LIST_INPUTS.fieldDefinition,
@@ -62,8 +75,8 @@ class DataFetchListStory {
         data: this.data(),
         description: this.description(),
         fieldDefinition: this.fieldDefinition(),
-        lastUpdated: { label: 'Last updated:', text: '30 minutes ago' },
-        status: { text: '{{$length}} Subaccounts', state: 'Critical' },
+        lastUpdated: this.lastUpdated(),
+        status: this.status(),
         emptyState: {
           title: 'No subaccounts found',
           subtitle: 'There are currently no subaccounts to show.',
@@ -115,6 +128,38 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<DataFetchListStory>;
+
+export const LocalRows: Story = {
+  args: { data: { resource: localResource.subaccounts } },
+};
+
+export const LocalRowsByPath: Story = {
+  args: { data: { resource: localResource, path: 'subaccounts' } },
+};
+
+export const MetadataFromResource: Story = {
+  args: {
+    data: {
+      resource: {
+        ...localResource,
+        totalCount: 8,
+        metadata: {
+          updatedAt: new Date(Date.now() - 30 * 60_000).toISOString(),
+        },
+      },
+      path: 'subaccounts',
+    },
+    lastUpdated: {
+      label: 'Last updated:',
+      path: 'metadata.updatedAt',
+      locale: 'en',
+    },
+    status: {
+      text: '{{$length}} of {{response.totalCount}} subaccounts affected',
+      state: 'Critical',
+    },
+  },
+};
 
 export const FetchedRows: Story = {};
 

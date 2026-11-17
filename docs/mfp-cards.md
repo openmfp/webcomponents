@@ -42,7 +42,7 @@ In Angular, import `Dashboard` and `DataFetchTable` from `@openmfp/ngx` and call
 
 ### Usage with local data
 
-Set `data.resource` when the host already has the rows. This standalone web component uses an array directly.
+Set `data.resource` when the host already has the rows. Both cards share the `DataFetchData` input type with either `resource` or `request` and an optional `path`; `DataFetchTableData` and `DataFetchListData` remain compatible aliases. This standalone web component uses an array directly.
 
 ```html
 <script type="module" src="/mfp-webcomponents.js"></script>
@@ -78,7 +78,7 @@ Set `trackByPath` to a stable row identifier such as `metadata.uid`. The default
 
 ## DataFetchList
 
-DataFetchList fetches a JSON response and displays an array of objects as a list. Each item is rendered with the same `FieldDefinition` using [ResourceField](./resource-field.md).
+DataFetchList displays an array of objects from a local resource or an HTTP response. Each item is rendered with the same `FieldDefinition` using [ResourceField](./resource-field.md).
 
 | Usage             | Tag                             |
 | ----------------- | ------------------------------- |
@@ -108,7 +108,7 @@ Load the web components bundle and assign properties after the element is regist
 </script>
 ```
 
-See [HTTP requests](#http-requests) for request options and response paths.
+For local rows, use `list.data = { resource: [{ id: '1', name: 'Subaccount A' }] }`. Add `path` when the array is nested in the resource. See [HTTP requests](#http-requests) for request options and source paths.
 
 ---
 
@@ -173,13 +173,13 @@ For Angular cards, import `Dashboard` and `DataFetchList` from `@openmfp/ngx`, c
 
 | Input             | Type                                    | Default                 | Description                                                                   |
 | ----------------- | --------------------------------------- | ----------------------- | ----------------------------------------------------------------------------- |
-| `data`            | `DataFetchListData`                     | —                       | `{ request: CardRequest, path?: string }`. The list supports HTTP data only.  |
+| `data`            | `DataFetchData`                         | —                       | `resource` or `request: CardRequest`, with an optional JSONPath `path`.       |
 | `fieldDefinition` | `FieldDefinition`                       | `{ property: 'label' }` | Defines how each item is displayed. See [ResourceField](./resource-field.md). |
 | `description`     | `string`                                | —                       | Text shown above the list.                                                    |
 | `beforeRequest`   | `BeforeRequest`                         | —                       | Changes or replaces the request before it is sent.                            |
 | `afterRequest`    | `AfterRequest`                          | —                       | Transforms parsed JSON before the path is selected.                           |
 | `actionsHook`     | `ActionsHook`                           | —                       | Handles the card's header actions. See [Card actions](#card-actions).         |
-| `lastUpdated`     | `DataFetchLastUpdated`                  | —                       | Text or response timestamp displayed above the list.                          |
+| `lastUpdated`     | `DataFetchLastUpdated`                  | —                       | Text or source timestamp displayed above the list.                            |
 | `status`          | `CardStatus`                            | —                       | Status text and state displayed above the list.                               |
 | `emptyState`      | `Omit<ErrorViewConfig, 'illustration'>` | —                       | Custom empty-state title and subtitle.                                        |
 | `errorState`      | `Omit<ErrorViewConfig, 'illustration'>` | —                       | Custom error title, subtitle and retry button.                                |
@@ -216,7 +216,7 @@ table.data = {
 | `body`                | JSON-serializable data. Defaults the content type to `application/json` when a body is present. Use bodyless requests with `GET` and `HEAD`. |
 | `credentials`, `mode` | Optional settings passed to Fetch.                                                                                                           |
 
-`data.path` works with HTTP responses and table local resources and accepts JSONPath, such as `data.rows` or `$.data.rows`. The first match must be an array of row objects. Omit the path when the source is already an array. Script evaluation is disabled. When both table sources are set, the request takes precedence.
+`data.path` works with HTTP responses and local resources in both cards and accepts JSONPath, such as `data.rows` or `$.data.rows`. The first match must be an array of row objects. Omit the path when the source is already an array. Script evaluation is disabled. When both sources are set, the request takes precedence; local resources do not run request hooks.
 
 ### Request hooks
 
@@ -294,7 +294,7 @@ list.errorState = {
 
 Omitted titles or subtitles use the defaults; an empty string clears the corresponding text. The empty state always uses the `NoData` illustration and does not render buttons. Errors use `tnt/UnsuccessfulAuth` for HTTP 403 and `UnableToLoad` otherwise; illustrations cannot be customized through these inputs.
 
-For retryable failures, the default button is `Retry` with `Emphasized` design. Clicking it repeats the request and its hooks. Invalid request configuration is not retryable; invalid local data in DataFetchTable is not retryable either. HTTP failures and invalid fetched responses are retryable. If `errorState.buttons` is supplied, only its first button with `key: 'retry'` is rendered; an empty array or an array without that key hides the button. The button supports `label`, `design`, `icon`, and `disabled`; see [ErrorView buttons](./error-view.md) for the available options. Other buttons are ignored. The `loadError` event reports `retryable` and the HTTP `status`, when available.
+For retryable failures, the default button is `Retry` with `Emphasized` design. Clicking it repeats the request and its hooks. Invalid request configuration and invalid local data are not retryable. HTTP failures and invalid fetched responses are retryable. If `errorState.buttons` is supplied, only its first button with `key: 'retry'` is rendered; an empty array or an array without that key hides the button. The button supports `label`, `design`, `icon`, and `disabled`; see [ErrorView buttons](./error-view.md) for the available options. Other buttons are ignored. The `loadError` event reports `retryable` and the HTTP `status`, when available.
 
 ## Metadata
 
@@ -310,7 +310,7 @@ list.status = {
 
 ### Last updated
 
-Use `{ label, text }` to display a ready-made string, or `{ label, path, locale? }` to calculate relative time from the response. Both forms work for list and table; use static text for local table resources. For example:
+Use `{ label, text }` to display a ready-made string, or `{ label, path, locale? }` to calculate relative time from the HTTP response or local resource. Both forms work for list and table. For example:
 
 ```js
 // Response: { "metadata": { "updatedAt": "2026-11-13T13:00:00Z" }, "items": [...] }
@@ -328,4 +328,4 @@ The component selects the largest elapsed unit: minutes, hours, days, weeks, mon
 
 ### Status
 
-`status.state` is `Neutral`, `Information`, `Positive`, `Negative`, or `Critical`. Status text supports `{{$length}}` for the selected row count and `{{response.path}}` for a value in the response. A status with an unresolved placeholder is hidden. Metadata paths refer to the response after `afterRequest` runs. Response paths are available for HTTP data.
+`status.state` is `Neutral`, `Information`, `Positive`, `Negative`, or `Critical`. Status text supports `{{$length}}` for the selected row count and `{{response.path}}` for a value in the source. A status with an unresolved placeholder is hidden. Metadata paths and `response` placeholders read the full local `resource` or the HTTP response after `afterRequest` runs, before `data.path` selects the rows.

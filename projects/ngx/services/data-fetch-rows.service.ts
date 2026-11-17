@@ -4,8 +4,8 @@ import type {
   AfterRequest,
   BeforeRequest,
   CardRequest,
+  DataFetchData,
   DataFetchLoadError,
-  DataFetchRequestData,
 } from './data-fetch.model';
 import {
   DataFetchConfigurationError,
@@ -23,18 +23,15 @@ import {
   untracked,
 } from '@angular/core';
 
-type DataFetchRowsConfig = Partial<DataFetchRequestData>;
-
-interface DataFetchRowsOptions<T extends DataFetchRowsConfig> {
-  data: Signal<T | undefined>;
+interface DataFetchRowsOptions {
+  data: Signal<DataFetchData | undefined>;
   beforeRequest: Signal<BeforeRequest | undefined>;
   afterRequest: Signal<AfterRequest | undefined>;
   onFailure: (failure: DataFetchLoadError) => void;
-  readResource?: (config: T) => object | undefined;
 }
 
 interface DataFetchLoad {
-  data: DataFetchRowsConfig;
+  data: DataFetchData;
   beforeRequest: BeforeRequest | undefined;
   afterRequest: AfterRequest | undefined;
   retryCount: number;
@@ -67,9 +64,7 @@ export class DataFetchRowsService {
     return this.rows().length ? 'ready' : 'empty';
   });
 
-  initialize<T extends DataFetchRowsConfig>(
-    options: DataFetchRowsOptions<T>,
-  ): void {
+  initialize(options: DataFetchRowsOptions): void {
     if (this.isInitialized) return;
 
     effect((onCleanup) => {
@@ -82,8 +77,8 @@ export class DataFetchRowsService {
     this.retryCount.update((count) => count + 1);
   }
 
-  private refreshRows<T extends DataFetchRowsConfig>(
-    options: DataFetchRowsOptions<T>,
+  private refreshRows(
+    options: DataFetchRowsOptions,
     onCleanup: EffectCleanupRegisterFn,
   ): void {
     const config = options.data();
@@ -101,14 +96,13 @@ export class DataFetchRowsService {
       const request = untracked(() => config.request);
       if (request === undefined) {
         untracked(() => {
-          const resource = options.readResource?.(config);
-          const { path } = config;
+          const { resource, path } = config;
           if (resource === undefined) {
             throw new TypeError('The data must specify a source.');
           }
           this.snapshotState.set({
             rows: this.readRows(resource, this.readPath(path)),
-            response: undefined,
+            response: resource,
           });
         });
         return;
@@ -135,8 +129,8 @@ export class DataFetchRowsService {
     }
   }
 
-  private async loadRows<T extends DataFetchRowsConfig>(
-    options: DataFetchRowsOptions<T>,
+  private async loadRows(
+    options: DataFetchRowsOptions,
     load: DataFetchLoad,
     request: CardRequest,
     path: string,
@@ -175,8 +169,8 @@ export class DataFetchRowsService {
     }
   }
 
-  private isCurrent<T extends DataFetchRowsConfig>(
-    options: DataFetchRowsOptions<T>,
+  private isCurrent(
+    options: DataFetchRowsOptions,
     load: DataFetchLoad,
   ): boolean {
     return untracked(
@@ -189,8 +183,8 @@ export class DataFetchRowsService {
     );
   }
 
-  private showError<T extends DataFetchRowsConfig>(
-    { onFailure }: DataFetchRowsOptions<T>,
+  private showError(
+    { onFailure }: DataFetchRowsOptions,
     retryable: boolean,
     error?: unknown,
   ): void {

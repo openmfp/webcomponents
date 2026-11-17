@@ -3,6 +3,7 @@ import type {
   ActionsHook,
   AfterRequest,
   BeforeRequest,
+  DataFetchData,
   DataFetchLoadError,
 } from '../../services/data-fetch.model';
 import { DataFetchService } from '../../services/data-fetch.service';
@@ -15,7 +16,6 @@ import type {
 import { DataFetchState } from '../data-fetch-state/data-fetch-state.component';
 import type { ErrorViewConfig } from '../error-view';
 import { DeclarativeTable, TableFieldDefinition } from '../table';
-import type { DataFetchTableData } from './data-fetch-table.model';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -37,7 +37,7 @@ import {
   encapsulation: ViewEncapsulation.ShadowDom,
 })
 export class DataFetchTable {
-  readonly data = input<DataFetchTableData>();
+  readonly data = input<DataFetchData>();
   readonly columns = input<TableFieldDefinition[]>([]);
   readonly trackByPath = input<string>();
   readonly beforeRequest = input<BeforeRequest>();
@@ -65,7 +65,6 @@ export class DataFetchTable {
       onFailure: (failure) => {
         this.loadError.emit(failure);
       },
-      readResource: (data) => data.resource,
     });
   }
 

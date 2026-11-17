@@ -14,6 +14,7 @@ import type {
   DashboardConfig,
   DashboardI18nKey,
   DashboardTranslations,
+  DataFetchData,
   DataFetchLastUpdated,
   DataFetchList,
   DataFetchListData,
@@ -119,11 +120,24 @@ describe('mfp-wc-dashboard.d.ts', () => {
       text: string;
     }>().not.toExtend<DataFetchLastUpdated>();
     expectTypeOf<ReturnType<DataFetchList['data']>>().toEqualTypeOf<
-      DataFetchListData | undefined
+      DataFetchData | undefined
     >();
     expectTypeOf<ReturnType<DataFetchTable['data']>>().toEqualTypeOf<
-      DataFetchTableData | undefined
+      DataFetchData | undefined
     >();
+    expectTypeOf<DataFetchListData>().toEqualTypeOf<DataFetchData>();
+    expectTypeOf<DataFetchTableData>().toEqualTypeOf<DataFetchData>();
+    expectTypeOf<{
+      resource: object;
+      path?: string;
+    }>().toExtend<DataFetchData>();
+    expectTypeOf<{
+      request: { url: string };
+      resource?: object;
+      path?: string;
+    }>().toExtend<DataFetchData>();
+    expectTypeOf<{ path: string }>().not.toExtend<DataFetchData>();
+    expectTypeOf<{ resource: string }>().not.toExtend<DataFetchData>();
     expectTypeOf<ReturnType<DataFetchList['status']>>().toEqualTypeOf<
       CardStatus | undefined
     >();
