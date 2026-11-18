@@ -16,6 +16,7 @@ vi.mock('@ui5/webcomponents-base/dist/config/Language.js', () => ({
   setLanguage,
 }));
 vi.mock('@ui5/webcomponents-theming/dist/Assets.js', () => ({}));
+vi.mock('@ui5/webcomponents/dist/generated/json-imports/Themes.js', () => ({}));
 
 // The real declarative-ui barrel (which main.ts imports) pulls in the dashboard
 // component, which imports gridstack; gridstack fails to resolve under jsdom.

@@ -8,6 +8,7 @@ import { ignoreCustomElements } from '@ui5/webcomponents-base/dist/IgnoreCustomE
 import { setLanguage } from '@ui5/webcomponents-base/dist/config/Language.js';
 import { setTheme } from '@ui5/webcomponents-base/dist/config/Theme.js';
 import '@ui5/webcomponents-theming/dist/Assets.js';
+import '@ui5/webcomponents/dist/generated/json-imports/Themes.js';
 
 ignoreCustomElements('mfp');
 
