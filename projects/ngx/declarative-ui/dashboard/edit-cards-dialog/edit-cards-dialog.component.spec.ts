@@ -130,6 +130,59 @@ describe('EditCardsDialog', () => {
       expect(rowIds(fixture)).toEqual(['a', 'no-label', 'c']);
     });
 
+    it('lists the cards not yet on the dashboard first, each group sorted by label', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('availableCards', [
+        { id: 'delta', component: 'mfp-d', label: 'Delta' },
+        { id: 'alpha', component: 'mfp-a', label: 'Alpha' },
+        { id: 'charlie', component: 'mfp-c', label: 'Charlie' },
+        { id: 'bravo', component: 'mfp-b', label: 'Bravo' },
+      ]);
+      fixture.componentRef.setInput(
+        'addedCardsIds',
+        new Set(['alpha', 'charlie']),
+      );
+      fixture.detectChanges();
+
+      expect(rowIds(fixture)).toEqual(['bravo', 'delta', 'alpha', 'charlie']);
+    });
+
+    it('keeps a card in its group while its switch is toggled', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('availableCards', [
+        { id: 'alpha', component: 'mfp-a', label: 'Alpha' },
+        { id: 'bravo', component: 'mfp-b', label: 'Bravo' },
+      ]);
+      fixture.componentRef.setInput('addedCardsIds', new Set(['alpha']));
+      fixture.componentRef.setInput('open', true);
+      fixture.detectChanges();
+
+      component.toggle('bravo');
+      component.toggle('alpha');
+      fixture.detectChanges();
+
+      expect(rowIds(fixture)).toEqual(['bravo', 'alpha']);
+    });
+
+    it('moves a card to the added group once it is on the dashboard', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('availableCards', [
+        { id: 'alpha', component: 'mfp-a', label: 'Alpha' },
+        { id: 'bravo', component: 'mfp-b', label: 'Bravo' },
+      ]);
+      fixture.componentRef.setInput('addedCardsIds', new Set<string>());
+      fixture.detectChanges();
+      expect(rowIds(fixture)).toEqual(['alpha', 'bravo']);
+
+      fixture.componentRef.setInput('addedCardsIds', new Set(['alpha']));
+      fixture.detectChanges();
+
+      expect(rowIds(fixture)).toEqual(['bravo', 'alpha']);
+    });
+
     it('re-sorts when the labels change', () => {
       const { fixture } = setup();
 

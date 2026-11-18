@@ -710,6 +710,8 @@ Set it to `none` to render the empty state without any artwork.
 
 The `EditCardsDialog` component (`mfp-edit-cards-dialog`) is rendered inside the dashboard when edit mode is active and the user clicks the **Edit Cards** toolbar button. It shows all `availableCards` as a list of toggle switches — cards already on the dashboard start toggled on.
 
+The cards not yet on the dashboard are listed first, followed by the cards already on it. Both groups are sorted by label (the component name when a card has no label), collated in the current UI5 language. The grouping follows `addedCardsIds`, so toggling a switch does not move its row while the dialog is open.
+
 ### Inputs
 
 | Input            | Type           | Default     | Description                                |
