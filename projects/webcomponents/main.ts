@@ -12,6 +12,9 @@ import {
   ResourceFormPatch,
 } from '@openmfp/webcomponents/declarative-ui';
 import { ignoreCustomElements } from '@ui5/webcomponents-base/dist/IgnoreCustomElements.js';
+import '@ui5/webcomponents-fiori/dist/generated/json-imports/Themes.js';
+import '@ui5/webcomponents-theming/dist/Assets.js';
+import '@ui5/webcomponents/dist/generated/json-imports/Themes.js';
 
 ignoreCustomElements('mfp');
 

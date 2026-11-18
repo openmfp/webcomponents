@@ -17,6 +17,13 @@ vi.mock('@ui5/webcomponents-base/dist/IgnoreCustomElements.js', () => ({
   ignoreCustomElements,
 }));
 
+vi.mock('@ui5/webcomponents-theming/dist/Assets.js', () => ({}));
+vi.mock('@ui5/webcomponents/dist/generated/json-imports/Themes.js', () => ({}));
+vi.mock(
+  '@ui5/webcomponents-fiori/dist/generated/json-imports/Themes.js',
+  () => ({}),
+);
+
 // gridstack fails to resolve under jsdom; the real declarative-ui barrel pulls
 // it in transitively via the dashboard component. Stub it as the dashboard
 // spec does so the barrel can load.
