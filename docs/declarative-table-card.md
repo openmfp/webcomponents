@@ -612,7 +612,7 @@ contentHeight  ─┬─ card header        (--mfp_tableCardBarHeight)
 
 Both subtracted bars are measured rather than assumed: the header and filter tabs from their rendered boxes, the footer from the same `--mfp_tableCardBarHeight` the header resolves, so overriding that token moves all of it together.
 
-**The dashboard sets this for you.** A dashboard card measures the tile it occupies and hands the result to the mounted component, so a table card inside a tile fits it with no extra configuration. The tile height comes from the card's own `CardConfig.h`, otherwise from [`SectionConfig.cardsHeight`](./dashboard.md#cardsheight--one-height-for-every-card-in-the-section) when the section sets one (or `DashboardConfig.zFlow.cardHeight` for loose cards). A card with [`h: 'auto'`](./dashboard.md#h-auto--a-card-that-follows-its-content) gets no `contentHeight`, so the table renders all its rows and the card grows to fit.
+**The dashboard sets this for you.** A dashboard card measures the tile it occupies and hands the result to the mounted component, so a table card inside a tile fits it with no extra configuration. The tile height comes from the card's own `CardConfig.h`, otherwise from [`SectionConfig.cardsHeight`](./dashboard.md#cardsheight--one-height-for-every-card-in-the-section) when the section sets one (or `DashboardConfig.zFlow.cardHeight` for loose cards). A card that sizes to its content — [`h: 'auto'`](./dashboard.md#h-auto--a-card-that-follows-its-content), or no `h` in a section without `cardsHeight` — gets no `contentHeight`, so the table renders all its rows and the card grows to fit. Give the card a numeric `h` or put it in a section with `cardsHeight` to scroll its rows inside a fixed box.
 
 Precedence, highest first:
 

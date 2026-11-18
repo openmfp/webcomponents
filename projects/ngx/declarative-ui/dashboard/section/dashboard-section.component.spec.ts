@@ -116,7 +116,7 @@ describe('DashboardSection', () => {
       expect(cardHosts(fixture)[0]?.style.gridColumn).toBe('span 4');
     });
 
-    it('falls back to each card own height when the section sets no cardsHeight', () => {
+    it('sizes a card without h to its content when the section sets no cardsHeight', () => {
       const { fixture } = setup();
 
       fixture.componentRef.setInput('section', { id: 'section-1' });
@@ -126,10 +126,30 @@ describe('DashboardSection', () => {
       ]);
       fixture.detectChanges();
 
-      expect(cardHosts(fixture).map((el) => el.style.gridRow)).toEqual([
-        'span 10',
-        'span 100',
+      const [fixedCard, contentCard] = cardHosts(fixture);
+      expect(fixedCard?.style.gridRow).toBe('span 10');
+      expect(fixedCard?.classList).not.toContain('dashboard-card--auto-height');
+      expect(contentCard?.classList).toContain('dashboard-card--auto-height');
+    });
+
+    it('switches a card without h to its content height when the section drops cardsHeight', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('section', {
+        id: 'section-1',
+        cardsHeight: 30,
+      });
+      fixture.componentRef.setInput('cards', [
+        { id: 'card-1', component: 'demo-widget' },
       ]);
+      fixture.detectChanges();
+
+      fixture.componentRef.setInput('section', { id: 'section-1' });
+      fixture.detectChanges();
+
+      const host = cardHosts(fixture)[0];
+      expect(host?.style.gridRow).not.toBe('span 30');
+      expect(host?.classList).toContain('dashboard-card--auto-height');
     });
 
     it('re-applies the height when cardsHeight changes', () => {

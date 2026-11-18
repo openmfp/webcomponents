@@ -26,7 +26,8 @@ export interface CardConfig {
   /** Column span (1–12). Defaults to 12 when omitted. */
   w?: number;
   /**
-   * Row span — number of CSS grid rows occupied (1 row = 10 px by default). Defaults to 100 when omitted.
+   * Row span — number of CSS grid rows occupied (1 row = 10 px by default).
+   * When omitted, a card in a section takes the section's `cardsHeight` or, without one, sizes to its content.
    * `'auto'` sizes a card in a section to its content; a loose card treats it as omitted.
    */
   h?: number | 'auto';

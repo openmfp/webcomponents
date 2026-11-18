@@ -56,11 +56,9 @@ export class DashboardSection {
   columns = input<number | undefined>(undefined);
   editMode = input<boolean>(false);
   protected readonly resolvedCards = computed(() => {
-    const cardsHeight = this.section().cardsHeight;
-    const cards = this.cards();
-    if (cardsHeight === undefined) return cards;
-    return cards.map((card) =>
-      card.h === undefined ? { ...card, h: cardsHeight } : card,
+    const sectionHeight: CardConfig['h'] = this.section().cardsHeight ?? 'auto';
+    return this.cards().map((card) =>
+      card.h === undefined ? { ...card, h: sectionHeight } : card,
     );
   });
   protected readonly i18n = inject(DashboardI18nService);

@@ -72,7 +72,8 @@ export class DashboardCard {
   protected readonly autoHeight = computed(() => this.card().h === 'auto');
   protected readonly gridRow = computed(() => {
     const h = this.card().h;
-    const height = h === 'auto' ? this.autoRowSpan() : (h ?? 100);
+    if (h === undefined) return null;
+    const height = h === 'auto' ? this.autoRowSpan() : h;
     return this.createGridTrack(this.card().y, height);
   });
   protected readonly searchQuery = signal('');

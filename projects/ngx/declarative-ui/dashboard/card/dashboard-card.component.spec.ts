@@ -130,6 +130,19 @@ describe('DashboardCard', () => {
     expect(fixture.nativeElement.style.gridRow).toBe('5 / span 2');
   });
 
+  it('leaves the row placement to its container when the card declares no h', () => {
+    const { fixture } = setup();
+
+    fixture.componentRef.setInput('card', {
+      id: 'card-1',
+      component: 'demo-widget',
+      w: 3,
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.style.gridRow).toBe('');
+  });
+
   describe('h auto', () => {
     let resize: (() => void) | undefined;
     let disconnect: ReturnType<typeof vi.fn>;
