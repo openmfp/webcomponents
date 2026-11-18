@@ -37,6 +37,7 @@ import {
   TABLE_RESOURCES,
 } from './pods-table.config';
 import { StoryGrowingCard } from './story-growing-card.component';
+import { StoryPagedTableCard } from './story-paged-table-card.component';
 import { StoryServiceListCard } from './story-service-list-card.component';
 import { SUBACCOUNTS_LIST_INPUTS } from './subaccounts-list.config';
 import type { Meta, StoryObj } from '@storybook/angular';
@@ -49,6 +50,7 @@ Dashboard.registerAngularComponents([
   MockCard,
   StoryServiceListCard,
   StoryGrowingCard,
+  StoryPagedTableCard,
   DataFetchList,
   DataFetchTable,
   DeclarativeTableCard,
@@ -330,14 +332,38 @@ const SECTION_AUTO_HEIGHT_TEMPLATES: (Omit<CardConfig, 'id'> & {
   },
 ];
 
-const SECTION_AUTO_HEIGHT_CARDS: CardConfig[] =
-  SECTION_AUTO_HEIGHT_SECTIONS.flatMap((section) =>
+const SECTION_AUTO_HEIGHT_TABLE_CARDS: CardConfig[] = [
+  {
+    id: 'auto-cards-height-table-no-h',
+    sectionId: 'auto-cards-height',
+    w: 12,
+    component: 'mfp-wc-declarative-table-card',
+    componentInputs: {
+      config: TABLE_CARD_CONFIG,
+      header: 'Table card, no h',
+      resources: TABLE_RESOURCES,
+    },
+  },
+  {
+    id: 'auto-no-cards-height-table-no-h',
+    sectionId: 'auto-no-cards-height',
+    w: 12,
+    type: 'angular',
+    component: 'mfp-story-paged-table-card',
+    componentInputs: { header: 'Table card, no h' },
+  },
+];
+
+const SECTION_AUTO_HEIGHT_CARDS: CardConfig[] = [
+  ...SECTION_AUTO_HEIGHT_SECTIONS.flatMap((section) =>
     SECTION_AUTO_HEIGHT_TEMPLATES.map(({ key, ...template }) => ({
       ...template,
       id: `${section.id}-${key}`,
       sectionId: section.id,
     })),
-  );
+  ),
+  ...SECTION_AUTO_HEIGHT_TABLE_CARDS,
+];
 
 const SECTION_CARDS_HEIGHT_CARDS: CardConfig[] =
   SECTION_CARDS_HEIGHT_SECTIONS.flatMap((section) =>
@@ -647,7 +673,7 @@ export const SectionCardsAutoHeight: Story = {
       ...SAMPLE_I18N,
       title: 'Section Cards Auto Height',
       description:
-        "Each section holds a card without <code>h</code>, one with <code>h: 20</code> and one with <code>h: 'auto'</code>. Add items to a card to see which cards and sections grow along: the <code>h: 'auto'</code> card in both sections, and the card without <code>h</code> in the section without <code>cardsHeight</code>.",
+        "Each section holds a card without <code>h</code>, one with <code>h: 20</code> and one with <code>h: 'auto'</code>. Add items to a card to see which cards and sections grow along: the <code>h: 'auto'</code> card in both sections, and the card without <code>h</code> in the section without <code>cardsHeight</code>. Below them, a table card without <code>h</code> scrolls its rows inside the 300 px of <code>cardsHeight</code> in the first section and grows with every load in the second: use Load More or change Items per load.",
     },
     sections: SECTION_AUTO_HEIGHT_SECTIONS,
     cards: SECTION_AUTO_HEIGHT_CARDS,
