@@ -388,6 +388,26 @@ describe('mountWcCard', () => {
       expect(mounted.contentHeight).toBe(280);
     });
 
+    it('leaves contentHeight unset when the card sizes to its content', () => {
+      const { container, el } = makeContainer();
+      Object.defineProperty(el, 'clientHeight', {
+        configurable: true,
+        value: 280,
+      });
+
+      mountWcCard(
+        { component: 'demo-widget', autoHeight: true },
+        container,
+        makeCleanup().onCleanup,
+        makeRenderer(),
+      );
+
+      const mounted = el.firstElementChild as unknown as {
+        contentHeight?: number;
+      };
+      expect(mounted.contentHeight).toBeUndefined();
+    });
+
     it('stops observing the slot once the card is torn down', () => {
       const disconnect = vi.fn();
       const original = globalThis.ResizeObserver;

@@ -23,6 +23,7 @@ import {
 import {
   Component,
   type EffectCleanupRegisterFn,
+  ElementRef,
   ErrorHandler,
   Renderer2,
   ViewContainerRef,
@@ -48,6 +49,7 @@ import '@ui5/webcomponents-icons/dist/resize-corner.js';
   styleUrl: './dashboard-card.component.scss',
   encapsulation: ViewEncapsulation.Emulated,
   host: {
+    '[class.dashboard-card--auto-height]': 'autoHeight()',
     '[style.grid-column]': 'gridColumn()',
     '[style.grid-row]': 'gridRow()',
   },
@@ -67,8 +69,10 @@ export class DashboardCard {
     const width = this.card().w ?? 12;
     return this.createGridTrack(this.card().x, width);
   });
+  protected readonly autoHeight = computed(() => this.card().h === 'auto');
   protected readonly gridRow = computed(() => {
-    const height = this.card().h ?? 100;
+    const h = this.card().h;
+    const height = h === 'auto' ? this.autoRowSpan() : (h ?? 100);
     return this.createGridTrack(this.card().y, height);
   });
   protected readonly searchQuery = signal('');
@@ -82,6 +86,9 @@ export class DashboardCard {
   private readonly mountedContent = signal<DashboardCardContent | undefined>(
     undefined,
   );
+  private readonly autoRowSpan = signal(1);
+  private readonly frame = viewChild<ElementRef<HTMLElement>>('frame');
+  private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
   private searchedContent: DashboardCardContent | undefined;
   private host = viewChild('elementHost', { read: ViewContainerRef });
   private renderer = inject(Renderer2);
@@ -94,12 +101,14 @@ export class DashboardCard {
         type: c.type,
         component: c.component,
         componentInputs: c.componentInputs,
+        autoHeight: c.h === 'auto',
       };
     },
     {
       equal: (a, b) =>
         a.type === b.type &&
         a.component === b.component &&
+        a.autoHeight === b.autoHeight &&
         JSON.stringify(a.componentInputs) === JSON.stringify(b.componentInputs),
     },
   );
@@ -168,6 +177,19 @@ export class DashboardCard {
           actionsHook,
         );
       }
+    });
+
+    effect((onCleanup) => {
+      const frame = this.frame()?.nativeElement;
+      if (!this.autoHeight() || !frame) return;
+
+      const observer = new ResizeObserver(() => {
+        this.autoRowSpan.set(this.measureRowSpan(frame));
+      });
+      observer.observe(frame);
+      onCleanup(() => {
+        observer.disconnect();
+      });
     });
 
     effect(() => {
@@ -275,6 +297,21 @@ export class DashboardCard {
         `[DashboardCard] Card "${card.id}" declares componentTemplate.search, but "${card.component}" has no onCardSearch(query) method. The search field is hidden.`,
       );
     }
+  }
+
+  private measureRowSpan(frame: HTMLElement): number {
+    const grid = this.hostElement.nativeElement.parentElement;
+    if (!grid) return 1;
+
+    const gridStyle = getComputedStyle(grid);
+    const rowHeight = parseFloat(gridStyle.gridAutoRows);
+    if (!(rowHeight > 0)) return 1;
+
+    const rowGap = parseFloat(gridStyle.rowGap) || 0;
+    return Math.max(
+      1,
+      Math.ceil((frame.offsetHeight + rowGap) / (rowHeight + rowGap)),
+    );
   }
 
   private createGridTrack(start: number | undefined, span: number): string {

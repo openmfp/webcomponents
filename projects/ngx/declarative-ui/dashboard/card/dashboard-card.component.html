@@ -1,5 +1,6 @@
 @if (card().component) {
   <div
+    #frame
     class="component-card"
     [attr.data-testid]="'dashboard-card-' + card().id"
     [class.component-card--editing]="editMode()"
@@ -53,7 +54,7 @@
     </div>
   </div>
 } @else {
-  <div class="card" [attr.data-testid]="'dashboard-card-' + card().id">
+  <div #frame class="card" [attr.data-testid]="'dashboard-card-' + card().id">
     <mfp-card-template [header]="false" [name]="card().label ?? card().id">
       <div
         [attr.inert]="editMode() ? '' : null"

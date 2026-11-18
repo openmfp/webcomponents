@@ -59,7 +59,9 @@ export class DashboardSection {
     const cardsHeight = this.section().cardsHeight;
     const cards = this.cards();
     if (cardsHeight === undefined) return cards;
-    return cards.map((card) => ({ ...card, h: cardsHeight }));
+    return cards.map((card) =>
+      card.h === undefined ? { ...card, h: cardsHeight } : card,
+    );
   });
   protected readonly i18n = inject(DashboardI18nService);
   protected readonly i18nKeys = DASHBOARD_I18N_KEYS;
