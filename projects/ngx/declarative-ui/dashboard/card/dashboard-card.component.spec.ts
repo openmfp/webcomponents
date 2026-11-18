@@ -224,6 +224,37 @@ describe('DashboardCard', () => {
       expect(fixture.nativeElement.style.gridRow).toBe('span 15');
     });
 
+    it('keeps the mounted content and only toggles contentHeight when h switches to auto and back', () => {
+      const { fixture } = setup();
+      fixture.componentRef.setInput('card', {
+        id: 'card-1',
+        component: 'demo-widget',
+        h: 20,
+      });
+      fixture.detectChanges();
+      const widget = root(fixture).querySelector('demo-widget') as
+        (HTMLElement & { contentHeight?: number }) | null;
+      expect(widget?.contentHeight).toBeDefined();
+
+      fixture.componentRef.setInput('card', {
+        id: 'card-1',
+        component: 'demo-widget',
+        h: 'auto',
+      });
+      fixture.detectChanges();
+      expect(root(fixture).querySelector('demo-widget')).toBe(widget);
+      expect(widget?.contentHeight).toBeUndefined();
+
+      fixture.componentRef.setInput('card', {
+        id: 'card-1',
+        component: 'demo-widget',
+        h: 20,
+      });
+      fixture.detectChanges();
+      expect(root(fixture).querySelector('demo-widget')).toBe(widget);
+      expect(widget?.contentHeight).toBeDefined();
+    });
+
     it('stops measuring once the card switches to a numeric h', () => {
       const fixture = setupAutoCard(95);
 

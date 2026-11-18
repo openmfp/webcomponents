@@ -7,6 +7,8 @@ import { axe } from 'vitest-axe';
 
 type Fixture = ComponentFixture<DashboardSection>;
 
+customElements.define('demo-widget', class extends HTMLElement {});
+
 function setup(): { fixture: Fixture; component: DashboardSection } {
   const fixture = TestBed.createComponent(DashboardSection);
   const component = fixture.componentInstance;
@@ -143,6 +145,9 @@ describe('DashboardSection', () => {
         { id: 'card-1', component: 'demo-widget' },
       ]);
       fixture.detectChanges();
+      const widget = root(fixture).querySelector('demo-widget') as
+        (HTMLElement & { contentHeight?: number }) | null;
+      expect(widget?.contentHeight).toBeDefined();
 
       fixture.componentRef.setInput('section', { id: 'section-1' });
       fixture.detectChanges();
@@ -150,6 +155,8 @@ describe('DashboardSection', () => {
       const host = cardHosts(fixture)[0];
       expect(host?.style.gridRow).not.toBe('span 30');
       expect(host?.classList).toContain('dashboard-card--auto-height');
+      expect(root(fixture).querySelector('demo-widget')).toBe(widget);
+      expect(widget?.contentHeight).toBeUndefined();
     });
 
     it('re-applies the height when cardsHeight changes', () => {

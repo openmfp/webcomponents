@@ -223,7 +223,10 @@ describe('mountAngularCard', () => {
       const { onCleanup } = makeCleanup();
 
       mountAngularCard(
-        { ...makeCfg({ component: 'mfp-test-sizing-card' }), autoHeight: true },
+        {
+          ...makeCfg({ component: 'mfp-test-sizing-card' }),
+          autoHeight: () => true,
+        },
         vcr,
         onCleanup,
       );
@@ -232,6 +235,33 @@ describe('mountAngularCard', () => {
         'contentHeight',
         expect.anything(),
       );
+    });
+
+    it('follows a switch between a fixed height and content height without remounting', () => {
+      addComponentToRegistry([TestSizingCard]);
+      const { vcr, setInput } = makeMockVcr();
+      const { onCleanup } = makeCleanup();
+      let autoHeight = false;
+
+      const syncContentHeight = mountAngularCard(
+        {
+          ...makeCfg({ component: 'mfp-test-sizing-card' }),
+          autoHeight: () => autoHeight,
+        },
+        vcr,
+        onCleanup,
+      );
+
+      autoHeight = true;
+      syncContentHeight?.();
+      expect(setInput).toHaveBeenLastCalledWith('contentHeight', undefined);
+
+      autoHeight = false;
+      syncContentHeight?.();
+      expect(setInput).toHaveBeenLastCalledWith('contentHeight', 260);
+      expect(
+        vcr.createComponent as ReturnType<typeof vi.fn>,
+      ).toHaveBeenCalledTimes(1);
     });
 
     it('leaves a card that does not declare the input untouched', () => {
