@@ -4,7 +4,7 @@ import type {
   BeforeRequest,
 } from '../../../../services/data-fetch.model';
 import { DashboardCardContent } from '../../models';
-import { CardMountCfg } from './card-mount-cfg';
+import { CardMountCfg, SyncContentHeight } from './card-mount-cfg';
 import {
   getRegisteredDashboardCardComponent,
   warnForUnknownDashboardCardInput,
@@ -19,7 +19,7 @@ export function mountAngularCard(
   beforeRequestAdapter?: BeforeRequest,
   afterRequestAdapter?: AfterRequest,
   actionsHookAdapter?: ActionsHook,
-): void {
+): SyncContentHeight | undefined {
   const registeredComponent = getRegisteredDashboardCardComponent(
     cfg.component,
   );
@@ -28,7 +28,7 @@ export function mountAngularCard(
     console.warn(
       `[DashboardCard] Angular component "${cfg.component}" is not registered`,
     );
-    return;
+    return undefined;
   }
 
   const componentRef = angularHost.createComponent(
@@ -63,16 +63,26 @@ export function mountAngularCard(
 
   const contentHeightInput = registeredComponent.inputs.get('contentHeight');
   let observer: ResizeObserver | undefined;
+  let syncContentHeight: SyncContentHeight | undefined;
 
-  if (contentHeightInput && !cfg.autoHeight) {
+  if (contentHeightInput) {
     const host = angularHost.element.nativeElement as HTMLElement;
-    const apply = () => {
-      componentRef.setInput(contentHeightInput, host.clientHeight);
+    let contentHeightSet = false;
+    syncContentHeight = () => {
+      if (!cfg.autoHeight?.()) {
+        componentRef.setInput(contentHeightInput, host.clientHeight);
+        contentHeightSet = true;
+      } else if (contentHeightSet) {
+        componentRef.setInput(contentHeightInput, undefined);
+        contentHeightSet = false;
+      } else {
+        return;
+      }
       componentRef.changeDetectorRef.detectChanges();
     };
-    observer = new ResizeObserver(apply);
+    observer = new ResizeObserver(syncContentHeight);
     observer.observe(host);
-    apply();
+    syncContentHeight();
   }
 
   componentRef.changeDetectorRef.detectChanges();
@@ -82,4 +92,6 @@ export function mountAngularCard(
     observer?.disconnect();
     angularHost.clear();
   });
+
+  return syncContentHeight;
 }

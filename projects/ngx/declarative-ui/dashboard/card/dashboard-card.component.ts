@@ -15,6 +15,7 @@ import {
   type MountCfg,
 } from '../models';
 import {
+  SyncContentHeight,
   getRegisteredDashboardCardComponent,
   mountAngularCard,
   mountSapCard,
@@ -72,7 +73,8 @@ export class DashboardCard {
   protected readonly autoHeight = computed(() => this.card().h === 'auto');
   protected readonly gridRow = computed(() => {
     const h = this.card().h;
-    const height = h === 'auto' ? this.autoRowSpan() : (h ?? 100);
+    if (h === undefined) return null;
+    const height = h === 'auto' ? this.autoRowSpan() : h;
     return this.createGridTrack(this.card().y, height);
   });
   protected readonly searchQuery = signal('');
@@ -90,6 +92,8 @@ export class DashboardCard {
   private readonly frame = viewChild<ElementRef<HTMLElement>>('frame');
   private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
   private searchedContent: DashboardCardContent | undefined;
+  private syncContentHeight: SyncContentHeight | undefined;
+  private readonly isAutoHeight = (): boolean => untracked(this.autoHeight);
   private host = viewChild('elementHost', { read: ViewContainerRef });
   private renderer = inject(Renderer2);
   private errorHandler = inject(ErrorHandler);
@@ -101,14 +105,13 @@ export class DashboardCard {
         type: c.type,
         component: c.component,
         componentInputs: c.componentInputs,
-        autoHeight: c.h === 'auto',
+        autoHeight: this.isAutoHeight,
       };
     },
     {
       equal: (a, b) =>
         a.type === b.type &&
         a.component === b.component &&
-        a.autoHeight === b.autoHeight &&
         JSON.stringify(a.componentInputs) === JSON.stringify(b.componentInputs),
     },
   );
@@ -139,6 +142,7 @@ export class DashboardCard {
       const registerMountCleanup: EffectCleanupRegisterFn = (cleanup) => {
         onCleanup(() => {
           isActive = false;
+          this.syncContentHeight = undefined;
           cleanup();
         });
       };
@@ -156,7 +160,7 @@ export class DashboardCard {
       );
 
       if (mountCfg.type === CARD_TYPES.ANGULAR) {
-        mountAngularCard(
+        this.syncContentHeight = mountAngularCard(
           mountCfg,
           host,
           registerMountCleanup,
@@ -166,7 +170,7 @@ export class DashboardCard {
           actionsHook,
         );
       } else {
-        mountWcCard(
+        this.syncContentHeight = mountWcCard(
           mountCfg,
           host,
           registerMountCleanup,
@@ -177,6 +181,13 @@ export class DashboardCard {
           actionsHook,
         );
       }
+    });
+
+    effect(() => {
+      this.autoHeight();
+      untracked(() => {
+        this.syncContentHeight?.();
+      });
     });
 
     effect((onCleanup) => {

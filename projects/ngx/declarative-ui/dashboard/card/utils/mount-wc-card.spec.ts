@@ -396,7 +396,7 @@ describe('mountWcCard', () => {
       });
 
       mountWcCard(
-        { component: 'demo-widget', autoHeight: true },
+        { component: 'demo-widget', autoHeight: () => true },
         container,
         makeCleanup().onCleanup,
         makeRenderer(),
@@ -406,6 +406,34 @@ describe('mountWcCard', () => {
         contentHeight?: number;
       };
       expect(mounted.contentHeight).toBeUndefined();
+    });
+
+    it('follows a switch between a fixed height and content height without remounting', () => {
+      const { container, el } = makeContainer();
+      Object.defineProperty(el, 'clientHeight', {
+        configurable: true,
+        value: 280,
+      });
+      let autoHeight = false;
+
+      const syncContentHeight = mountWcCard(
+        { component: 'demo-widget', autoHeight: () => autoHeight },
+        container,
+        makeCleanup().onCleanup,
+        makeRenderer(),
+      );
+      const mounted = el.firstElementChild as unknown as {
+        contentHeight?: number;
+      };
+
+      autoHeight = true;
+      syncContentHeight();
+      expect(mounted.contentHeight).toBeUndefined();
+
+      autoHeight = false;
+      syncContentHeight();
+      expect(mounted.contentHeight).toBe(280);
+      expect(el.firstElementChild).toBe(mounted);
     });
 
     it('stops observing the slot once the card is torn down', () => {

@@ -4,7 +4,7 @@ import type {
   BeforeRequest,
 } from '../../../../services/data-fetch.model';
 import { DashboardCardContent } from '../../models';
-import { CardMountCfg } from './card-mount-cfg';
+import { CardMountCfg, SyncContentHeight } from './card-mount-cfg';
 import {
   EffectCleanupRegisterFn,
   ErrorHandler,
@@ -21,13 +21,26 @@ export function mountWcCard(
   beforeRequestAdapter?: BeforeRequest,
   afterRequestAdapter?: AfterRequest,
   actionsHookAdapter?: ActionsHook,
-): void {
+): SyncContentHeight {
   const host: HTMLElement = container.element.nativeElement;
   const element: HTMLElement = renderer.createElement(cfg.component);
   const registry = element.ownerDocument.defaultView?.customElements;
   let cancel: (() => void) | undefined;
   let disposed = false;
   let observer: ResizeObserver | undefined;
+  let mounted = false;
+  let contentHeightSet = false;
+
+  const syncContentHeight = (): void => {
+    if (!mounted || disposed) return;
+    if (!cfg.autoHeight?.()) {
+      renderer.setProperty(element, 'contentHeight', host.clientHeight);
+      contentHeightSet = true;
+    } else if (contentHeightSet) {
+      renderer.setProperty(element, 'contentHeight', undefined);
+      contentHeightSet = false;
+    }
+  };
 
   onCleanup(() => {
     disposed = true;
@@ -65,14 +78,10 @@ export function mountWcCard(
     renderer.appendChild(host, element);
     if (disposed) return;
 
-    if (!cfg.autoHeight) {
-      const updateContentHeight = (): void => {
-        renderer.setProperty(element, 'contentHeight', host.clientHeight);
-      };
-      observer = new ResizeObserver(updateContentHeight);
-      observer.observe(host);
-      updateContentHeight();
-    }
+    mounted = true;
+    observer = new ResizeObserver(syncContentHeight);
+    observer.observe(host);
+    syncContentHeight();
     if (!disposed) onMounted?.(element as DashboardCardContent);
   };
 
@@ -101,4 +110,6 @@ export function mountWcCard(
   } else {
     mount();
   }
+
+  return syncContentHeight;
 }
