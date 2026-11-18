@@ -1,5 +1,5 @@
 import { gridBox } from '../utils/grid';
-import { openHarness } from '../utils/harness';
+import { enterEditMode, openHarness } from '../utils/harness';
 import { type Page, expect, test } from '@playwright/test';
 
 const PAGE_SIZES = [
@@ -83,6 +83,15 @@ function expectedSpans(
       { cardColumns: span, gridWidth: span },
     ]),
   );
+}
+
+async function footerBottomOffset(page: Page): Promise<number> {
+  return page.locator('.mfp-dashboard__edit-bar').evaluate((footer) => {
+    const bottomInset = parseFloat(getComputedStyle(footer).bottom);
+    return (
+      window.innerHeight - footer.getBoundingClientRect().bottom - bottomInset
+    );
+  });
 }
 
 test.describe('Page sizes', () => {
@@ -175,5 +184,88 @@ test.describe('Card gap', () => {
     expect(layout.verticalGap).toBeCloseTo(layout.rem, 0);
     expect(layout.leftEdgeOffset).toBeCloseTo(0, 0);
     expect(layout.rightEdgeOffset).toBeCloseTo(0, 0);
+  });
+});
+
+test.describe('Edit footer', () => {
+  test('stays at the viewport bottom on an empty dashboard in a tall window', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1415, height: 1228 });
+    await openHarness(page);
+    await page.locator('#dash').evaluate((element) => {
+      (element as HTMLElement & { cards: unknown[] }).cards = [];
+    });
+    await expect(
+      page.locator('[data-testid="dashboard-empty-state"]'),
+    ).toBeVisible();
+    await enterEditMode(page);
+
+    await expect.poll(() => footerBottomOffset(page)).toBeCloseTo(0, 0);
+  });
+
+  test('stays at the viewport bottom while scrolling a long dashboard with a fixed-height host', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await openHarness(page);
+    await page.locator('#dash').evaluate((element) => {
+      const scrollContainer = document.createElement('div');
+      scrollContainer.id = 'dashboard-scroll-container';
+      scrollContainer.style.height = '100%';
+      scrollContainer.style.overflow = 'auto';
+      element.before(scrollContainer);
+      scrollContainer.append(element);
+    });
+    await enterEditMode(page);
+    const scrollContainer = page.locator('#dashboard-scroll-container');
+
+    await expect
+      .poll(() =>
+        page
+          .locator('#dash')
+          .evaluate((element) => element.getBoundingClientRect().height),
+      )
+      .toBe(900);
+    await expect
+      .poll(() =>
+        scrollContainer.evaluate(
+          (element) => element.scrollHeight - element.clientHeight,
+        ),
+      )
+      .toBeGreaterThan(0);
+
+    for (const scrollFraction of [0.5, 1]) {
+      await scrollContainer.evaluate((element, fraction) => {
+        element.scrollTop =
+          (element.scrollHeight - element.clientHeight) * fraction;
+      }, scrollFraction);
+      await expect.poll(() => footerBottomOffset(page)).toBeCloseTo(0, 0);
+    }
+
+    await expect
+      .poll(() =>
+        scrollContainer.evaluate((element) => {
+          element.scrollTop = element.scrollHeight - element.clientHeight;
+          const footer = document.querySelector('.mfp-dashboard__edit-bar');
+          const lastCard = document.querySelector(
+            '.grid-stack-item[gs-id="e2e-h"] .component-host',
+          );
+          if (!footer || !lastCard)
+            throw new Error('Footer or last card not found');
+
+          return {
+            scrollBottomOffset:
+              element.scrollHeight - element.scrollTop - element.clientHeight,
+            lastCardOverlap: Math.max(
+              0,
+              lastCard.getBoundingClientRect().bottom -
+                footer.getBoundingClientRect().top,
+            ),
+          };
+        }),
+      )
+      .toEqual({ scrollBottomOffset: 0, lastCardOverlap: 0 });
+    await expect.poll(() => footerBottomOffset(page)).toBeCloseTo(0, 0);
   });
 });
