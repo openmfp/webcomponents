@@ -52,8 +52,11 @@ export class EditCardsDialog {
       numeric: true,
       sensitivity: 'base',
     });
-    return [...this.availableCards()].sort((a, b) =>
-      collator.compare(this.cardLabel(a), this.cardLabel(b)),
+    const addedIds = this.addedCardsIds();
+    return [...this.availableCards()].sort(
+      (a, b) =>
+        Number(addedIds.has(a.id)) - Number(addedIds.has(b.id)) ||
+        collator.compare(this.cardLabel(a), this.cardLabel(b)),
     );
   });
 
