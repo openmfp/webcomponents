@@ -1870,6 +1870,20 @@ describe('Dashboard', () => {
       expect(loose[0]).toMatchObject({ id: 'loose-1', h: 50, maxH: 55 });
     });
 
+    it('looseCards() drops h auto so a loose card takes the default height', () => {
+      const { fixture, component } = setup();
+
+      fixture.componentRef.setInput('config', { title: 'T' });
+      setCardsWithCatalogue(fixture, [
+        { id: 'loose-1', component: 'mfp-a', h: 'auto', maxH: 55 },
+      ]);
+      fixture.detectChanges();
+
+      const [card] = component['looseCards']();
+      expect(card).toMatchObject({ id: 'loose-1', maxH: 55 });
+      expect(card).not.toHaveProperty('h');
+    });
+
     it('looseCards() does NOT height-override section cards under zFlow', () => {
       const { fixture, component } = setup();
 

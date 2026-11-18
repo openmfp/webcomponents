@@ -217,6 +217,23 @@ describe('mountAngularCard', () => {
       expect(setInput).toHaveBeenCalledWith('contentHeight', 260);
     });
 
+    it('leaves contentHeight unset when the card sizes to its content', () => {
+      addComponentToRegistry([TestSizingCard]);
+      const { vcr, setInput } = makeMockVcr();
+      const { onCleanup } = makeCleanup();
+
+      mountAngularCard(
+        { ...makeCfg({ component: 'mfp-test-sizing-card' }), autoHeight: true },
+        vcr,
+        onCleanup,
+      );
+
+      expect(setInput).not.toHaveBeenCalledWith(
+        'contentHeight',
+        expect.anything(),
+      );
+    });
+
     it('leaves a card that does not declare the input untouched', () => {
       const { vcr, setInput } = makeMockVcr();
       const { onCleanup } = makeCleanup();

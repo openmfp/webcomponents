@@ -1059,7 +1059,7 @@ When the page size changes, every loose card takes the span of its size on the n
 
 For example, `element.closest('[data-card-size]')?.getAttribute('data-card-size')`. All four attributes are updated in place when the page size changes or the card is resized.
 
-**Fixed card height.** Every loose card is forced to a fixed height — `cardHeight` sets `h`, `maxH`, and `minH` on each loose card (section cards keep their own heights; to unify those, use [`SectionConfig.cardsHeight`](#cardsheight--one-height-for-every-card-in-the-section)).
+**Fixed card height.** Every loose card is forced to a fixed height — `cardHeight` sets `h`, `maxH`, and `minH` on each loose card (section cards keep their own heights; to give the cards without an `h` one height, use [`SectionConfig.cardsHeight`](#cardsheight--one-height-for-every-card-in-the-section)).
 
 ```ts
 const config: DashboardConfig = {
@@ -1173,13 +1173,14 @@ interface SectionConfig {
 
 #### `cardsHeight` — one height for every card in the section
 
-By default each card in a section sizes itself from its own `h` (falling back to `100` rows when it declares none), so a section holding cards from different sources ends up with a ragged set of heights. Setting `cardsHeight` on the section forces a single row span onto **every** card inside it:
+By default each card in a section sizes itself from its own `h` (falling back to `100` rows when it declares none), so a section holding cards from different sources ends up with a ragged set of heights. Setting `cardsHeight` on the section gives one row span to every card that does not set its own height:
 
-- A card that declares its own `h` has it **overridden** — the section value wins.
 - A card that declares no `h` takes the section value instead of the `100`-row default.
+- A card with a numeric `h` keeps it — a height the card sets itself wins over the section.
+- A card with `h: 'auto'` sizes to its content — see [`h: 'auto'`](#h-auto--a-card-that-follows-its-content).
 - Leave `cardsHeight` unset (the default) to keep the per-card behaviour.
 
-Like `CardConfig.h`, the value is a row span where one row is 10 px by default (`--row-height`), so `cardsHeight: 30` renders every card 300 px tall.
+Like `CardConfig.h`, the value is a row span where one row is 10 px by default (`--row-height`), so `cardsHeight: 30` renders a card without `h` 300 px tall.
 
 ```ts
 const sections: SectionConfig[] = [
@@ -1193,23 +1194,49 @@ const cards: CardConfig[] = [
     w: 3,
     h: 10,
     component: 'mfp-wc-visited-service-card',
-  }, // rendered 300 px tall
+  }, // rendered 100 px tall — its own h
   {
     id: 'b',
     sectionId: 'ras',
     w: 3,
-    h: 55,
+    h: 'auto',
     component: 'mfp-wc-visited-service-card',
-  }, // rendered 300 px tall
-  { id: 'c', sectionId: 'ras', w: 3, component: 'mfp-wc-visited-service-card' }, // rendered 300 px tall
+  }, // as tall as its content
+  { id: 'c', sectionId: 'ras', w: 3, component: 'mfp-wc-visited-service-card' }, // rendered 300 px tall — the section's cardsHeight
 ];
 ```
 
 Only the height is affected — each card's `w`, `x` and `y` are still its own, so a card that pins a row start with `y` keeps that start and only its span changes.
 
-The override is **presentational**: the cards' configured `h` values are left untouched, so they come back unchanged in the `saved` event payload and the section can be switched back to per-card heights at any time by dropping `cardsHeight`.
+`cardsHeight` is **presentational**: a card that takes it still comes back without an `h` in the `saved` event payload, so dropping `cardsHeight` returns the section to per-card heights at any time.
 
-Cards are told the pixel height of the tile they land in, so a card that can adapt to it does. `DeclarativeTableCard` uses this to fit its table to the tile and scroll the rows rather than paint over the next section — see [`contentHeight`](./declarative-table-card.md#contentheight--fitting-a-fixed-height-slot). The dashboard measures the tile and sets the `contentHeight` property on the mounted element; components that do not declare that input are left untouched.
+> **Changed behaviour:** before `h: 'auto'` was added, `cardsHeight` also overrode a numeric `h`. A section that mixes `cardsHeight` with per-card `h` values now renders those cards at their own height.
+
+Cards with a fixed height are told the pixel height of the tile they land in, so a card that can adapt to it does. `DeclarativeTableCard` uses this to fit its table to the tile and scroll the rows rather than paint over the next section — see [`contentHeight`](./declarative-table-card.md#contentheight--fitting-a-fixed-height-slot). The dashboard measures the tile and sets the `contentHeight` property on the mounted element; components that do not declare that input are left untouched. A card with `h: 'auto'` gets no `contentHeight`.
+
+#### `h: 'auto'` — a card that follows its content
+
+A card in a section with `h: 'auto'` measures its own content and keeps its row span in sync with it, so it follows data arriving, filtering, and different content on each load. The section grows and shrinks with it. Use it for cards whose height is not known in advance, such as "Recently accessed services":
+
+```ts
+const cards: CardConfig[] = [
+  {
+    id: 'ras',
+    sectionId: 'services',
+    w: 12,
+    h: 'auto',
+    component: 'mfp-wc-visited-service-card',
+  },
+];
+```
+
+- The span is rounded up to whole rows of the section grid (`--row-height` plus the grid's `row-gap`), so the card can end up to one row taller than its content.
+- The content needs a natural height. Content that only stretches to fill its card (`height: 100%` with nothing inside giving it height) collapses in auto mode.
+- Table cards get no `contentHeight`, so they render all their rows and the card grows to fit instead of scrolling inside a fixed box.
+- The card starts at the height of its loading state and grows once the data arrives, so expect the layout to shift once on load.
+- Cards side by side in the same row each take their own height, so a row can be uneven.
+- `h: 'auto'` applies to section cards only. A loose card treats it as if `h` were omitted.
+- The value is kept as `'auto'` in the `saved` event payload.
 
 This is the section-level counterpart of [`zFlow.cardHeight`](#zflow--reflow-layout-mode), which does the same thing for **loose** cards. The two are independent: `zFlow.cardHeight` never reaches section cards, and `cardsHeight` never reaches the loose-card grid.
 
@@ -1219,7 +1246,7 @@ This is the section-level counterpart of [`zFlow.cardHeight`](#zflow--reflow-lay
 interface CardConfig {
   id: string;
   w?: number; // expressed in number of columns up to 12
-  h?: number; // expressed in hypothetical number of rows, where a row is 10px high, so the value of 27 translates to 270px
+  h?: number | 'auto'; // expressed in hypothetical number of rows, where a row is 10px high, so the value of 27 translates to 270px; 'auto' sizes a section card to its content
   x?: number;
   y?: number;
   maxH?: number;
@@ -1237,7 +1264,7 @@ interface CardConfig {
 ```
 
 For sections, `w` controls the column span while height is determined by the section content.
-For cards, `w` and `h` control the rendered grid span — unless the parent section sets [`cardsHeight`](#cardsheight--one-height-for-every-card-in-the-section), which overrides `h` for every card in that section. The dashboard does not enable GridStack's `sizeToContent` behaviour, so the configured `h` is retained until the user resizes the card in edit mode. When edit mode is saved, each card's `w` and `h` are persisted in the `saved` event payload. Position (`x`, `y`) is only persisted for **loose** cards (those without a `sectionId`) — section cards are laid out by their section and do not carry `x`/`y`. `minH`/`minW` and `maxH`/`maxW` set hard resize bounds enforced by the grid — the user cannot drag a card below the minimum or above the maximum size in edit mode.
+For cards, `w` and `h` control the rendered grid span. A section card without `h` takes the section's [`cardsHeight`](#cardsheight--one-height-for-every-card-in-the-section) when it sets one, and a section card with [`h: 'auto'`](#h-auto--a-card-that-follows-its-content) sizes to its content. The dashboard does not enable GridStack's `sizeToContent` behaviour, so the configured `h` is retained until the user resizes the card in edit mode. When edit mode is saved, each card's `w` and `h` are persisted in the `saved` event payload. Position (`x`, `y`) is only persisted for **loose** cards (those without a `sectionId`) — section cards are laid out by their section and do not carry `x`/`y`. `minH`/`minW` and `maxH`/`maxW` set hard resize bounds enforced by the grid — the user cannot drag a card below the minimum or above the maximum size in edit mode.
 
 `component` and `type` work together to determine how the card is rendered:
 

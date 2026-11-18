@@ -130,6 +130,105 @@ describe('DashboardCard', () => {
     expect(fixture.nativeElement.style.gridRow).toBe('5 / span 2');
   });
 
+  describe('h auto', () => {
+    let resize: (() => void) | undefined;
+    let disconnect: ReturnType<typeof vi.fn>;
+    let originalResizeObserver: typeof ResizeObserver;
+
+    beforeEach(() => {
+      resize = undefined;
+      disconnect = vi.fn();
+      originalResizeObserver = globalThis.ResizeObserver;
+      globalThis.ResizeObserver = class {
+        constructor(callback: () => void) {
+          resize = callback;
+        }
+        observe = (): void => undefined;
+        unobserve = (): void => undefined;
+        disconnect = disconnect;
+      } as unknown as typeof ResizeObserver;
+    });
+
+    afterEach(() => {
+      globalThis.ResizeObserver = originalResizeObserver;
+    });
+
+    function setupAutoCard(frameHeight: number): Fixture {
+      const { fixture } = setup();
+      const grid = document.createElement('div');
+      grid.style.gridAutoRows = '10px';
+      grid.style.rowGap = '4px';
+      document.body.appendChild(grid);
+      grid.appendChild(fixture.nativeElement);
+      fixture.componentRef.setInput('card', {
+        id: 'card-1',
+        component: 'demo-widget',
+        h: 'auto',
+      });
+      fixture.detectChanges();
+      const frame = root(fixture).querySelector(
+        '.component-card',
+      ) as HTMLElement;
+      Object.defineProperty(frame, 'offsetHeight', {
+        configurable: true,
+        value: frameHeight,
+      });
+      return fixture;
+    }
+
+    it('marks the host so the card frame takes its content height', () => {
+      const fixture = setupAutoCard(95);
+
+      expect(fixture.nativeElement.classList).toContain(
+        'dashboard-card--auto-height',
+      );
+    });
+
+    it('spans as many rows of the section grid as the measured frame needs', () => {
+      const fixture = setupAutoCard(95);
+
+      resize?.();
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.style.gridRow).toBe('span 8');
+    });
+
+    it('follows the frame when its content grows', () => {
+      const fixture = setupAutoCard(95);
+      resize?.();
+      fixture.detectChanges();
+
+      const frame = root(fixture).querySelector(
+        '.component-card',
+      ) as HTMLElement;
+      Object.defineProperty(frame, 'offsetHeight', {
+        configurable: true,
+        value: 200,
+      });
+      resize?.();
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.style.gridRow).toBe('span 15');
+    });
+
+    it('stops measuring once the card switches to a numeric h', () => {
+      const fixture = setupAutoCard(95);
+
+      fixture.componentRef.setInput('card', {
+        id: 'card-1',
+        component: 'demo-widget',
+        h: 20,
+      });
+      fixture.detectChanges();
+
+      expect(disconnect).toHaveBeenCalled();
+      expect(fixture.nativeElement.style.gridRow).toBe('span 20');
+      expect(fixture.nativeElement.classList).not.toContain(
+        'dashboard-card--auto-height',
+      );
+    });
+  });
+
   it('renders a dynamic component and applies component inputs', () => {
     const { fixture } = setup();
 

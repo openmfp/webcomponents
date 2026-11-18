@@ -36,6 +36,7 @@ import {
   TABLE_CARD_CONFIG,
   TABLE_RESOURCES,
 } from './pods-table.config';
+import { StoryGrowingCard } from './story-growing-card.component';
 import { StoryServiceListCard } from './story-service-list-card.component';
 import { SUBACCOUNTS_LIST_INPUTS } from './subaccounts-list.config';
 import type { Meta, StoryObj } from '@storybook/angular';
@@ -47,6 +48,7 @@ Dashboard.registerAngularComponents([
   VisitedServiceCard,
   MockCard,
   StoryServiceListCard,
+  StoryGrowingCard,
   DataFetchList,
   DataFetchTable,
   DeclarativeTableCard,
@@ -224,7 +226,7 @@ const ZFLOW_MOCK_CARDS: CardConfig[] = Object.values(CARD_SIZES).flatMap(
 const SECTION_CARDS_HEIGHT_SECTIONS: SectionConfig[] = [
   {
     id: 'uniform',
-    title: 'Uniform section — cardsHeight: 30 (300 px)',
+    title: 'cardsHeight: 30 (300 px) for cards without h',
     w: 12,
     cardsHeight: 30,
   },
@@ -286,6 +288,56 @@ const SECTION_CARDS_HEIGHT_TEMPLATES = [
     },
   },
 ];
+
+const SECTION_AUTO_HEIGHT_SECTIONS: SectionConfig[] = [
+  {
+    id: 'auto-cards-height',
+    title: 'Section with cardsHeight: 30',
+    w: 12,
+    cardsHeight: 30,
+  },
+  { id: 'auto-no-cards-height', title: 'Section without cardsHeight', w: 12 },
+];
+
+const SECTION_AUTO_HEIGHT_TEMPLATES: (Omit<CardConfig, 'id'> & {
+  key: string;
+})[] = [
+  {
+    key: 'no-h',
+    label: 'No h',
+    w: 4,
+    type: 'angular',
+    component: 'mfp-story-growing-card',
+    componentTemplate: {},
+  },
+  {
+    key: 'h-20',
+    label: 'h: 20',
+    w: 4,
+    h: 20,
+    type: 'angular',
+    component: 'mfp-story-growing-card',
+    componentTemplate: {},
+  },
+  {
+    key: 'h-auto',
+    label: "h: 'auto' — add items to grow the card",
+    w: 4,
+    h: 'auto',
+    type: 'angular',
+    component: 'mfp-story-growing-card',
+    componentTemplate: {},
+  },
+];
+
+const SECTION_AUTO_HEIGHT_CARDS: CardConfig[] =
+  SECTION_AUTO_HEIGHT_SECTIONS.flatMap((section) =>
+    SECTION_AUTO_HEIGHT_TEMPLATES.map(({ key, ...template }) => ({
+      ...template,
+      id: `${section.id}-${key}`,
+      sectionId: section.id,
+    })),
+  );
 
 const SECTION_CARDS_HEIGHT_CARDS: CardConfig[] =
   SECTION_CARDS_HEIGHT_SECTIONS.flatMap((section) =>
@@ -572,7 +624,7 @@ export const SectionCardsHeight: Story = {
       ...SAMPLE_I18N,
       title: 'Section Cards Height',
       description:
-        'Both sections hold the <b>same five cards</b> with the same per-card <code>h</code>. The first section sets <code>cardsHeight: 30</code>, so every card is 300 px tall regardless of what it declares; the second leaves it unset, so each card keeps its own height.',
+        'Both sections hold the <b>same five cards</b> with the same per-card <code>h</code>. The first section sets <code>cardsHeight: 30</code>, so the card without <code>h</code> is 300 px tall; the second leaves it unset, so that card falls back to 100 rows. Cards with their own <code>h</code> keep it in both.',
     },
     sections: SECTION_CARDS_HEIGHT_SECTIONS,
     cards: SECTION_CARDS_HEIGHT_CARDS,
@@ -582,7 +634,30 @@ export const SectionCardsHeight: Story = {
     docs: {
       description: {
         story:
-          "`SectionConfig.cardsHeight` forces one row span on every card in the section. It wins over each card's own `h` and supplies a height to cards that declare none, so a section of mixed card types (Angular, custom element, no `h` at all) lines up on a single baseline. Only the height is touched — `w` still comes from each card, and the value is presentational: the cards keep their configured `h` in the `saved` payload. Set the same section's `cardsHeight` in the controls panel to retune the whole row at once.",
+          "`SectionConfig.cardsHeight` gives one row span to every card in the section that declares no `h`. A card with its own numeric `h` keeps it, and a card with `h: 'auto'` sizes to its content. Only the height is touched — `w` still comes from each card, and the value is presentational: a card that takes it comes back without `h` in the `saved` payload. Set the section's `cardsHeight` in the controls panel to retune those cards at once.",
+      },
+    },
+  },
+};
+
+export const SectionCardsAutoHeight: Story = {
+  args: {
+    config: SAMPLE_CONFIG,
+    i18n: {
+      ...SAMPLE_I18N,
+      title: 'Section Cards Auto Height',
+      description:
+        "Each section holds a card without <code>h</code>, one with <code>h: 20</code> and one with <code>h: 'auto'</code>. Add items to a card to see that only the <code>h: 'auto'</code> card and its section grow along.",
+    },
+    sections: SECTION_AUTO_HEIGHT_SECTIONS,
+    cards: SECTION_AUTO_HEIGHT_CARDS,
+    availableCards: [],
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "A card with `h: 'auto'` measures its content and keeps its row span in sync, so it follows content that changes after load and the section grows and shrinks with it. It ignores the section's `cardsHeight`, which only applies to the card without `h`; the card with `h: 20` keeps its own height.",
       },
     },
   },
