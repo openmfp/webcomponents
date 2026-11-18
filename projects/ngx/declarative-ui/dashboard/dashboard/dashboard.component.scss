@@ -27,7 +27,8 @@
 
 mfp-dashboard,
 mfp-wc-dashboard {
-  display: block;
+  display: flex;
+  flex-direction: column;
   flex: 1;
   margin: 0;
   padding: 0;
@@ -38,7 +39,15 @@ mfp-wc-dashboard {
   background-attachment: local;
 }
 
+// Keep the sticky containing block tall enough when the host has a fixed height.
+.mfp-dashboard__layout {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+}
+
 .mfp-dashboard {
+  flex: 1 0 auto;
   padding: calc(var(--sapShell_Space_XL, 3rem) - 10px);
 }
 
@@ -214,7 +223,8 @@ mfp-wc-dashboard {
 .mfp-dashboard__edit-bar {
   position: sticky;
   bottom: var(--sapShell_Space_S, 1rem);
-  margin: var(--sapShell_Space_S, 1rem) var(--sapShell_Space_S, 1rem) 0;
+  margin: var(--sapShell_Space_S, 1rem);
+  flex-shrink: 0;
   z-index: 1000;
   display: flex;
   justify-content: flex-end;
