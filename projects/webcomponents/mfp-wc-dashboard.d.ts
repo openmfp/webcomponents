@@ -70,8 +70,11 @@ export interface CardConfig {
   id: string;
   /** Column span (1–12). Defaults to 12 when omitted. */
   w?: number;
-  /** Row span — number of CSS grid rows occupied (1 row = 10 px by default). Defaults to 100 when omitted. */
-  h?: number;
+  /**
+   * Row span — number of CSS grid rows occupied (1 row = 10 px by default). Defaults to 100 when omitted.
+   * `'auto'` sizes a card in a section to its content; a loose card treats it as omitted.
+   */
+  h?: number | 'auto';
   /** Starting column index (0-based). Omit to let the grid auto-place the card. */
   x?: number;
   /** Starting row index (0-based). Omit to let the grid auto-place the card. */
@@ -124,8 +127,8 @@ export interface SectionConfig {
   /** Column span (1–12). Defaults to 12 when omitted. */
   w?: number;
   /**
-   * Row span forced on every card in this section (1 row = 10 px by default),
-   * overriding each card's own `h`. Omit to let each card keep its own height.
+   * Row span for every card in this section that declares no `h` (1 row = 10 px by default).
+   * Cards with a numeric `h` or `h: 'auto'` keep their own height.
    */
   cardsHeight?: number;
   /** Section heading displayed in the UI. */

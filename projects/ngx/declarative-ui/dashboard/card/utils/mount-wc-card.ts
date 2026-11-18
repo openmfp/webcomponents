@@ -3,7 +3,8 @@ import type {
   AfterRequest,
   BeforeRequest,
 } from '../../../../services/data-fetch.model';
-import { DashboardCardContent, MountCfg } from '../../models';
+import { DashboardCardContent } from '../../models';
+import { CardMountCfg } from './card-mount-cfg';
 import {
   EffectCleanupRegisterFn,
   ErrorHandler,
@@ -12,7 +13,7 @@ import {
 } from '@angular/core';
 
 export function mountWcCard(
-  cfg: MountCfg,
+  cfg: CardMountCfg,
   container: ViewContainerRef,
   onCleanup: EffectCleanupRegisterFn,
   renderer: Renderer2,
@@ -64,12 +65,14 @@ export function mountWcCard(
     renderer.appendChild(host, element);
     if (disposed) return;
 
-    const updateContentHeight = (): void => {
-      renderer.setProperty(element, 'contentHeight', host.clientHeight);
-    };
-    observer = new ResizeObserver(updateContentHeight);
-    observer.observe(host);
-    updateContentHeight();
+    if (!cfg.autoHeight) {
+      const updateContentHeight = (): void => {
+        renderer.setProperty(element, 'contentHeight', host.clientHeight);
+      };
+      observer = new ResizeObserver(updateContentHeight);
+      observer.observe(host);
+      updateContentHeight();
+    }
     if (!disposed) onMounted?.(element as DashboardCardContent);
   };
 

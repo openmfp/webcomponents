@@ -48,7 +48,7 @@ describe('DashboardSection', () => {
         .map((d) => d.nativeElement as HTMLElement);
     }
 
-    it('forces every card in the section to the section height, whatever the card declares', () => {
+    it('gives the section height only to cards that declare no h', () => {
       const { fixture } = setup();
 
       fixture.componentRef.setInput('section', {
@@ -63,13 +63,13 @@ describe('DashboardSection', () => {
       fixture.detectChanges();
 
       expect(cardHosts(fixture).map((el) => el.style.gridRow)).toEqual([
-        'span 30',
-        'span 30',
+        'span 10',
+        'span 55',
         'span 30',
       ]);
     });
 
-    it('keeps the override when the card also pins a row start via y', () => {
+    it('lets a card with h auto size to its content instead of taking the section height', () => {
       const { fixture } = setup();
 
       fixture.componentRef.setInput('section', {
@@ -77,7 +77,24 @@ describe('DashboardSection', () => {
         cardsHeight: 30,
       });
       fixture.componentRef.setInput('cards', [
-        { id: 'card-1', component: 'demo-widget', h: 10, y: 4 },
+        { id: 'card-1', component: 'demo-widget', h: 'auto' },
+      ]);
+      fixture.detectChanges();
+
+      const host = cardHosts(fixture)[0];
+      expect(host?.classList).toContain('dashboard-card--auto-height');
+      expect(host?.style.gridRow).not.toBe('span 30');
+    });
+
+    it('applies the section height to a card without h that pins a row start via y', () => {
+      const { fixture } = setup();
+
+      fixture.componentRef.setInput('section', {
+        id: 'section-1',
+        cardsHeight: 30,
+      });
+      fixture.componentRef.setInput('cards', [
+        { id: 'card-1', component: 'demo-widget', y: 4 },
       ]);
       fixture.detectChanges();
 
@@ -123,7 +140,7 @@ describe('DashboardSection', () => {
         cardsHeight: 30,
       });
       fixture.componentRef.setInput('cards', [
-        { id: 'card-1', component: 'demo-widget', h: 10 },
+        { id: 'card-1', component: 'demo-widget' },
       ]);
       fixture.detectChanges();
 
@@ -138,7 +155,7 @@ describe('DashboardSection', () => {
 
     it('does not mutate the cards passed in', () => {
       const { fixture } = setup();
-      const cards = [{ id: 'card-1', component: 'demo-widget', h: 10 }];
+      const cards = [{ id: 'card-1', component: 'demo-widget' }];
 
       fixture.componentRef.setInput('section', {
         id: 'section-1',
@@ -147,7 +164,7 @@ describe('DashboardSection', () => {
       fixture.componentRef.setInput('cards', cards);
       fixture.detectChanges();
 
-      expect(cards[0]?.h).toBe(10);
+      expect(cards[0]).toEqual({ id: 'card-1', component: 'demo-widget' });
     });
 
     it('still emits the original card id when an overridden card is removed', () => {
@@ -161,7 +178,7 @@ describe('DashboardSection', () => {
         cardsHeight: 30,
       });
       fixture.componentRef.setInput('cards', [
-        { id: 'card-1', component: 'demo-widget', h: 10 },
+        { id: 'card-1', component: 'demo-widget' },
       ]);
       fixture.componentRef.setInput('editMode', true);
       fixture.detectChanges();

@@ -150,3 +150,10 @@
     padding: 1rem;
   }
 }
+
+:host(.dashboard-card--auto-height) {
+  .component-card,
+  .card {
+    height: auto;
+  }
+}

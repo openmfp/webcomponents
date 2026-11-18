@@ -3,7 +3,8 @@ import type {
   AfterRequest,
   BeforeRequest,
 } from '../../../../services/data-fetch.model';
-import { DashboardCardContent, MountCfg } from '../../models';
+import { DashboardCardContent } from '../../models';
+import { CardMountCfg } from './card-mount-cfg';
 import {
   getRegisteredDashboardCardComponent,
   warnForUnknownDashboardCardInput,
@@ -11,7 +12,7 @@ import {
 import { EffectCleanupRegisterFn, ViewContainerRef } from '@angular/core';
 
 export function mountAngularCard(
-  cfg: MountCfg,
+  cfg: CardMountCfg,
   angularHost: ViewContainerRef,
   onCleanup: EffectCleanupRegisterFn,
   onMounted?: (content: DashboardCardContent) => void,
@@ -63,7 +64,7 @@ export function mountAngularCard(
   const contentHeightInput = registeredComponent.inputs.get('contentHeight');
   let observer: ResizeObserver | undefined;
 
-  if (contentHeightInput) {
+  if (contentHeightInput && !cfg.autoHeight) {
     const host = angularHost.element.nativeElement as HTMLElement;
     const apply = () => {
       componentRef.setInput(contentHeightInput, host.clientHeight);

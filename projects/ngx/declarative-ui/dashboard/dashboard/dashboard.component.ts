@@ -82,6 +82,8 @@ import {
 
 document.body.classList.add('ui5-content-density-compact');
 
+type LooseCardConfig = Omit<CardConfig, 'h'> & { h?: number };
+
 @Component({
   selector: 'mfp-dashboard',
   imports: [
@@ -267,8 +269,10 @@ export class Dashboard implements OnInit, OnDestroy {
     const all = this.resolvedCards();
     return (sectionId: string) => all.filter((c) => c.sectionId === sectionId);
   });
-  protected looseCards = linkedSignal(() => {
-    const loose = this.resolvedCards().filter((c) => !c.sectionId);
+  protected looseCards = linkedSignal((): LooseCardConfig[] => {
+    const loose = this.resolvedCards()
+      .filter((c) => !c.sectionId)
+      .map((c) => this.withoutAutoHeight(c));
     const zFlow = this.config().zFlow;
     if (!this.engineProfile().fixedCardHeight || !zFlow) return loose;
     const columns = this.zFlowColumns();
@@ -800,11 +804,16 @@ export class Dashboard implements OnInit, OnDestroy {
     return merged;
   }
 
+  private withoutAutoHeight(card: CardConfig): LooseCardConfig {
+    const { h, ...looseCard } = card;
+    return typeof h === 'number' ? { ...looseCard, h } : looseCard;
+  }
+
   private toZFlowCard(
-    card: CardConfig,
+    card: LooseCardConfig,
     zFlow: NonNullable<DashboardConfig['zFlow']>,
     columns: number | undefined,
-  ): CardConfig {
+  ): LooseCardConfig {
     const { w, minW, maxW, ...rest } = card;
     const size = card.size ?? zFlow.defaultCardSize;
     const span =
