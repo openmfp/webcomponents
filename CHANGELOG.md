@@ -9,6 +9,19 @@ and [releases](https://github.com/openmfp/webcomponents/releases) for details.
 
 <!-- git-cliff:insert -->
 
+## [2.3.0] - 2026-11-19
+
+### Features
+
+- Size a section card without h to its content (#420)
+- List cards not yet on the dashboard first in the Edit Cards dialog (#421)
+- Add h: 'auto' so a section card follows its content height (#418)
+
+### Bug Fixes
+
+- Fix bottom toolbar aligment (#423)
+- Register all themes in the web component bundles (#417)
+
 ## [2.2.1] - 2026-11-17
 
 ### Features
