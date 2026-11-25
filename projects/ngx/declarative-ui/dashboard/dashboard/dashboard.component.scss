@@ -68,7 +68,7 @@ mfp-wc-dashboard {
   grid-auto-rows: auto;
   align-content: start;
   column-gap: 1rem;
-  row-gap: 2.5rem;
+  row-gap: 1rem;
 
   // Column track count comes from ../constants/_breakpoints.scss — same source
   // of truth used by .section__grid below and by Gridstack's columnOpts.
@@ -81,7 +81,7 @@ mfp-wc-dashboard {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  padding-bottom: 3rem;
+  padding-bottom: var(--mfp-dashboard-header-padding-bottom, 1rem);
   width: 100%;
   min-width: 0;
 }

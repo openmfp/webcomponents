@@ -10,10 +10,8 @@
   display: flex;
   flex-direction: column;
   border: var(--sapElement_BorderWidth, 1px) solid transparent;
-  border-top: none;
-  border-radius: 0 0 var(--sapTile_BorderCornerRadius, 0.5rem)
-    var(--sapTile_BorderCornerRadius, 0.5rem);
-  padding-block: 1.25rem;
+  border-radius: var(--sapTile_BorderCornerRadius, 0.5rem);
+  padding-block: var(--mfp-dashboard-section-padding-block, 0.7rem);
 
   &--edit {
     --mfp_cardEditFrameShadow: var(--sapContent_Shadow0);
@@ -35,44 +33,17 @@
   }
 
   &__header {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    transform: translateY(-50%);
     display: flex;
     align-items: center;
-    pointer-events: none;
-
-    &::before,
-    &::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: transparent;
-    }
-
-    &::before {
-      max-width: 0.75rem;
-      flex: 0 0 0.75rem;
-    }
-  }
-
-  &--edit &__header {
-    &::before,
-    &::after {
-      background: var(--sapTile_BorderColor);
-      height: var(--sapElement_BorderWidth, 1px);
-    }
   }
 
   &__title {
     font-size: 1rem;
     font-weight: 600;
     color: var(--sapTextColor, #fff);
-    padding: 0 0.5rem;
+    padding: 0 1rem;
+    padding-bottom: 1rem;
     white-space: nowrap;
-    pointer-events: all;
   }
 
   &__grid {
