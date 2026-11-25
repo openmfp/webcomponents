@@ -98,10 +98,12 @@ These custom properties form the dashboard's public styling contract. Set them o
 | `--row-gap`                                   | `0px`                          | Vertical gap between cards in a section grid.                                                                                                                                             |
 | `--mfp-dashboard-background`                  | `none`                         | Background image used when `config.backgroundImageUrl` is omitted — see [`backgroundImageUrl` — dashboard background image](#backgroundimageurl--dashboard-background-image).             |
 | `--mfp-dashboard-empty-image`                 | SAP `NoApplications` TNT scene | Artwork shown by the [empty state](#empty-state). Overriding it swaps the illustration from CSS alone.                                                                                    |
+| `--mfp-dashboard-header-padding-bottom`       | `1rem`                         | Bottom padding after the dashboard header.                                                                                                                                                |
+| `--mfp-dashboard-section-padding-block`       | `0.7rem`                       | Top and bottom padding inside each section.                                                                                                                                               |
 | `--dashboard-cols-sm` / `-md` / `-lg` / `-xl` | `1` / `8` / `12` / `14`        | Column-track counts at each responsive breakpoint (driven by media queries on the viewport width).                                                                                        |
 | `--cols`                                      | _unset_                        | Per-section column-count override. Set through `SectionConfig`; overrides the responsive `--dashboard-cols-*` for that section.                                                           |
 
-`--mfp_cardContainerPadding`, `--mfp_cardBorder`, `--row-height`, `--column-gap`, `--row-gap`, `--mfp-dashboard-background`, and `--mfp-dashboard-empty-image` are the intended consumer knobs. The `--dashboard-cols-*` variables are normally set at runtime by the active layout engine profile — override them only when building a custom layout. Other custom properties seen in the markup (e.g. `--gs-item-margin-top`, `--Container-Spacing-Small`) are internal implementation details and are **not** part of this contract.
+`--mfp_cardContainerPadding`, `--mfp_cardBorder`, `--row-height`, `--column-gap`, `--row-gap`, `--mfp-dashboard-background`, `--mfp-dashboard-empty-image`, `--mfp-dashboard-header-padding-bottom`, and `--mfp-dashboard-section-padding-block` are the intended consumer knobs. The `--dashboard-cols-*` variables are normally set at runtime by the active layout engine profile — override them only when building a custom layout. Other custom properties seen in the markup (e.g. `--gs-item-margin-top`, `--Container-Spacing-Small`) are internal implementation details and are **not** part of this contract.
 
 `--mfp_cardBorder` is applied to the dashboard card's wrapper (`.component-host`), so an explicitly configured edit-mode focus border stays inside the visible card. The GridStack item itself does not intentionally draw a focus border. A registered card may also draw its own border: for example, cards using `border: 1px solid var(--sapTile_BorderColor, transparent)` receive the dashboard's hover/focus `--sapTile_BorderColor` through CSS inheritance. In that case a visible border is expected even when `--mfp_cardBorder` is unset; leave the variable unset to avoid adding a second wrapper border. To provide a wrapper border explicitly:
 
@@ -124,20 +126,17 @@ In edit mode a section draws the same frame as a card with [`componentTemplate`]
 
 Because `--sapTile_BorderColor` is `transparent` in SAP Horizon, the visible edge of a transparent card comes from its shadow, not its border — so the section sets `--mfp_cardEditFrameShadow: var(--sapContent_Shadow0)` on itself in edit mode, exactly as `.component-card--editing` does for cards. Themes that give `--sapTile_BorderColor` a real colour get a matching solid border for free, with no change here.
 
-The section's top edge stays open where the title sits: `border-top` is `none` and the two line segments flanking the title are drawn by the header's `::before`/`::after`, using the same `--sapTile_BorderColor` and `--sapElement_BorderWidth`.
+The section frame has a continuous top border and rounded corners on all sides. The title sits inside the frame, below the top border.
 
 #### Section spacing
 
-A section's title is absolutely positioned and pulled up by half its own height (`translateY(-50%)`), so it straddles the top border and overhangs the section box by roughly 9 px. Two measurements follow from that:
+A section's title is in normal flow, with `1rem` of horizontal and bottom padding. If no title is provided, the header is omitted and reserves no space.
 
-| Distance                                        | Value             | Set by                                 |
-| ----------------------------------------------- | ----------------- | -------------------------------------- |
-| Card grid ↔ section's top and bottom border     | `1.25rem` (20 px) | `padding-block` on `.section`          |
-| Section's bottom border ↔ next section's border | `2.5rem` (40 px)  | `row-gap` on `.mfp-sections-container` |
-
-`padding-block` is symmetric, so the first and last rows of cards are inset from the section frame by the same amount — without the bottom half a tall card (a table clamped by [`cardsHeight`](#cardsheight--one-height-for-every-card-in-the-section), for instance) sits flush against the border.
-
-The `row-gap` is what separates one section from the next, and it is deliberately larger than the padding: because the title overhangs upward, the usable space between a section's bottom border and the _next section's title_ is `row-gap` minus that overhang — 40 px of gap leaves about 31 px of clear space. Section padding cannot substitute for it, since padding sits inside the border.
+| Spacing                                         | Default  | Set by                                  |
+| ----------------------------------------------- | -------- | --------------------------------------- |
+| Bottom padding after the dashboard header       | `1rem`   | `--mfp-dashboard-header-padding-bottom` |
+| Top and bottom padding inside a section         | `0.7rem` | `--mfp-dashboard-section-padding-block` |
+| Section's bottom border ↔ next section's border | `1rem`   | `row-gap` on `.mfp-sections-container`  |
 
 `column-gap` stays at `1rem` and is kept separate from `row-gap` on purpose: it feeds the container's column tracks, which must keep matching `.section__grid` and GridStack's `columnOpts`.
 
